@@ -172,6 +172,12 @@ ExchangeRequest.prototype = {
 		this.xmlReq.abort();
 	},
 
+	make_basic_auth: function _make_basic_auth(user, password) {
+	  var tok = user + ':' + password;
+	  var hash = btoa(tok);
+	  return "Basic " + hash;
+	},
+
 	sendRequest: function(aData, aUrl)
 	{
 		if (this.shutdown) {
@@ -216,12 +222,21 @@ ExchangeRequest.prototype = {
 			this.prePassword = exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].prePassword;
 		}
 
+		this._notificationCallbacks = new ecnsIAuthPrompt2(this);
+
 		try {
 			if (this.prePassword != "") {
 				this.logInfo("We have a prePassword: *******");
 			}
 
 			this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user, this.prePassword);
+
+			var basicAuthPw = this.getPrePassword(this.currentUrl, this.mArgument.user);
+			if (basicAuthPw) {
+				var auth = this.make_basic_auth(this.mArgument.user,basicAuthPw);
+				this.xmlReq.setRequestHeader('Authorization', auth);
+			}
+
 		}
 		catch(err) {
 			this.logInfo(": ERROR on ExchangeRequest.sendRequest to URL:"+this.currentUrl+"."); 
@@ -241,7 +256,6 @@ ExchangeRequest.prototype = {
 		this.xmlReq.setRequestHeader("Connection", "keep-alive");
 
 		/* set channel notifications for password processing */
-		this._notificationCallbacks = new ecnsIAuthPrompt2(this);
 		this.xmlReq.channel.notificationCallbacks = this._notificationCallbacks;
 		this.xmlReq.channel.loadGroup = null;
 
@@ -530,6 +544,19 @@ ExchangeRequest.prototype = {
 		return true;
 	},*/
 
+	getPrePassword: function _getPrePassword(aCurrentUrl, aUser)
+	{
+		var tmpURL = aCurrentUrl;
+		if (aUser != "") {
+			// We insert the username into the URL the prePassword needs it.
+			// https://webmail.example.com/ews/exchange.asmx
+
+			var tmpColon = tmpURL.indexOf("://");
+			tmpURL = tmpURL.substr(0, tmpColon+3) + aUser + "@" + tmpURL.substr(tmpColon+3);
+		}
+		return this._notificationCallbacks.getPrePassword(aUser, tmpURL);
+	},
+
         isHTTPError: function()
         {
                 let xmlReq = this.mXmlReq;
@@ -598,7 +625,9 @@ ExchangeRequest.prototype = {
 						//if ((this.prePassword == "") && 
 						if	((!exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl]) || (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount < 3)) {
 							this.logInfo("isHTTPError: We are going to ask the user or password store for a password and try again.");
-							var tmpURL = this.currentUrl;
+							this.prePassword = this.getPrePassword(this.currentUrl, this.mArgument.user);
+
+/*							var tmpURL = this.currentUrl;
 							if (this.mArgument.user != "") {
 								// We insert the username into the URL the prePassword needs it.
 								// https://webmail.example.com/ews/exchange.asmx
@@ -606,7 +635,7 @@ ExchangeRequest.prototype = {
 								var tmpColon = tmpURL.indexOf("://");
 								tmpURL = tmpURL.substr(0, tmpColon+3) + this.mArgument.user + "@" + tmpURL.substr(tmpColon+3);
 							}
-							this.prePassword = this._notificationCallbacks.getPrePassword(this.mArgument.user, tmpURL);
+							this.prePassword = this._notificationCallbacks.getPrePassword(this.mArgument.user, tmpURL);*/
 
 							if (this.prePassword) {
 
