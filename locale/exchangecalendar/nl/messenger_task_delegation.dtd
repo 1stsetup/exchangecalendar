@@ -1,0 +1,6 @@
+<!ENTITY exchWebService.task.delegation.owner.name "Taak eigenaar">
+<!ENTITY exchWebService.task.delegation.delegator.name "Taak verdeler">
+<!ENTITY exchWebService.task.delegation.accept.button "Accepteer">
+<!ENTITY exchWebService.task.delegation.decline.button "Weiger">
+<!ENTITY exchWebService.task.delegation.lastUpdateDate "Laatste wijziging">
+

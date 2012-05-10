@@ -1,0 +1,54 @@
+<!ENTITY ecautodiscover "Gebruik autodiscovery functie van Exchange.">
+<!ENTITY ecfolderbase.label "Basisfolder:">
+<!ENTITY ecfolderpath.label "Pad onder basis:">
+<!ENTITY ecfolderidofshare.label "Share FolderId:">
+<!ENTITY exchWebServices.SharedFolderID.label "Share displaynaam:">
+
+<!ENTITY menuitem.label.ecfolderbase.calendar "Calendar map">
+<!ENTITY menuitem.label.ecfolderbase.publicfoldersroot "Openbare mappen">
+<!ENTITY menuitem.label.ecfolderbase.inbox "Mail inbox map">
+<!ENTITY menuitem.label.ecfolderbase.voicemail "Voice Mail map">
+<!ENTITY menuitem.label.ecfolderbase.msgfolderroot "Berichten rootmap">
+<!ENTITY menuitem.label.ecfolderbase.root "Root van de mailbox">
+<!ENTITY menuitem.label.ecfolderbase.tasks "Tasks map">
+
+<!ENTITY menuitem.label.ecfolderbase.contacts "Contacten map">
+<!ENTITY menuitem.label.ecfolderbase.deleteditems "Deleted items map">
+<!ENTITY menuitem.label.ecfolderbase.drafts "Drafts map">
+<!ENTITY menuitem.label.ecfolderbase.journal "Journal map">
+<!ENTITY menuitem.label.ecfolderbase.notes "Notes map">
+<!ENTITY menuitem.label.ecfolderbase.outbox "Mail outbox map">
+<!ENTITY menuitem.label.ecfolderbase.sentitems "Sent items map">
+<!ENTITY menuitem.label.ecfolderbase.junkemail "Junk E-Mail map">
+<!ENTITY menuitem.label.ecfolderbase.searchfolders "Search Folders map">
+<!ENTITY menuitem.label.ecfolderbase.version2010 "-- Opties hieronder zijn alleen voor Exchange2010 --">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsroot "Prullenbak root map">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsdeletions "Prullenbak deletions map">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsversion "Prullenbak versions map">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemspurges "Prullenbak purges map">
+<!ENTITY menuitem.label.ecfolderbase.archiveroot "Root archive map">
+<!ENTITY menuitem.label.ecfolderbase.archivemsgfolderroot "Root archive message map">
+<!ENTITY menuitem.label.ecfolderbase.archivedeleteditems "Archive deleted items map">
+<!ENTITY menuitem.label.ecfolderbase.archiverecoverableitemsroot "Archive recoverable items root map">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsdeletions "Archive recoverable items deletions map">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsversions "Archive recoverable items versions map">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemspurges "Archive recoverable items purges map">
+
+<!ENTITY button.label.autodiscovercheck "Doe autodiscovery">
+<!ENTITY button.label.serverandmailboxcheck "Controleer server en mailbox">
+<!ENTITY button.label.servercheck "Controleer server en account">
+
+<!ENTITY ecmailbox.label "Mailboxnaam:">
+<!ENTITY ecmailbox.tooltip "Als je geen mailbox specificeerd kun je alleen toegang krijgen tot openbare mappen.">
+<!ENTITY ecwindowsuser.label "Gerbuikersnaam:">
+<!ENTITY ecwindowsdomain.label "Domeinnaam:">
+<!ENTITY ecwindowspassword.label "Wachtwoord:">
+
+<!ENTITY button.label.folderpathcheck "Controleer">
+<!ENTITY button.label.folderbrowse "Bladeren">
+
+<!ENTITY exchWebServices.UserAvailability.label "Alleen gebruikersaanwezigheidsstatus van de mailbox agenda zal zichtbaar zijn als u de rechten heeft.">
+
+
+
+

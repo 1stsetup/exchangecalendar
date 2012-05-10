@@ -1,0 +1,26 @@
+<!ENTITY title.oofsettings "Réglages d'absence de bureau">
+<!ENTITY label.acceptbutton "Accepter">
+<!ENTITY label.cancelbutton "Annuler">
+<!ENTITY label.oofsettings.title "Absence de bureau pour:">
+
+<!ENTITY label.oofstatus "Status d'absence de bureau:">
+
+<!ENTITY label.externalaudience "Destinataires du message d'absence de bureau: ">
+<!ENTITY menuitem.label.exchWebService-oof-externalaudience.none "Personne">
+<!ENTITY menuitem.label.exchWebService-oof-externalaudience.known "Destinataires dans ma liste de contacts">
+<!ENTITY menuitem.label.exchWebService-oof-externalaudience.all "Tout le monde">
+
+<!ENTITY button.label.internal "Message interne">
+<!ENTITY button.label.external "Message externe">
+<!ENTITY label.internalreply "Message envoyé aux destinataires appartenant à mon organisation:">
+<!ENTITY label.externalreply "Message envoyé aux destinataires extérieurs à mon organisation:">
+
+<!ENTITY menuitem.label.exchWebService-oof-status.disabled "En service">
+<!ENTITY menuitem.label.exchWebService-oof-status.enabled "Hors service">
+
+<!ENTITY checkbox.label.exchWebService-oof-scheduled "En service seulement pour la période:">
+<!ENTITY label.hbox-oof-scheduled-startTime "Heure de début:">
+<!ENTITY label.hbox-oof-scheduled-endTime "Heure de fin:">
+
+
+

@@ -1,0 +1,25 @@
+<!ENTITY title.oofsettings "Out of Office instellingen">
+<!ENTITY label.acceptbutton "Opslaan">
+<!ENTITY label.cancelbutton "Sluiten">
+<!ENTITY label.oofsettings.title "Out of Office instellingen voor:">
+
+<!ENTITY label.oofstatus "Out of Office status:">
+
+<!ENTITY label.externalaudience "Naar welke externe personen mogen Out Of Office berichten verstuurd worden: ">
+<!ENTITY menuitem.label.exchWebService-oof-externalaudience.none "Naar niemand">
+<!ENTITY menuitem.label.exchWebService-oof-externalaudience.known "Personen in mijn contactlijst">
+<!ENTITY menuitem.label.exchWebService-oof-externalaudience.all "Naar iedereen">
+
+<!ENTITY button.label.internal "Intern bericht">
+<!ENTITY button.label.external "Extern bericht">
+<!ENTITY label.internalreply "Bericht dat verstuurd wordt naar personen binnen mijn organisatie:">
+<!ENTITY label.externalreply "Bericht dat verstuurd wordt naar personen buiten mijn organisatie:">
+
+<!ENTITY menuitem.label.exchWebService-oof-status.disabled "Uitgeschakeld">
+<!ENTITY menuitem.label.exchWebService-oof-status.enabled "Ingeschakeld">
+
+<!ENTITY checkbox.label.exchWebService-oof-scheduled "Alleen actief in volgende periode:">
+<!ENTITY label.hbox-oof-scheduled-startTime "Starttijd:">
+<!ENTITY label.hbox-oof-scheduled-endTime "Eindtijd:">
+
+

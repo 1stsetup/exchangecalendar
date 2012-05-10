@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: GPL 3.0
+ *
+ * The contents of this file are subject to the General Public License
+ * 3.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * ## Exchange 2007/2010 Calendar and Tasks Provider.
+ * ## For Thunderbird with the Lightning add-on.
+ *
+ * Author: Michel Verbraak (info@1st-setup.nl)
+ * Website: http://www.1st-setup.nl/wordpress/?page_id=133
+ * email: exchangecalendar@extensions.1st-setup.nl
+ *
+ *
+ * This code uses parts of the Microsoft Exchange Calendar Provider code on which the
+ * "Exchange Data Provider for Lightning" was based.
+ * The Initial Developer of the Microsoft Exchange Calendar Provider Code is
+ *   Andrea Bittau <a.bittau@cs.ucl.ac.uk>, University College London
+ * Portions created by the Initial Developer are Copyright (C) 2009
+ * the Initial Developer. All Rights Reserved.
+ *
+ * ***** BEGIN LICENSE BLOCK *****/
+-->
+
+<!DOCTYPE dialog [
+    <!ENTITY % eventDialogDTD SYSTEM "chrome://calendar/locale/calendar-event-dialog.dtd">
+    %eventDialogDTD;
+]>
+
+<?xul-overlay href="chrome://exchangecalendar/content/attachments-view.xul"?>
+
+<overlay id="calendar-event-dialog.xul"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+    <script type="application/javascript" src="chrome://exchangecalendar/content/calendar-event-dialog.js"/> 
+
+	<rows id="event-grid-rows">
+		<row id="exchWebService-attachments-row"
+			flex="1"
+			collapsed="true" insertbefore="event-grid-link-separator">
+			<label value="&event.attachments.label;"
+				accesskey="&event.attachments.accesskey;"
+				disable-on-readonly="true"/>
+
+			<listbox id="exchWebService-attachment-link" rows="3" flex="1"/>
+
+		</row>
+	</rows>
+
+</overlay>
+
+

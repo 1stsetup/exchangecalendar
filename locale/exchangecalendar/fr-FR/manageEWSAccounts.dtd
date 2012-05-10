@@ -1,0 +1,16 @@
+<!ENTITY label.acceptbutton "Fermer">
+
+<!ENTITY exchWebService.manageEWSAccounts.newAccount.button "Nouveau compte">
+<!ENTITY exchWebService.manageEWSAccounts.removeAccount.button "Supprimer le compte">
+<!ENTITY exchWebService.manageEWSAccounts.saveAccount.button "Sauvegarder le compte">
+
+<!ENTITY exchWebService.manageEWSAccounts.autodiscover.label "Utiliser la fonction de découverte automatique d'Exchange.">
+<!ENTITY exchWebService.manageEWSAccounts.mailbox.label "Nom de la boite aux lettres:">
+<!ENTITY exchWebService.manageEWSAccounts.windowsuser.label "Utilisateur:">
+<!ENTITY exchWebService.manageEWSAccounts.windowsdomain.label "Nom de Domaine:">
+<!ENTITY exchWebService.manageEWSAccounts.autodiscover.button "Lancer la découverte automatique">
+<!ENTITY exchWebService.manageEWSAccounts.servercheck.button "Vérifier le serveur et le compte">
+<!ENTITY exchWebService.manageEWSAccounts.name.label "Nom:">
+
+<!ENTITY exchWebService.manageEWSAccounts.menuitem "Compte EWS (Exchange Web Services)">
+

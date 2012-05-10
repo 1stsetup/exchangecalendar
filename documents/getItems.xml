@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<nsSoap:Envelope xmlns:nsSoap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:nsTypes="http://schemas.microsoft.com/exchange/services/2006/types" xmlns:nsMessages="http://schemas.microsoft.com/exchange/services/2006/messages">
+  <nsSoap:Header>
+    <nsTypes:RequestServerVersion Version="Exchange2007_SP1"/>
+  </nsSoap:Header>
+  <nsSoap:Body>
+    <nsMessages:FindItem Traversal="Shallow">
+      <nsMessages:ItemShape>
+        <nsTypes:BaseShape>IdOnly</nsTypes:BaseShape>
+        <nsTypes:AdditionalProperties>
+          <nsTypes:FieldURI FieldURI="calendar:UID"/>
+          <nsTypes:FieldURI FieldURI="calendar:CalendarItemType"/>
+        </nsTypes:AdditionalProperties>
+      </nsMessages:ItemShape>
+      <nsMessages:CalendarView StartDate="2011-09-12T20:54:22+02:00" EndDate="2011-09-19T20:54:22+02:00"/>
+      <nsMessages:ParentFolderIds>
+        <nsTypes:DistinguishedFolderId Id="calendar">
+          <nsTypes:Mailbox>
+            <nsTypes:EmailAddress>MVerbraak@intercommit.nl</nsTypes:EmailAddress>
+          </nsTypes:Mailbox>
+        </nsTypes:DistinguishedFolderId>
+      </nsMessages:ParentFolderIds>
+    </nsMessages:FindItem>
+  </nsSoap:Body>
+</nsSoap:Envelope>
+
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Header>
+    <h:ServerVersionInfo MajorVersion="14" MinorVersion="1" MajorBuildNumber="289" MinorBuildNumber="6" Version="Exchange2010_SP1" xmlns:h="http://schemas.microsoft.com/exchange/services/2006/types" xmlns="http://schemas.microsoft.com/exchange/services/2006/types" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"/>
+  </s:Header>
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <m:FindItemResponse xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+      <m:ResponseMessages>
+        <m:FindItemResponseMessage ResponseClass="Success">
+          <m:ResponseCode>NoError</m:ResponseCode>
+          <m:RootFolder TotalItemsInView="16" IncludesLastItemInRange="true">
+            <t:Items>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAATbYJTAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAATbjeG"/>
+                <t:UID>ad102d1d-d8e8-4bc5-b8a6-8b28b5275875</t:UID>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAATbYJSAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAATbjeI"/>
+                <t:UID>ad102d1d-d8e8-4bc5-b8a6-8b28b5275875</t:UID>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQFRAAgIzjS+5TmAAEYAAAAALFyDS2V3tUeAbYZsKNq3SAcA4gehsw02e0e3rwdi7PnBzgAAAHMVygAA4gehsw02e0e3rwdi7PnBzgAAJIoOPQAAEA==" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki1/A"/>
+                <t:UID>040000008200E00074C5B7101A82E00800000000706FA534F862CC0100000000000000001000000036E6E67240DAAD43B33588EAE6247D7A</t:UID>
+                <t:CalendarItemType>Occurrence</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAAkig48AAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki1+8"/>
+                <t:UID>040000008200E00074C5B7101A82E0080000000020B5221F2B66CC010000000000000000100000001E492E757FA1604E80471123AA5944F7</t:UID>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAAkig4tAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki4uv"/>
+                <t:UID>040000008200E00074C5B7101A82E00800000000A0753055E655CC0100000000000000001000000069F9C1F732DA7B439145560490293AAC</t:UID>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAAkig47AAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki4uz"/>
+                <t:UID>040000008200E00074C5B7101A82E00800000000D0E85101FE63CC0100000000000000001000000071E7CD75962C4647A67E07BF962856F8</t:UID>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAAkig5CAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki5Wq"/>
+                <t:UID>c8d0fd3b-70f5-4306-93ef-f7a1479a9074</t:UID>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAAkig4+AAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki5zJ"/>
+                <t:UID>040000008200E00074C5B7101A82E00800000000D0501C5DDA67CC010000000000000000100000002B8FE5ECAB56704390EFF315C0DE94C6</t:UID>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAAkig4/AAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki5zF"/>
+                <t:UID>040000008200E00074C5B7101A82E00800000000846D9ED14F69CC010000000000000000100000000140F566FB2D6B489F7ADE87FB3FBAFE</t:UID>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAAkig4yAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkiqo7"/>
+                <t:UID>6fc6f9bc-7f7e-4765-91f3-df257e1d3be7</t:UID>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQFRAAgIzj+/NwIAAEYAAAAALFyDS2V3tUeAbYZsKNq3SAcA4gehsw02e0e3rwdi7PnBzgAAAHMVygAA4gehsw02e0e3rwdi7PnBzgAAJIoOPQAAEA==" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki1/A"/>
+                <t:UID>040000008200E00074C5B7101A82E00800000000706FA534F862CC0100000000000000001000000036E6E67240DAAD43B33588EAE6247D7A</t:UID>
+                <t:CalendarItemType>Occurrence</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAAkig5AAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki4io"/>
+                <t:UID>040000008200E00074C5B7101A82E00800000000E0D8C629766CCC010000000000000000100000003189642F9871854AB947D4553DD9D6B4</t:UID>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAATbYJVAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAATbjee"/>
+                <t:UID>1bd13542-6b78-4b7b-b5d8-6a7f71923711</t:UID>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAATbYJUAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAATbjef"/>
+                <t:UID>1bd13542-6b78-4b7b-b5d8-6a7f71923711</t:UID>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQFRAAgIzkq/iMqAAEYAAAAALFyDS2V3tUeAbYZsKNq3SAcA4gehsw02e0e3rwdi7PnBzgAAAHMVygAA4gehsw02e0e3rwdi7PnBzgAAJIoOPQAAEA==" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki1/A"/>
+                <t:UID>040000008200E00074C5B7101A82E00800000000706FA534F862CC0100000000000000001000000036E6E67240DAAD43B33588EAE6247D7A</t:UID>
+                <t:CalendarItemType>Occurrence</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAAkcfpJAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkchHb"/>
+                <t:UID>040000008200E00074C5B7101A82E00800000000E043D132B234CC0100000000000000001000000080E474F7A68320489E1840419D66297B</t:UID>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+              </t:CalendarItem>
+            </t:Items>
+          </m:RootFolder>
+        </m:FindItemResponseMessage>
+      </m:ResponseMessages>
+    </m:FindItemResponse>
+  </s:Body>
+</s:Envelope>
+
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Header>
+    <h:ServerVersionInfo MajorVersion="14" MinorVersion="1" MajorBuildNumber="289" MinorBuildNumber="6" Version="Exchange2010_SP1" xmlns:h="http://schemas.microsoft.com/exchange/services/2006/types" xmlns="http://schemas.microsoft.com/exchange/services/2006/types" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"/>
+  </s:Header>
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <m:FindItemResponse xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+      <m:ResponseMessages>
+        <m:FindItemResponseMessage ResponseClass="Success">
+          <m:ResponseCode>NoError</m:ResponseCode>
+          <m:RootFolder TotalItemsInView="2" IncludesLastItemInRange="true">
+            <t:Items>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQFRAAgIzj+/NwIAAEYAAAAALFyDS2V3tUeAbYZsKNq3SAcA4gehsw02e0e3rwdi7PnBzgAAAHMVygAA4gehsw02e0e3rwdi7PnBzgAAJIoOPQAAEA==" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki1/A"/>
+                <t:UID>040000008200E00074C5B7101A82E00800000000706FA534F862CC0100000000000000001000000036E6E67240DAAD43B33588EAE6247D7A</t:UID>
+                <t:CalendarItemType>Occurrence</t:CalendarItemType>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAAkig5AAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki4io"/>
+                <t:UID>040000008200E00074C5B7101A82E00800000000E0D8C629766CCC010000000000000000100000003189642F9871854AB947D4553DD9D6B4</t:UID>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+              </t:CalendarItem>
+            </t:Items>
+          </m:RootFolder>
+        </m:FindItemResponseMessage>
+      </m:ResponseMessages>
+    </m:FindItemResponse>
+  </s:Body>
+</s:Envelope>
+

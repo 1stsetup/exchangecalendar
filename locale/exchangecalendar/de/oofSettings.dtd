@@ -1,0 +1,26 @@
+<!ENTITY title.oofsettings "Abwesenheitseinstellungen">
+<!ENTITY label.acceptbutton "Speichern">
+<!ENTITY label.cancelbutton "Schließen">
+<!ENTITY label.oofsettings.title "Abwesenheitseinstellung für:">
+
+<!ENTITY label.oofstatus "Abwesenheitsstatus:">
+
+<!ENTITY label.externalaudience "An welche externen Absender möchten Sie eine automatische Abwesenheitsnachricht senden?: ">
+<!ENTITY menuitem.label.exchWebService-oof-externalaudience.none "An niemanden">
+<!ENTITY menuitem.label.exchWebService-oof-externalaudience.known "Nur Personen in meinem Adressbuch">
+<!ENTITY menuitem.label.exchWebService-oof-externalaudience.all "An jeden">
+
+<!ENTITY button.label.internal "Interne Nachricht">
+<!ENTITY button.label.external "Externe Nachricht">
+<!ENTITY label.internalreply "Eine automatische Antwort mit folgender Nachricht einmalig an jeden Absender innerhalb meiner Organisation senden:">
+<!ENTITY label.externalreply "Eine automatische Antwort mit folgender Nachricht einmalig an jeden Absender außerhalb meiner Organisation senden:">
+
+<!ENTITY menuitem.label.exchWebService-oof-status.disabled "Deaktiviert">
+<!ENTITY menuitem.label.exchWebService-oof-status.enabled "Aktiviert">
+
+<!ENTITY checkbox.label.exchWebService-oof-scheduled "Nur während dieses Zeitraums senden:">
+<!ENTITY label.hbox-oof-scheduled-startTime "Beginnt um:">
+<!ENTITY label.hbox-oof-scheduled-endTime "Endet um:">
+
+
+

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>exchangecalendar@extensions.1st-setup.nl</em:id>
+    <em:version>1.8.7</em:version>
+
+        <!-- sunbird -->
+<!--
+    <em:targetApplication>
+      <Description>
+        <em:id>{718e30fb-e89b-41dd-9da7-e25a45638b28}</em:id>
+        <em:minVersion>1.0b1</em:minVersion>
+        <em:maxVersion>1.0pre</em:maxVersion>
+      </Description>
+    </em:targetApplication> -->
+
+    <em:targetApplication>
+      <Description>
+      	<!-- Thunderbird -->
+        <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
+        <em:minVersion>6.0</em:minVersion>
+        <em:maxVersion>13.0a1</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
+    <em:targetApplication>
+      <Description>
+          <!-- Seamonkey -->
+        <em:id>{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}</em:id>
+        <em:minVersion>2.6</em:minVersion>
+        <em:maxVersion>2.9.1</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
+    <em:requires>
+      <Description>
+        <!-- Lightning (also Sunbird via extension stub) -->
+        <em:id>{e2fda1a4-762b-4020-b5ad-a41df1933103}</em:id>
+        <em:minVersion>1.0a1pre</em:minVersion>
+        <em:maxVersion>1.4</em:maxVersion>
+      </Description>
+    </em:requires>
+
+    <em:name>Exchange 2007/2010 Calendar and Tasks Provider</em:name>
+    <em:description>Allows you to sync Calendar and Tasks with your Microsoft Exchange 2007/2010 EWS server from within lightning.
+
+You can view, delete, create and update calendar and task/todo items. And manage "Out of Office" settings.
+
+Dutch, French, English and German localizations.
+
+Some of the icons and images used are from the Fugue Icons Collection made by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)</em:description>
+    <em:creator>Michel Verbraak (info@1st-setup.nl)</em:creator>
+    <em:developer>Michel Verbraak</em:developer>
+    <em:translator>Dominique Fillon (fr-FR)</em:translator>
+    <em:translator>Christian A. Meyer (de)</em:translator>
+    <em:homepageURL>http://www.1st-setup.nl/wordpress/?page_id=133</em:homepageURL>
+    <em:iconURL>chrome://exchangecalendar/content/lightningexchangecalendar.png</em:iconURL>
+    <em:type>2</em:type> <!-- type: extension -->
+    <em:unpack>true</em:unpack>
+
+	<em:localized>
+		<Description>
+			<em:locale>en-US</em:locale>
+			<em:name>Exchange 2007/2010 Calendar and Tasks Provider</em:name>
+			<em:description>Allows you to sync Calendar and Tasks with your Microsoft Exchange 2007/2010 EWS server from within lightning.
+
+You can view, delete, create and update calendar and task/todo items. And manage "Out of Office" settings.
+
+Dutch, French, English and German localizations.
+
+Some of the icons and images used are from the Fugue Icons Collection made by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)</em:description>
+		</Description>
+	</em:localized>
+
+	<em:localized>
+		<Description>
+			<em:locale>nl</em:locale>
+			<em:name>Exchange 2007/2010 Agenda en Taken Provider</em:name>
+			<em:description>Verzorgt de toegang tot een Microsoft Exchange 2007/2010 EWS server binnen lightning.
+Op dit moment kan men agenda en taken items bekijken, wijzigen, maken en verwijderen. En Out of Office instellen.
+
+Je kunt ook de Exchange (EWS) instellingen aanpassen.
+
+In het Nederlands, Frans, Engels en Duits vertaald.
+
+Sommige van de iconen en plaatjes komen uit de Fugue Icons collectie gemaakt door Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)</em:description>
+		</Description>
+	</em:localized>
+
+  </Description>
+</RDF>

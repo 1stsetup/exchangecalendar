@@ -1,0 +1,2042 @@
+[calTimezoneService] using /home/miv/.thunderbird/l3r47p8x.default/extensions/{e2fda1a4-762b-4020-b5ad-a41df1933103}/timezones.sqlite
+[calTimezoneService] timezones version: 1.2011b
+enigmail.js: Registered components
+logMessage: (Agenda Michel Werk) checkInbox.
+
+erSyncFolderItemsRequest.onSendOk:<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Header>
+    <h:ServerVersionInfo MajorVersion="14" MinorVersion="1" MajorBuildNumber="289" MinorBuildNumber="6" Version="Exchange2010_SP1" xmlns:h="http://schemas.microsoft.com/exchange/services/2006/types" xmlns="http://schemas.microsoft.com/exchange/services/2006/types" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"/>
+  </s:Header>
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <m:SyncFolderItemsResponse xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+      <m:ResponseMessages>
+        <m:SyncFolderItemsResponseMessage ResponseClass="Success">
+          <m:ResponseCode>NoError</m:ResponseCode>
+          <m:SyncState>H4sIAAAAAAAEAO29B2AcSZYlJi9tynt/SvVK1+B0oQiAYBMk2JBAEOzBiM3mkuwdaUcjKasqgcplVmVdZhZAzO2dvPfee++999577733ujudTif33/8/XGZkAWz2zkrayZ4hgKrIHz9+fB8/In6NX+PX+TXoOfjF+w+P9+/d3znePnlwfLC9f3xyb/vJyZOT7Wd7Tw5Onjx49vD+/Z1f8t3X49fXy+nrNmvzk2yZ1de/xqP3f/NZVc7y+mz2azx8/3d/Mq+bolr+Gofv/+p36f/1IqvfypCTX+PX+C3oa0WmzRcNWv4avzl9tUP/H6PN6Pf9Q3+v/Opv//wPWvwR5da/83d++9f8Nf6TX/8v/lt/409/8ed/59/460/+u1/1D/8L1Kj5rf/hX+PX+DV/jd/k1/i18Mqv/2v8Gv8a/fji+OXZF8cv8Mmv8ez+s5/8tX+N/vOS/v8LvL+X9P/HkXZ/TaddFwfq9xV9/Gv+bn/CX/LsZe9b6vl3+zX/6F9r5+mv9fDLX+uzn/m1jv7+l7/mH/dr3f+tfq1Pf+bXfPBr/nVP/rWffvXv/4ev/pP//uXL/rsh5NeHv8av8f8A/zsj1jACAAA=</m:SyncState>
+          <m:IncludesLastItemInRange>true</m:IncludesLastItemInRange>
+          <m:Changes>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkiTBEAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkidOo"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>nummer Frits</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-07-21T05:31:26Z</t:DateTimeReceived>
+                <t:Size>743</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-07-21T05:31:18Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-07-21T05:31:26Z</t:DateTimeCreated>
+                <t:DisplayCc/>
+                <t:DisplayTo>Michel Verbraak</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>Michel Verbraak</t:LastModifiedName>
+                <t:LastModifiedTime>2011-07-21T05:31:26Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>michel@verbraak.org</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:ConversationIndex>AQHMR2dvtK797+LBbEuGQLqEETcpAQ==</t:ConversationIndex>
+                <t:ConversationTopic>nummer Frits</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>michel@verbraak.org</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;4E27B9A6.5080805@verbraak.org&gt;</t:InternetMessageId>
+                <t:IsRead>true</t:IsRead>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkiTlPAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki0pB"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>Werkdagen Muriel</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-08-29T12:05:41Z</t:DateTimeReceived>
+                <t:Size>1563</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-08-29T12:05:38Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-08-29T12:05:41Z</t:DateTimeCreated>
+                <t:DisplayCc/>
+                <t:DisplayTo>Michel Verbraak</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>Muriel Verbraak</t:LastModifiedName>
+                <t:LastModifiedTime>2011-08-29T12:05:41Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>Muriel Verbraak</t:Name>
+                    <t:EmailAddress>muriel@verbraak.org</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:ConversationIndex>AQHMZkP55UzpLrdoHEmB4YU0xtZkRQ==</t:ConversationIndex>
+                <t:ConversationTopic>Werkdagen Muriel</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Muriel Verbraak</t:Name>
+                    <t:EmailAddress>muriel@verbraak.org</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;4E5B8092.6080407@verbraak.org&gt;</t:InternetMessageId>
+                <t:IsRead>true</t:IsRead>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkiT18AAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki9ND"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>Re: Go-secure NSO omgeving - User login verandert</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-09-14T14:50:33Z</t:DateTimeReceived>
+                <t:Size>114559</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:InReplyTo>&lt;4E70BC10.201@InterCommIt.nl&gt;</t:InReplyTo>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-09-14T14:50:32Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-09-14T14:50:33Z</t:DateTimeCreated>
+                <t:DisplayCc/>
+                <t:DisplayTo>NSO (Mailgroep)</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>Niels van den Ende</t:LastModifiedName>
+                <t:LastModifiedTime>2011-09-14T14:50:33Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>Niels van den Ende</t:Name>
+                    <t:EmailAddress>NvandenEnde@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AQHMcuvFrJRKtS9NtkSE5AybvDuSLZVM0+8A</t:ConversationIndex>
+                <t:ConversationTopic>Go-secure NSO omgeving - User login verandert</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Niels van den Ende</t:Name>
+                    <t:EmailAddress>NvandenEnde@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;4E70BF38.6080302@InterCommIt.nl&gt;</t:InternetMessageId>
+                <t:IsRead>true</t:IsRead>
+                <t:References>&lt;4E70BC10.201@InterCommIt.nl&gt;</t:References>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkiT69AAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjCtF"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>uw aanvraag voor Eurofiber Datacenter</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-09-20T15:20:57Z</t:DateTimeReceived>
+                <t:Size>11783</t:Size>
+                <t:Importance>High</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-09-20T15:20:43Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-09-20T15:20:57Z</t:DateTimeCreated>
+                <t:DisplayCc/>
+                <t:DisplayTo>Michel Verbraak</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>Coen van Luijken</t:LastModifiedName>
+                <t:LastModifiedTime>2011-09-20T15:20:57Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>Coen van Luijken</t:Name>
+                    <t:EmailAddress>coen.vanluijken@eurofiber.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:ConversationIndex>Acx3qHY/j/8gS4SZTVqG6eMQBT8lTA==</t:ConversationIndex>
+                <t:ConversationTopic>uw aanvraag voor Eurofiber Datacenter</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Coen van Luijken</t:Name>
+                    <t:EmailAddress>coen.vanluijken@eurofiber.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;ACCCCC9379C1864AA097DF87826B3BF8F17BC0@ex10.fiber.local&gt;</t:InternetMessageId>
+                <t:IsRead>true</t:IsRead>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDUUAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjZ1T"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>FW: Nieuwe janussmtp</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-09-29T09:43:15Z</t:DateTimeReceived>
+                <t:Size>18312</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-09-29T09:43:14Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-09-29T09:43:15Z</t:DateTimeCreated>
+                <t:ReminderIsSet>false</t:ReminderIsSet>
+                <t:ReminderMinutesBeforeStart>0</t:ReminderMinutesBeforeStart>
+                <t:DisplayCc/>
+                <t:DisplayTo>Michel Verbraak</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>Paul van Wijnbergen</t:LastModifiedName>
+                <t:LastModifiedTime>2011-09-29T09:43:15Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>Paul van Wijnbergen</t:Name>
+                    <t:EmailAddress>PvanWijnbergen@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>Acx+fxLC23kJhhEjTButIoN4m0CskQADRQOA</t:ConversationIndex>
+                <t:ConversationTopic>Nieuwe janussmtp</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Paul van Wijnbergen</t:Name>
+                    <t:EmailAddress>PvanWijnbergen@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;90C67A7998D9BA4C92B923865EF3377624CDE956@ICIT-EXCHANGE.office.intercommit.local&gt;</t:InternetMessageId>
+                <t:IsRead>true</t:IsRead>
+                <t:IsResponseRequested>false</t:IsResponseRequested>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDZ8AAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjiYT"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>Ideeen voor 2012</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-05T14:16:43Z</t:DateTimeReceived>
+                <t:Size>2239</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-05T14:16:41Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-05T14:16:43Z</t:DateTimeCreated>
+                <t:DisplayCc>Paul van Wijnbergen</t:DisplayCc>
+                <t:DisplayTo>Niels van den Ende; Rogier Schram; Michel Verbraak</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>Ronald Moesbergen</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-05T14:16:43Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>Ronald Moesbergen</t:Name>
+                    <t:EmailAddress>RMoesbergen@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AcyDaWdQm2z3ppnrTc2RF+U5AUjwkQ==</t:ConversationIndex>
+                <t:ConversationTopic>Ideeen voor 2012</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Ronald Moesbergen</t:Name>
+                    <t:EmailAddress>RMoesbergen@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;930A1F697E46134E81513EE504E7009C2482F343@ICIT-EXCHANGE.office.intercommit.local&gt;</t:InternetMessageId>
+                <t:IsRead>true</t:IsRead>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDesAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjpSC"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>Eurofiber voorstel</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T11:56:10Z</t:DateTimeReceived>
+                <t:Size>11647</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T11:56:04Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T11:56:10Z</t:DateTimeCreated>
+                <t:DisplayCc/>
+                <t:DisplayTo>Michel Verbraak</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>Coen van Luijken</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T11:56:10Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>Coen van Luijken</t:Name>
+                    <t:EmailAddress>coen.vanluijken@eurofiber.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:ConversationIndex>AcyHQ5YAUnFlUe2QRa29eaa9+AbAmg==</t:ConversationIndex>
+                <t:ConversationTopic>Eurofiber voorstel</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Coen van Luijken</t:Name>
+                    <t:EmailAddress>coen.vanluijken@eurofiber.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;ACCCCC9379C1864AA097DF87826B3BF801032F86@ex10.fiber.local&gt;</t:InternetMessageId>
+                <t:IsRead>true</t:IsRead>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:MeetingCancellation>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfUAAA=" ChangeKey="DQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjp3s"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Schedule.Meeting.Canceled</t:ItemClass>
+                <t:Subject>Geannuleerd: GGGGGGGGGGGGG</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T13:50:47Z</t:DateTimeReceived>
+                <t:Size>6068</t:Size>
+                <t:Importance>High</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T13:50:47Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T13:50:47Z</t:DateTimeCreated>
+                <t:ReminderDueBy>2011-10-12T08:00:00Z</t:ReminderDueBy>
+                <t:ReminderIsSet>false</t:ReminderIsSet>
+                <t:ReminderMinutesBeforeStart>1525252321</t:ReminderMinutesBeforeStart>
+                <t:DisplayCc/>
+                <t:DisplayTo>test2_mg</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>test2 test2</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T13:50:47Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AcyHUlqIge7bCF6cTa+3KraSHvduhQAAUI1g</t:ConversationIndex>
+                <t:ConversationTopic>GGGGGGGGGGGGG</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;56729C62284B414B8378C4937DAA61F337FAC1@ICIT-EXCHANGE.office.intercommit.local&gt;</t:InternetMessageId>
+                <t:IsRead>true</t:IsRead>
+                <t:IsResponseRequested>true</t:IsResponseRequested>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+                <t:ResponseType>NoResponseReceived</t:ResponseType>
+                <t:UID>040000008200E00074C5B7101A82E0080000000010D1DF216387CC0100000000000000001000000034D6A9171552044E8E8EE94AB4A7407E</t:UID>
+                <t:DateTimeStamp>2011-10-10T13:50:46Z</t:DateTimeStamp>
+              </t:MeetingCancellation>
+            </t:Create>
+            <t:Create>
+              <t:MeetingRequest>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfWAAA=" ChangeKey="CwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjp4W"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Schedule.Meeting.Request</t:ItemClass>
+                <t:Subject>sdfgsgsdfg</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T13:51:00Z</t:DateTimeReceived>
+                <t:Size>5965</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T13:50:59Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T13:51:00Z</t:DateTimeCreated>
+                <t:ReminderDueBy>2011-10-12T09:00:00Z</t:ReminderDueBy>
+                <t:ReminderIsSet>true</t:ReminderIsSet>
+                <t:ReminderMinutesBeforeStart>1525252321</t:ReminderMinutesBeforeStart>
+                <t:DisplayCc/>
+                <t:DisplayTo>Michel Verbraak</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>test2 test2</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T13:51:00Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AcyHU6IBrrQfvpXiRUCHPb83dP9kWAAAAJeA</t:ConversationIndex>
+                <t:ConversationTopic>sdfgsgsdfg</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;56729C62284B414B8378C4937DAA61F337FAF2@ICIT-EXCHANGE.office.intercommit.local&gt;</t:InternetMessageId>
+                <t:IsRead>true</t:IsRead>
+                <t:IsResponseRequested>true</t:IsResponseRequested>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+                <t:ResponseType>NoResponseReceived</t:ResponseType>
+                <t:UID>040000008200E00074C5B7101A82E0080000000020E2E5676487CC010000000000000000100000000EE7821E0F71324DB3220B9F12A76059</t:UID>
+                <t:DateTimeStamp>2011-10-10T13:50:59Z</t:DateTimeStamp>
+                <t:IntendedFreeBusyStatus>Busy</t:IntendedFreeBusyStatus>
+                <t:Start>2011-10-12T09:00:00Z</t:Start>
+                <t:End>2011-10-12T09:30:00Z</t:End>
+                <t:IsAllDayEvent>false</t:IsAllDayEvent>
+                <t:LegacyFreeBusyStatus>Tentative</t:LegacyFreeBusyStatus>
+                <t:Location>dsfgdfgfd</t:Location>
+                <t:IsMeeting>true</t:IsMeeting>
+                <t:IsCancelled>false</t:IsCancelled>
+                <t:IsRecurring>false</t:IsRecurring>
+                <t:MeetingRequestWasSent>true</t:MeetingRequestWasSent>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+                <t:MyResponseType>NoResponseReceived</t:MyResponseType>
+                <t:Organizer>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Organizer>
+                <t:Duration>PT30M</t:Duration>
+                <t:TimeZone>(GMT+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna</t:TimeZone>
+                <t:AppointmentSequenceNumber>0</t:AppointmentSequenceNumber>
+                <t:AppointmentState>3</t:AppointmentState>
+                <t:ConferenceType>0</t:ConferenceType>
+                <t:AllowNewTimeProposal>true</t:AllowNewTimeProposal>
+                <t:NetShowUrl/>
+              </t:MeetingRequest>
+            </t:Create>
+            <t:Create>
+              <t:MeetingRequest>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfYAAA=" ChangeKey="CwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjp6A"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Schedule.Meeting.Request</t:ItemClass>
+                <t:Subject>KLKLKLKLK</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T13:53:33Z</t:DateTimeReceived>
+                <t:Size>5953</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T13:53:32Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T13:53:33Z</t:DateTimeCreated>
+                <t:ReminderDueBy>2011-10-12T10:00:00Z</t:ReminderDueBy>
+                <t:ReminderIsSet>true</t:ReminderIsSet>
+                <t:ReminderMinutesBeforeStart>1525252321</t:ReminderMinutesBeforeStart>
+                <t:DisplayCc/>
+                <t:DisplayTo>Michel Verbraak</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>test2 test2</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T13:53:33Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AcyHU/vwFBrdTcT3RjuDxwWz3GyrSwAAANbg</t:ConversationIndex>
+                <t:ConversationTopic>KLKLKLKLK</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;56729C62284B414B8378C4937DAA61F337FB0F@ICIT-EXCHANGE.office.intercommit.local&gt;</t:InternetMessageId>
+                <t:IsRead>true</t:IsRead>
+                <t:IsResponseRequested>true</t:IsResponseRequested>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+                <t:ResponseType>NoResponseReceived</t:ResponseType>
+                <t:UID>040000008200E00074C5B7101A82E00800000000108AD4C26487CC01000000000000000010000000E7F1691BFD6B6148A6C5DF37107026D9</t:UID>
+                <t:DateTimeStamp>2011-10-10T13:53:32Z</t:DateTimeStamp>
+                <t:IntendedFreeBusyStatus>Busy</t:IntendedFreeBusyStatus>
+                <t:Start>2011-10-12T10:00:00Z</t:Start>
+                <t:End>2011-10-12T10:30:00Z</t:End>
+                <t:IsAllDayEvent>false</t:IsAllDayEvent>
+                <t:LegacyFreeBusyStatus>Tentative</t:LegacyFreeBusyStatus>
+                <t:Location>KLKLLK</t:Location>
+                <t:IsMeeting>true</t:IsMeeting>
+                <t:IsCancelled>false</t:IsCancelled>
+                <t:IsRecurring>false</t:IsRecurring>
+                <t:MeetingRequestWasSent>true</t:MeetingRequestWasSent>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+                <t:MyResponseType>NoResponseReceived</t:MyResponseType>
+                <t:Organizer>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Organizer>
+                <t:Duration>PT30M</t:Duration>
+                <t:TimeZone>(GMT+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna</t:TimeZone>
+                <t:AppointmentSequenceNumber>0</t:AppointmentSequenceNumber>
+                <t:AppointmentState>3</t:AppointmentState>
+                <t:ConferenceType>0</t:ConferenceType>
+                <t:AllowNewTimeProposal>true</t:AllowNewTimeProposal>
+                <t:NetShowUrl/>
+              </t:MeetingRequest>
+            </t:Create>
+            <t:Create>
+              <t:MeetingRequest>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfaAAA=" ChangeKey="CwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjp8s"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Schedule.Meeting.Request</t:ItemClass>
+                <t:Subject>BBBBBBBBBBBBBBBBBbb</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T14:03:19Z</t:DateTimeReceived>
+                <t:Size>6001</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T14:03:18Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T14:03:19Z</t:DateTimeCreated>
+                <t:ReminderDueBy>2011-10-11T11:00:00Z</t:ReminderDueBy>
+                <t:ReminderIsSet>true</t:ReminderIsSet>
+                <t:ReminderMinutesBeforeStart>1525252321</t:ReminderMinutesBeforeStart>
+                <t:DisplayCc/>
+                <t:DisplayTo>Michel Verbraak</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>test2 test2</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T14:03:19Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AcyHVVj5MuzPe5H7Tm6PEVHB6B8tFQAAAOyw</t:ConversationIndex>
+                <t:ConversationTopic>BBBBBBBBBBBBBBBBBbb</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;56729C62284B414B8378C4937DAA61F337FB23@ICIT-EXCHANGE.office.intercommit.local&gt;</t:InternetMessageId>
+                <t:IsRead>true</t:IsRead>
+                <t:IsResponseRequested>true</t:IsResponseRequested>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+                <t:ResponseType>NoResponseReceived</t:ResponseType>
+                <t:UID>040000008200E00074C5B7101A82E0080000000000DD32206687CC01000000000000000010000000870457F0A4C3C4499A12E4CF374C3FFC</t:UID>
+                <t:DateTimeStamp>2011-10-10T14:03:18Z</t:DateTimeStamp>
+                <t:IntendedFreeBusyStatus>Busy</t:IntendedFreeBusyStatus>
+                <t:Start>2011-10-11T11:00:00Z</t:Start>
+                <t:End>2011-10-11T11:30:00Z</t:End>
+                <t:IsAllDayEvent>false</t:IsAllDayEvent>
+                <t:LegacyFreeBusyStatus>Tentative</t:LegacyFreeBusyStatus>
+                <t:Location>VVVVVVVVVVVVVVvvvv</t:Location>
+                <t:IsMeeting>true</t:IsMeeting>
+                <t:IsCancelled>false</t:IsCancelled>
+                <t:IsRecurring>false</t:IsRecurring>
+                <t:MeetingRequestWasSent>true</t:MeetingRequestWasSent>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+                <t:MyResponseType>NoResponseReceived</t:MyResponseType>
+                <t:Organizer>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Organizer>
+                <t:Duration>PT30M</t:Duration>
+                <t:TimeZone>(GMT+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna</t:TimeZone>
+                <t:AppointmentSequenceNumber>0</t:AppointmentSequenceNumber>
+                <t:AppointmentState>3</t:AppointmentState>
+                <t:ConferenceType>0</t:ConferenceType>
+                <t:AllowNewTimeProposal>true</t:AllowNewTimeProposal>
+                <t:NetShowUrl/>
+              </t:MeetingRequest>
+            </t:Create>
+            <t:Create>
+              <t:MeetingRequest>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfbAAA=" ChangeKey="CwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjp+c"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Schedule.Meeting.Request</t:ItemClass>
+                <t:Subject>NIET ZO MOOI</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T14:20:56Z</t:DateTimeReceived>
+                <t:Size>5937</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T14:20:55Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T14:20:56Z</t:DateTimeCreated>
+                <t:ReminderDueBy>2011-10-11T09:00:00Z</t:ReminderDueBy>
+                <t:ReminderIsSet>true</t:ReminderIsSet>
+                <t:ReminderMinutesBeforeStart>1525252321</t:ReminderMinutesBeforeStart>
+                <t:DisplayCc/>
+                <t:DisplayTo>Michel Verbraak</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>test2 test2</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T14:20:56Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AcyHV9AFs8AovtjQRkqUBUSjcu8l5wAAAJ7g</t:ConversationIndex>
+                <t:ConversationTopic>NIET ZO MOOI</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;56729C62284B414B8378C4937DAA61F337FB37@ICIT-EXCHANGE.office.intercommit.local&gt;</t:InternetMessageId>
+                <t:IsRead>true</t:IsRead>
+                <t:IsResponseRequested>true</t:IsResponseRequested>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+                <t:ResponseType>NoResponseReceived</t:ResponseType>
+                <t:UID>040000008200E00074C5B7101A82E00800000000704807966887CC010000000000000000100000002ADA1493F7FBA64C953831968992C48A</t:UID>
+                <t:DateTimeStamp>2011-10-10T14:20:55Z</t:DateTimeStamp>
+                <t:IntendedFreeBusyStatus>Busy</t:IntendedFreeBusyStatus>
+                <t:Start>2011-10-11T09:00:00Z</t:Start>
+                <t:End>2011-10-11T09:30:00Z</t:End>
+                <t:IsAllDayEvent>false</t:IsAllDayEvent>
+                <t:LegacyFreeBusyStatus>Tentative</t:LegacyFreeBusyStatus>
+                <t:Location>ss</t:Location>
+                <t:IsMeeting>true</t:IsMeeting>
+                <t:IsCancelled>false</t:IsCancelled>
+                <t:IsRecurring>false</t:IsRecurring>
+                <t:MeetingRequestWasSent>true</t:MeetingRequestWasSent>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+                <t:MyResponseType>NoResponseReceived</t:MyResponseType>
+                <t:Organizer>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Organizer>
+                <t:Duration>PT30M</t:Duration>
+                <t:TimeZone>(GMT+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna</t:TimeZone>
+                <t:AppointmentSequenceNumber>0</t:AppointmentSequenceNumber>
+                <t:AppointmentState>3</t:AppointmentState>
+                <t:ConferenceType>0</t:ConferenceType>
+                <t:AllowNewTimeProposal>true</t:AllowNewTimeProposal>
+                <t:NetShowUrl/>
+              </t:MeetingRequest>
+            </t:Create>
+            <t:Create>
+              <t:MeetingCancellation>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfdAAA=" ChangeKey="DQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjqAV"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Schedule.Meeting.Canceled</t:ItemClass>
+                <t:Subject>Geannuleerd: NIET ZO MOOI</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T14:33:56Z</t:DateTimeReceived>
+                <t:Size>6048</t:Size>
+                <t:Importance>High</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T14:33:55Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T14:33:56Z</t:DateTimeCreated>
+                <t:ReminderDueBy>2011-10-11T09:00:00Z</t:ReminderDueBy>
+                <t:ReminderIsSet>false</t:ReminderIsSet>
+                <t:ReminderMinutesBeforeStart>1525252321</t:ReminderMinutesBeforeStart>
+                <t:DisplayCc/>
+                <t:DisplayTo>Michel Verbraak</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>test2 test2</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T14:33:56Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AcyHV9AFs8AovtjQRkqUBUSjcu8l5wAAdMVg</t:ConversationIndex>
+                <t:ConversationTopic>NIET ZO MOOI</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;56729C62284B414B8378C4937DAA61F337FB4B@ICIT-EXCHANGE.office.intercommit.local&gt;</t:InternetMessageId>
+                <t:IsRead>false</t:IsRead>
+                <t:IsResponseRequested>true</t:IsResponseRequested>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+                <t:ResponseType>NoResponseReceived</t:ResponseType>
+                <t:UID>040000008200E00074C5B7101A82E00800000000704807966887CC010000000000000000100000002ADA1493F7FBA64C953831968992C48A</t:UID>
+                <t:DateTimeStamp>2011-10-10T14:33:54Z</t:DateTimeStamp>
+              </t:MeetingCancellation>
+            </t:Create>
+            <t:Create>
+              <t:MeetingCancellation>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfeAAA=" ChangeKey="DQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjqAk"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Schedule.Meeting.Canceled</t:ItemClass>
+                <t:Subject>Geannuleerd: BBBBBBBBBBBBBBBBBbb</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T14:33:59Z</t:DateTimeReceived>
+                <t:Size>6115</t:Size>
+                <t:Importance>High</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T14:33:59Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T14:33:59Z</t:DateTimeCreated>
+                <t:ReminderDueBy>2011-10-11T11:00:00Z</t:ReminderDueBy>
+                <t:ReminderIsSet>false</t:ReminderIsSet>
+                <t:ReminderMinutesBeforeStart>1525252321</t:ReminderMinutesBeforeStart>
+                <t:DisplayCc/>
+                <t:DisplayTo>Michel Verbraak</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>test2 test2</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T14:33:59Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AcyHVVj5MuzPe5H7Tm6PEVHB6B8tFQABEx6Q</t:ConversationIndex>
+                <t:ConversationTopic>BBBBBBBBBBBBBBBBBbb</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;56729C62284B414B8378C4937DAA61F337FB52@ICIT-EXCHANGE.office.intercommit.local&gt;</t:InternetMessageId>
+                <t:IsRead>false</t:IsRead>
+                <t:IsResponseRequested>true</t:IsResponseRequested>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+                <t:ResponseType>NoResponseReceived</t:ResponseType>
+                <t:UID>040000008200E00074C5B7101A82E0080000000000DD32206687CC01000000000000000010000000870457F0A4C3C4499A12E4CF374C3FFC</t:UID>
+                <t:DateTimeStamp>2011-10-10T14:33:58Z</t:DateTimeStamp>
+              </t:MeetingCancellation>
+            </t:Create>
+            <t:Create>
+              <t:MeetingRequest>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDffAAA=" ChangeKey="CwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjqBC"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Schedule.Meeting.Request</t:ItemClass>
+                <t:Subject>HEEL GOED</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T14:34:11Z</t:DateTimeReceived>
+                <t:Size>5966</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T14:34:10Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T14:34:11Z</t:DateTimeCreated>
+                <t:ReminderDueBy>2011-10-11T08:00:00Z</t:ReminderDueBy>
+                <t:ReminderIsSet>true</t:ReminderIsSet>
+                <t:ReminderMinutesBeforeStart>1525252321</t:ReminderMinutesBeforeStart>
+                <t:DisplayCc/>
+                <t:DisplayTo>Michel Verbraak</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>test2 test2</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T14:34:11Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AcyHWajXECKznzrMR/uJx+KKR+VC9QAAAODw</t:ConversationIndex>
+                <t:ConversationTopic>HEEL GOED</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;56729C62284B414B8378C4937DAA61F337FB59@ICIT-EXCHANGE.office.intercommit.local&gt;</t:InternetMessageId>
+                <t:IsRead>true</t:IsRead>
+                <t:IsResponseRequested>true</t:IsResponseRequested>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+                <t:ResponseType>NoResponseReceived</t:ResponseType>
+                <t:UID>040000008200E00074C5B7101A82E0080000000090BDE16F6A87CC01000000000000000010000000C080528D6C934E4F934021DD5D81FD6F</t:UID>
+                <t:DateTimeStamp>2011-10-10T14:34:10Z</t:DateTimeStamp>
+                <t:IntendedFreeBusyStatus>Busy</t:IntendedFreeBusyStatus>
+                <t:Start>2011-10-11T08:00:00Z</t:Start>
+                <t:End>2011-10-11T08:30:00Z</t:End>
+                <t:IsAllDayEvent>false</t:IsAllDayEvent>
+                <t:LegacyFreeBusyStatus>Tentative</t:LegacyFreeBusyStatus>
+                <t:Location>HEEL GOEDS</t:Location>
+                <t:IsMeeting>true</t:IsMeeting>
+                <t:IsCancelled>false</t:IsCancelled>
+                <t:IsRecurring>false</t:IsRecurring>
+                <t:MeetingRequestWasSent>true</t:MeetingRequestWasSent>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+                <t:MyResponseType>NoResponseReceived</t:MyResponseType>
+                <t:Organizer>
+                  <t:Mailbox>
+                    <t:Name>test2 test2</t:Name>
+                    <t:EmailAddress>ttest2@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Organizer>
+                <t:Duration>PT30M</t:Duration>
+                <t:TimeZone>(GMT+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna</t:TimeZone>
+                <t:AppointmentSequenceNumber>0</t:AppointmentSequenceNumber>
+                <t:AppointmentState>3</t:AppointmentState>
+                <t:ConferenceType>0</t:ConferenceType>
+                <t:AllowNewTimeProposal>true</t:AllowNewTimeProposal>
+                <t:NetShowUrl/>
+              </t:MeetingRequest>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfiAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjqG3"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>[asterisk-users] Dialout from MeetMe to another conference	(Asterisk 1.4)</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T15:41:25Z</t:DateTimeReceived>
+                <t:Size>3256</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T15:40:45Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T15:41:25Z</t:DateTimeCreated>
+                <t:DisplayCc/>
+                <t:DisplayTo>asterisk-users@lists.digium.com</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>asterisk-users-bounces@lists.digium.com</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T15:41:25Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>asterisk-users-bounces@lists.digium.com</t:Name>
+                    <t:EmailAddress>asterisk-users-bounces@lists.digium.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AQHMh2MRukAvUBP6j0mNg3a2yDUfZw==</t:ConversationIndex>
+                <t:ConversationTopic>[asterisk-users] Dialout from MeetMe to another conference	(Asterisk 1.4)</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Josh Freeman</t:Name>
+                    <t:EmailAddress>cpe.jfreeman@gmail.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;4E9311FD.9090601@gmail.com&gt;</t:InternetMessageId>
+                <t:IsRead>false</t:IsRead>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfjAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjqG7"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>[asterisk-dev] chan_sip source: Flags definition: Is this a bug,	or am I stupid ?</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T16:26:44Z</t:DateTimeReceived>
+                <t:Size>5074</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T16:25:31Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T16:26:44Z</t:DateTimeCreated>
+                <t:DisplayCc/>
+                <t:DisplayTo>asterisk-dev@lists.digium.com</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>asterisk-dev-bounces@lists.digium.com</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T16:26:44Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>asterisk-dev-bounces@lists.digium.com</t:Name>
+                    <t:EmailAddress>asterisk-dev-bounces@lists.digium.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AQHMh2lmI0f2c+FB0Ueyq5gXqFxY6g==</t:ConversationIndex>
+                <t:ConversationTopic>[asterisk-dev] chan_sip source: Flags definition: Is this a bug,	or am I stupid ?</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Pavel Troller</t:Name>
+                    <t:EmailAddress>patrol@sinus.cz</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;20111010162531.GA385@tangens.sinus.cz&gt;</t:InternetMessageId>
+                <t:IsRead>false</t:IsRead>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfkAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjqG/"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>Re: [asterisk-dev] chan_sip source: Flags definition: Is this a bug, or am I stupid ?</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T16:36:50Z</t:DateTimeReceived>
+                <t:Size>6062</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:InReplyTo>&lt;20111010162531.GA385@tangens.sinus.cz&gt;</t:InReplyTo>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T16:36:31Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T16:36:50Z</t:DateTimeCreated>
+                <t:DisplayCc/>
+                <t:DisplayTo>asterisk-dev@lists.digium.com</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>asterisk-dev-bounces@lists.digium.com</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T16:36:50Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>asterisk-dev-bounces@lists.digium.com</t:Name>
+                    <t:EmailAddress>asterisk-dev-bounces@lists.digium.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AQHMh2rPL3uqeBeg+EuBE6nJEXS9AQ==</t:ConversationIndex>
+                <t:ConversationTopic>[asterisk-dev] chan_sip source: Flags definition: Is this a bug, or am I stupid ?</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Kevin P. Fleming</t:Name>
+                    <t:EmailAddress>kpfleming@digium.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;4E931F0F.6020409@digium.com&gt;</t:InternetMessageId>
+                <t:IsRead>false</t:IsRead>
+                <t:References>&lt;20111010162531.GA385@tangens.sinus.cz&gt;</t:References>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDflAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjqHG"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>[asterisk-dev] [Code Review] update SHA1 code to RFC6234</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T17:26:59Z</t:DateTimeReceived>
+                <t:Size>5097</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T17:25:47Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T17:26:59Z</t:DateTimeCreated>
+                <t:DisplayCc/>
+                <t:DisplayTo>Asterisk Developers; Tzafrir Cohen; Tzafrir Cohen</t:DisplayTo>
+                <t:HasAttachments>true</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>asterisk-dev-bounces@lists.digium.com</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T17:26:59Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>asterisk-dev-bounces@lists.digium.com</t:Name>
+                    <t:EmailAddress>asterisk-dev-bounces@lists.digium.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AQHMh3HRsLyP7f5RX0qA8eUsCC1WnQ==</t:ConversationIndex>
+                <t:ConversationTopic>[asterisk-dev] [Code Review] update SHA1 code to RFC6234</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Tzafrir Cohen</t:Name>
+                    <t:EmailAddress>reviewboard@asterisk.org</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;20111010172547.1292.38221@hotblack.digium.com&gt;</t:InternetMessageId>
+                <t:IsRead>false</t:IsRead>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfmAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjqHK"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>Re: [asterisk-dev] [Code Review] update SHA1 code to RFC6234</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T17:31:17Z</t:DateTimeReceived>
+                <t:Size>5619</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:InReplyTo>&lt;20111010172547.1292.38221@hotblack.digium.com&gt;</t:InReplyTo>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T17:31:00Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T17:31:17Z</t:DateTimeCreated>
+                <t:DisplayCc/>
+                <t:DisplayTo>Kevin Fleming; Asterisk Developers; Tzafrir Cohen</t:DisplayTo>
+                <t:HasAttachments>true</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>asterisk-dev-bounces@lists.digium.com</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T17:31:17Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>asterisk-dev-bounces@lists.digium.com</t:Name>
+                    <t:EmailAddress>asterisk-dev-bounces@lists.digium.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AQHMh3HRsLyP7f5RX0qA8eUsCC1WnZV1tFYA</t:ConversationIndex>
+                <t:ConversationTopic>[asterisk-dev] [Code Review] update SHA1 code to RFC6234</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Kevin Fleming</t:Name>
+                    <t:EmailAddress>reviewboard@asterisk.org</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;20111010173100.1608.31290@hotblack.digium.com&gt;</t:InternetMessageId>
+                <t:IsRead>false</t:IsRead>
+                <t:References>&lt;20111010172547.1292.38221@hotblack.digium.com&gt;</t:References>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfnAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjqHO"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>[asterisk-dev] SIP now target of botnets?</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T17:42:09Z</t:DateTimeReceived>
+                <t:Size>10930</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T17:40:13Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T17:42:09Z</t:DateTimeCreated>
+                <t:DisplayCc/>
+                <t:DisplayTo>asterisk-dev@lists.digium.com</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>asterisk-dev-bounces@lists.digium.com</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T17:42:09Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>asterisk-dev-bounces@lists.digium.com</t:Name>
+                    <t:EmailAddress>asterisk-dev-bounces@lists.digium.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AQHMh3PveF51sUWBc0aAUj/0vf3wog==</t:ConversationIndex>
+                <t:ConversationTopic>[asterisk-dev] SIP now target of botnets?</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Philip Prindeville</t:Name>
+                    <t:EmailAddress>philipp_subx@redfish-solutions.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;4E932DFD.2050700@redfish-solutions.com&gt;</t:InternetMessageId>
+                <t:IsRead>false</t:IsRead>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfoAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjqHR"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>Re: [asterisk-dev] SIP now target of botnets?</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T17:45:01Z</t:DateTimeReceived>
+                <t:Size>12088</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:InReplyTo>&lt;4E932DFD.2050700@redfish-solutions.com&gt;</t:InReplyTo>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T17:43:12Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T17:45:01Z</t:DateTimeCreated>
+                <t:DisplayCc/>
+                <t:DisplayTo>asterisk-dev@lists.digium.com</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>asterisk-dev-bounces@lists.digium.com</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T17:45:01Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>asterisk-dev-bounces@lists.digium.com</t:Name>
+                    <t:EmailAddress>asterisk-dev-bounces@lists.digium.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AQHMh3PveF51sUWBc0aAUj/0vf3wopV1t7oA</t:ConversationIndex>
+                <t:ConversationTopic>[asterisk-dev] SIP now target of botnets?</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Kevin P. Fleming</t:Name>
+                    <t:EmailAddress>kpfleming@digium.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;4E932EB0.7040101@digium.com&gt;</t:InternetMessageId>
+                <t:IsRead>false</t:IsRead>
+                <t:References>&lt;4E932DFD.2050700@redfish-solutions.com&gt;</t:References>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfpAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjqHW"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>[asterisk-dev] [Code Review] Check for ANY to place calls on hold	for SIP</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T17:54:20Z</t:DateTimeReceived>
+                <t:Size>4454</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T17:53:27Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T17:54:20Z</t:DateTimeCreated>
+                <t:DisplayCc>mjordan; Asterisk Developers</t:DisplayCc>
+                <t:DisplayTo>Tzafrir Cohen</t:DisplayTo>
+                <t:HasAttachments>true</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>asterisk-dev-bounces@lists.digium.com</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T17:54:20Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>asterisk-dev-bounces@lists.digium.com</t:Name>
+                    <t:EmailAddress>asterisk-dev-bounces@lists.digium.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AQHMh3WjGF8iQAeX7EWUfwYPxSRd+g==</t:ConversationIndex>
+                <t:ConversationTopic>[asterisk-dev] [Code Review] Check for ANY to place calls on hold	for SIP</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>mjordan</t:Name>
+                    <t:EmailAddress>reviewboard@asterisk.org</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;20111010175327.3297.37923@hotblack.digium.com&gt;</t:InternetMessageId>
+                <t:IsRead>false</t:IsRead>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfqAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjqHZ"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>Re: [asterisk-users] Asterisk 1.8.7 and ReceiveFAX</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T18:05:36Z</t:DateTimeReceived>
+                <t:Size>3090</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:InReplyTo>&lt;4E90CDCE.5030003@tootai.net&gt;</t:InReplyTo>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T18:04:36Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T18:05:36Z</t:DateTimeCreated>
+                <t:DisplayCc/>
+                <t:DisplayTo>Asterisk Users Mailing List - Non-Commercial Discussion</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>asterisk-users-bounces@lists.digium.com</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T18:05:36Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>asterisk-users-bounces@lists.digium.com</t:Name>
+                    <t:EmailAddress>asterisk-users-bounces@lists.digium.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AQHMhgQDfZFoqruj80KaHfwz9JCaeZVy5MIAgALb0gA=</t:ConversationIndex>
+                <t:ConversationTopic>[asterisk-users] Asterisk 1.8.7 and ReceiveFAX</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Matthew Nicholson</t:Name>
+                    <t:EmailAddress>mnicholson@digium.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;1318269876.5527.25.camel@solo.digium.internal&gt;</t:InternetMessageId>
+                <t:IsRead>false</t:IsRead>
+                <t:References>&lt;2c7482ac$795d6bfb$4218e550$@com&gt; &lt;4E90CDCE.5030003@tootai.net&gt;</t:References>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfrAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjqHc"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>Re: [asterisk-users] Asterisk 1.8.7 and ReceiveFAX</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T18:09:38Z</t:DateTimeReceived>
+                <t:Size>2800</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:InReplyTo>&lt;2c7482ac$795d6bfb$4218e550$@com&gt;</t:InReplyTo>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T18:03:00Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T18:09:38Z</t:DateTimeCreated>
+                <t:DisplayCc/>
+                <t:DisplayTo>bryantz@zktech.com; Asterisk Users Mailing List - Non-Commercial Discussion</t:DisplayTo>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>asterisk-users-bounces@lists.digium.com</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T18:09:38Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>asterisk-users-bounces@lists.digium.com</t:Name>
+                    <t:EmailAddress>asterisk-users-bounces@lists.digium.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AQHMhgQDfZFoqruj80KaHfwz9JCaeZV1wCIA</t:ConversationIndex>
+                <t:ConversationTopic>[asterisk-users] Asterisk 1.8.7 and ReceiveFAX</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Matthew Nicholson</t:Name>
+                    <t:EmailAddress>mnicholson@digium.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;1318269780.5527.23.camel@solo.digium.internal&gt;</t:InternetMessageId>
+                <t:IsRead>false</t:IsRead>
+                <t:References>&lt;2c7482ac$795d6bfb$4218e550$@com&gt;</t:References>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDfsAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjqHh"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>Ter info</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T18:14:20Z</t:DateTimeReceived>
+                <t:Size>31236</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:InReplyTo>&lt;001d01cc871c$4798c4d0$d6ca4e70$@brielsfacilicare.nl&gt;</t:InReplyTo>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T18:14:17Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T18:14:20Z</t:DateTimeCreated>
+                <t:DisplayCc/>
+                <t:DisplayTo>InterCommIT NL (Mailgroep)</t:DisplayTo>
+                <t:HasAttachments>true</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>Clara Jong</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T18:14:20Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>Clara Jong</t:Name>
+                    <t:EmailAddress>CJong@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AQHMh3hsZXQPIf5oQEipX+p9QS6e9w==</t:ConversationIndex>
+                <t:ConversationTopic>Ter info</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Clara Jong</t:Name>
+                    <t:EmailAddress>CJong@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;2FE14F84-E31D-4125-AB7E-08AB58221007@intercommit.nl&gt;</t:InternetMessageId>
+                <t:IsRead>false</t:IsRead>
+                <t:References>&lt;001d01cc871c$4798c4d0$d6ca4e70$@brielsfacilicare.nl&gt;</t:References>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+            <t:Create>
+              <t:Message>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXBAADiB6GzDTZ7R7evB2Ls+cHOAAAkjDftAAA=" ChangeKey="CQAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkjqHo"/>
+                <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVwQAAAA==" ChangeKey="AQAAAA=="/>
+                <t:ItemClass>IPM.Note</t:ItemClass>
+                <t:Subject>Re: [asterisk-dev] [Code Review] Check for ANY to place calls on	hold for SIP</t:Subject>
+                <t:Sensitivity>Normal</t:Sensitivity>
+                <t:DateTimeReceived>2011-10-10T18:21:35Z</t:DateTimeReceived>
+                <t:Size>8153</t:Size>
+                <t:Importance>Normal</t:Importance>
+                <t:InReplyTo>&lt;20111010175327.3297.37923@hotblack.digium.com&gt;</t:InReplyTo>
+                <t:IsSubmitted>false</t:IsSubmitted>
+                <t:IsDraft>false</t:IsDraft>
+                <t:IsFromMe>false</t:IsFromMe>
+                <t:IsResend>false</t:IsResend>
+                <t:IsUnmodified>true</t:IsUnmodified>
+                <t:DateTimeSent>2011-10-10T18:20:31Z</t:DateTimeSent>
+                <t:DateTimeCreated>2011-10-10T18:21:35Z</t:DateTimeCreated>
+                <t:DisplayCc>Matthew Nicholson; Asterisk Developers</t:DisplayCc>
+                <t:DisplayTo>Tzafrir Cohen</t:DisplayTo>
+                <t:HasAttachments>true</t:HasAttachments>
+                <t:Culture>nl-NL</t:Culture>
+                <t:EffectiveRights>
+                  <t:CreateAssociated>false</t:CreateAssociated>
+                  <t:CreateContents>false</t:CreateContents>
+                  <t:CreateHierarchy>false</t:CreateHierarchy>
+                  <t:Delete>true</t:Delete>
+                  <t:Modify>true</t:Modify>
+                  <t:Read>true</t:Read>
+                </t:EffectiveRights>
+                <t:LastModifiedName>asterisk-dev-bounces@lists.digium.com</t:LastModifiedName>
+                <t:LastModifiedTime>2011-10-10T18:21:35Z</t:LastModifiedTime>
+                <t:Sender>
+                  <t:Mailbox>
+                    <t:Name>asterisk-dev-bounces@lists.digium.com</t:Name>
+                    <t:EmailAddress>asterisk-dev-bounces@lists.digium.com</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:Sender>
+                <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                <t:ConversationIndex>AQHMh3lxxIXyZOlSdUeY5UcoIc5n1g==</t:ConversationIndex>
+                <t:ConversationTopic>[asterisk-dev] [Code Review] Check for ANY to place calls on	hold for SIP</t:ConversationTopic>
+                <t:From>
+                  <t:Mailbox>
+                    <t:Name>Matthew Nicholson</t:Name>
+                    <t:EmailAddress>reviewboard@asterisk.org</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:From>
+                <t:InternetMessageId>&lt;20111010182031.5031.50154@hotblack.digium.com&gt;</t:InternetMessageId>
+                <t:IsRead>false</t:IsRead>
+                <t:References>&lt;20111010175327.3297.37923@hotblack.digium.com&gt;</t:References>
+                <t:ReceivedBy>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedBy>
+                <t:ReceivedRepresenting>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                </t:ReceivedRepresenting>
+              </t:Message>
+            </t:Create>
+          </m:Changes>
+        </m:SyncFolderItemsResponseMessage>
+      </m:ResponseMessages>
+    </m:SyncFolderItemsResponse>
+  </s:Body>
+</s:Envelope>
+
+logMessage: (Agenda Michel Werk) syncInboxOk.
+
+logMessage: (Agenda Michel Werk) syncInboxOK meetingrequests: Creation:5, Updates:0, Deletions:0
+
+logMessage: (Agenda Michel Werk) syncInboxOK meetingCancellations: Creation:3, Updates:0, Deletions:0
+
+
+

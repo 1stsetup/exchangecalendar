@@ -1,0 +1,52 @@
+<!ENTITY ecautodiscover "Utiliser la fonction de découverte automatique d'Exchange.">
+<!ENTITY ecfolderbase.label "Dossier racine:">
+<!ENTITY ecfolderpath.label "Chemin sous le dossier racine:">
+<!ENTITY ecfolderidofshare.label "Dossier partagé:">
+<!ENTITY exchWebServices.SharedFolderID.label "Nom de dossier partagé:">
+
+<!ENTITY menuitem.label.ecfolderbase.calendar "Dossier Calendrier">
+<!ENTITY menuitem.label.ecfolderbase.publicfoldersroot "Dossier Public">
+<!ENTITY menuitem.label.ecfolderbase.inbox "Dossier Messagerie Arrivée">
+<!ENTITY menuitem.label.ecfolderbase.voicemail "Dossier Messagerie Audio">
+<!ENTITY menuitem.label.ecfolderbase.msgfolderroot "Dossier racine de la messagerie">
+<!ENTITY menuitem.label.ecfolderbase.root "Racine de la boite aux lettres">
+<!ENTITY menuitem.label.ecfolderbase.tasks "Dossier Tâches">
+
+<!ENTITY menuitem.label.ecfolderbase.contacts "Dossier Contacts">
+<!ENTITY menuitem.label.ecfolderbase.deleteditems "Dossier Messages Supprimés">
+<!ENTITY menuitem.label.ecfolderbase.drafts "Dossier Brouillons">
+<!ENTITY menuitem.label.ecfolderbase.journal "Dossier Journal">
+<!ENTITY menuitem.label.ecfolderbase.notes "Dossier Notes">
+<!ENTITY menuitem.label.ecfolderbase.outbox "Dossier Envoi Messagerie">
+<!ENTITY menuitem.label.ecfolderbase.sentitems "Dossier Messages Envoyés">
+<!ENTITY menuitem.label.ecfolderbase.junkemail "Dossier Messages Indésirables">
+<!ENTITY menuitem.label.ecfolderbase.searchfolders "Dossier Recherche Messages">
+<!ENTITY menuitem.label.ecfolderbase.version2010 "-- Les options ci-dessous s'appliquent seulement à Exchange 2010 --">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsroot "Dossier racine poubelle">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsdeletions "Dossier Suppression">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsversion "Dossier Suppression versions">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemspurges "Dossier Suppression A Vider">
+<!ENTITY menuitem.label.ecfolderbase.archiveroot "Dossier racine Archive">
+<!ENTITY menuitem.label.ecfolderbase.archivemsgfolderroot "Dossier racine Messages Archivés">
+<!ENTITY menuitem.label.ecfolderbase.archivedeleteditems "Dossier Archives Messages Supprimés">
+<!ENTITY menuitem.label.ecfolderbase.archiverecoverableitemsroot "Archives récupérables, dossier racine">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsdeletions "Archives récupérables, dossier Suppression">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsversions "Archives récupérables, dossier Versions">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemspurges "Archives récupérables, dossier A Vider">
+
+<!ENTITY button.label.autodiscovercheck "Lancer la découverte automatique">
+<!ENTITY button.label.serverandmailboxcheck "Vérifier le serveur et la boite aux lettres">
+<!ENTITY button.label.servercheck "Vérifier le serveur et le compte">
+
+<!ENTITY ecmailbox.label "Nom de la boite aux lettres:">
+<!ENTITY ecmailbox.tooltip "Si vous ne précisez pas un nom de boite aux lettres, vous n'aurez accès qu'aux dossiers publics.">
+<!ENTITY ecwindowsuser.label "Utilisateur:">
+<!ENTITY ecwindowsdomain.label "Nom de Domaine:">
+<!ENTITY ecwindowspassword.label "Mot de passe:">
+
+<!ENTITY button.label.folderpathcheck "Vérifier">
+<!ENTITY button.label.folderbrowse "Parcourir">
+
+<!ENTITY exchWebServices.UserAvailability.label "Seul le status de disponibilité de l'utilsateur du calendrier de cette BAL sera visible avec la bonne permission d'accès.">
+
+

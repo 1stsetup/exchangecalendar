@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: GPL 3.0
+ *
+ * The contents of this file are subject to the General Public License
+ * 3.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * ## Exchange 2007/2010 Calendar and Tasks Provider.
+ * ## For Thunderbird with the Lightning add-on.
+ *
+ * This work is a combination of the Storage calendar, part of the default Lightning add-on, and 
+ * the "Exchange Data Provider for Lightning" add-on currently, october 2011, maintained by Simon Schubert.
+ * Primarily made because the "Exchange Data Provider for Lightning" add-on is a continuation 
+ * of old code and this one is build up from the ground. It still uses some parts from the 
+ * "Exchange Data Provider for Lightning" project.
+ *
+ * Author: Michel Verbraak (info@1st-setup.nl)
+ * Website: http://www.1st-setup.nl/wordpress/?page_id=133
+ * email: exchangecalendar@extensions.1st-setup.nl
+ *
+ *
+ * This code uses parts of the Microsoft Exchange Calendar Provider code on which the
+ * "Exchange Data Provider for Lightning" was based.
+ * The Initial Developer of the Microsoft Exchange Calendar Provider Code is
+ *   Andrea Bittau <a.bittau@cs.ucl.ac.uk>, University College London
+ * Portions created by the Initial Developer are Copyright (C) 2009
+ * the Initial Developer. All Rights Reserved.
+ *
+ * ***** BEGIN LICENSE BLOCK *****/
+-->
+
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://messenger/skin/messengercompose/messengercompose.css" type="text/css"?>
+<?xml-stylesheet href="chrome://messenger/skin/messengercompose/editorOverlay.css" type="text/css"?>
+<?xml-stylesheet href="chrome://editor/skin/editorFormatToolbar.css" type="text/css"?>
+
+<!DOCTYPE dialog [
+    <!ENTITY % dtd1 SYSTEM "chrome://exchangecalendar/locale/oofSettings.dtd" > %dtd1;
+]>
+<?xul-overlay href="chrome://editor/content/editorOverlay.xul"?>
+
+<dialog 
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" 
+  id="exchWebService_oofSettings_dialog" 
+  title="&title.oofsettings;" 
+  buttons="cancel"
+  buttonlabelaccept="&label.acceptbutton;"
+  buttonlabelcancel="&label.cancelbutton;"
+  ondialogaccept="return exchWebService.oofSettings.onSave();"
+  onload="exchWebService.oofSettings.onLoad();">
+
+	<script src="chrome://editor/content/editor.js" type="application/javascript"/>
+	<script type="application/javascript" src="chrome://messenger/content/messengercompose/MsgComposeCommands.js"/>
+	<script src="chrome://global/content/globalOverlay.js" type="application/javascript"/>
+	<script type="application/javascript" src="chrome://exchangecalendar/content/oofSettings.js"/>
+
+<!--	<commandset id="editorCommands"/> -->
+
+
+    <commandset id="globalEditMenuItems"/>
+    <commandset id="selectEditMenuItems"/>
+    <commandset id="undoEditMenuItems"/>
+    <commandset id="clipboardEditMenuItems"/>
+     
+     <commandset id="commonEditorMenuItems"/>
+     <commandset id="composerMenuItems"/>
+     <commandset id="composerEditMenuItems"/>
+     <commandset id="composerStyleMenuItems"/>
+     <commandset id="composerTableMenuItems"/>
+     <commandset id="composerListMenuItems"/>
+
+	<commandset>
+		<command id="exchWebService_cmd_oof_scheduled" oncommand="exchWebService.oofSettings.doScheduledChanged();"/>
+	</commandset>
+
+	<keyset id="editorKeys"/>
+
+	<hbox>
+		<label value="&label.oofsettings.title;"/>
+		<label id="exchWebService-oofSettings-title"/>
+		<label id="exchWebService-load-error-message"/>
+	</hbox>
+
+	<vbox id="vbox-exchWebService-oof-settings" disabled="true">
+		<hbox align="center">
+			<label value="&label.oofstatus;"/>
+			<menulist label="(Make a choice)" id="exchWebService-oof-status" value="1">
+				<menupopup>
+					<menuitem label="&menuitem.label.exchWebService-oof-status.disabled;" value="Disabled"/>
+					<menuitem label="&menuitem.label.exchWebService-oof-status.enabled;" value ="Enabled"/>
+				</menupopup>
+			</menulist>
+		</hbox>
+		<hbox align="center">
+			<label value="&label.externalaudience;"/>
+
+			<menulist label="(Make a choice)" id="exchWebService-oof-externalaudience" value="1">
+				<menupopup>
+					<menuitem label="&menuitem.label.exchWebService-oof-externalaudience.none;" value="None"/>
+					<menuitem label="&menuitem.label.exchWebService-oof-externalaudience.known;" value ="Known"/>
+					<menuitem label="&menuitem.label.exchWebService-oof-externalaudience.all;" value ="All"/>
+				</menupopup>
+			</menulist>
+		</hbox>
+
+		<checkbox id="exchWebService-oof-scheduled" label="&checkbox.label.exchWebService-oof-scheduled;" command="exchWebService_cmd_oof_scheduled"/>
+		<vbox id="vbox-exchWebService-oof-scheduled-timeframe" disabled="false">
+			<grid>
+				<columns>
+					<column/>
+					<column/>
+					<column/>
+				</columns>
+				<rows>
+					<row  align="center">
+						<label value="&label.hbox-oof-scheduled-startTime;"/>
+						<datepicker id="exchWebService-oof-startdate" type="popup"/>
+						<timepicker id="exchWebService-oof-starttime" hideseconds="true"/>
+					</row>
+					<row  align="center">
+						<label value="&label.hbox-oof-scheduled-endTime;"/>
+						<datepicker id="exchWebService-oof-enddate" type="popup"/>
+						<timepicker id="exchWebService-oof-endtime" hideseconds="true"/>
+					</row>
+				</rows>
+			</grid>
+		</vbox>
+
+		<spacer flex="2"/>
+
+		<hbox pack="center">
+			<button id="exchWebService-oof-button-internal" label="&button.label.internal;" oncommand="exchWebService.oofSettings.doButtonPressed(this);"/>
+			<button id="exchWebService-oof-button-external" label="&button.label.external;" oncommand="exchWebService.oofSettings.doButtonPressed(this);" disabled="true"/>
+		</hbox>
+		<label id="exchWebService-oof-label-internal" value="&label.internalreply;" />
+		<label id="exchWebService-oof-label-external" value="&label.externalreply;" hidden="true"/>
+
+		<broadcaster id="args" value="editorType=default"/>
+
+		<toolbox>
+			<toolbar>
+				<toolbaritem id="paragraph-select-container"/>
+				<toolbaritem id="font-face-select-container"/>
+				<toolbaritem id="color-buttons-container"/>
+				<toolbarbutton id="DecreaseFontSizeButton"/>
+				<toolbarbutton id="IncreaseFontSizeButton"/>
+				<toolbarseparator/>
+				<toolbarbutton id="boldButton"/>
+				<toolbarbutton id="italicButton"/>
+				<toolbarbutton id="underlineButton"/>
+				<toolbarseparator/>
+				<toolbarbutton id="ulButton"/>
+				<toolbarbutton id="olButton"/>
+				<toolbarbutton id="outdentButton"/>
+				<toolbarbutton id="indentButton"/>
+				<toolbarseparator/>
+				<toolbarbutton id="AlignPopupButton"/>
+				<toolbarbutton id="InsertPopupButton"/>
+			</toolbar>
+		</toolbox>
+		<editor id="content-frame" type="content-primary" editortype="html" src="about:blank" width="400" height="200" flex="1"/>
+
+	</vbox>
+
+</dialog>

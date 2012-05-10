@@ -1,0 +1,9 @@
+<!ENTITY title.sendupdateto "An wen möchten Sie die Aktualisierung senden?">
+<!ENTITY label.acceptbutton "Speichern">
+<!ENTITY label.cancelbutton "Abbrechen">
+<!ENTITY label.calendaritem.title "Aktualisierung für Termin senden:">
+
+<!ENTITY radio.label.sendtonone "An niemanden senden.">
+<!ENTITY radio.label.sendtoall "An alle eingeladenen Teilnehmer senden.">
+<!ENTITY radio.label.sendtochanged "Nur an hinzugefügte und entfernte Personen senden.">
+

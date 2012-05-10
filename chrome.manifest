@@ -1,0 +1,29 @@
+content exchangecalendar chrome/content/
+skin exchangecalendar fugue chrome/skins/fugue/
+resource exchangecalendar components/
+resource 1st-setup components/
+
+overlay chrome://calendar/content/calendarCreation.xul chrome://exchangecalendar/content/ecCalendarCreation.xul
+overlay chrome://calendar/content/calendar-calendars-list.xul chrome://exchangecalendar/content/calendar-calendars-list.xul
+overlay chrome://messenger/content/messenger.xul chrome://exchangecalendar/content/progress_panel.xul
+overlay chrome://calendar/content/calendar-task-view.xul chrome://exchangecalendar/content/messenger_task_delegation.xul
+overlay chrome://lightning/content/lightning-standalone.xul chrome://exchangecalendar/content/progress_panel.xul
+overlay chrome://calendar/content/calendar-event-dialog.xul chrome://exchangecalendar/content/calendar-event-dialog.xul
+overlay chrome://calendar/content/calendar-summary-dialog.xul chrome://exchangecalendar/content/calendar-summary-dialog.xul
+overlay chrome://messenger/content/messenger.xul chrome://exchangecalendar/content/sharedCalendarParser.xul application={3550f703-e582-4d05-9a08-453d09bdfdc6}
+overlay chrome://messenger/content/messenger.xul chrome://exchangecalendar/content/check4lightning.xul
+overlay chrome://messenger/content/preferences/preferences.xul  chrome://exchangecalendar/content/messenger-overlay-preferences.xul
+overlay chrome://messenger/content/preferences/preferences.xul  chrome://exchangecalendar/content/manageEWSAccounts.xul
+overlay chrome://messenger/content/preferences/preferences.xul  chrome://exchangecalendar/content/debugPreferences.xul
+overlay chrome://messenger/content/preferences/preferences.xul  chrome://exchangecalendar/content/cachePreferences.xul
+overlay chrome://calendar/content/calendar-task-view.xul  chrome://exchangecalendar/content/calendar-task-view.xul
+overlay chrome://communicator/content/pref/preferences.xul chrome://exchangecalendar/content/suite-overlay-preferences.xul application={92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}
+
+locale exchangecalendar nl locale/exchangecalendar/nl/
+locale exchangecalendar en-US locale/exchangecalendar/en-US/
+locale exchangecalendar fr-FR locale/exchangecalendar/fr-FR/
+locale exchangecalendar de locale/exchangecalendar/de/
+
+component {720a458e-b6cd-4883-8a4d-5be27ec454d8} components/calExchangeCalendar.js
+contract @mozilla.org/calendar/calendar;1?type=exchangecalendar {720a458e-b6cd-4883-8a4d-5be27ec454d8}
+

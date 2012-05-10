@@ -1,0 +1,13 @@
+@import url(chrome://global/skin/);
+
+#exchWebService-progress-hbox
+{
+  -moz-box-align: center;
+}
+
+#exchWebService-progress-image
+{
+  list-style-image: url("chrome://exchangecalendar/skin/arrow-circle.png");
+  height:16px;
+  width:16px;
+}

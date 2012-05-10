@@ -1,0 +1,60 @@
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Header>
+    <h:ServerVersionInfo MajorVersion="14" MinorVersion="1" MajorBuildNumber="289" MinorBuildNumber="6" Version="Exchange2010_SP1" xmlns:h="http://schemas.microsoft.com/exchange/services/2006/types" xmlns="http://schemas.microsoft.com/exchange/services/2006/types" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"/>
+  </s:Header>
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <m:FindItemResponse xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+      <m:ResponseMessages>
+        <m:FindItemResponseMessage ResponseClass="Success">
+          <m:ResponseCode>NoError</m:ResponseCode>
+          <m:RootFolder TotalItemsInView="2" IncludesLastItemInRange="true">
+            <t:Items>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQFRAAgIzj+/NwIAAEYAAAAALFyDS2V3tUeAbYZsKNq3SAcA4gehsw02e0e3rwdi7PnBzgAAAHMVygAA4gehsw02e0e3rwdi7PnBzgAAJIoOPQAAEA==" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki1/A"/>
+                <t:Subject>SE Overleg</t:Subject>
+                <t:DateTimeReceived>2011-08-25T07:25:47Z</t:DateTimeReceived>
+                <t:ReminderMinutesBeforeStart>15</t:ReminderMinutesBeforeStart>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:UID>040000008200E00074C5B7101A82E00800000000706FA534F862CC0100000000000000001000000036E6E67240DAAD43B33588EAE6247D7A</t:UID>
+                <t:RecurrenceId>2011-09-13T09:00:00Z</t:RecurrenceId>
+                <t:Start>2011-09-13T09:00:00Z</t:Start>
+                <t:End>2011-09-13T10:00:00Z</t:End>
+                <t:IsAllDayEvent>false</t:IsAllDayEvent>
+                <t:LegacyFreeBusyStatus>Busy</t:LegacyFreeBusyStatus>
+                <t:Location>Vergaderruimte Aquarium</t:Location>
+                <t:CalendarItemType>Occurrence</t:CalendarItemType>
+                <t:MyResponseType>Accept</t:MyResponseType>
+                <t:Organizer>
+                  <t:Mailbox>
+                    <t:Name>Ronald Moesbergen</t:Name>
+                  </t:Mailbox>
+                </t:Organizer>
+              </t:CalendarItem>
+              <t:CalendarItem>
+                <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAAkig5AAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki4io"/>
+                <t:Subject>Berichten monitor</t:Subject>
+                <t:DateTimeReceived>2011-09-06T07:20:06Z</t:DateTimeReceived>
+                <t:ReminderMinutesBeforeStart>15</t:ReminderMinutesBeforeStart>
+                <t:HasAttachments>false</t:HasAttachments>
+                <t:UID>040000008200E00074C5B7101A82E00800000000E0D8C629766CCC010000000000000000100000003189642F9871854AB947D4553DD9D6B4</t:UID>
+                <t:Start>2011-09-13T11:30:00Z</t:Start>
+                <t:End>2011-09-13T13:30:00Z</t:End>
+                <t:IsAllDayEvent>false</t:IsAllDayEvent>
+                <t:LegacyFreeBusyStatus>Tentative</t:LegacyFreeBusyStatus>
+                <t:Location>Vergaderruimte Aquarium</t:Location>
+                <t:CalendarItemType>Single</t:CalendarItemType>
+                <t:MyResponseType>NoResponseReceived</t:MyResponseType>
+                <t:Organizer>
+                  <t:Mailbox>
+                    <t:Name>Marco Purmer</t:Name>
+                  </t:Mailbox>
+                </t:Organizer>
+              </t:CalendarItem>
+            </t:Items>
+          </m:RootFolder>
+        </m:FindItemResponseMessage>
+      </m:ResponseMessages>
+    </m:FindItemResponse>
+  </s:Body>
+</s:Envelope>
+

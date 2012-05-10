@@ -1,0 +1,16 @@
+<!ENTITY label.acceptbutton "Sluiten">
+
+<!ENTITY exchWebService.manageEWSAccounts.newAccount.button "Account toevoegen">
+<!ENTITY exchWebService.manageEWSAccounts.removeAccount.button "Verwijder account">
+<!ENTITY exchWebService.manageEWSAccounts.saveAccount.button "Bewaar gegevens">
+
+<!ENTITY exchWebService.manageEWSAccounts.autodiscover.label "Gebruik autodiscovery functie van Exchange.">
+<!ENTITY exchWebService.manageEWSAccounts.mailbox.label "Mailboxnaam:">
+<!ENTITY exchWebService.manageEWSAccounts.windowsuser.label "Gerbuikersnaam:">
+<!ENTITY exchWebService.manageEWSAccounts.windowsdomain.label "Domeinnaam:">
+<!ENTITY exchWebService.manageEWSAccounts.autodiscover.button "Doe autodiscovery">
+<!ENTITY exchWebService.manageEWSAccounts.servercheck.button "Controleer server en account">
+<!ENTITY exchWebService.manageEWSAccounts.name.label "Naam:">
+
+<!ENTITY exchWebService.manageEWSAccounts.menuitem "Exchange Web Services Accounts">
+

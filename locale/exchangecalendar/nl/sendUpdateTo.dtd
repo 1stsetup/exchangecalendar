@@ -1,0 +1,9 @@
+<!ENTITY title.sendupdateto "Waar moet de update naartoe verzonden worden?">
+<!ENTITY label.acceptbutton "Uitvoeren">
+<!ENTITY label.cancelbutton "Annuleren">
+<!ENTITY label.calendaritem.title "Update versturen voor afspraak:">
+
+<!ENTITY radio.label.sendtonone "Verstuur update naar niemand.">
+<!ENTITY radio.label.sendtoall "Verstuur de update naar iedereen.">
+<!ENTITY radio.label.sendtochanged "Verstuur de update alleen naar toegevoegde of verwijderde personen">
+

@@ -1,0 +1,34 @@
+<!ENTITY label.acceptbutton "Opslaan">
+<!ENTITY label.cancelbutton "Annuleer">
+
+<!ENTITY ecsettings.tab.adsettings "Exchange/Windows AD">
+<!ENTITY ecsettings.tab.meetingrequestsettings "Vergader verzoeken">
+<!ENTITY ecsettings.tab.calendarfolderproperties "Folder eigenschappen">
+
+<!ENTITY label.ecExchangeSettings.title "Settings voor agenda:">
+
+<!ENTITY label.poll.inbox "Poll inbox voor vergader verzoeken, wijzigingen en annuleringen.">
+<!ENTITY label.poll.inbox.interval "Frequentie van inbox pollen in seconden:">
+<!ENTITY label.poll.calendar.interval "Frequentie van agenda pollen in seconden:">
+
+<!ENTITY label.nomeetingrequestsettings "Je kunt de vergader verzoek instellingen niet aanpassen
+ omdat je niet de hoofd agenda van de mailbox hebt geselecteerd.">
+
+<!ENTITY label.autorespond.meetingrequest "Automatisch beantwoord een uitnodiging met ">
+
+<!ENTITY menuitem.label.ec-autorespond-answer.tentative "Ik zal misschien aanwezig zijn">
+<!ENTITY menuitem.label.ec-autorespond-answer.accepted "Ik zal aanwezig zijn">
+<!ENTITY menuitem.label.ec-autorespond-answer.declined "Ik zal niet aanwezig zijn">
+
+<!ENTITY label.autoremove.invitation_cancellation1 "Verwijder automatisch het uitnodigings- en bijbehorende annuleringsbericht als u nog niet heeft geantwoord op de uitnodiging.">
+<!ENTITY label.autoremove.invitation_cancellation2 "Verwijder automatisch een bevestigde uitnodiging als u een annuleringsbericht ontvangt.">
+
+<!ENTITY label.autoremove.invitation_response1 "Verwijder automatisch de reactie van anderen op een vergaderingverzoek als u niet de organisator bent.">
+
+<!ENTITY label.doautorespond.meetingrequest.message "Verstuur volgend bericht mee met antwoord i.p.v. dit te vragen.">
+<!ENTITY label.autorespond.meetingrequest.message "Uw bericht:">
+
+<!ENTITY treecol.label.userid "UserId">
+<!ENTITY treecol.label.email "Email">
+
+

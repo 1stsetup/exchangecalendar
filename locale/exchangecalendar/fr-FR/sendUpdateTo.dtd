@@ -1,0 +1,9 @@
+<!ENTITY title.sendupdateto "Destinataire de la mise à jour?">
+<!ENTITY label.acceptbutton "Envoi">
+<!ENTITY label.cancelbutton "Annulation">
+<!ENTITY label.calendaritem.title "Envoi de la mise à jour pour le rendez-vous:">
+
+<!ENTITY radio.label.sendtonone "N'envoyer à personne.">
+<!ENTITY radio.label.sendtoall "Envoi à tous les destinataires.">
+<!ENTITY radio.label.sendtochanged "Envoi aux destinataires ajoutés ou retirés.">
+

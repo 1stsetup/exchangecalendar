@@ -1,0 +1,32 @@
+<!ENTITY label.acceptbutton "Speichern">
+<!ENTITY label.cancelbutton "Abbrechen">
+
+<!ENTITY ecsettings.tab.adsettings "Exchange/Windows AD">
+<!ENTITY ecsettings.tab.meetingrequestsettings "Besprechungsanfragen">
+<!ENTITY ecsettings.tab.calendarfolderproperties "Ordnereinstellungen">
+
+<!ENTITY label.ecExchangeSettings.title "Einstellungen für Kalender:">
+
+<!ENTITY label.poll.inbox "Abfrage des Posteingangs für Abfragen, Änderungen und Absagen.">
+<!ENTITY label.poll.inbox.interval "Abfrageintervall für den Posteingang in Sekunden:">
+<!ENTITY label.poll.calendar.interval "Abfrageintervall für den Kalender in Sekunden:">
+
+<!ENTITY label.nomeetingrequestsettings "Sie können keine Besprechungsanfrage erstellen, weil Sie keinen Hauptkalender für das Posfach ausgewählt haben.">
+
+<!ENTITY label.autorespond.meetingrequest "Termineinladungen automatisch beantworten mit ">
+
+<!ENTITY menuitem.label.ec-autorespond-answer.tentative "Ich werde vielleicht teilnehmen">
+<!ENTITY menuitem.label.ec-autorespond-answer.accepted "Ich werde teilnehmen">
+<!ENTITY menuitem.label.ec-autorespond-answer.declined "Ich werde nicht teilnehmen">
+
+<!ENTITY label.autoremove.invitation_cancellation1 "Nicht bestätigte Besprechungsanfragen automatisch löschen, wenn Sie eine Absagenachricht erhalten.">
+<!ENTITY label.autoremove.invitation_cancellation2 "Bestätigte Besprechungsanfragen automatisch löschen, wenn Sie eine Absagenachricht erhalten.">
+
+<!ENTITY label.autoremove.invitation_response1 "Antworten anderer auf Besprechungsanfragen automatisch löschen, wenn Sie nicht Veranstalter der Besprechung sind.">
+
+<!ENTITY label.doautorespond.meetingrequest.message "Folgende Antwort ohne Nachfrage senden.">
+<!ENTITY label.autorespond.meetingrequest.message "Ihre Nachricht:">
+
+<!ENTITY treecol.label.userid "UserId">
+<!ENTITY treecol.label.email "Email">
+

@@ -1,0 +1,469 @@
+2233244c-3f2d-4d83-a934-966a6604ed99: reply xml:<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Header>
+    <h:ServerVersionInfo MajorVersion="14" MinorVersion="1" MajorBuildNumber="289" MinorBuildNumber="6" Version="Exchange2010_SP1" xmlns:h="http://schemas.microsoft.com/exchange/services/2006/types" xmlns="http://schemas.microsoft.com/exchange/services/2006/types" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"/>
+  </s:Header>
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <m:GetItemResponse xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+      <m:ResponseMessages>
+        <m:GetItemResponseMessage ResponseClass="Success">
+          <m:ResponseCode>NoError</m:ResponseCode>
+          <m:Items>
+            <t:CalendarItem>
+              <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAATbYJVAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAATbjee"/>
+              <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVygAAAA==" ChangeKey="AQAAAA=="/>
+              <t:ItemClass>IPM.Appointment</t:ItemClass>
+              <t:Subject>Michel SE Standby</t:Subject>
+              <t:Sensitivity>Normal</t:Sensitivity>
+              <t:Body BodyType="Text"/>
+              <t:DateTimeReceived>2011-06-14T06:43:10Z</t:DateTimeReceived>
+              <t:Size>1781</t:Size>
+              <t:Importance>Normal</t:Importance>
+              <t:IsSubmitted>false</t:IsSubmitted>
+              <t:IsDraft>false</t:IsDraft>
+              <t:IsFromMe>false</t:IsFromMe>
+              <t:IsResend>false</t:IsResend>
+              <t:IsUnmodified>false</t:IsUnmodified>
+              <t:DateTimeSent>2011-06-14T06:43:10Z</t:DateTimeSent>
+              <t:DateTimeCreated>2011-06-14T06:43:10Z</t:DateTimeCreated>
+              <t:ResponseObjects>
+                <t:CancelCalendarItem/>
+                <t:ForwardItem/>
+              </t:ResponseObjects>
+              <t:ReminderDueBy>2011-09-26T00:00:00Z</t:ReminderDueBy>
+              <t:ReminderIsSet>false</t:ReminderIsSet>
+              <t:ReminderMinutesBeforeStart>15</t:ReminderMinutesBeforeStart>
+              <t:DisplayCc/>
+              <t:DisplayTo/>
+              <t:HasAttachments>false</t:HasAttachments>
+              <t:Culture>en-US</t:Culture>
+              <t:EffectiveRights>
+                <t:CreateAssociated>false</t:CreateAssociated>
+                <t:CreateContents>false</t:CreateContents>
+                <t:CreateHierarchy>false</t:CreateHierarchy>
+                <t:Delete>true</t:Delete>
+                <t:Modify>true</t:Modify>
+                <t:Read>true</t:Read>
+              </t:EffectiveRights>
+              <t:LastModifiedName>Michel Verbraak</t:LastModifiedName>
+              <t:LastModifiedTime>2011-06-14T06:43:10Z</t:LastModifiedTime>
+              <t:UID>1bd13542-6b78-4b7b-b5d8-6a7f71923711</t:UID>
+              <t:DateTimeStamp>2011-06-14T06:43:10Z</t:DateTimeStamp>
+              <t:Start>2011-09-26T00:00:00Z</t:Start>
+              <t:End>2011-10-03T00:00:00Z</t:End>
+              <t:IsAllDayEvent>true</t:IsAllDayEvent>
+              <t:LegacyFreeBusyStatus>Busy</t:LegacyFreeBusyStatus>
+              <t:Location/>
+              <t:IsMeeting>true</t:IsMeeting>
+              <t:IsCancelled>false</t:IsCancelled>
+              <t:IsRecurring>false</t:IsRecurring>
+              <t:MeetingRequestWasSent>false</t:MeetingRequestWasSent>
+              <t:IsResponseRequested>true</t:IsResponseRequested>
+              <t:CalendarItemType>Single</t:CalendarItemType>
+              <t:MyResponseType>Organizer</t:MyResponseType>
+              <t:Organizer>
+                <t:Mailbox>
+                  <t:Name>Michel Verbraak</t:Name>
+                  <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                  <t:RoutingType>SMTP</t:RoutingType>
+                </t:Mailbox>
+              </t:Organizer>
+              <t:ConflictingMeetingCount>3</t:ConflictingMeetingCount>
+              <t:AdjacentMeetingCount>0</t:AdjacentMeetingCount>
+              <t:ConflictingMeetings>
+                <t:CalendarItem>
+                  <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAAkcfpJAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkchHb"/>
+                  <t:Subject>Kwartaal update InterCommIT</t:Subject>
+                  <t:Start>2011-09-29T11:00:00Z</t:Start>
+                  <t:End>2011-09-29T12:00:00Z</t:End>
+                  <t:LegacyFreeBusyStatus>Tentative</t:LegacyFreeBusyStatus>
+                  <t:Location>Kantine</t:Location>
+                </t:CalendarItem>
+                <t:CalendarItem>
+                  <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAATbYJUAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAATbjef"/>
+                  <t:Subject>Michel SE Standby</t:Subject>
+                  <t:Start>2011-09-26T00:00:00Z</t:Start>
+                  <t:End>2011-10-03T00:00:00Z</t:End>
+                  <t:LegacyFreeBusyStatus>Busy</t:LegacyFreeBusyStatus>
+                  <t:Location/>
+                </t:CalendarItem>
+                <t:CalendarItem>
+                  <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQFRAAgIzkq/iMqAAEYAAAAALFyDS2V3tUeAbYZsKNq3SAcA4gehsw02e0e3rwdi7PnBzgAAAHMVygAA4gehsw02e0e3rwdi7PnBzgAAJIoOPQAAEA==" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki8dO"/>
+                  <t:Subject>SE Overleg</t:Subject>
+                  <t:Start>2011-09-27T09:00:00Z</t:Start>
+                  <t:End>2011-09-27T10:00:00Z</t:End>
+                  <t:LegacyFreeBusyStatus>Busy</t:LegacyFreeBusyStatus>
+                  <t:Location>Vergaderruimte Aquarium</t:Location>
+                </t:CalendarItem>
+              </t:ConflictingMeetings>
+              <t:Duration>P7D</t:Duration>
+              <t:TimeZone>Greenwich Standard Time</t:TimeZone>
+              <t:AppointmentSequenceNumber>0</t:AppointmentSequenceNumber>
+              <t:AppointmentState>1</t:AppointmentState>
+            </t:CalendarItem>
+          </m:Items>
+        </m:GetItemResponseMessage>
+        <m:GetItemResponseMessage ResponseClass="Success">
+          <m:ResponseCode>NoError</m:ResponseCode>
+          <m:Items>
+            <t:CalendarItem>
+              <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAATbYJUAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAATbjef"/>
+              <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVygAAAA==" ChangeKey="AQAAAA=="/>
+              <t:ItemClass>IPM.Appointment</t:ItemClass>
+              <t:Subject>Michel SE Standby</t:Subject>
+              <t:Sensitivity>Normal</t:Sensitivity>
+              <t:Body BodyType="Text"/>
+              <t:DateTimeReceived>2011-06-14T06:43:10Z</t:DateTimeReceived>
+              <t:Size>1781</t:Size>
+              <t:Importance>Normal</t:Importance>
+              <t:IsSubmitted>false</t:IsSubmitted>
+              <t:IsDraft>false</t:IsDraft>
+              <t:IsFromMe>false</t:IsFromMe>
+              <t:IsResend>false</t:IsResend>
+              <t:IsUnmodified>false</t:IsUnmodified>
+              <t:DateTimeSent>2011-06-14T06:43:10Z</t:DateTimeSent>
+              <t:DateTimeCreated>2011-06-14T06:43:10Z</t:DateTimeCreated>
+              <t:ResponseObjects>
+                <t:CancelCalendarItem/>
+                <t:ForwardItem/>
+              </t:ResponseObjects>
+              <t:ReminderDueBy>2011-09-26T00:00:00Z</t:ReminderDueBy>
+              <t:ReminderIsSet>false</t:ReminderIsSet>
+              <t:ReminderMinutesBeforeStart>15</t:ReminderMinutesBeforeStart>
+              <t:DisplayCc/>
+              <t:DisplayTo/>
+              <t:HasAttachments>false</t:HasAttachments>
+              <t:Culture>en-US</t:Culture>
+              <t:EffectiveRights>
+                <t:CreateAssociated>false</t:CreateAssociated>
+                <t:CreateContents>false</t:CreateContents>
+                <t:CreateHierarchy>false</t:CreateHierarchy>
+                <t:Delete>true</t:Delete>
+                <t:Modify>true</t:Modify>
+                <t:Read>true</t:Read>
+              </t:EffectiveRights>
+              <t:LastModifiedName>Michel Verbraak</t:LastModifiedName>
+              <t:LastModifiedTime>2011-06-14T06:43:10Z</t:LastModifiedTime>
+              <t:UID>1bd13542-6b78-4b7b-b5d8-6a7f71923711</t:UID>
+              <t:DateTimeStamp>2011-06-14T06:43:10Z</t:DateTimeStamp>
+              <t:Start>2011-09-26T00:00:00Z</t:Start>
+              <t:End>2011-10-03T00:00:00Z</t:End>
+              <t:IsAllDayEvent>true</t:IsAllDayEvent>
+              <t:LegacyFreeBusyStatus>Busy</t:LegacyFreeBusyStatus>
+              <t:Location/>
+              <t:IsMeeting>true</t:IsMeeting>
+              <t:IsCancelled>false</t:IsCancelled>
+              <t:IsRecurring>false</t:IsRecurring>
+              <t:MeetingRequestWasSent>false</t:MeetingRequestWasSent>
+              <t:IsResponseRequested>true</t:IsResponseRequested>
+              <t:CalendarItemType>Single</t:CalendarItemType>
+              <t:MyResponseType>Organizer</t:MyResponseType>
+              <t:Organizer>
+                <t:Mailbox>
+                  <t:Name>Michel Verbraak</t:Name>
+                  <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                  <t:RoutingType>SMTP</t:RoutingType>
+                </t:Mailbox>
+              </t:Organizer>
+              <t:ConflictingMeetingCount>3</t:ConflictingMeetingCount>
+              <t:AdjacentMeetingCount>0</t:AdjacentMeetingCount>
+              <t:ConflictingMeetings>
+                <t:CalendarItem>
+                  <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAAkcfpJAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkchHb"/>
+                  <t:Subject>Kwartaal update InterCommIT</t:Subject>
+                  <t:Start>2011-09-29T11:00:00Z</t:Start>
+                  <t:End>2011-09-29T12:00:00Z</t:End>
+                  <t:LegacyFreeBusyStatus>Tentative</t:LegacyFreeBusyStatus>
+                  <t:Location>Kantine</t:Location>
+                </t:CalendarItem>
+                <t:CalendarItem>
+                  <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAATbYJVAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAATbjee"/>
+                  <t:Subject>Michel SE Standby</t:Subject>
+                  <t:Start>2011-09-26T00:00:00Z</t:Start>
+                  <t:End>2011-10-03T00:00:00Z</t:End>
+                  <t:LegacyFreeBusyStatus>Busy</t:LegacyFreeBusyStatus>
+                  <t:Location/>
+                </t:CalendarItem>
+                <t:CalendarItem>
+                  <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQFRAAgIzkq/iMqAAEYAAAAALFyDS2V3tUeAbYZsKNq3SAcA4gehsw02e0e3rwdi7PnBzgAAAHMVygAA4gehsw02e0e3rwdi7PnBzgAAJIoOPQAAEA==" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki8dO"/>
+                  <t:Subject>SE Overleg</t:Subject>
+                  <t:Start>2011-09-27T09:00:00Z</t:Start>
+                  <t:End>2011-09-27T10:00:00Z</t:End>
+                  <t:LegacyFreeBusyStatus>Busy</t:LegacyFreeBusyStatus>
+                  <t:Location>Vergaderruimte Aquarium</t:Location>
+                </t:CalendarItem>
+              </t:ConflictingMeetings>
+              <t:Duration>P7D</t:Duration>
+              <t:TimeZone>Greenwich Standard Time</t:TimeZone>
+              <t:AppointmentSequenceNumber>0</t:AppointmentSequenceNumber>
+              <t:AppointmentState>1</t:AppointmentState>
+            </t:CalendarItem>
+          </m:Items>
+        </m:GetItemResponseMessage>
+        <m:GetItemResponseMessage ResponseClass="Success">
+          <m:ResponseCode>NoError</m:ResponseCode>
+          <m:Items>
+            <t:CalendarItem>
+              <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAAkcfpJAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAkchHb"/>
+              <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVygAAAA==" ChangeKey="AQAAAA=="/>
+              <t:ItemClass>IPM.Appointment</t:ItemClass>
+              <t:Subject>Kwartaal update InterCommIT</t:Subject>
+              <t:Sensitivity>Normal</t:Sensitivity>
+              <t:Body BodyType="Text">Tijd: donderdag 29 september 2011 13:00-14:00 (UTC+01:00) Amsterdam, Berlijn, Bern, Rome, Stockholm, Wenen.
+Locatie: Kantine
+
+Opmerking: in de GMT-offset hierboven is geen rekening gehouden met correcties voor de zomertijd.
+
+*~*~*~*~*~*~*~*~*~*</t:Body>
+              <t:DateTimeReceived>2011-06-27T08:08:53Z</t:DateTimeReceived>
+              <t:Size>9079</t:Size>
+              <t:Importance>Normal</t:Importance>
+              <t:IsSubmitted>false</t:IsSubmitted>
+              <t:IsDraft>false</t:IsDraft>
+              <t:IsFromMe>false</t:IsFromMe>
+              <t:IsResend>false</t:IsResend>
+              <t:IsUnmodified>false</t:IsUnmodified>
+              <t:DateTimeSent>2011-06-27T08:08:53Z</t:DateTimeSent>
+              <t:DateTimeCreated>2011-06-27T08:08:53Z</t:DateTimeCreated>
+              <t:ResponseObjects>
+                <t:AcceptItem/>
+                <t:TentativelyAcceptItem/>
+                <t:DeclineItem/>
+                <t:ReplyToItem/>
+                <t:ReplyAllToItem/>
+                <t:ForwardItem/>
+              </t:ResponseObjects>
+              <t:ReminderDueBy>2011-09-29T11:00:00Z</t:ReminderDueBy>
+              <t:ReminderIsSet>true</t:ReminderIsSet>
+              <t:ReminderMinutesBeforeStart>15</t:ReminderMinutesBeforeStart>
+              <t:DisplayCc/>
+              <t:DisplayTo>Renate Kok; InterCommIT NL (Mailgroep)</t:DisplayTo>
+              <t:HasAttachments>false</t:HasAttachments>
+              <t:Culture>nl-NL</t:Culture>
+              <t:EffectiveRights>
+                <t:CreateAssociated>false</t:CreateAssociated>
+                <t:CreateContents>false</t:CreateContents>
+                <t:CreateHierarchy>false</t:CreateHierarchy>
+                <t:Delete>true</t:Delete>
+                <t:Modify>true</t:Modify>
+                <t:Read>true</t:Read>
+              </t:EffectiveRights>
+              <t:LastModifiedName>Michel Verbraak</t:LastModifiedName>
+              <t:LastModifiedTime>2011-06-27T08:08:53Z</t:LastModifiedTime>
+              <t:UID>040000008200E00074C5B7101A82E00800000000E043D132B234CC0100000000000000001000000080E474F7A68320489E1840419D66297B</t:UID>
+              <t:DateTimeStamp>2011-06-27T08:08:44Z</t:DateTimeStamp>
+              <t:Start>2011-09-29T11:00:00Z</t:Start>
+              <t:End>2011-09-29T12:00:00Z</t:End>
+              <t:IsAllDayEvent>false</t:IsAllDayEvent>
+              <t:LegacyFreeBusyStatus>Tentative</t:LegacyFreeBusyStatus>
+              <t:Location>Kantine</t:Location>
+              <t:IsMeeting>true</t:IsMeeting>
+              <t:IsCancelled>false</t:IsCancelled>
+              <t:IsRecurring>false</t:IsRecurring>
+              <t:MeetingRequestWasSent>false</t:MeetingRequestWasSent>
+              <t:IsResponseRequested>true</t:IsResponseRequested>
+              <t:CalendarItemType>Single</t:CalendarItemType>
+              <t:MyResponseType>NoResponseReceived</t:MyResponseType>
+              <t:Organizer>
+                <t:Mailbox>
+                  <t:Name>Renate Kok</t:Name>
+                  <t:EmailAddress>RKok@intercommit.nl</t:EmailAddress>
+                  <t:RoutingType>SMTP</t:RoutingType>
+                </t:Mailbox>
+              </t:Organizer>
+              <t:RequiredAttendees>
+                <t:Attendee>
+                  <t:Mailbox>
+                    <t:Name>Renate Kok</t:Name>
+                    <t:EmailAddress>RKok@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                  <t:ResponseType>Unknown</t:ResponseType>
+                </t:Attendee>
+                <t:Attendee>
+                  <t:Mailbox>
+                    <t:Name>InterCommIT NL (Mailgroep)</t:Name>
+                    <t:EmailAddress>intercommit_mg@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                  <t:ResponseType>Unknown</t:ResponseType>
+                </t:Attendee>
+              </t:RequiredAttendees>
+              <t:ConflictingMeetingCount>2</t:ConflictingMeetingCount>
+              <t:AdjacentMeetingCount>0</t:AdjacentMeetingCount>
+              <t:ConflictingMeetings>
+                <t:CalendarItem>
+                  <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAATbYJUAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAATbjef"/>
+                  <t:Subject>Michel SE Standby</t:Subject>
+                  <t:Start>2011-09-26T00:00:00Z</t:Start>
+                  <t:End>2011-10-03T00:00:00Z</t:End>
+                  <t:LegacyFreeBusyStatus>Busy</t:LegacyFreeBusyStatus>
+                  <t:Location/>
+                </t:CalendarItem>
+                <t:CalendarItem>
+                  <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAATbYJVAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAATbjee"/>
+                  <t:Subject>Michel SE Standby</t:Subject>
+                  <t:Start>2011-09-26T00:00:00Z</t:Start>
+                  <t:End>2011-10-03T00:00:00Z</t:End>
+                  <t:LegacyFreeBusyStatus>Busy</t:LegacyFreeBusyStatus>
+                  <t:Location/>
+                </t:CalendarItem>
+              </t:ConflictingMeetings>
+              <t:Duration>PT1H</t:Duration>
+              <t:TimeZone>(UTC+01:00) Amsterdam, Berlijn, Bern, Rome, Stockholm, Wenen</t:TimeZone>
+              <t:AppointmentSequenceNumber>0</t:AppointmentSequenceNumber>
+              <t:AppointmentState>3</t:AppointmentState>
+              <t:ConferenceType>0</t:ConferenceType>
+              <t:AllowNewTimeProposal>true</t:AllowNewTimeProposal>
+              <t:NetShowUrl/>
+            </t:CalendarItem>
+          </m:Items>
+        </m:GetItemResponseMessage>
+        <m:GetItemResponseMessage ResponseClass="Success">
+          <m:ResponseCode>NoError</m:ResponseCode>
+          <m:Items>
+            <t:CalendarItem>
+              <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQFRAAgIzkq/iMqAAEYAAAAALFyDS2V3tUeAbYZsKNq3SAcA4gehsw02e0e3rwdi7PnBzgAAAHMVygAA4gehsw02e0e3rwdi7PnBzgAAJIoOPQAAEA==" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAAki8dO"/>
+              <t:ParentFolderId Id="AQMkADMyYWEBMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQAuAAADLFyDS2V3tUeAbYZsKNq3SAEA4gehsw02e0e3rwdi7PnBzgAAAXMVygAAAA==" ChangeKey="AQAAAA=="/>
+              <t:ItemClass>IPM.Appointment.Occurrence</t:ItemClass>
+              <t:Subject>SE Overleg</t:Subject>
+              <t:Sensitivity>Normal</t:Sensitivity>
+              <t:Body BodyType="Text">Collega's,
+
+Tot nu toe heb ik de takenlijst tweewekelijks met jullie persoonlijk afgestemd. Uit de functioneringsgesprekken is o.a. naar voren gekomen dat jullie het prettiger zouden vinden om deze lijst gezamenlijk door te nemen. Bij deze een afspraak om dat te doen. We kunnen dan van elkaar horen wat er speelt en hoe het ervoor staat en eventueel taken verplaatsen naar iemand anders, als het even niet past. De persoonlijke afstemming van de takenlijst komt hiermee dan te vervallen.
+  Verder kunnen we dit overleg gebruiken voor andere zaken die je aan de orde zou willen stellen. Wat niet de bedoeling is is om diep technisch inhoudelijke discussies te gaan houden, daarvoor kunnen we als dat nodig is een apart overleg plannen. We starten met het overleg wekelijks te houden. Als we merken dat het goed gaat en kan kunnen we naar een tweewekelijks overleg.
+
+Groeten,
+Ronald.</t:Body>
+              <t:DateTimeReceived>2011-08-25T07:25:47Z</t:DateTimeReceived>
+              <t:Size>5035</t:Size>
+              <t:Importance>Normal</t:Importance>
+              <t:IsSubmitted>false</t:IsSubmitted>
+              <t:IsDraft>false</t:IsDraft>
+              <t:IsFromMe>false</t:IsFromMe>
+              <t:IsResend>false</t:IsResend>
+              <t:IsUnmodified>false</t:IsUnmodified>
+              <t:DateTimeSent>2011-08-25T07:25:47Z</t:DateTimeSent>
+              <t:DateTimeCreated>2011-08-30T15:09:23Z</t:DateTimeCreated>
+              <t:ResponseObjects>
+                <t:AcceptItem/>
+                <t:TentativelyAcceptItem/>
+                <t:DeclineItem/>
+                <t:ReplyToItem/>
+                <t:ReplyAllToItem/>
+                <t:ForwardItem/>
+              </t:ResponseObjects>
+              <t:ReminderDueBy>2011-09-27T09:00:00Z</t:ReminderDueBy>
+              <t:ReminderIsSet>true</t:ReminderIsSet>
+              <t:ReminderMinutesBeforeStart>15</t:ReminderMinutesBeforeStart>
+              <t:DisplayCc/>
+              <t:DisplayTo>Ronald Moesbergen; Rogier Schram; Niels van den Ende; Michel Verbraak; Paul van Wijnbergen</t:DisplayTo>
+              <t:HasAttachments>false</t:HasAttachments>
+              <t:Culture>nl-NL</t:Culture>
+              <t:EffectiveRights>
+                <t:CreateAssociated>false</t:CreateAssociated>
+                <t:CreateContents>false</t:CreateContents>
+                <t:CreateHierarchy>false</t:CreateHierarchy>
+                <t:Delete>true</t:Delete>
+                <t:Modify>true</t:Modify>
+                <t:Read>true</t:Read>
+              </t:EffectiveRights>
+              <t:LastModifiedName>Michel Verbraak</t:LastModifiedName>
+              <t:LastModifiedTime>2011-09-13T14:20:33Z</t:LastModifiedTime>
+              <t:UID>040000008200E00074C5B7101A82E00800000000706FA534F862CC0100000000000000001000000036E6E67240DAAD43B33588EAE6247D7A</t:UID>
+              <t:RecurrenceId>2011-09-27T09:00:00Z</t:RecurrenceId>
+              <t:DateTimeStamp>2011-08-30T11:18:18Z</t:DateTimeStamp>
+              <t:Start>2011-09-27T09:00:00Z</t:Start>
+              <t:End>2011-09-27T10:00:00Z</t:End>
+              <t:OriginalStart>2011-09-27T09:00:00Z</t:OriginalStart>
+              <t:IsAllDayEvent>false</t:IsAllDayEvent>
+              <t:LegacyFreeBusyStatus>Busy</t:LegacyFreeBusyStatus>
+              <t:Location>Vergaderruimte Aquarium</t:Location>
+              <t:IsMeeting>true</t:IsMeeting>
+              <t:IsCancelled>false</t:IsCancelled>
+              <t:IsRecurring>true</t:IsRecurring>
+              <t:MeetingRequestWasSent>false</t:MeetingRequestWasSent>
+              <t:IsResponseRequested>true</t:IsResponseRequested>
+              <t:CalendarItemType>Occurrence</t:CalendarItemType>
+              <t:MyResponseType>Accept</t:MyResponseType>
+              <t:Organizer>
+                <t:Mailbox>
+                  <t:Name>Ronald Moesbergen</t:Name>
+                  <t:EmailAddress>RMoesbergen@intercommit.nl</t:EmailAddress>
+                  <t:RoutingType>SMTP</t:RoutingType>
+                </t:Mailbox>
+              </t:Organizer>
+              <t:RequiredAttendees>
+                <t:Attendee>
+                  <t:Mailbox>
+                    <t:Name>Ronald Moesbergen</t:Name>
+                    <t:EmailAddress>RMoesbergen@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                  <t:ResponseType>Unknown</t:ResponseType>
+                </t:Attendee>
+                <t:Attendee>
+                  <t:Mailbox>
+                    <t:Name>Rogier Schram</t:Name>
+                    <t:EmailAddress>RSchram@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                  <t:ResponseType>Unknown</t:ResponseType>
+                </t:Attendee>
+                <t:Attendee>
+                  <t:Mailbox>
+                    <t:Name>Niels van den Ende</t:Name>
+                    <t:EmailAddress>NvandenEnde@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                  <t:ResponseType>Unknown</t:ResponseType>
+                </t:Attendee>
+                <t:Attendee>
+                  <t:Mailbox>
+                    <t:Name>Michel Verbraak</t:Name>
+                    <t:EmailAddress>MVerbraak@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                  <t:ResponseType>Unknown</t:ResponseType>
+                </t:Attendee>
+                <t:Attendee>
+                  <t:Mailbox>
+                    <t:Name>Paul van Wijnbergen</t:Name>
+                    <t:EmailAddress>PvanWijnbergen@intercommit.nl</t:EmailAddress>
+                    <t:RoutingType>SMTP</t:RoutingType>
+                  </t:Mailbox>
+                  <t:ResponseType>Unknown</t:ResponseType>
+                </t:Attendee>
+              </t:RequiredAttendees>
+              <t:ConflictingMeetingCount>2</t:ConflictingMeetingCount>
+              <t:AdjacentMeetingCount>0</t:AdjacentMeetingCount>
+              <t:ConflictingMeetings>
+                <t:CalendarItem>
+                  <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAATbYJUAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAATbjef"/>
+                  <t:Subject>Michel SE Standby</t:Subject>
+                  <t:Start>2011-09-26T00:00:00Z</t:Start>
+                  <t:End>2011-10-03T00:00:00Z</t:End>
+                  <t:LegacyFreeBusyStatus>Busy</t:LegacyFreeBusyStatus>
+                  <t:Location/>
+                </t:CalendarItem>
+                <t:CalendarItem>
+                  <t:ItemId Id="AAMkADMyYWFhMTA0LTA4ZDUtNDJiZS1hYjg5LTE4N2EyNzU2M2FmMQBGAAAAAAAsXINLZXe1R4Bthmwo2rdIBwDiB6GzDTZ7R7evB2Ls+cHOAAAAcxXKAADiB6GzDTZ7R7evB2Ls+cHOAAATbYJVAAA=" ChangeKey="DwAAABYAAADiB6GzDTZ7R7evB2Ls+cHOAAATbjee"/>
+                  <t:Subject>Michel SE Standby</t:Subject>
+                  <t:Start>2011-09-26T00:00:00Z</t:Start>
+                  <t:End>2011-10-03T00:00:00Z</t:End>
+                  <t:LegacyFreeBusyStatus>Busy</t:LegacyFreeBusyStatus>
+                  <t:Location/>
+                </t:CalendarItem>
+              </t:ConflictingMeetings>
+              <t:Duration>PT1H</t:Duration>
+              <t:TimeZone>(UTC+01:00) Amsterdam, Berlijn, Bern, Rome, Stockholm, Wenen</t:TimeZone>
+              <t:AppointmentReplyTime>2011-08-30T15:09:23Z</t:AppointmentReplyTime>
+              <t:AppointmentSequenceNumber>1</t:AppointmentSequenceNumber>
+              <t:AppointmentState>3</t:AppointmentState>
+            </t:CalendarItem>
+          </m:Items>
+        </m:GetItemResponseMessage>
+      </m:ResponseMessages>
+    </m:GetItemResponse>
+  </s:Body>
+</s:Envelope>
+
