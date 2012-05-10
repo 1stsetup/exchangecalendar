@@ -1202,10 +1202,12 @@ this.logInfo("singleModified doNotify");
 							// If the snooze state of the master changed normally this change we be set by the Exchange server also on the children.
 							// There is one exception when the ItemClass of an item is OLE then on that child the snooze state is not changed.
 							// We have to do this manually.
+							var updateCount = 0;
 							if ((changesObj) && (changesObj.onlySnoozeChanged)) {
-								this.checkSnoozeStateOfOLEChildren(aOldItem, aNewItem);
+								updateCount = this.checkSnoozeStateOfOLEChildren(aOldItem, aNewItem);
 							}
-							else {
+
+							if (updateCount == 0) {
 
 								// We remove the item from cache and calendar because the update request will add
 								// it again.
@@ -1463,6 +1465,7 @@ this.logInfo("singleModified doNotify");
 		}
 
 		var childToUpdate = null;
+		var updateCount = 0;
 
 		if (aOldItem.propertyEnumerator) {
 			var props = aOldItem.propertyEnumerator;
@@ -1496,6 +1499,7 @@ this.logInfo("singleModified doNotify");
 						var self = this;
 
 						this.logInfo(" -- Going to change child 1");
+						updateCount++;
 		//	try {
 						this.addToQueue( erGetOccurrenceIndexRequest,
 							{user: this.user, 
@@ -1532,10 +1536,12 @@ this.logInfo("singleModified doNotify");
 
 				// Check if we have a child to modify and if the itemclass if OLE.
 				if ((childToUpdate) && (childToUpdate.getProperty("X-ItemClass").indexOf("IPM.OLE.CLASS") > -1)) {
+					this.logInfo("There is a OLE child to update");
 					var newChild = childToUpdate.clone();
 					newChild.parentItem = aNewItem;
 
 					var self = this;
+					updateCount++;
 					this.addToQueue( erGetOccurrenceIndexRequest,
 						{user: this.user, 
 						 mailbox: this.mailbox,
@@ -1556,8 +1562,13 @@ this.logInfo("singleModified doNotify");
 
 //					this.modifyItem(newChild, childToUpdate);
 				}
+				else {
+					this.logInfo("There is NO OLE child to update");
+				}
 			}
 		}
+
+		return updateCount;
 		
 	},
 
