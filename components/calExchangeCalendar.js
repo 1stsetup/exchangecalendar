@@ -4198,14 +4198,14 @@ this.logInfo("convertCalAppointmentToExchangeAppointment: "+String(e));
 			var alarm = aItem.getAlarms({})[0];
 			switch (alarm.related) {
 			case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
-				var newAlarmTime = alarm.alarmDate;
+				var newAlarmTime = alarm.alarmDate.clone();
 				break;
 			case Ci.calIAlarm.ALARM_RELATED_START:
-				var newAlarmTime = aItem.entryDate;
+				var newAlarmTime = aItem.entryDate.clone();
 				newAlarmTime.addDuration(alarm.offset);
 				break;
 			case Ci.calIAlarm.ALARM_RELATED_END:
-				var newAlarmTime = aItem.dueDate;
+				var newAlarmTime = aItem.dueDate.clone();
 				newAlarmTime.addDuration(alarm.offset);
 				break;
 			}
