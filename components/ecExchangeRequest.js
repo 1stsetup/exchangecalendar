@@ -778,7 +778,8 @@ function ecnsIAuthPrompt2(aExchangeRequest)
 ecnsIAuthPrompt2.prototype = {
 
 	QueryInterface: XPCOMUtils.generateQI([Ci.nsIAuthPrompt2, Ci.nsIBadCertListener2, Ci.nsIProgressEventSink, 
-						Ci.nsISecureBrowserUI, Ci.nsIDocShellTreeItem, Ci.nsIAuthPromptProvider]),
+						Ci.nsISecureBrowserUI, Ci.nsIDocShellTreeItem, Ci.nsIAuthPromptProvider,
+						Ci.nsIChannelEventSink, Ci.nsIRedirectResultListener]),
 
 	getInterface: function(iid)
 	{
@@ -814,12 +815,22 @@ ecnsIAuthPrompt2.prototype = {
         		return this;
 		} 
 
+		if (iid.equals(Ci.nsIChannelEventSink)) {   // iid == a430d870-df77-4502-9570-d46a8de33154
+			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIChannelEventSink");
+        		return this;
+		} 
+
+		if (iid.equals(Ci.nsIRedirectResultListener)) {   // iid == 85cd2640-e91e-41ac-bdca-1dbf10dc131e
+			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIRedirectResultListener");
+        		return this;
+		} 
+
 		exchWebService.commonFunctions.LOG("  >>>>>>>>>>> MAIL THIS LINE TO exchangecalendar@extensions.1st-setup.nl: ecnsIAuthPrompt2.getInterface("+iid+")");
 		throw Cr.NS_NOINTERFACE;
 	},
 
 	// nsIBadCertListener2
-	notifyCertProblem: function cBCL_notifyCertProblem(socketInfo, status, targetSite) 
+	notifyCertProblem: function _nsIBadCertListener2_notifyCertProblem(socketInfo, status, targetSite) 
 	{
 		this.logInfo("ecnsIAuthPrompt2.notifyCertProblem: status:"+status);
 		if (!status) {
@@ -933,6 +944,39 @@ ecnsIAuthPrompt2.prototype = {
 		if (this.callback) {
 			this.callback.onAuthCancelled(this.context, false);
 		}
+	},
+
+	// nsIChannelEventSink
+	//void asyncOnChannelRedirect(in nsIChannel oldChannel, 
+        //                        in nsIChannel newChannel,
+        //                        in unsigned long flags,
+        //                        in nsIAsyncVerifyRedirectCallback callback);
+	asyncOnChannelRedirect: function _nsIChannelEventSink_asyncOnChannelRedirect(oldChannel, newChannel, flags, callback)
+	{
+		var tmpStr = "";
+		if (flags & 1) tmpStr += "REDIRECT_TEMPORARY";
+		if (flags & 2) tmpStr += " REDIRECT_PERMANENT";
+		if (flags & 4) tmpStr += " REDIRECT_INTERNAL";
+
+		this.logInfo("  --- nsIChannelEventSink.asyncOnChannelRedirect :flags:"+flags+"="+tmpStr);
+
+		
+		var url1 = "";
+		var url2 = "";
+
+		try { url1 = oldChannel.originalURI.spec; } catch(er) { url1 = "unknown"; }
+		try { url2 = newChannel.originalURI.spec; } catch(er) { url2 = "unknown"; }
+
+		this.logInfo("We are going to allow the redirect from '"+url1+"' to '"+url2+"'.");
+
+		callback(0x80000000); // This was extrated out of the sources as beeing NS_SUCCEEDED
+	},
+
+	// nsIRedirectResultListener
+	//void onRedirectResult(in boolean proceeding);
+	onRedirectResult: function _nsIRedirectResultListener_onRedirectResult(proceeding)
+	{
+		this.logInfo("  --- nsIRedirectResultListener.nsIRedirectResultListener :proceeding:"+proceeding);
 	},
 
 	notify: function _nsIAuthPrompt2_timercb() {
