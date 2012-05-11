@@ -305,7 +305,14 @@ exchWebService.commonFunctions = {
 	    if (!exchWebService.commonFunctions.shouldLog()) {
 	        return;
 	    }
-	    exchWebService.commonFunctions.ASSERT(aArg, "Bad log argument.", false);
+		
+		try {
+			exchWebService.commonFunctions.ASSERT(aArg, "Bad log argument.", true);
+		}
+		catch(exc) {
+			var aArg = exc;
+		}
+
 	    var string;
 	    // We should just dump() both String objects, and string primitives.
 	    if (!(aArg instanceof String) && !(typeof(aArg) == "string")) {

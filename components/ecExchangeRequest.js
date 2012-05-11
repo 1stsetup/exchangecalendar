@@ -236,10 +236,14 @@ ExchangeRequest.prototype = {
 				var auth = this.make_basic_auth(this.mArgument.user,basicAuthPw);
 				this.xmlReq.setRequestHeader('Authorization', auth);
 			}
+			else {
+				this.onUserStop(this.ER_ERROR_USER_ABORT_AUTHENTICATION, "ExchangeRequest.sendRequest: User cancelation or error.");
+				return;
+			}
 
 		}
 		catch(err) {
-			this.logInfo(": ERROR on ExchangeRequest.sendRequest to URL:"+this.currentUrl+"."); 
+			this.logInfo(": ERROR on ExchangeRequest.sendRequest to URL:"+this.currentUrl+". err:"+err); 
 
 			if (this.tryNextURL()) {
 				return;
@@ -335,7 +339,7 @@ ExchangeRequest.prototype = {
 
 	abort: function _abort(evt)
 	{
-		this.logInfo(": ExchangeRequest.abort");
+		this.logInfo("ExchangeRequest.abort: type:"+evt.type);
 		if (evt.type != "abort") {
 			this.logInfo("ecExchangeRequest.abort: "+evt.type);
 		}
@@ -344,6 +348,7 @@ ExchangeRequest.prototype = {
 
 	onUserStop: function _onUserStop(aCode, aMsg)
 	{
+		this.logInfo("ecExchangeRequest.onUserStop: aCode:"+aCode+", aMsg:"+aMsg);
 		this.mXmlReq.abort();
 		this.fail(aCode, aMsg);
 	},
@@ -719,6 +724,7 @@ ExchangeRequest.prototype = {
 
 	fail: function(aCode, aMsg)
 	{
+		this.logInfo("ecExchangeRequest.fail: aCode:"+aCode+", aMsg:"+aMsg);
 		if (this.mCbError) {
 			this.mCbError(this, aCode, aMsg);
 		}
@@ -1066,7 +1072,7 @@ ecnsIAuthPrompt2.prototype = {
 			return true;
 		}
 		else {
-			this.exchangeRequest.onUserStop();
+			this.exchangeRequest.onUserStop(this.exchangeRequest.ER_ERROR_USER_ABORT_AUTHENTICATION, "User canceled entering authentication details.");
 			return false;
 		}
 		return false;
@@ -1098,13 +1104,27 @@ ecnsIAuthPrompt2.prototype = {
 
 		if (got) {
 			ecPasswordErrorList[this.URL] = 0;
-			//this.logInfo(" USING password from passwordmanager:["+password.value+"]");
+			this.logInfo(" USING password from passwordmanager:[********]");
 			return password.value;
 		}
 
-		var ok = this.getCredentials(title, realm, username, password, persist);
+		this.logInfo(" Not a valid password from passwordmanager. Going to ask user to specify credentials.");
+
+		try {
+			if ((this.username) && (this.username != "")) {
+				var ok = this.getCredentials(title, realm, username, password, persist, true);
+			}
+			else {
+				var ok = this.getCredentials(title, realm, username, password, persist, false);
+			}
+		}
+		catch(exc) {
+			this.logInfo(exc);
+			return null;
+		}
 
 		if (!ok) {
+			this.logInfo(" User canceled entering credentials.");
 			if (ecPasswordErrorList[this.URL]) {
 				ecPasswordErrorList[this.URL] = ecPasswordErrorList[this.URL] + 1;
 			}
@@ -1229,8 +1249,15 @@ ecnsIAuthPrompt2.prototype = {
      * @param aRealm        The password realm (unused on branch)
      */
     passwordManagerSave: function calPasswordManagerSave(aUsername, aPassword, aHostName, aRealm) {
-        exchWebService.commonFunctions.ASSERT(aUsername);
-        exchWebService.commonFunctions.ASSERT(aPassword);
+
+	try {
+		exchWebService.commonFunctions.ASSERT(aUsername, "Empty username", true);
+		exchWebService.commonFunctions.ASSERT(aPassword, "Empty password", true);
+	}
+	catch(exc) {
+		this.logInfo(exc);
+		return;
+	}
 
 	var tmpHostname = aHostName; //this.getHostname(aHostName);
 
@@ -1261,7 +1288,8 @@ ecnsIAuthPrompt2.prototype = {
                 loginManager.addLogin(newLoginInfo);
             }
         } catch (exc) {
-            exchWebService.commonFunctions.ASSERT(false, exc);
+		this.logInfo(exc);
+		return;
         }
     },
 
@@ -1275,7 +1303,13 @@ ecnsIAuthPrompt2.prototype = {
      * @return                  Does an entry exist in the password manager
      */
     passwordManagerGet: function calPasswordManagerGet(aUsername, aPassword, aHostName, aRealm) {
-        exchWebService.commonFunctions.ASSERT(aUsername);
+
+	try {
+	        exchWebService.commonFunctions.ASSERT(aUsername, "Empty username", true);
+        } catch (exc) {
+		this.logInfo(exc);
+		return false;
+        }
 
 	this.logInfo("passwordManagerGet: username="+aUsername+", aHostname="+aHostName+", aRealm="+aRealm);
 	var tmpHostname = aHostName; //this.getHostname(aHostName);
@@ -1297,7 +1331,7 @@ ecnsIAuthPrompt2.prototype = {
                 }
             }
         } catch (exc) {
-            exchWebService.commonFunctions.ASSERT(false, exc);
+		this.logInfo(exc);
         }
         return false;
     },
@@ -1311,7 +1345,12 @@ ecnsIAuthPrompt2.prototype = {
      * @return              Could the user be removed?
      */
     passwordManagerRemove: function calPasswordManagerRemove(aUsername, aHostName, aRealm) {
-        exchWebService.commonFunctions.ASSERT(aUsername);
+ 	try {
+	        exchWebService.commonFunctions.ASSERT(aUsername, "Empty username", true);
+        } catch (exc) {
+		this.logInfo(exc);
+		return false;
+        }
 
 	this.logInfo("passwordManagerRemove: username="+aUsername+", aHostname="+aHostName+", aRealm="+aRealm);
  	var tmpHostname = aHostName; //this.getHostname(aHostName);
@@ -1327,6 +1366,7 @@ ecnsIAuthPrompt2.prototype = {
                 }
             }
         } catch (exc) {
+		this.logInfo(exc);
         }
         return false;
     }
