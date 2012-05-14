@@ -969,10 +969,8 @@ ecnsIAuthPrompt2.prototype = {
 
 		this.logInfo("We are going to allow the redirect from '"+url1+"' to '"+url2+"'.");
 
-//		callback(0x80000000); // This was extrated out of the sources as beeing NS_SUCCEEDED
-		if (callback)
-			callback(0); // This was extrated out of the sources as beeing NS_SUCCEEDED
-		}
+	        newChannel.notificationCallbacks = this;
+	        callback.onRedirectVerifyCallback(Cr.NS_OK);
 	},
 
 	// nsIRedirectResultListener
