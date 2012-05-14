@@ -39,6 +39,7 @@ var Ci = Components.interfaces;
 var Cu = Components.utils;
 
 
+Cu.import("resource://calendar/modules/calUtils.jsm");
 Cu.import("resource://exchangecalendar/erGetUserOofSettings.js");
 Cu.import("resource://exchangecalendar/erSetUserOofSettings.js");
 
