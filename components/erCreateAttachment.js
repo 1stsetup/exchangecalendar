@@ -120,7 +120,11 @@ erCreateAttachmentRequest.prototype = {
 			var fileData = this.readFile(this.createAttachments[index].uri.QueryInterface(Ci.nsIFileURL).file);
 			var attachment = <nsTypes:FileAttachment  xmlns:nsTypes={nsTypes}/>;
 			attachment.nsTypes::Name = this.createAttachments[index].uri.QueryInterface(Ci.nsIFileURL).file.leafName;
-			attachment.nsTypes::Size = fileData.size;
+
+			if (this.argument.ServerVersion.indexOf("Exchange2010") == 0) {
+				attachment.nsTypes::Size = fileData.size;
+			}
+
 			attachment.nsTypes::Content = fileData.content;
 
 			req.nsMessages::Attachments.appendChild(attachment);
