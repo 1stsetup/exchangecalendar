@@ -375,7 +375,7 @@ calExchangeCalendar.prototype = {
 	},
 
 	// nsISupports getHelperForLanguage(in PRUint32 language);
-	getHelperForLanguage: function (language) {
+	getHelperForLanguage: function _getHelperForLanguage(language) {
 		return null;
 	},
 
@@ -6492,9 +6492,18 @@ this.logInfo("getTaskItemsOK 4");
 		if (switchValue.indexOf(".{") > -1) {
 			switchValue = switchValue.substr(0,switchValue.indexOf(".{"));
 		}
+
+		if (switchValue.indexOf("IPM.Appointment") == 0) {
+
+			this.logInfo("INFO: convertExchangeToCal: ItemClass = '"+switchValue+"'");
+			switchValue = "IPM.Appointment";
+		}
+
 		switch (switchValue) {
 			case "IPM.Appointment" :
 			case "IPM.Appointment.Occurrence" :
+			case "IPM.Appointment.MP" :
+			case "IPM.Appointment.Live Meeting Request" :
 			case "IPM.OLE.CLASS" :
 			case "IPM.Schedule.Meeting.Request":
 			case "IPM.Schedule.Meeting.Canceled":
