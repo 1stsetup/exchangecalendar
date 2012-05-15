@@ -116,7 +116,7 @@ erAutoDiscoverRequest.prototype = {
 			DisplayName = aResp.Response.User.DisplayName.toString();
 		}
 		catch(err) {
-			dump("autodiscoverOk but Displayname is not available.\n");
+			exchWebService.commonFunctions.LOG("autodiscoverOk but Displayname is not available.\n");
 		}
 
 		// Try to get the SMTP address if it is available
@@ -124,7 +124,7 @@ erAutoDiscoverRequest.prototype = {
 			SMTPaddress = aResp.Response.User.AutoDiscoverSMTPAddress.toString();
 		}
 		catch(err) {
-			dump("autodiscoverOk but AutoDiscoverSMTPAddress is not available.\n");
+			exchWebService.commonFunctions.LOG("autodiscoverOk but AutoDiscoverSMTPAddress is not available.\n");
 		}
 	
 		// Try to get the EWS urls if they are available
