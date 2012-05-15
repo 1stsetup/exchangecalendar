@@ -5,9 +5,9 @@
 
 <!ENTITY label.calendarName "Calendar:">
 <!ENTITY label.itemTitle "Subject:">
-<!ENTITY label.itemStart "Starttime:">
+<!ENTITY label.itemStart "Start time:">
 <!ENTITY label.itemResponse "Your response:">
-<!ENTITY label.meetingOrganiser "Organiser:">
+<!ENTITY label.meetingOrganiser "Organizer:">
 
 <!ENTITY label.messageReponseBody "Response message:">
 

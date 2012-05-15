@@ -5,9 +5,9 @@
 <!ENTITY exchWebService.manageEWSAccounts.saveAccount.button "Save settings">
 
 <!ENTITY exchWebService.manageEWSAccounts.autodiscover.label "Use Exchange's autodiscovery function.">
-<!ENTITY exchWebService.manageEWSAccounts.mailbox.label "Mailboxnamae:">
+<!ENTITY exchWebService.manageEWSAccounts.mailbox.label "Mailbox name:">
 <!ENTITY exchWebService.manageEWSAccounts.windowsuser.label "Username:">
-<!ENTITY exchWebService.manageEWSAccounts.windowsdomain.label "Domainname:">
+<!ENTITY exchWebService.manageEWSAccounts.windowsdomain.label "Domain name:">
 <!ENTITY exchWebService.manageEWSAccounts.autodiscover.button "Perform autodiscovery">
 <!ENTITY exchWebService.manageEWSAccounts.servercheck.button "Check server and account">
 <!ENTITY exchWebService.manageEWSAccounts.name.label "Name:">

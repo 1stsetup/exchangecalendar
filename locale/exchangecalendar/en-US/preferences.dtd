@@ -10,7 +10,7 @@
 <!ENTITY exchangeWebService.preference.network.debug.label "Log communication with Exchange server">
 <!ENTITY exchangeWebService.preference.network.debuglevel.label1 "Log level">
 <!ENTITY exchangeWebService.preference.network.debuglevel.label2 "1 = Basic information, 2 = Complete communication">
-<!ENTITY exchangeWebService.preference.authentication.debug.label "Log communication progress information (eg Authentication)">
+<!ENTITY exchangeWebService.preference.authentication.debug.label "Log communication progress information (e.g.,  Authentication)">
 
 <!ENTITY exchangeWebService.preferences.titleWin "Exchange (EWS) Preferences">
 
@@ -19,6 +19,6 @@
 
 <!ENTITY exchangeWebService.preferences.tab.cache "Caching">
 <!ENTITY exchangeWebService.preference.cache.memory.label "Minimal temporary memory cache">
-<!ENTITY exchangeWebService.preference.cache.memory.startupBefore.label "Number of days to download before startdate of program:">
-<!ENTITY exchangeWebService.preference.cache.memory.startupAfter.label "Number of days to download after startdate of program:">
+<!ENTITY exchangeWebService.preference.cache.memory.startupBefore.label "Number of days to download before start date of program:">
+<!ENTITY exchangeWebService.preference.cache.memory.startupAfter.label "Number of days to download after start date of program:">
 

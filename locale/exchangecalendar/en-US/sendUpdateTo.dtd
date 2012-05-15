@@ -4,6 +4,6 @@
 <!ENTITY label.calendaritem.title "Send update for meeting:">
 
 <!ENTITY radio.label.sendtonone "Send to nobody.">
-<!ENTITY radio.label.sendtoall "Send to everyone inivited.">
+<!ENTITY radio.label.sendtoall "Send to everyone invited.">
 <!ENTITY radio.label.sendtochanged "Send only to added or removed persons.">
 

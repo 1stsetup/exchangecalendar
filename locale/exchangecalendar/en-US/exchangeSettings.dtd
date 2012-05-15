@@ -7,12 +7,11 @@
 
 <!ENTITY label.ecExchangeSettings.title "Settings for calendar:">
 
-<!ENTITY label.poll.inbox "Poll inbox for requests, changes and cancelations.">
+<!ENTITY label.poll.inbox "Poll inbox for requests, changes and cancellations.">
 <!ENTITY label.poll.inbox.interval "Frequency to poll inbox in seconds:">
-<!ENTITY label.poll.calendar.interval "Frequency to poll calendar in seconds:">
+<!ENTITY label.poll.calendar.interval "Frequency (in seconds) to poll calendar:">
 
-<!ENTITY label.nomeetingrequestsettings "You cannot set meeting request because you did not 
- selected the main calendar for the mailbox">
+<!ENTITY label.nomeetingrequestsettings "You cannot set meeting request because you did not select the main calendar for the mailbox">
 
 <!ENTITY label.autorespond.meetingrequest "Automatically respond to a new invitation with ">
 
@@ -20,14 +19,14 @@
 <!ENTITY menuitem.label.ec-autorespond-answer.accepted "I will attend">
 <!ENTITY menuitem.label.ec-autorespond-answer.declined "I will not attend">
 
-<!ENTITY label.autoremove.invitation_cancellation1 "Automatically remove the invitation and accompaning cancellation message if you did not yet respond to the invitation request.">
+<!ENTITY label.autoremove.invitation_cancellation1 "Automatically remove the invitation and accompanying cancellation message if you did not yet respond to the invitation request.">
 <!ENTITY label.autoremove.invitation_cancellation2 "Automatically remove a confirmed invitation when you receive a cancellation message.">
 
-<!ENTITY label.autoremove.invitation_response1 "Automatically remove a response from others to a meetinginvitation of which you are not the organiser.">
+<!ENTITY label.autoremove.invitation_response1 "Automatically remove a response from others to a meeting invitation of which you are not the organizer.">
 
-<!ENTITY label.doautorespond.meetingrequest.message "Send following message with response instead of asking for it.">
+<!ENTITY label.doautorespond.meetingrequest.message "Send the following message with responses instead of asking for a message.">
 <!ENTITY label.autorespond.meetingrequest.message "Your message:">
 
-<!ENTITY treecol.label.userid "UserId">
+<!ENTITY treecol.label.userid "Userid">
 <!ENTITY treecol.label.email "Email">
 

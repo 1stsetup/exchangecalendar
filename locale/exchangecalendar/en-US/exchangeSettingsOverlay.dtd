@@ -1,8 +1,8 @@
 <!ENTITY ecautodiscover "Use Exchange's autodiscovery function.">
-<!ENTITY ecfolderbase.label "Folderbase:">
-<!ENTITY ecfolderpath.label "Path below folderbase:">
-<!ENTITY ecfolderidofshare.label "Share FolderId:">
-<!ENTITY exchWebServices.SharedFolderID.label "Share displayname:">
+<!ENTITY ecfolderbase.label "Folder base:">
+<!ENTITY ecfolderpath.label "Path below folder base:">
+<!ENTITY ecfolderidofshare.label "Share Folder Id:">
+<!ENTITY exchWebServices.SharedFolderID.label "Shared display name:">
 
 <!ENTITY menuitem.label.ecfolderbase.calendar "Calendar folder">
 <!ENTITY menuitem.label.ecfolderbase.publicfoldersroot "Public folders">
@@ -38,10 +38,10 @@
 <!ENTITY button.label.serverandmailboxcheck "Check server and mailbox">
 <!ENTITY button.label.servercheck "Check server and account">
 
-<!ENTITY ecmailbox.label "Mailboxname:">
-<!ENTITY ecmailbox.tooltip "If you do not specify a mailbox you wil only have access to public folders.">
+<!ENTITY ecmailbox.label "Mailbox name:">
+<!ENTITY ecmailbox.tooltip "If you do not specify a mailbox you will only have access to public folders.">
 <!ENTITY ecwindowsuser.label "Username:">
-<!ENTITY ecwindowsdomain.label "Domainname:">
+<!ENTITY ecwindowsdomain.label "Domain name:">
 <!ENTITY ecwindowspassword.label "Password:">
 
 <!ENTITY button.label.folderpathcheck "Check">
