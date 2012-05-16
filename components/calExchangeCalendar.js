@@ -861,12 +861,35 @@ calExchangeCalendar.prototype = {
 			if (erGetMeetingRequestByUIDRequest.argument.item.organizer) {
 				this.logInfo(" >>>>>>> 2 We have a organizer and SCHEDULE-AGENT="+erGetMeetingRequestByUIDRequest.argument.item.organizer.getProperty("SCHEDULE-AGENT"));
 				if (erGetMeetingRequestByUIDRequest.argument.item.organizer.getProperty("SCHEDULE-AGENT") == "CLIENT") {
+					// looks like iTIP because SCHEDULE-AGENT is set. 
 					this.logInfo(" >>>>>>> 2 We have a organizer and SCHEDULE-AGENT="+erGetMeetingRequestByUIDRequest.argument.item.organizer.getProperty("SCHEDULE-AGENT"));
 					this.logInfo(" !!!!!!!!!!!!!! THIS SHOULD NEVER HAPPEN ON AN iTIP. DO WE HAVE AN iTIP");
 					this.logInfo("iCalString:"+erGetMeetingRequestByUIDRequest.argument.item.icalString);
-					this.logInfo(" Stopping processing.. Report this problem to exchangecalendar@extensions.1st-setup.nl");
-					doStop = true;
+					//this.logInfo(" Stopping processing.. Report this problem to exchangecalendar@extensions.1st-setup.nl");
+					//doStop = true;  // For now we going to clean out the UID and me as an attendee
+					// We fake that we do a paste and that it is an invitation.
 					
+					this.logInfo(" !!!>>  We are going to treat this as a copy/paste for a new event.");
+					var tmpItem = erGetMeetingRequestByUIDRequest.argument.item.clone();
+					tmpItem.id = "xxxx-xxxx-xxx-xxxx";
+					tmpItem.setProperty("X-IsInvitation", "true");
+					tmpItem.setProperty("X-exchangeITIP1", "true");
+					tmpItem.setProperty("X-IsMeeting", true);
+					this.addtItem(tmpItem, erGetMeetingRequestByUIDRequest.listener);
+					return;
+					
+				}
+
+				if (erGetMeetingRequestByUIDRequest.argument.item.organizer.hasProperty("SCHEDULE-AGENT")) {
+					this.logInfo("Unknown SCHEDULE-AGENT property for item. SCHEDULE-AGENT:"+erGetMeetingRequestByUIDRequest.argument.item.organizer.getProperty("SCHEDULE-AGENT"));
+				}
+				else {
+					this.logInfo("SCHEDULE-AGENT not set. We are going add the item. At a later stage we will want to have a proper restore.");
+					var tmpItem = erGetMeetingRequestByUIDRequest.argument.item.clone();
+					tmpItem.id = "xxxx-xxxx-xxx-xxxx";
+					tmpItem.setProperty("X-exchangeITIP2", "true");
+					tmpItem.removeAllAttendees();
+					this.addtItem(tmpItem, erGetMeetingRequestByUIDRequest.listener);
 				}
 			}
 
