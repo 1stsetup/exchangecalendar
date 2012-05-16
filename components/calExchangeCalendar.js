@@ -2430,7 +2430,9 @@ this.logInfo("singleModified doNotify");
 
 		if (aCalId.indexOf("@") < 0 || aCalId.indexOf(".") < 0) {
             		// No valid email, screw it
-			aListener.onResult(null, null);
+			if (aListener) {
+				aListener.onResult(null, null);
+			}
 			return;
 		}
 

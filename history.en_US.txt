@@ -1,3 +1,9 @@
+Version 1.8.13:
+
+Version 1.8.12:
+- Fixed: Bug 117 - tasks calendar shows calendar items
+- Fixed: Problem where only Free/Busy information would be shown for defalt personal calendar.
+
 Version 1.8.6:
 - Fixed: Bug 111 - No events are visible when user only has calendar permission to see Free/Busy info
 
