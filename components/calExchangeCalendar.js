@@ -890,6 +890,7 @@ calExchangeCalendar.prototype = {
 					tmpItem.setProperty("X-exchangeITIP2", "true");
 					tmpItem.removeAllAttendees();
 					this.addItem(tmpItem, erGetMeetingRequestByUIDRequest.listener);
+					return;
 				}
 			}
 
