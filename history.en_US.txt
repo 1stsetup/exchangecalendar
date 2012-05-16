@@ -1,4 +1,6 @@
 Version 1.8.13:
+- Fixed: Bug 120 - All my calendar appointments are not visible in Thunderbird
+- Fixed: Bug 94 - Credentials (Username, Password) for calendars are not stored
 
 Version 1.8.12:
 - Fixed: Bug 117 - tasks calendar shows calendar items

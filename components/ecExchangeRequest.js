@@ -99,6 +99,8 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.prePassword = "";
 
+	this.kerberos = false;
+
 	this.prefB = Cc["@mozilla.org/preferences-service;1"]
 			.getService(Ci.nsIPrefBranch);
 
@@ -231,14 +233,19 @@ ExchangeRequest.prototype = {
 
 			this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user, this.prePassword);
 
-			var basicAuthPw = this.getPrePassword(this.currentUrl, this.mArgument.user);
-			if (basicAuthPw) {
-				var auth = this.make_basic_auth(this.mArgument.user,basicAuthPw);
-				this.xmlReq.setRequestHeader('Authorization', auth);
+			if (!this.kerberos) {
+				var basicAuthPw = this.getPrePassword(this.currentUrl, this.mArgument.user);
+				if (basicAuthPw) {
+					var auth = this.make_basic_auth(this.mArgument.user,basicAuthPw);
+					this.xmlReq.setRequestHeader('Authorization', auth);
+				}
+				else {
+					this.onUserStop(this.ER_ERROR_USER_ABORT_AUTHENTICATION, "ExchangeRequest.sendRequest: User cancelation or error.");
+					return;
+				}
 			}
 			else {
-				this.onUserStop(this.ER_ERROR_USER_ABORT_AUTHENTICATION, "ExchangeRequest.sendRequest: User cancelation or error.");
-				return;
+				this.logInfo("We leave the basic auth details out of the request because we are trying for Kerberos Authentication.");
 			}
 
 		}
@@ -562,6 +569,19 @@ ExchangeRequest.prototype = {
 		return this._notificationCallbacks.getPrePassword(aUser, tmpURL);
 	},
 
+	retryForKerberos: function _retryForKerberos()
+	{
+		this.logInfo("exchangeRequest.retryForKerberos: We will try Kerberos Authentication.");
+		this.kerberos = true;
+
+                let xmlReq = this.mXmlReq;
+		//if (xmlReq.readyState != 4) {
+			xmlReq.abort();
+		//}
+
+		this.sendRequest(this.mData, this.currentUrl);
+	},
+
         isHTTPError: function()
         {
                 let xmlReq = this.mXmlReq;
@@ -608,6 +628,11 @@ ExchangeRequest.prototype = {
 				case 449: errMsg = "Retry with"; break;
 				case 450: errMsg = "Blocked by Windows Parental Controls"; break;
 				case 499: errMsg = "Client closed request"; break;
+				}
+
+				if ((xmlReq.status == 401) && (!this.kerberos)) {
+					this.retryForKerberos();
+					return true;
 				}
 
                                 this.logInfo(": isConnError req.status="+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText, 2);

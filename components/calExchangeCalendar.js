@@ -5817,8 +5817,8 @@ this.logInfo("getTaskItemsOK 4");
 							     (isEvent(this.itemCache[index])) &&
 							     ( (this.itemCache[index].getProperty("X-CalendarItemType") == "Occurrence") ||
 							       (this.itemCache[index].getProperty("X-CalendarItemType") == "Exception") ) &&
-							     (this.itemCache[index].getProperty("X-UID") == item.getProperty("X-UID")) &&
-							     (this.itemCache[index].parentItem.id == item.id) ) {
+							     (this.itemCache[index].getProperty("X-UID") == aMaster.getProperty("X-UID")) &&
+							     (this.itemCache[index].parentItem.id == aMaster.id) ) {
 								this.setSnoozeTime(this.itemCache[index], pidLidReminderSet, pidLidReminderSignalTime, aMaster);
 							}
 						}
@@ -6208,7 +6208,8 @@ this.logInfo("getTaskItemsOK 4");
 
 					this.recurringMasterCache[aCalendarItem.nsTypes::UID.toString()] = item;
 	
-					item.recurrenceId = this.tryToSetDateValue(aCalendarItem.nsTypes::RecurrenceId, item.startDate);
+					// Removed because it probably does not need to be set. We found this out when working on the offline cache (16-05-2012)
+					//item.recurrenceId = this.tryToSetDateValue(aCalendarItem.nsTypes::RecurrenceId, item.startDate);
 					if (childCount > 0) {
 						this.setSnoozeTime(null, pidLidReminderSet, pidLidReminderSignalTime, item);
 					}
