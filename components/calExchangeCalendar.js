@@ -882,6 +882,8 @@ calExchangeCalendar.prototype = {
 
 				if (erGetMeetingRequestByUIDRequest.argument.item.organizer.getProperty("SCHEDULE-AGENT")) {
 					this.logInfo("Unknown SCHEDULE-AGENT property for item. SCHEDULE-AGENT:"+erGetMeetingRequestByUIDRequest.argument.item.organizer.getProperty("SCHEDULE-AGENT"));
+					this.logInfo("Please mail the previous line to exchangecalendar@extensions.1st-setup.nl");
+					return;
 				}
 				else {
 					this.logInfo("SCHEDULE-AGENT not set. We are going add the item. At a later stage we will want to have a proper restore.");
