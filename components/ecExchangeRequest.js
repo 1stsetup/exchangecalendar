@@ -630,10 +630,10 @@ ExchangeRequest.prototype = {
 				case 499: errMsg = "Client closed request"; break;
 				}
 
-				if ((xmlReq.status == 401) && (!this.kerberos)) {
+			/*	if ((xmlReq.status == 401) && (!this.kerberos)) {
 					this.retryForKerberos();
 					return true;
-				}
+				}*/
 
                                 this.logInfo(": isConnError req.status="+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText, 2);
 

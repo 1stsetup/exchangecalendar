@@ -601,6 +601,10 @@ calExchangeCalendar.prototype = {
 	{
 		this.logInfo("addItem id="+aItem.id);
 
+		// if aItem.id == null then it is a newly created item in Lightning.
+		// if aItem.id == "040000008200E00074C5B7101A82E008000000005D721F845633CD0100000000000000001000000006CC9AC20EA39441B863D6E454306174" it is from iTIP
+		// if aItem.id == "31d9835f-1c29-4d18-ab39-7587c56e3982" paste in lightning after a copy in lightning.
+
 	        if (this.OnlyShowAvailability) {
 	            this.notifyOperationComplete(aListener,
 	                                         Ci.calIErrors.CAL_IS_READONLY,
@@ -615,10 +619,27 @@ calExchangeCalendar.prototype = {
 	        let newItem = aItem;
 	
 		// We check if we not allready have this item in Cache. If so we modify.
-		// This will happen when some pressed the accept,decline or tentative buttons
+		// This will happen when someone pressed the accept,decline or tentative buttons
 		// in the itip status bar on the header of an email message.
 		if (this.itemCache[newItem.id]) {
 			return this.modifyItem(newItem, this.itemCache[newItem.id]);
+		}
+
+		if ((aItem.id) && (aItem.id.indexOf("-") > 2)) {
+			// This is added from a copy/paste procedure.
+			aItem.id = null;
+			aItem.deleteProperty("X-UID");
+
+			// If I am invited. Remove myself.
+			var attendees = aItem.getAttendees({});
+			aItem.removeAllAttendees();
+			for each (var attendee in attendees) {
+				if ((attendee.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) ||
+					(attendee.id.replace(/^exchangecalendar:/, '').toLowerCase() == this.mailbox.toLowerCase()) ) {
+					this.logInfo("addItem: FOUND myself as an attendee and we are going to remove myself:"+aItem.title);
+					aItem.removeAttendee(attendee);
+				}
+			}
 		}
 
 	        return this.adoptItem(newItem, aListener);
