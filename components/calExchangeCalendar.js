@@ -880,7 +880,7 @@ calExchangeCalendar.prototype = {
 					
 				}
 
-				if (erGetMeetingRequestByUIDRequest.argument.item.organizer.hasProperty("SCHEDULE-AGENT")) {
+				if (erGetMeetingRequestByUIDRequest.argument.item.organizer.getProperty("SCHEDULE-AGENT")) {
 					this.logInfo("Unknown SCHEDULE-AGENT property for item. SCHEDULE-AGENT:"+erGetMeetingRequestByUIDRequest.argument.item.organizer.getProperty("SCHEDULE-AGENT"));
 				}
 				else {
