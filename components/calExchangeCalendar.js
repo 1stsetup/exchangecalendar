@@ -875,7 +875,7 @@ calExchangeCalendar.prototype = {
 					tmpItem.setProperty("X-IsInvitation", "true");
 					tmpItem.setProperty("X-exchangeITIP1", "true");
 					tmpItem.setProperty("X-IsMeeting", true);
-					this.addtItem(tmpItem, erGetMeetingRequestByUIDRequest.listener);
+					this.addItem(tmpItem, erGetMeetingRequestByUIDRequest.listener);
 					return;
 					
 				}
@@ -889,7 +889,7 @@ calExchangeCalendar.prototype = {
 					tmpItem.id = "xxxx-xxxx-xxx-xxxx";
 					tmpItem.setProperty("X-exchangeITIP2", "true");
 					tmpItem.removeAllAttendees();
-					this.addtItem(tmpItem, erGetMeetingRequestByUIDRequest.listener);
+					this.addItem(tmpItem, erGetMeetingRequestByUIDRequest.listener);
 				}
 			}
 
