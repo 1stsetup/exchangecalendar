@@ -3892,18 +3892,25 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		var tmpStr = "4501-01-01T00:00:00Z";
 
 		if ((aItem) && (aMaster)) {
+			this.logInfo("getMasterSnoozeStates: We have an item and a master.");
 			if (aMaster.hasProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime)) {
 				tmpStr = aMaster.getProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
+				this.logInfo("getMasterSnoozeStates1: Master has a snoozetime value:"+tmpStr);
+			}
+			if (aItem.hasProperty("X-MOZ-SNOOZE-TIME")) {
+				this.logInfo("getMasterSnoozeStates1: Item has a snoozetime value:"+aItem.getProperty("X-MOZ-SNOOZE-TIME"));
 			}
 		}
 		else {
 			if (aMaster) {
+				this.logInfo("getMasterSnoozeStates: We a master.");
 				var props = aMaster.propertyEnumerator;
 				while (props.hasMoreElements()) {
 					var prop = props.getNext().QueryInterface(Components.interfaces.nsIProperty);
 					if (prop.name.indexOf("X-MOZ-SNOOZE-TIME-") == 0) {
 						this.logInfo("getMasterSnoozeStates: "+prop.name+"="+prop.value);
 						tmpStr = prop.value;
+						this.logInfo("getMasterSnoozeStates2: Master has a snoozetime value:"+tmpStr);
 						break;
 					}
 				}
@@ -4603,7 +4610,7 @@ this.logInfo("!!CHANGED:"+String(e));
 			if (prop.localName() == "ExtendedProperty") {
 				se.nsTypes::ExtendedFieldURI = prop.nsTypes::ExtendedFieldURI;
 
-				if ((prop.nsTypes::ExtendedFieldURI.@PropertyId != "34144") && (prop.nsTypes::ExtendedFieldURI.@PropertyId != "34051")  && (prop.nsTypes::ExtendedFieldURI.@PropertyId != "34049")) {
+				if ((prop.nsTypes::ExtendedFieldURI.@PropertyId != MAPI_PidLidReminderSignalTime) && (prop.nsTypes::ExtendedFieldURI.@PropertyId != "34051")  && (prop.nsTypes::ExtendedFieldURI.@PropertyId != "34049")) {
 					onlySnoozeChanged = false;
 				}
 			} else {
@@ -5770,7 +5777,7 @@ this.logInfo("getTaskItemsOK 4");
 	// This as part of the conversion from Exchange Provider add-on to Exchange Calendar add-on.
 	readEP_DismissSnoozeState: function _readEP_DismissSnoozeState(aItem, it)
 	{
-		let nextRem = it.nsTypes::ExtendedProperty.(nsTypes::ExtendedFieldURI.@PropertyId == '34144').nsTypes::Value[0];
+		let nextRem = it.nsTypes::ExtendedProperty.(nsTypes::ExtendedFieldURI.@PropertyId == MAPI_PidLidReminderSignalTime).nsTypes::Value[0];
 	
 		if (!nextRem) {
 			return;
