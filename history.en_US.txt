@@ -1,6 +1,7 @@
 Version 1.8.16:
 - Fixed: Bug 122 - New: I get "Event Invitation" email for my own meetings when I import them
 - Fixed: Bug 91 - Recurring appointment causes immediate reminders for all future
+- Fixed a lot of smaller bugs.
 
 Version 1.8.13:
 - Fixed: Bug 120 - All my calendar appointments are not visible in Thunderbird

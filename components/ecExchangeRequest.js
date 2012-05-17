@@ -1204,6 +1204,13 @@ ecnsIAuthPrompt2.prototype = {
 			return null;
 		}
 
+		var tmpStr = ".";
+		if (persist.value) {
+			tmpStr = " and save them into the passwordmanager.";
+		}
+
+		this.logInfo(" User gave credentials. Going to use them"+tmpStr);
+
 		ecPasswordErrorList[this.URL] = 0;
 		this.exchangeRequest.user = username.value;
 		this.username = username.value;
