@@ -5999,7 +5999,7 @@ this.logInfo("getTaskItemsOK 4");
 		}
 	},
 
-	setAlarm: function _setAlarm(aItem, aCalendarItem)
+	setAlarm: function _setAlarm(aItem, aCalendarItem, pidLidReminderSignalTime, aMaster)
 	{
 		if ((aCalendarItem.nsTypes::ReminderIsSet == "true")) {
 			var alarm = cal.createAlarm();
@@ -6019,7 +6019,24 @@ this.logInfo("getTaskItemsOK 4");
 			alarm.offset = alarmOffset;
 			this.logInfo("Alarm set with an offset of "+alarmOffset.minutes+" minutes from the start");
 
-			aItem.addAlarm(alarm);
+			// If we are single this is easy we just set the alarm.
+
+			// If we are a occurrence or exception we set the alarm based on the setting for our parent.
+
+			// If we are a master we never should get here.
+
+			var reminderDueBy = this.tryToSetDateValue(aCalendarItem.nsTypes::ReminderDueBy, null);
+			var signalTime = null;
+			if (pidLidReminderSignalTime) {
+				signalTime =  this.tryToSetDateValue(pidLidReminderSignalTime, null);
+			}
+			var alarmActive = true;
+			if (signalTime) && (signalTime.compare()) {
+			}
+				
+			if ((reminderDueBy) && (reminderDueBy.compare(aItem.startDate) && ()) {
+				aItem.addAlarm(alarm);
+			}
 		}
 	},
 
@@ -6155,8 +6172,6 @@ this.logInfo("getTaskItemsOK 4");
 			return null;
 		}
 
-		this.setAlarm(item, aCalendarItem);
-
 		// Check for Attachments
 		this.addExchangeAttachmentToCal(aCalendarItem, item);
 
@@ -6280,6 +6295,7 @@ this.logInfo("getTaskItemsOK 4");
 						this.logInfo("Found master for exception:"+master.title+", date:"+master.startDate.toString());
 						item.parentItem = master;
 						master.recurrenceInfo.modifyException(item, true);
+						this.setAlarm(item, aCalendarItem, pidLidReminderSignalTime, master);  
 						this.setSnoozeTime(item, pidLidReminderSet, pidLidReminderSignalTime, master);
 					}
 					else {
@@ -6297,6 +6313,7 @@ this.logInfo("getTaskItemsOK 4");
 						this.logInfo("Found master for occurrence:"+master.title+", date:"+master.startDate.toString());
 						item.parentItem = master;
 
+						this.setAlarm(item, aCalendarItem, pidLidReminderSignalTime, master);  
 						this.setSnoozeTime(item, pidLidReminderSet, pidLidReminderSignalTime, master);
 					}
 					else {
@@ -6359,9 +6376,7 @@ this.logInfo("getTaskItemsOK 4");
 	
 					// Removed because it probably does not need to be set. We found this out when working on the offline cache (16-05-2012)
 					//item.recurrenceId = this.tryToSetDateValue(aCalendarItem.nsTypes::RecurrenceId, item.startDate);
-					if (childCount > 0) {
-						this.setSnoozeTime(null, pidLidReminderSet, pidLidReminderSignalTime, item);
-					}
+					//this.setSnoozeTime(null, pidLidReminderSet, pidLidReminderSignalTime, item);
 	
 					if ((loadChildren) || (this.newMasters[aCalendarItem.nsTypes::UID.toString()])) {
 
@@ -6393,24 +6408,25 @@ this.logInfo("getTaskItemsOK 4");
 						null);
 					}
 
-					// Microsoft remindernexttime
+/*					// Microsoft remindernexttime
 					if (!doNotHandleOldAddon) {
 						this.readEP_DismissSnoozeState(item, aCalendarItem);
-					}
+					}*/
 
 					this.logInfo("This is a master it will not be put into the normal items cache list.");
 					return null;  // The master will not be visible
 
 					break;
 				default:
+					this.setAlarm(item, aCalendarItem, pidLidReminderSignalTime, null);  
 					this.setSnoozeTime(item, pidLidReminderSet, pidLidReminderSignalTime, null);
 			}
 		}
 
-		// Microsoft remindernexttime
+/*		// Microsoft remindernexttime
 		if (!doNotHandleOldAddon) {
 			this.readEP_DismissSnoozeState(item, aCalendarItem);
-		}
+		}*/
 
 		item.setProperty("X-fromExchange", true);
 		return item;
@@ -6549,6 +6565,8 @@ this.logInfo("getTaskItemsOK 4");
 
 		// Check for Attachments
 		this.addExchangeAttachmentToCal(aTask, item);
+
+		item.setProperty("X-IsRecurring", aTask.nsTypes::IsRecurring.toString());
 
 		if (aTask.nsTypes::IsRecurring.toString() == "true") {
 			item.parentItem = item;
