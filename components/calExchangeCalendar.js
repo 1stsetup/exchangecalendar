@@ -4057,6 +4057,10 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			e.nsTypes::Importance = "Normal";
 		}
 
+		if (aItem.alarmLastAck) {
+			this.logInfo("[[[[[[[[[[[ alarmLastAck:"+aItem.alarmLastAck.icalString+"]]]]]]]]]]]]]]]]]]]");
+		}
+
 		var alarmTime = this.getAlarmTime(aItem);
 		if (alarmTime) {
 			this.logInfo("alarmTime = "+alarmTime.toString());
@@ -5888,18 +5892,18 @@ this.logInfo("getTaskItemsOK 4");
 				var reminderTime = cal.createDateTime(pidLidReminderSignalTime);
 				this.logInfo("Set snooze time: X-MOZ-SNOOZE-TIME="+reminderTime.icalString);
 				aItem.setProperty("X-MOZ-SNOOZE-TIME", reminderTime.icalString);
+
+				let lastAck = reminderTime.clone();
+				lastAck.addDuration(cal.createDuration('-PT1S'));
+				aItem.alarmLastAck = lastAck;
+				this.logInfo("Set alarmLastAck:"+lastAck.icalString);
+ 
 			}
 		}
 		else {
 			// Remove any snooze states according http://msdn.microsoft.com/en-us/library/cc765589.aspx
 			this.logInfo("Item has no snooze date set.");
-/*			this.logInfo("Item has no snooze date set. Clearing all snooze state on item");
-			if (aMaster) {
-				this.clearXMozSnoozeTimes(aMaster);
-			}
-			else {
-				this.clearXMozSnoozeTimes(aItem);
-			}*/
+			aItem.alarmLastAck = null;
 		}
 	},
 
@@ -6068,7 +6072,7 @@ this.logInfo("getTaskItemsOK 4");
 		var extendedProperties = aCalendarItem.nsTypes::ExtendedProperty;
 		var doNotHandleOldAddon = false;
 		var pidLidReminderSet = false;
-		var pidLidReminderSignalTime = "";
+		var pidLidReminderSignalTime = null;
 		for each(var extendedProperty in extendedProperties) {
 
 			var propertyName = extendedProperty.nsTypes::ExtendedFieldURI.@PropertyName.toString();
@@ -6098,7 +6102,6 @@ this.logInfo("getTaskItemsOK 4");
 			switch (propertyId) {
 				case MAPI_PidLidReminderSignalTime: // This is the next alarm time. Could be set by a snooze command.
 					pidLidReminderSignalTime = extendedProperty.nsTypes::Value.toString();
-					if (item.title == "Nieuwe gebeurtenis2") this.logInfo("@1:ODD propertyId:"+propertyId+"|"+pidLidReminderSignalTime);
 					break;
 				case MAPI_PidLidReminderSet: // A snooze time is active/set.
 					pidLidReminderSet = (extendedProperty.nsTypes::Value.toString() == "true");
@@ -6594,14 +6597,14 @@ this.logInfo("getTaskItemsOK 4");
 					//this.logInfo("updateCalendar: onModifyItem:"+ item.title);
 
 					//Copy snooze/lastack status
-					if (item.isMutable) {
+/*					if (item.isMutable) {
 						if (this.itemCache[item.id].alarmLastAck) {
 							item.alarmLastAck = this.itemCache[item.id].alarmLastAck.clone();
 						}
 						if (this.itemCache[item.id].getProperty("X-MOZ-SNOOZE-TIME")) {
 							item.setProperty("X-MOZ-SNOOZE-TIME", this.itemCache[item.id].getProperty("X-MOZ-SNOOZE-TIME"));
 						}
-					}
+					}*/
 
 					this.singleModified(item, true);
 					//this.notifyTheObservers("onModifyItem", [item, this.itemCache[item.id]]);
