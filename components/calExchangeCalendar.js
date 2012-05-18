@@ -3866,21 +3866,63 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 	getSingleSnoozeState: function _getSingleSnoozeState(e, aSingle)
 	{
 		this.logInfo("getSingleSnoozeState");
-		var tmpStr = "4501-01-01T00:00:00Z";
+		var tmpStr = null;
 		var mozSnooze = aSingle.getProperty("X-MOZ-SNOOZE-TIME");
 		if (mozSnooze) {
-			tmpStr = mozSnooze;
+			if (aSingle.alarmLastAck) {
+				// We have a X-MOZ-SNOOZE and an alarmLastAck. We are going to check if the LastAck is before the X-MOZ-SNOOZE or after
+				this.logInfo("We have a X-MOZ-SNOOZE and an alarmLastAck. We are going to check if the LastAck is before the X-MOZ-SNOOZE or after.");
+
+				// if mozSnooze < alarmLastAck it means the last alarm has been Acked and it was a dismiss.
+				// if mozSnooze >= alarmLastAck it means the last alarm was snoozed to a new alarm time in the future.
+				var tmpMozSnooze = cal.createDateTime(mozSnooze);
+				if (tmpMozSnooze.compare(aSingle.alarmLastAck) == -1) {
+					this.logInfo("The X-MOZ-SNOOZE is before alarmLastAck. The alarm has been dismissed.");
+					tmpStr = "4501-01-01T00:00:00Z";
+				}
+				else {
+					this.logInfo("The X-MOZ-SNOOZE is after or equal to alarmLastAck. The alarm has been snoozed.");
+					tmpStr = mozSnooze;
+				}
+			}
+			else {
+				// We have a X-MOZ-SNOOZE and no alarmLastAck. This means we use the X-MOZ-SNOOZE as the next reminder time.
+				this.logInfo("We have a X-MOZ-SNOOZE and no alarmLastAck. This means no snooze or dismiss yet and we use the X-MOZ-SNOOZE as the next reminder time.");
+				tmpStr = mozSnooze;
+			}
+		}
+		else {
+			if (aSingle.alarmLastAck) {
+				// The alarm has been snoozed or dismissed before and we do not have a X-MOZ-SNOOZE. So it is dismissed.
+				this.logInfo("The alarm has been snoozed or dismissed before and we do not have a X-MOZ-SNOOZE. So it is dismissed.");
+				tmpStr = "4501-01-01T00:00:00Z";
+			}
+			else {
+				// We have no snooze time and no alarmLastAck this means the alarm was never snoozed or dismissed
+				// We set the next reminder to the alarm time.
+				if (this.getAlarmTime(aSingle)) {
+					this.logInfo("We have no snooze time and no alarmLastAck this means the alarm was never snoozed or dismissed. We set the next reminder to the alarm time.");
+					tmpStr = this.getAlarmTime(aSingle);
+				}
+				else {
+					this.logInfo("We have no snooze time and no alarmLastAck this means the alarm was never snoozed or dismissed AND we have no alarm time skipping PidLidReminderSignalTime.");
+					tmpStr = null;
+				}
+			}
 		}
 
-		let eprop = <nsTypes:ExtendedProperty xmlns:nsTypes={nsTypes}/>;
-		eprop.nsTypes::ExtendedFieldURI.@DistinguishedPropertySetId = "Common";
-		eprop.nsTypes::ExtendedFieldURI.@PropertyId = MAPI_PidLidReminderSignalTime;
-		eprop.nsTypes::ExtendedFieldURI.@PropertyType = "SystemTime";
-		var newSnoozeTime = cal.createDateTime(tmpStr);
-		newSnoozeTime = newSnoozeTime.getInTimezone(cal.UTC());
-		eprop.nsTypes::Value = cal.toRFC3339(newSnoozeTime);
+		if (tmpStr) {
+			this.logInfo("We have a new PidLidReminderSignalTime:"+tmpStr);
+			let eprop = <nsTypes:ExtendedProperty xmlns:nsTypes={nsTypes}/>;
+			eprop.nsTypes::ExtendedFieldURI.@DistinguishedPropertySetId = "Common";
+			eprop.nsTypes::ExtendedFieldURI.@PropertyId = MAPI_PidLidReminderSignalTime;
+			eprop.nsTypes::ExtendedFieldURI.@PropertyType = "SystemTime";
+			var newSnoozeTime = cal.createDateTime(tmpStr);
+			newSnoozeTime = newSnoozeTime.getInTimezone(cal.UTC());
+			eprop.nsTypes::Value = cal.toRFC3339(newSnoozeTime);
 
-		e.appendChild(eprop);
+			e.appendChild(eprop);
+		}
 
 		this.logInfo("getSingleSnoozeState END");
 		return tmpStr;
@@ -3966,6 +4008,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			this.logInfo("addSnoozeDismissState: item has alarms");
 
 			var tmpDateTime;
+			var nextReminder = "";
 
 			if ((aItem.id != aItem.parentItem.id) && (aItem.parentItem.recurrenceInfo)) {
 				this.logInfo("addSnoozeDismissState: Occurrence or Exception");
@@ -3979,7 +4022,8 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				}
 				else {
 					this.logInfo("addSnoozeDismissState: Single");
-					tmpStr = tmpStr + this.getSingleSnoozeState(e, aItem);
+					nextReminder = this.getSingleSnoozeState(e, aItem)
+					tmpStr = tmpStr + nextReminder;
 				}
 
 			}
@@ -3988,7 +4032,14 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			eprop.nsTypes::ExtendedFieldURI.@DistinguishedPropertySetId = "Common";
 			eprop.nsTypes::ExtendedFieldURI.@PropertyId = MAPI_PidLidReminderSet;
 			eprop.nsTypes::ExtendedFieldURI.@PropertyType = "Boolean";
-			eprop.nsTypes::Value = "true";
+
+			if (nextReminder.indexOf("4501-01-01T00:00:00Z") > -1) {
+				// Reminder is turned off.
+				eprop.nsTypes::Value = "false";
+			}
+			else {
+				eprop.nsTypes::Value = "true";
+			}
 
 			e.appendChild(eprop);
 
@@ -4060,6 +4111,41 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		if (aItem.alarmLastAck) {
 			this.logInfo("[[[[[[[[[[[ alarmLastAck:"+aItem.alarmLastAck.icalString+"]]]]]]]]]]]]]]]]]]]");
 		}
+		else {
+			this.logInfo("[[[[[[[[[[[ alarmLastAck:null]]]]]]]]]]]]]]]]]]]");
+		}
+
+		// Precalculate right start and end time for exchange.
+		// If not timezone specified set them to the lightning preference.
+		if ((aItem.startDate.timezone.isFloating) && (!aItem.startDate.isDate)) {
+			aItem.startDate = aItem.startDate.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
+		}
+
+		if ((aItem.endDate.timezone.isFloating) && (!aItem.endDate.isDate)) {
+			aItem.endDate = aItem.endDate.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
+		}
+
+		var tmpStart = aItem.startDate.clone();
+		var tmpEnd = aItem.endDate.clone();
+
+		if (aItem.startDate.isDate) {
+			tmpStart.isDate = false;
+			tmpEnd.isDate = false;
+			var tmpDuration = cal.createDuration();
+			tmpDuration.minutes = -1;
+			tmpEnd.addDuration(tmpDuration);
+
+			// We make a non-UTC datetime value for exchWebService.commonFunctions.
+			// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
+			//LOG("  ==== tmpStart:"+cal.toRFC3339(tmpStart));
+			var exchStart = cal.toRFC3339(tmpStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
+			var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19); //cal.toRFC3339(tmpEnd).length-6);
+		}
+		else {
+			// We set in bias advanced to UCT datetime values for exchWebService.commonFunctions.
+			var exchStart = cal.toRFC3339(tmpStart);
+			var exchEnd = cal.toRFC3339(tmpEnd);
+		}
 
 		var alarmTime = this.getAlarmTime(aItem);
 		if (alarmTime) {
@@ -4095,6 +4181,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				break;
 			}
 	
+			e.nsTypes::ReminderDueBy = exchStart;
 			e.nsTypes::ReminderIsSet = 'true';
 			if (offset.inSeconds != 0) {
 				e.nsTypes::ReminderMinutesBeforeStart = (offset.inSeconds / 60) * -1;
@@ -4109,7 +4196,9 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		// Save snooze/dismiss state
+	try {
 		this.addSnoozeDismissState(e, aItem, alarmTime);
+	} catch(exc) { this.logInfo("!!!!!!!!!!!!!"+exc+"!!!!!!!!!!!!!!!!!!!!"); }
 
 		if (aItem.getProperty("X-UID")) {
 			e.nsTypes::UID = aItem.getProperty("X-UID");
@@ -4132,7 +4221,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		if (!this.isInvitation(aItem, true)) {
-			// If not timezone specified set them to the lightning preference.
+		/*	// If not timezone specified set them to the lightning preference.
 			if ((aItem.startDate.timezone.isFloating) && (!aItem.startDate.isDate)) {
 				aItem.startDate = aItem.startDate.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
 			}
@@ -4161,7 +4250,10 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				// We set in bias advanced to UCT datetime values for exchWebService.commonFunctions.
 				e.nsTypes::Start = cal.toRFC3339(tmpStart);
 				e.nsTypes::End = cal.toRFC3339(tmpEnd);
-			}
+			} */
+
+			e.nsTypes::Start = exchStart;
+			e.nsTypes::End = exchEnd;
 
 			e.nsTypes::IsAllDayEvent = aItem.startDate.isDate;
 	
@@ -4217,7 +4309,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 		}
 
-this.logInfo("convertCalAppointmentToExchangeAppointment: "+String(e));
+		this.logInfo("convertCalAppointmentToExchangeAppointment: "+String(e));
 
 		return e;
 	},
