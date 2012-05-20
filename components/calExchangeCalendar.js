@@ -3931,31 +3931,88 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 	getMasterSnoozeStates: function _getMasterSnoozeStates(e, aMaster, aItem)
 	{
 		this.logInfo("getMasterSnoozeStates");
-		var tmpStr = "4501-01-01T00:00:00Z";
+		var tmpStr = "";
 
 		if ((aItem) && (aMaster)) {
-			this.logInfo("getMasterSnoozeStates: We have an item and a master.");
+			this.logInfo("getMasterSnoozeStates: We have an item (occurrence/exception) and a master.");
 			if (aMaster.hasProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime)) {
 				tmpStr = aMaster.getProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
-				this.logInfo("getMasterSnoozeStates1: Master has a snoozetime value:"+tmpStr);
+				this.logInfo("getMasterSnoozeStates: Master has a X-MOZ-SNOOZE-TIME value for this occurrence. startDate:"+aItem.startDate.icalString+", X-MOZ-SNOOZE-TIME:"+tmpStr);
+				
+				// What value does alarmLastAck has?? This will determine what to send to 
 			}
-			if (aItem.hasProperty("X-MOZ-SNOOZE-TIME")) {
-				this.logInfo("getMasterSnoozeStates1: Item has a snoozetime value:"+aItem.getProperty("X-MOZ-SNOOZE-TIME"));
+			else {
+				this.logInfo("getMasterSnoozeStates: Master has NO X-MOZ-SNOOZE-TIME value for this occurrence. startDate:"+aItem.startDate.icalString);
+
+				// If alarmLastAck for this item is null then the item was dismissed.
+				tmpStr = "";
 			}
 		}
 		else {
 			if (aMaster) {
-				this.logInfo("getMasterSnoozeStates: We a master.");
+				this.logInfo("getMasterSnoozeStates: We only have a master and no item. We are going to see if a X-MOZ-SNOOZE-TIME- is set for a child event.");
+
+				// We need to get the event for which the alarm is active.
 				var props = aMaster.propertyEnumerator;
 				while (props.hasMoreElements()) {
 					var prop = props.getNext().QueryInterface(Components.interfaces.nsIProperty);
 					if (prop.name.indexOf("X-MOZ-SNOOZE-TIME-") == 0) {
 						this.logInfo("getMasterSnoozeStates: "+prop.name+"="+prop.value);
 						tmpStr = prop.value;
-						this.logInfo("getMasterSnoozeStates2: Master has a snoozetime value:"+tmpStr);
+						this.logInfo("getMasterSnoozeStates2: Master has a X-MOZ-SNOOZE-TIME- value. "+prop.name+":"+tmpStr);
 						break;
 					}
 				}
+
+				if (tmpStr == "") {
+					this.logInfo("We did not find a X-MOZ-SNOOZE-TIME- for one of the children.");
+
+					// Nothing smoozed we are going to set it to the next alarm.
+					this.logInfo("We did not find a childEvent by using the X-MOZ-SNOOZE-TIME-. We are going to find the child by the alarmLastAck of the Master. alarmLastAck:"+aMaster.alarmLastAck);
+					if (aMaster.alarmLastAck) {
+						this.logInfo("Master has an alarmLastAck. We set the alarm to the first child with an alarm after alarmLastAck.");
+						var prevTime = aMaster.alarmLastAck.clone();
+					}
+					else {
+						this.logInfo("Master has no alarmLastAck. We set the alarm to the first child with an alarm in the future.");
+						var prevTime = cal.createDateTime().getInTimezone(cal.UTC());
+					}
+
+					this.logInfo("Trying to find a child event with an alarmdate after '"+prevTime.icalString+"'");
+					var childAlarm = cal.createDateTime("4501-01-01T00:00:00Z");
+					for (var index in this.itemCache) {
+						if ((this.itemCache[index]) && (this.itemCache[index].getProperty("X-UID") == aMaster.getProperty("X-UID"))) {
+							var newChildAlarm = this.getAlarmTime(this.itemCache[index]);
+							if ((newChildAlarm) && (newChildAlarm.compare(prevTime) == 1)) {
+								if (childAlarm.compare(newChildAlarm) == 1) {
+									childAlarm = newChildAlarm.clone();
+									childEvent = this.itemCache[index];
+									this.logInfo("Found child event for which the alarmdate ("+childAlarm.icalString+") is set after '"+prevTime.icalString+"'");
+								}
+							}
+						}
+					}
+					if (childAlarm) {
+						this.logInfo("Found a child and we are going to calculate the alarmLastAck based on it.");
+						tmpStr = this.getAlarmTime(childEvent);
+						if (tmpStr) {
+							tmpStr = tmpStr.icalString;
+							this.logInfo("This child has the following alarm:"+tmpStr);
+						}
+						else {
+							tmpStr = "";
+							this.logInfo("Did not find an alarm time for the child. This is strange..!!");
+						}
+
+					}
+					else {
+						this.logIngo("We did not find a child. Unable to set alarmLastAck... Maybe set it to 4501-01-01T00:00:00Z");
+					}
+				}
+			}
+			else {
+				this.logInfo("Only an item was specified. This is odd this should never happen. Bailing out.");
+				return;
 			}
 		}
 
@@ -4147,14 +4204,110 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			var exchEnd = cal.toRFC3339(tmpEnd);
 		}
 
-		var alarmTime = this.getAlarmTime(aItem);
-		if (alarmTime) {
+		var masterAlarmOn = true;
+		if ((aItem.id == aItem.parentItem.id) && (aItem.recurrenceInfo)) {
+			// This is a master we need the alarm date for the active child
+			// We get this by analyzing the X-MOZ-SNOOZE-STATE or the alarmLastAck date.
+			this.logInfo("We are converting a Cal master to an Exchange master");
+
+			this.logInfo("We are going to find for which child an alarm might have been snoozed (X-MOZ-SNOOZE-TIME- is set).");
+			var childEvent = null;
+			var props = aItem.propertyEnumerator;
+			while (props.hasMoreElements()) {
+				var prop = props.getNext().QueryInterface(Components.interfaces.nsIProperty);
+				if (prop.name.indexOf("X-MOZ-SNOOZE-TIME-") == 0) {
+					this.logInfo("Cal Master has a X-MOZ-SNOOZE-TIME- value. "+prop.name+":"+prop.value);
+
+					// We are going to find the child with specified recurrenId.nativeTime.
+					this.logInfo("We are going to find the child with specified recurrenId.nativeTime.");
+					for (var index in this.itemCache) {
+
+try{
+						this.logInfo(" !!!! this.itemCache[index].recurrenceId.nativeTime="+this.itemCache[index].recurrenceId.nativeTime);
+} catch (exc) { this.logInfo(" !! err:"+exc);}
+						if ((this.itemCache[index]) && (this.itemCache[index].getProperty("X-UID") == aItem.getProperty("X-UID"))) {
+							this.logInfo(" !!!! this.itemCache[index].recurrenceId.nativeTime="+this.itemCache[index].recurrenceId.nativeTime);
+						}
+
+						if ((this.itemCache[index]) && (this.itemCache[index].getProperty("X-UID") == aItem.getProperty("X-UID")) &&
+						    (this.itemCache[index].recurrenceId.nativeTime == prop.name.substr(18))) {
+							this.logInfo("Found child event for which the X-MOZ-SNOOZE-TIME- is set on the master.");
+							childEvent = this.itemCache[index];
+							break;
+						}
+					}
+
+					break;
+				}
+			}
+
+			if (! childEvent) {
+				this.logInfo("We did not find a childEvent by using the X-MOZ-SNOOZE-TIME-. We are going to find the child by the alarmLastAck of the Master. alarmLastAck:"+aItem.alarmLastAck);
+				if (aItem.alarmLastAck) {
+					this.logInfo("Master has an alarmLastAck. We set the alarm to the first child with an alarm after alarmLastAck.");
+					var prevTime = aItem.alarmLastAck.clone();
+				}
+				else {
+					this.logInfo("Master has no alarmLastAck. We set the alarm to the first child with an alarm in the future.");
+					var prevTime = cal.createDateTime().getInTimezone(cal.UTC());
+				}
+
+				this.logInfo("Trying to find a child event with an alarmdate after '"+prevTime.icalString+"'");
+				var childAlarm = cal.createDateTime("4501-01-01T00:00:00Z");
+				for (var index in this.itemCache) {
+					if ((this.itemCache[index]) && (this.itemCache[index].getProperty("X-UID") == aItem.getProperty("X-UID"))) {
+						var newChildAlarm = this.getAlarmTime(this.itemCache[index]);
+						if ((newChildAlarm) && (newChildAlarm.compare(prevTime) == 1)) {
+							if (childAlarm.compare(newChildAlarm) == 1) {
+								childAlarm = newChildAlarm.clone();
+								childEvent = this.itemCache[index];
+								this.logInfo("Found child event for which the alarmdate ("+childAlarm.icalString+") is set after '"+prevTime.icalString+"'");
+							}
+						}
+					}
+				}
+			}
+ 
+			if (childEvent) {
+				var alarmTime = this.getAlarmTime(childEvent);
+				var childStart = childEvent.startDate.clone();
+				masterAlarmStart = true;
+				var alarmEvent = childEvent;
+				if (childEvent.startDate.isDate) {
+					
+					childStart.isDate = false;
+					// We make a non-UTC datetime value for exchWebService.commonFunctions.
+					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
+					var exchAlarmStart = cal.toRFC3339(childStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
+				}
+				else {
+					// We set in bias advanced to UCT datetime values for exchWebService.commonFunctions.
+					var exchAlarmStart = cal.toRFC3339(childStart);
+				}
+			}
+			else {
+				// We did not find an child with an alarm active...!!!
+				// Alarm will be turned off
+				this.logInfo("We did not find an child with an alarm active. Alarm will be turned off on this master.");
+				// We need to get the last child in line. Use that alarm and set alarmLastAck way into the futur...
+				masterAlarmOn = false; 
+			}
+		}
+		else {
+			this.logInfo("We are converting a Cal single/occurrence/exception to an Exchange single/occurrence/exception");
+			var exchAlarmStart = exchStart;
+			var alarmTime = this.getAlarmTime(aItem);
+			masterAlarmStart = true;
+			var alarmEvent = aItem;
+		}
+
+		if ((alarmTime) && (masterAlarmStart)) {
 			this.logInfo("alarmTime = "+alarmTime.toString());
 
-			this.logInfo("length="+aItem.getAlarms({}).length);
+			this.logInfo("length="+alarmEvent.getAlarms({}).length);
 
 			// Lightning event can have multiple alarms. Exchange only one.
-			for each(var alarm in aItem.getAlarms({})) {
+			for each(var alarm in alarmEvent.getAlarms({})) {
 				break;
 			}
 
@@ -4165,11 +4318,11 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				var newAlarmTime = alarm.alarmDate.clone();
 
 				// Calculate offset from start of item.
-				var offset = newAlarmTime.subtractDate(item.startDate);
+				var offset = newAlarmTime.subtractDate(alarmEvent.startDate);
 				break;
 			case Ci.calIAlarm.ALARM_RELATED_START:
 				this.logInfo("ALARM_RELATED_START this is easy exchange does the same.");
-				var newAlarmTime = aItem.startDate.clone();
+				var newAlarmTime = alarmEvent.startDate.clone();
 				var offset = alarm.offset.clone();
 				break;
 			case Ci.calIAlarm.ALARM_RELATED_END:
@@ -4177,11 +4330,11 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				var newAlarmTime = aItem.endDate.clone();
 				newAlarmTime.addDuration(alarm.offset);
 
-				var offset = newAlarmTime.subtractDate(item.startDate);
+				var offset = newAlarmTime.subtractDate(alarmEvent.startDate);
 				break;
 			}
 	
-			e.nsTypes::ReminderDueBy = exchStart;
+			e.nsTypes::ReminderDueBy = exchAlarmStart;
 			e.nsTypes::ReminderIsSet = 'true';
 			if (offset.inSeconds != 0) {
 				e.nsTypes::ReminderMinutesBeforeStart = (offset.inSeconds / 60) * -1;
@@ -5958,6 +6111,7 @@ this.logInfo("getTaskItemsOK 4");
 							switch (masterReminderDueBy.compare(aItem.startDate)) {
 								case -1:
 									this.logInfo("The ReminderDueBy date of the master is before the item's startdate. This alarm has not been snoozed or dismissed.");
+									aItem.alarmLastAck = null;
 									break;
 								case 0: 
 									this.logInfo("The ReminderDueBy date of the master is equal to the item's startdate. We found the occurrence for which the alarm is active or dismissed or snoozed.");
@@ -6053,25 +6207,7 @@ this.logInfo("getTaskItemsOK 4");
 			this.logInfo("Alarm set with an offset of "+alarmOffset.minutes+" minutes from the start");
 			aItem.setProperty("X-ReminderDueBy", aCalendarItem.nsTypes::ReminderDueBy.toString());
 
-			// If we are single this is easy we just set the alarm.  , pidLidReminderSignalTime, aMaster
-
-			// If we are a occurrence or exception we set the alarm based on the setting for our parent.
-			// The ReminderDueBy of occurrences and parent (master) are always the same for the occurrence which has the next alarm.
-
-			// If we are a master we never should get here.
-
-	/*		var reminderDueBy = this.tryToSetDateValue(aCalendarItem.nsTypes::ReminderDueBy, null);
-			var signalTime = null;
-			if (pidLidReminderSignalTime) {
-				signalTime =  this.tryToSetDateValue(pidLidReminderSignalTime, null);
-			}
-			var alarmActive = true;
-			if ((signalTime) && (signalTime.compare())) {
-			}*/
-				
-		//	if ((reminderDueBy) && (reminderDueBy.compare(aItem.startDate)) && (alarmActive)) {
-				aItem.addAlarm(alarm);
-		//	} 
+			aItem.addAlarm(alarm);
 		}
 	},
 
