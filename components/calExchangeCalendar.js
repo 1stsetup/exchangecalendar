@@ -5923,9 +5923,21 @@ this.logInfo("getTaskItemsOK 4");
 		}
 	},
 
-	setSnoozeTime: function _setSnoozeTime(aItem, pidLidReminderSet, pidLidReminderSignalTime, aMaster)
+	setSnoozeTime: function _setSnoozeTime(aItem, aMaster)
 	{
-		if ((pidLidReminderSet) && (pidLidReminderSignalTime != "4501-01-01T00:00:00Z")) {
+
+		if (aMaster) {
+			var pidLidReminderSet = aMaster.getProperty("X-PidLidReminderSet");
+			var pidLidReminderSignalTime = aMaster.getProperty("X-PidLidReminderSignalTime");
+		}
+		else {
+			var pidLidReminderSet = aItem.getProperty("X-PidLidReminderSet");
+			var pidLidReminderSignalTime = aItem.getProperty("X-PidLidReminderSignalTime");
+		}
+
+		this.logInfo("-- pidLidReminderSet:"+pidLidReminderSet);
+
+		if (pidLidReminderSet) {
 
 			this.logInfo("Reminder date is set for item");
 
@@ -5933,28 +5945,49 @@ this.logInfo("getTaskItemsOK 4");
 				// Exchange only has the next reminderSignaltime. This is one value. Lightning can handle multiple.
 //				this.clearXMozSnoozeTimes(aMaster);
 
-				var reminderTime = cal.createDateTime(pidLidReminderSignalTime);
+//				var reminderTime = cal.createDateTime(pidLidReminderSignalTime);
+				var reminderTime = cal.createDateTime(aMaster.getProperty("X-PidLidReminderSignalTime"));
 				if (reminderTime) {
 
 					if (aItem) {
-						// We have an item. See if the reminderTime is before the startTime of the item.
-						if (reminderTime.compare(aItem.startDate) < 1) {  
-							// Check if the reminderTime is after the AlarmTime.
-							var alarmTime = this.getAlarmTime(aItem);
-							if ((alarmTime) && (alarmTime.compare(reminderTime) < 1)) {
-								// The reminderTime is after the alarmtime and before the starttime. Set it.
-								this.clearXMozSnoozeTimes(aMaster);
-								this.logInfo("Set snooze time: X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime+"="+reminderTime.icalString);
-								aMaster.setProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime, reminderTime.icalString);
+						this.logInfo("We have an exception or an occurrence. We are going to use the master to see if it is snoozed or not.");
+
+						// if the master ReminderDueBy is the same as the item Start date then this is the occurrence for which the next alarm is active.
+						var masterReminderDueBy = this.tryToSetDateValue(aMaster.getProperty("X-ReminderDueBy"), null);
+						if (masterReminderDueBy) {
+							switch (masterReminderDueBy.compare(aItem.startDate)) {
+								case -1:
+									this.logInfo("The ReminderDueBy date of the master is before the item's startdate. This alarm has not been snoozed or dismissed.");
+									break;
+								case 0: 
+									this.logInfo("The ReminderDueBy date of the master is equal to the item's startdate. We found the occurrence for which the alarm is active or dismissed or snoozed.");
+									// We need to find out if it snoozed or dismissed.
+									this.clearXMozSnoozeTimes(aMaster);
+									this.logInfo("Set snooze time: X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime+"="+reminderTime.icalString);
+									aMaster.setProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime, reminderTime.icalString);
+
+									var lastAck = reminderTime.clone();
+									lastAck.addDuration(cal.createDuration('-PT1S'));
+									aItem.alarmLastAck = lastAck;
+									aMaster.alarmLastAck = lastAck;
+									this.logInfo("Set alarmLastAck:"+lastAck.icalString);
+									break;
+								case 1:
+									this.logInfo("The ReminderDueBy date of the master is after the item's startdate. This alarm has been dismissed.");
+									var lastAck = aItem.startDate.clone();
+									//lastAck.addDuration(cal.createDuration('-PT1S'));
+									aItem.alarmLastAck = lastAck;
+									this.logInfo("Set alarmLastAck:"+lastAck.icalString);
+									break;
 							}
-							else {
-								this.logInfo("No alarm time found for item. Wil not use this item for setting X-MOZ-SNOOZE-TIME- on master");
-							}
-							
 						}
 						else {
-							this.logInfo("reminderTime is after startDate of item");
+							// Cannot determine for which alarm the next reminder is set. Bailing out.
+							this.logInfo("Cannot determine for which alarm the next reminder is set. Bailing out.");
+							return;
 						}
+
+
 					}
 					else {
 						// We have a master only. Check for which of its occurrences/exceptions the X-MOZ-SNOOZE_TIME- needs to be set.
@@ -5969,7 +6002,7 @@ this.logInfo("getTaskItemsOK 4");
 							       (this.itemCache[index].getProperty("X-CalendarItemType") == "Exception") ) &&
 							     (this.itemCache[index].getProperty("X-UID") == aMaster.getProperty("X-UID")) &&
 							     (this.itemCache[index].parentItem.id == aMaster.id) ) {
-								this.setSnoozeTime(this.itemCache[index], pidLidReminderSet, pidLidReminderSignalTime, aMaster);
+								this.setSnoozeTime(this.itemCache[index], aMaster);
 							}
 						}
 					}
@@ -5985,7 +6018,7 @@ this.logInfo("getTaskItemsOK 4");
 				this.logInfo("Set snooze time: X-MOZ-SNOOZE-TIME="+reminderTime.icalString);
 				aItem.setProperty("X-MOZ-SNOOZE-TIME", reminderTime.icalString);
 
-				let lastAck = reminderTime.clone();
+				var lastAck = reminderTime.clone();
 				lastAck.addDuration(cal.createDuration('-PT1S'));
 				aItem.alarmLastAck = lastAck;
 				this.logInfo("Set alarmLastAck:"+lastAck.icalString);
@@ -5999,7 +6032,7 @@ this.logInfo("getTaskItemsOK 4");
 		}
 	},
 
-	setAlarm: function _setAlarm(aItem, aCalendarItem, pidLidReminderSignalTime, aMaster)
+	setAlarm: function _setAlarm(aItem, aCalendarItem)
 	{
 		if ((aCalendarItem.nsTypes::ReminderIsSet == "true")) {
 			var alarm = cal.createAlarm();
@@ -6018,25 +6051,27 @@ this.logInfo("getTaskItemsOK 4");
 			alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
 			alarm.offset = alarmOffset;
 			this.logInfo("Alarm set with an offset of "+alarmOffset.minutes+" minutes from the start");
+			aItem.setProperty("X-ReminderDueBy", aCalendarItem.nsTypes::ReminderDueBy.toString());
 
-			// If we are single this is easy we just set the alarm.
+			// If we are single this is easy we just set the alarm.  , pidLidReminderSignalTime, aMaster
 
 			// If we are a occurrence or exception we set the alarm based on the setting for our parent.
+			// The ReminderDueBy of occurrences and parent (master) are always the same for the occurrence which has the next alarm.
 
 			// If we are a master we never should get here.
 
-			var reminderDueBy = this.tryToSetDateValue(aCalendarItem.nsTypes::ReminderDueBy, null);
+	/*		var reminderDueBy = this.tryToSetDateValue(aCalendarItem.nsTypes::ReminderDueBy, null);
 			var signalTime = null;
 			if (pidLidReminderSignalTime) {
 				signalTime =  this.tryToSetDateValue(pidLidReminderSignalTime, null);
 			}
 			var alarmActive = true;
-			if (signalTime) && (signalTime.compare()) {
-			}
+			if ((signalTime) && (signalTime.compare())) {
+			}*/
 				
-			if ((reminderDueBy) && (reminderDueBy.compare(aItem.startDate) && ()) {
+		//	if ((reminderDueBy) && (reminderDueBy.compare(aItem.startDate)) && (alarmActive)) {
 				aItem.addAlarm(alarm);
-			}
+		//	} 
 		}
 	},
 
@@ -6209,9 +6244,11 @@ this.logInfo("getTaskItemsOK 4");
 			switch (propertyId) {
 				case MAPI_PidLidReminderSignalTime: // This is the next alarm time. Could be set by a snooze command.
 					pidLidReminderSignalTime = extendedProperty.nsTypes::Value.toString();
+					item.setProperty("X-PidLidReminderSignalTime", pidLidReminderSignalTime);
 					break;
 				case MAPI_PidLidReminderSet: // A snooze time is active/set.
 					pidLidReminderSet = (extendedProperty.nsTypes::Value.toString() == "true");
+					item.setProperty("X-PidLidReminderSet", pidLidReminderSet);
 					break;
 				default:
 					if (propertyId != "") {
@@ -6287,6 +6324,7 @@ this.logInfo("getTaskItemsOK 4");
 			switch (aCalendarItem.nsTypes::CalendarItemType.toString()) {
 				case "Exception" :
 					this.logInfo("@1:"+item.startDate.toString()+":IsException");
+					this.setAlarm(item, aCalendarItem);  
 					// Try to find master. If found add Exception and link recurrenceinfo.
 					item.recurrenceId = this.tryToSetDateValue(aCalendarItem.nsTypes::RecurrenceId, item.startDate);
 					var master = this.recurringMasterCache[aCalendarItem.nsTypes::UID.toString()];
@@ -6295,8 +6333,7 @@ this.logInfo("getTaskItemsOK 4");
 						this.logInfo("Found master for exception:"+master.title+", date:"+master.startDate.toString());
 						item.parentItem = master;
 						master.recurrenceInfo.modifyException(item, true);
-						this.setAlarm(item, aCalendarItem, pidLidReminderSignalTime, master);  
-						this.setSnoozeTime(item, pidLidReminderSet, pidLidReminderSignalTime, master);
+						this.setSnoozeTime(item, master);
 					}
 					else {
 						this.logInfo("HAS NO MASTER: STRANGE: Exception:"+item.title);
@@ -6305,6 +6342,7 @@ this.logInfo("getTaskItemsOK 4");
 					break;
 				case "Occurrence" :
 					this.logInfo("@1:"+item.startDate.toString()+":IsOccurrence");
+					this.setAlarm(item, aCalendarItem);  
 					// This is a occurrence. Try to find the master and link recurrenceinfo.
 					item.recurrenceId = this.tryToSetDateValue(aCalendarItem.nsTypes::RecurrenceId, item.startDate);
 					var master = this.recurringMasterCache[aCalendarItem.nsTypes::UID.toString()];
@@ -6313,8 +6351,7 @@ this.logInfo("getTaskItemsOK 4");
 						this.logInfo("Found master for occurrence:"+master.title+", date:"+master.startDate.toString());
 						item.parentItem = master;
 
-						this.setAlarm(item, aCalendarItem, pidLidReminderSignalTime, master);  
-						this.setSnoozeTime(item, pidLidReminderSet, pidLidReminderSignalTime, master);
+						this.setSnoozeTime(item, master);
 					}
 					else {
 						this.logInfo("HAS NO MASTER: STRANGE: Occurrence:"+item.title);
@@ -6372,11 +6409,12 @@ this.logInfo("getTaskItemsOK 4");
 						loadChildren = true;
 					}
 
+					this.setAlarm(item, aCalendarItem);  
 					this.recurringMasterCache[aCalendarItem.nsTypes::UID.toString()] = item;
 	
 					// Removed because it probably does not need to be set. We found this out when working on the offline cache (16-05-2012)
 					//item.recurrenceId = this.tryToSetDateValue(aCalendarItem.nsTypes::RecurrenceId, item.startDate);
-					//this.setSnoozeTime(null, pidLidReminderSet, pidLidReminderSignalTime, item);
+					//this.setSnoozeTime(null, item);
 	
 					if ((loadChildren) || (this.newMasters[aCalendarItem.nsTypes::UID.toString()])) {
 
@@ -6418,8 +6456,8 @@ this.logInfo("getTaskItemsOK 4");
 
 					break;
 				default:
-					this.setAlarm(item, aCalendarItem, pidLidReminderSignalTime, null);  
-					this.setSnoozeTime(item, pidLidReminderSet, pidLidReminderSignalTime, null);
+					this.setAlarm(item, aCalendarItem);  
+					this.setSnoozeTime(item, null);
 			}
 		}
 
@@ -6550,10 +6588,12 @@ this.logInfo("getTaskItemsOK 4");
 			switch (propertyId) {
 				case MAPI_PidLidReminderSignalTime: // This is the next alarm time. Could be set by a snooze command.
 					pidLidReminderSignalTime = extendedProperty.nsTypes::Value.toString();
+					item.setProperty("X-PidLidReminderSignalTime", pidLidReminderSignalTime);
 					if (item.title == "Nieuwe gebeurtenis2") this.logInfo("@1:ODD propertyId:"+propertyId+"|"+pidLidReminderSignalTime);
 					break;
 				case MAPI_PidLidReminderSet: // A snooze time is active/set.
 					pidLidReminderSet = (extendedProperty.nsTypes::Value.toString() == "true");
+					item.setProperty("X-PidLidReminderSet", pidLidReminderSet);
 					break;
 				default:
 					if (propertyId != "") {
@@ -6643,7 +6683,7 @@ this.logInfo("getTaskItemsOK 4");
 			item.makeImmutable();
 		}
 
-		this.setSnoozeTime(item, pidLidReminderSet, pidLidReminderSignalTime, null);
+		this.setSnoozeTime(items, null);
 
 		// Microsoft remindernexttime
 		if (!doNotHandleOldAddon) {
