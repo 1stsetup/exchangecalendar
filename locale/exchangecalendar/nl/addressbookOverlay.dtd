@@ -1,0 +1,9 @@
+<!ENTITY toolbar.button.label.addaccount "Exchange contactmap toevoegen">
+<!ENTITY toolbar.button.tooltip.addaccount "Dit zal een nieuw Exchange contactmap toevoegen">
+
+<!ENTITY toolbar.button.label.deleteaccount "Exchange contactmap verwijderen">
+<!ENTITY toolbar.button.tooltip.deleteaccount "Dit zal een Exchange contactmap verwijderen">
+
+<!ENTITY deleteExchangeCmd.label "Verwijder Exchange contactmap">
+
+

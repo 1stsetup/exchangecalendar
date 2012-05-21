@@ -1,0 +1,9 @@
+<!ENTITY label.acceptbutton "Opslaan">
+<!ENTITY label.cancelbutton "Annuleer">
+
+<!ENTITY ecsettings.tab.adsettings "Exchange/Windows AD">
+<!ENTITY ecsettings.tab.meetingrequestsettings "Vergader verzoeken">
+
+<!ENTITY label.ecExchangeSettings.title "Settings voor contacten.">
+
+

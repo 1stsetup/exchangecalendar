@@ -1,0 +1,66 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: GPL 3.0
+ *
+ * The contents of this file are subject to the General Public License
+ * 3.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * -- Exchange 2007/2010 Contacts.
+ * -- For Thunderbird.
+ *
+ * Author: Michel Verbraak (info@1st-setup.nl)
+ * Website: http://www.1st-setup.nl/wordpress/?page_id=xx
+ * email: exchangecontacts@extensions.1st-setup.nl
+ *
+ *
+ * ***** BEGIN LICENSE BLOCK *****/
+
+@import url("chrome://messenger/skin/");
+
+@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
+@namespace html url("http://www.w3.org/1999/xhtml");
+
+/* ::::: primary toolbar buttons ::::: */
+
+#button-addexchangeaccount {
+  list-style-image: url("chrome://exchangecalendar/content/button-addcontact.22x22.png");
+  -moz-image-region: rect(0px 21px 21px 0px);
+}
+
+#button-addexchangeaccount:hover {
+  -moz-image-region: rect(0px 21px 21px 0px);
+} 
+
+#button-addexchangeaccount:hover:active {
+  -moz-image-region: rect(0px 21px 21px 0px);
+}
+
+#button-addexchangeaccount[disabled] {
+  -moz-image-region: rect(21px 21px 44px 0px) !important;
+} 
+
+/*---*/
+#button-deleteexchangeaccount {
+  list-style-image: url("chrome://exchangecalendar/content/button-deletecontact.22x22.png");
+  -moz-image-region: rect(0px 21px 21px 0px);
+}
+
+#button-deleteexchangeaccount:hover {
+  -moz-image-region: rect(0px 21px 21px 0px);
+} 
+
+#button-deleteexchangeaccount:hover:active {
+  -moz-image-region: rect(0px 21px 21px 0px);
+}
+
+#button-deleteexchangeaccount[disabled] {
+  -moz-image-region: rect(21px 21px 44px 0px) !important;
+} 
+
+

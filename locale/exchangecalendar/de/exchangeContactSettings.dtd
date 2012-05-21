@@ -1,0 +1,9 @@
+<!ENTITY label.acceptbutton "Save">
+<!ENTITY label.cancelbutton "Cancel">
+
+<!ENTITY ecsettings.tab.adsettings "Exchange/Windows AD">
+<!ENTITY ecsettings.tab.meetingrequestsettings "Vergader verzoeken">
+
+<!ENTITY label.ecExchangeSettings.title "Contact properties.">
+
+
