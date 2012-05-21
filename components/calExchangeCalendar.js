@@ -4282,29 +4282,30 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			}
 		}
 
+		const freeBusy = { "TRANSPARENT": "Free",
+				  "OPAQUE": "Busy",
+				  null: "Busy" };
+
+		const attendeeStatus = {
+			"NEEDS-ACTION"	: "Unknown",
+			"TENTATIVE"	: "Tentative",
+			"ACCEPTED"	: "Accept",
+			"DECLINED"	: "Decline",
+			null		: "Unknown"
+		};
+
 		if (!this.isInvitation(aItem, true)) {
 			e.nsTypes::Start = exchStart;
 			e.nsTypes::End = exchEnd;
 
 			e.nsTypes::IsAllDayEvent = aItem.startDate.isDate;
 	
-			const freeBusy = { "TRANSPARENT": "Free",
-					  "OPAQUE": "Busy",
-					  null: "Busy" };
 			e.nsTypes::LegacyFreeBusyStatus = freeBusy[aItem.getProperty("TRANSP")];
 	
 			e.nsTypes::Location = aItem.getProperty("LOCATION") || "";
 
 			var attendees = aItem.getAttendees({});
 			for each (var attendee in attendees) {
-				const attendeeStatus = {
-					"NEEDS-ACTION"	: "Unknown",
-					"TENTATIVE"	: "Tentative",
-					"ACCEPTED"	: "Accept",
-					"DECLINED"	: "Decline",
-					null		: "Unknown"
-				};
-	
 				var ae = <nsTypes:Attendee xmlns:nsTypes={nsTypes}/>;
 	
 				ae.nsTypes::Mailbox.nsTypes::Name = attendee.commonName;
@@ -4338,6 +4339,83 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				e.nsTypes::EndTimeZone.@Id = this.getEWSTimeZoneId(tmpEnd.timezone);
 			}
 
+		}
+		else {
+			//this.logInfo("convertCalAppointmentToExchangeAppointment: "+String(e));
+
+			//return e;
+			
+			if ((aItem.hasProperty("X-exchangeITIP1")) && (aItem.getProperty("X-exchangeITIP1") == "true")) {
+				this.logInfo("This is a message which came from an import or an copy/paste operation or is an invitation from an external party outside our Exchange.");
+
+				e.nsTypes::Start = exchStart;
+				e.nsTypes::End = exchEnd;
+
+				e.nsTypes::IsAllDayEvent = aItem.startDate.isDate;
+	
+				e.nsTypes::LegacyFreeBusyStatus = freeBusy[aItem.getProperty("TRANSP")];
+	
+				e.nsTypes::Location = aItem.getProperty("LOCATION") || "";
+
+				// Set if the item is from the user itself or not.
+				if (aItem.organizer) {
+					if (aItem.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) {
+						this.logInfo(" ## I am the organizer of this meeting.");
+					}
+					else {
+						this.logInfo(" ## I am NOT the organizer of this meeting.'"+aItem.organizer.id.replace(/^mailto:/, '')+"' is the organizer.");
+//						e.nsTypes::Organizer.nsTypes::Mailbox.nsTypes::EmailAddress = aItem.organizer.id.replace(/^mailto:/, '');
+					}
+				}
+				else {
+					this.logInfo(" ## There is not organizer for this meeting.");
+				}
+		
+
+/*				var attendees = aItem.getAttendees({});
+				for each (var attendee in attendees) {
+					const attendeeStatus = {
+						"NEEDS-ACTION"	: "Unknown",
+						"TENTATIVE"	: "Tentative",
+						"ACCEPTED"	: "Accept",
+						"DECLINED"	: "Decline",
+						null		: "Unknown"
+					};
+	
+					var ae = <nsTypes:Attendee xmlns:nsTypes={nsTypes}/>;
+	
+					ae.nsTypes::Mailbox.nsTypes::Name = attendee.commonName;
+
+					var tmpEmailAddress = attendee.id.replace(/^mailto:/, '');
+					if (tmpEmailAddress.indexOf("@") > 0) {
+						ae.nsTypes::Mailbox.nsTypes::EmailAddress = tmpEmailAddress;
+					}
+					else {
+						ae.nsTypes::Mailbox.nsTypes::EmailAddress = "unknown@somewhere.com";
+					}
+					ae.nsTypes::ResponseType = attendeeStatus[attendee.participationStatus];
+	
+					switch (attendee.role) {
+					case "REQ-PARTICIPANT":
+						e.nsTypes::RequiredAttendees.nsTypes::Attendee += ae;
+						break;
+					case "OPT-PARTICIPANT":
+						e.nsTypes::OptionalAttendees.nsTypes::Attendee += ae;
+						break;
+					}
+				} */
+
+				this.makeRecurrenceRule(aItem, e);
+	
+				if (this.isVersion2007) {
+					e.nsTypes::MeetingTimeZone.@TimeZoneName = this.getEWSTimeZoneId(tmpStart.timezone);
+				}
+				else {
+					e.nsTypes::StartTimeZone.@Id = this.getEWSTimeZoneId(tmpStart.timezone);
+					e.nsTypes::EndTimeZone.@Id = this.getEWSTimeZoneId(tmpEnd.timezone);
+				}
+
+			}
 		}
 
 		this.logInfo("convertCalAppointmentToExchangeAppointment: "+String(e));
