@@ -758,6 +758,7 @@ function exchWebServicesLoadExchangeSettingsByContactUUID(aUUID)
 		for (var i=0; i < document.getElementById("exchWebService_folderbase").itemCount; i++) {
 			if (document.getElementById("exchWebService_folderbase").getItemAtIndex(i).value == exchWebServicesCalPrefs.getCharPref("folderbase")) {
 				document.getElementById("exchWebService_folderbase").selectedIndex = i;
+				break;
 			}
 		}
 
@@ -801,6 +802,7 @@ function exchWebServicesSaveExchangeSettingsByContactUUID(isNewDirectory, aUUID)
 		exchWebServicesCalPrefs.setCharPref("user", exchWebServicesgUser);
 		exchWebServicesCalPrefs.setCharPref("domain", exchWebServicesgDomain);
 		exchWebServicesCalPrefs.setCharPref("folderpath", exchWebServicesgFolderPath);
+	exchWebService.commonFunctions.LOG("exchWebServicesSaveExchangeSettingsByContactUUID: folderbase:"+exchWebServicesgFolderBase);
 		exchWebServicesCalPrefs.setCharPref("folderbase", exchWebServicesgFolderBase);
 		exchWebServicesCalPrefs.setCharPref("mailbox", exchWebServicesgMailbox);
 	}

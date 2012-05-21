@@ -245,7 +245,7 @@ erGetItemsRequest.prototype = {
 		for each (var item in this.ids) {
 			itemids.nsTypes::ItemId += <nsTypes:ItemId Id={item.Id} ChangeKey={item.ChangeKey} xmlns:nsTypes={nsTypes} />;
 			if (item.index) {
-				exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute. We have an index.");
+				//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute. We have an index.");
 				this.argument.occurrenceIndexes[item.Id] = item.index;
 			}
 		}

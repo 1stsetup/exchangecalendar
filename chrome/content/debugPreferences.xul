@@ -80,6 +80,14 @@
                         name="extensions.1st-setup.core.debuglevel"
                         type="int"/>
 
+            <preference id="extensions.1st-setup.contacts.debug"
+                        name="extensions.1st-setup.contacts.debug"
+                        type="bool"/>
+
+            <preference id="extensions.1st-setup.contacts.debuglevel"
+                        name="extensions.1st-setup.contacts.debuglevel"
+                        type="int"/>
+
         </preferences>
 
 	<checkbox id="exchangeWebService_debug_log"
@@ -139,6 +147,24 @@
                           preference="extensions.1st-setup.authentication.debug"
                           label="&exchangeWebService.preference.authentication.debug.label;"/>
             </hbox>
+        </groupbox>
+
+	<groupbox id="exchangeWebService_contacts_groupbox4">
+            <caption label="&exchangeWebService.preference.contacts.debug.caption;"/>
+            <hbox align="center" flex="1">
+                <checkbox id="exchangeWebService_preference_contacts_debug_checkbox"
+                          preference="extensions.1st-setup.contacts.debug"
+                          label="&exchangeWebService.preference.contacts.debug.label;"/>
+            </hbox>
+	    <hbox>
+		<label value="&exchangeWebService.preference.contacts.debuglevel.label1;"/>
+		<textbox id="exchangeWebService_preference_contacts_debuglevel_textbox" 
+			preference="extensions.1st-setup.contacts.debuglevel"
+			increment="1" min="0" max="2" type="number"/>
+	    </hbox>
+	    <hbox pack="end">
+		<label value="&exchangeWebService.preference.network.debuglevel.label2;"/>
+	    </hbox>
         </groupbox>
 
     </vbox>
