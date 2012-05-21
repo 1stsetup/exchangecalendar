@@ -143,7 +143,12 @@ exchWebService.attachments = {
 					item.setAttribute("label", getParams.name+" ("+Number(fileSize).toFixed(1)+" "+sizeStr+")");
 				}
 				else {
-					item.setAttribute("label", getParams.name+" ("+fileSize+")");
+					if (fileSize == "") {
+						item.setAttribute("label", getParams.name);
+					}
+					else {
+						item.setAttribute("label", getParams.name+" ("+fileSize+")");
+					}
 				}
 				
 				stringForExtension =  getParams.name;
