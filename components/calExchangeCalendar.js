@@ -3978,6 +3978,8 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 						var prevTime = cal.createDateTime().getInTimezone(cal.UTC());
 					}
 
+					var childEvent = null;
+
 					this.logInfo("Trying to find a child event with an alarmdate after '"+prevTime.icalString+"'");
 					var childAlarm = cal.createDateTime("4501-01-01T00:00:00Z");
 					for (var index in this.itemCache) {
@@ -3992,7 +3994,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 							}
 						}
 					}
-					if (childAlarm) {
+					if ((childAlarm) && (childEvent)) {
 						this.logInfo("Found a child and we are going to calculate the alarmLastAck based on it.");
 						tmpStr = this.getAlarmTime(childEvent);
 						if (tmpStr) {
@@ -4006,7 +4008,8 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 					}
 					else {
-						this.logIngo("We did not find a child. Unable to set alarmLastAck... Maybe set it to 4501-01-01T00:00:00Z");
+						this.logInfo("We did not find a child. Unable to set alarmLastAck... Maybe set it to 4501-01-01T00:00:00Z");
+						tmpStr = "4501-01-01T00:00:00Z";
 					}
 				}
 			}
@@ -4221,14 +4224,6 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 					// We are going to find the child with specified recurrenId.nativeTime.
 					this.logInfo("We are going to find the child with specified recurrenId.nativeTime.");
 					for (var index in this.itemCache) {
-
-try{
-						this.logInfo(" !!!! this.itemCache[index].recurrenceId.nativeTime="+this.itemCache[index].recurrenceId.nativeTime);
-} catch (exc) { this.logInfo(" !! err:"+exc);}
-						if ((this.itemCache[index]) && (this.itemCache[index].getProperty("X-UID") == aItem.getProperty("X-UID"))) {
-							this.logInfo(" !!!! this.itemCache[index].recurrenceId.nativeTime="+this.itemCache[index].recurrenceId.nativeTime);
-						}
-
 						if ((this.itemCache[index]) && (this.itemCache[index].getProperty("X-UID") == aItem.getProperty("X-UID")) &&
 						    (this.itemCache[index].recurrenceId.nativeTime == prop.name.substr(18))) {
 							this.logInfo("Found child event for which the X-MOZ-SNOOZE-TIME- is set on the master.");
@@ -4287,10 +4282,67 @@ try{
 			}
 			else {
 				// We did not find an child with an alarm active...!!!
-				// Alarm will be turned off
-				this.logInfo("We did not find an child with an alarm active. Alarm will be turned off on this master.");
+				this.logInfo("We did not find an child with an alarm active. Trying to find last child event with an alarmdate.");
 				// We need to get the last child in line. Use that alarm and set alarmLastAck way into the futur...
-				masterAlarmOn = false; 
+				var childAlarm = cal.createDateTime("1970-01-01T00:00:00Z");
+				for (var index in this.itemCache) {
+					if ((this.itemCache[index]) && (this.itemCache[index].getProperty("X-UID") == aItem.getProperty("X-UID"))) {
+
+							this.logInfo(" !!!! this.getAlarmTime(this.itemCache[index])="+this.getAlarmTime(this.itemCache[index]));
+
+						var newChildAlarm = this.getAlarmTime(this.itemCache[index]);
+						if ((newChildAlarm) && (newChildAlarm.compare(childAlarm) == 1)) {
+							childAlarm = newChildAlarm.clone();
+							childEvent = this.itemCache[index];
+							this.logInfo("Found child event with an alarm date. ("+childAlarm.icalString+")");
+						}
+					}
+				}
+
+				if (childEvent) {
+					this.logInfo("We found the last child in line which has an alarm.");
+					var alarmTime = this.getAlarmTime(childEvent);
+					var childStart = childEvent.startDate.clone();
+					masterAlarmStart = true;
+					var alarmEvent = childEvent;
+					if (childEvent.startDate.isDate) {
+					
+						childStart.isDate = false;
+						// We make a non-UTC datetime value for exchWebService.commonFunctions.
+						// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
+						var exchAlarmStart = cal.toRFC3339(childStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
+					}
+					else {
+						// We set in bias advanced to UCT datetime values for exchWebService.commonFunctions.
+						var exchAlarmStart = cal.toRFC3339(childStart);
+					}
+				}
+				else {
+					this.logInfo("We did not find a child event with an alarm. This is odd. We are going to see if the master has the alarm set on and use that.");
+					var masterAlarm = this.getAlarmTime(aItem);
+					if (masterAlarm) {
+						this.logInfo("The master has an alarm. We are going to use this one.");
+						var alarmTime = this.getAlarmTime(aItem);
+						var childStart = aItem.startDate.clone();
+						masterAlarmStart = true;
+						var alarmEvent = aItem;
+						if (aItem.startDate.isDate) {
+					
+							childStart.isDate = false;
+							// We make a non-UTC datetime value for exchWebService.commonFunctions.
+							// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
+							var exchAlarmStart = cal.toRFC3339(childStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
+						}
+						else {
+							// We set in bias advanced to UCT datetime values for exchWebService.commonFunctions.
+							var exchAlarmStart = cal.toRFC3339(childStart);
+						}
+					}
+					else {
+						this.logInfo("The master does not have an alarm. We are going to turn it off.");
+						masterAlarmOn = false; 
+					}
+				}
 			}
 		}
 		else {
