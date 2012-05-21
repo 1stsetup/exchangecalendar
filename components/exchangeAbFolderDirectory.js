@@ -482,11 +482,11 @@ exchangeAbFolderDirectory.prototype = {
 						self.syncFolder();
 					}
 				};
-				this.pollTimer.initWithCallback(timerCallback, exchWebService.commonFunctions.safeGetIntPref(this.prefs, "pollinterval", 3) * 1000, this.pollTimer.TYPE_REPEATING_SLACK);
-
 				this.prefs = Cc["@mozilla.org/preferences-service;1"]
 			            	.getService(Ci.nsIPrefService)
 				    	.getBranch("extensions.exchangecontacts@extensions.1st-setup.nl.account."+this._UUID+".");
+
+				this.pollTimer.initWithCallback(timerCallback, exchWebService.commonFunctions.safeGetIntPref(this.prefs, "pollinterval", 300, true) * 1000, this.pollTimer.TYPE_REPEATING_SLACK);
 
 				this.loadContactsFromExchange();
 			}

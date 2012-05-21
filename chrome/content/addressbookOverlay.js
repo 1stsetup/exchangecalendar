@@ -69,6 +69,13 @@ exchWebService.addressbookOverlay = {
 			var newUUID = exchWebService.commonAbFunctions.addAccount(input.newAccountObject);	
 
 
+			this.prefs = Cc["@mozilla.org/preferences-service;1"]
+			    	.getService(Ci.nsIPrefService)
+			    	.getBranch("extensions.exchangecontacts@extensions.1st-setup.nl.account."+newUUID+".");
+
+			this.prefs.setIntPref("pollinterval", input.newAccountObject.pollinterval);
+
+
 			var theParentDirectory = MailServices.ab.getDirectory("exchWebService-contactRoot-directory://")
 							.QueryInterface(Ci.nsIAbDirectory);
 

@@ -4,6 +4,7 @@
 <!ENTITY ecsettings.tab.adsettings "Exchange/Windows AD">
 <!ENTITY ecsettings.tab.meetingrequestsettings "Vergader verzoeken">
 
-<!ENTITY label.ecExchangeSettings.title "Settings voor contacten.">
+<!ENTITY label.ecExchangeSettings.title "Naam in lijst:">
+<!ENTITY exchangeWebService.preference.contacts.pollinterval "Ververs interval in seconden:">
 
 

@@ -49,6 +49,13 @@
 		<textbox id="exchWebService_contact_description"/>
 	</hbox>
 
+	    <hbox>
+		<label value="&exchangeWebService.preference.contacts.pollinterval;"/>
+		<textbox id="exchangeWebService_preference_contacts_pollinterval" 
+			preference="extensions.1st-setup.core.debuglevel"
+			increment="1" min="1" type="number"/>
+	    </hbox>
+
 	<vbox id="exchWebService-exchange-settings">
 	</vbox>
 
