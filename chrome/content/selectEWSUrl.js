@@ -52,12 +52,16 @@ exchWebService.selectEWSurl = {
 	{
 		var ewsUrls = window.arguments[0];
 		var firstItem = false;
+		var tmpEWSUrls = {};
 
 		for (var i= 0; i < ewsUrls.length(); i++) {
-			var newItem = document.getElementById("exchWebService_selectEWSurl_urllist").appendItem( ewsUrls[i].text(), ewsUrls[i].text(), ewsUrls[i].text() );
-			if (!firstItem) {
-				document.getElementById("exchWebService_selectEWSurl_urllist").selectedItem = newItem;
-				firstItem = true;
+			if (!tmpEWSUrls[ewsUrls[i].text()]) {
+				tmpEWSUrls[ewsUrls[i].text()] = true;
+				var newItem = document.getElementById("exchWebService_selectEWSurl_urllist").appendItem( ewsUrls[i].text(), ewsUrls[i].text(), ewsUrls[i].text() );
+				if (!firstItem) {
+					document.getElementById("exchWebService_selectEWSurl_urllist").selectedItem = newItem;
+					firstItem = true;
+				}
 			}
 		}
 	},
