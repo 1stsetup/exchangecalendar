@@ -1241,52 +1241,35 @@ this.logInfo("singleModified doNotify");
 						if (changesObj) {
 							changes = changesObj.changes;
 						}
-					//	var changes = this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, invite);
 
 						if (changes) {
 							this.logInfo("modifyItem: changed:"+String(changes));
 
-							// If the snooze state of the master changed normally this change we be set by the Exchange server also on the children.
-							// There is one exception when the ItemClass of an item is OLE then on that child the snooze state is not changed.
-							// We have to do this manually.
-							var updateCount = 0;
-							if ((changesObj) && (changesObj.onlySnoozeChanged)) {
-								updateCount = this.checkSnoozeStateOfOLEChildren(aOldItem, aNewItem);
-							}
+							this.removeChildrenFromMaster(this.recurringMasterCache[aOldItem.getProperty("X-UID")]);
+							delete this.itemCache[aOldItem.id];
+							delete this.recurringMasterCache[aOldItem.getProperty("X-UID")];
 
-							if (updateCount == 0) {
+							this.logInfo(" When CHANGED master arrives for '"+aNewItem.title+"' then it's children we all be downloaded.");
+							this.newMasters[aOldItem.getProperty("X-UID")] = true;
 
-								// We remove the item from cache and calendar because the update request will add
-								// it again.
-	//							this.notifyTheObservers("onDeleteItem", [aOldItem]);
-							//x	this.deleteAlarms(this.itemCache[aOldItem.id]);
-
-								this.removeChildrenFromMaster(this.recurringMasterCache[aOldItem.getProperty("X-UID")]);
-								delete this.itemCache[aOldItem.id];
-								delete this.recurringMasterCache[aOldItem.getProperty("X-UID")];
-
-								this.logInfo(" When CHANGED master arrives for '"+aNewItem.title+"' then it's children we all be downloaded.");
-								this.newMasters[aOldItem.getProperty("X-UID")] = true;
-
-								var self = this;
-								this.addToQueue( erUpdateItemRequest,
-									{user: this.user, 
-									 mailbox: this.mailbox,
-									 folderBase: this.folderBase,
-									 serverUrl: this.serverUrl,
-									 item: aOldItem,
-									 folderID: this.folderID,
-									 changeKey: this.changeKey,
-									 updateReq: changes,
-									 newItem: aNewItem,
-							 		 actionStart: Date.now(),
-									 attachmentsUpdates: attachmentsUpdates,
-									 sendto: input.response}, 
-									function(erUpdateItemRequest, aId, aChangeKey) { self.updateItemOk(erUpdateItemRequest, aId, aChangeKey);}, 
-									function(erUpdateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erUpdateItemRequest, aCode, aMsg);},
-									aListener,
-									2);
-							}
+							var self = this;
+							this.addToQueue( erUpdateItemRequest,
+								{user: this.user, 
+								 mailbox: this.mailbox,
+								 folderBase: this.folderBase,
+								 serverUrl: this.serverUrl,
+								 item: aOldItem,
+								 folderID: this.folderID,
+								 changeKey: this.changeKey,
+								 updateReq: changes,
+								 newItem: aNewItem,
+						 		 actionStart: Date.now(),
+								 attachmentsUpdates: attachmentsUpdates,
+								 sendto: input.response}, 
+								function(erUpdateItemRequest, aId, aChangeKey) { self.updateItemOk(erUpdateItemRequest, aId, aChangeKey);}, 
+								function(erUpdateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erUpdateItemRequest, aCode, aMsg);},
+								aListener,
+								2);
 							return;
 						}
 						else {
@@ -1491,132 +1474,6 @@ this.logInfo("singleModified doNotify");
 		}
 
 		return null;
-	},
-
-	checkSnoozeStateOfOLEChildren: function _checkSnoozeStateOfOLEChildren(aOldItem, aNewItem)
-	{
-		// If the snooze state of the master changed normally this change we be set by the Exchange server also on the children.
-		// There is one exception when the ItemClass of an item is OLE then on that child the snooze state is not changed.
-		// We have to do this manually.
-
-		var newSnoozeStates = {};
-
-		if (aNewItem.propertyEnumerator) {
-			var props = aNewItem.propertyEnumerator;
-			while (props.hasMoreElements()) {
-				var prop = props.getNext().QueryInterface(Components.interfaces.nsIProperty);
-				if (prop.name.indexOf("X-MOZ-SNOOZE-TIME-") == 0) {
-					newSnoozeStates[prop.name] = prop.value;
-				}
-			}
-		}
-
-		var childToUpdate = null;
-		var updateCount = 0;
-
-		if (aOldItem.propertyEnumerator) {
-			var props = aOldItem.propertyEnumerator;
-			while (props.hasMoreElements()) {
-				var prop = props.getNext().QueryInterface(Components.interfaces.nsIProperty);
-				if (prop.name.indexOf("X-MOZ-SNOOZE-TIME-") == 0) {
-					if (newSnoozeStates[prop.name]) {
-						if (newSnoozeStates[prop.name] != prop.value) {
-							// The snooze state for the child has changed. Check if the child is an OLE itemclass.
-							this.logInfo("The snooze state for the child has changed:"+prop.name+" was "+prop.value+" is now "+newSnoozeStates[prop.name]);
-							childToUpdate = this.getChildByUIDandNativeTime(aNewItem.getProperty("X-UID"), prop.name.substr(18));
-						}
-						else {
-							// The snooze state has not changed for the child.
-							this.logInfo("The snooze state has not changed for the child:"+prop.name+"="+prop.value);
-							childToUpdate = null;
-							delete newSnoozeStates[prop.name];
-						}
-					}
-					else {
-						// There is a snooze state removed.
-						this.logInfo("There is a snooze state removed:"+prop.name+"="+prop.value);
-						childToUpdate = this.getChildByUIDandNativeTime(aNewItem.getProperty("X-UID"), prop.name.substr(18));
-					}
-
-					// Check if we have a child to modify and if the itemclass if OLE.
-					if ((childToUpdate) && (childToUpdate.getProperty("X-ItemClass").indexOf("IPM.OLE.CLASS") > -1)) {
-						var newChild = childToUpdate.clone();
-						newChild.parentItem = aNewItem;
-
-						var self = this;
-
-						this.logInfo(" -- Going to change child 1");
-						updateCount++;
-		//	try {
-						this.addToQueue( erGetOccurrenceIndexRequest,
-							{user: this.user, 
-							 mailbox: this.mailbox,
-							 folderBase: this.folderBase,
-							 serverUrl: this.serverUrl,
-							 masterItem: childToUpdate,
-							 item: childToUpdate,
-							 folderID: this.folderID,
-							 changeKey: this.changeKey,
-							 newItem: newChild,
-							 actionStart: Date.now(),
-							 attachmentsUpdates: null,
-							 sendto: "sendtonone"}, 
-							function(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey) { self.modifyItemgetOccurrenceIndexOk(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey);}, 
-							function(erGetOccurrenceIndexRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erGetOccurrenceIndexRequest, aCode, aMsg);},
-							null,
-							2);
-		//	} catch(er) { this.logInfo(" == Error:"+er);}
-						this.logInfo(" -- Going to change child 2");
-
-	//					this.modifyItem(newChild, childToUpdate);
-						delete newSnoozeStates[prop.name];
-					}
-				}
-			}
-		}
-
-		// Check if we have newSnoozeStates left over. These are new
-		for (var index in newSnoozeStates) {
-			if (newSnoozeStates[index]) {
-				this.logInfo("There is a new snooze state set:"+index+"="+newSnoozeStates[index]);
-				childToUpdate = this.getChildByUIDandNativeTime(aNewItem.getProperty("X-UID"), index.substr(18));
-
-				// Check if we have a child to modify and if the itemclass if OLE.
-				if ((childToUpdate) && (childToUpdate.getProperty("X-ItemClass").indexOf("IPM.OLE.CLASS") > -1)) {
-					this.logInfo("There is a OLE child to update");
-					var newChild = childToUpdate.clone();
-					newChild.parentItem = aNewItem;
-
-					var self = this;
-					updateCount++;
-					this.addToQueue( erGetOccurrenceIndexRequest,
-						{user: this.user, 
-						 mailbox: this.mailbox,
-						 folderBase: this.folderBase,
-						 serverUrl: this.serverUrl,
-						 masterItem: childToUpdate,
-						 item: childToUpdate,
-						 folderID: this.folderID,
-						 changeKey: this.changeKey,
-						 newItem: newChild,
-						 actionStart: Date.now(),
-						 attachmentsUpdates: null,
-						 sendto: "sendtonone"}, 
-						function(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey) { self.modifyItemgetOccurrenceIndexOk(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey);}, 
-						function(erGetOccurrenceIndexRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erGetOccurrenceIndexRequest, aCode, aMsg);},
-						null,
-						2);
-
-//					this.modifyItem(newChild, childToUpdate);
-				}
-				else {
-					this.logInfo("There is NO OLE child to update");
-				}
-			}
-		}
-
-		return updateCount;
-		
 	},
 
 	//  calIOperation deleteItem(in calIItemBase aItem,
@@ -3860,6 +3717,8 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			break;
 		}
 
+		alarmTime = alarmTime.getInTimezone(cal.UTC());
+
 		return alarmTime;
 	},
 
@@ -4197,7 +4056,6 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 			// We make a non-UTC datetime value for exchWebService.commonFunctions.
 			// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
-			//LOG("  ==== tmpStart:"+cal.toRFC3339(tmpStart));
 			var exchStart = cal.toRFC3339(tmpStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
 			var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19); //cal.toRFC3339(tmpEnd).length-6);
 		}
@@ -4264,6 +4122,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			}
  
 			if (childEvent) {
+				this.logInfo("We found a child event and we are going to use it's alarm settings for the master.");
 				var alarmTime = this.getAlarmTime(childEvent);
 				var childStart = childEvent.startDate.clone();
 				masterAlarmStart = true;
@@ -4401,9 +4260,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		// Save snooze/dismiss state
-	try {
 		this.addSnoozeDismissState(e, aItem, alarmTime);
-	} catch(exc) { this.logInfo("!!!!!!!!!!!!!"+exc+"!!!!!!!!!!!!!!!!!!!!"); }
 
 		if (aItem.getProperty("X-UID")) {
 			e.nsTypes::UID = aItem.getProperty("X-UID");
@@ -4426,37 +4283,6 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		if (!this.isInvitation(aItem, true)) {
-		/*	// If not timezone specified set them to the lightning preference.
-			if ((aItem.startDate.timezone.isFloating) && (!aItem.startDate.isDate)) {
-				aItem.startDate = aItem.startDate.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
-			}
-	
-			if ((aItem.endDate.timezone.isFloating) && (!aItem.endDate.isDate)) {
-				aItem.endDate = aItem.endDate.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
-			}
-
-			var tmpStart = aItem.startDate.clone();
-			var tmpEnd = aItem.endDate.clone();
-
-			if (aItem.startDate.isDate) {
-				tmpStart.isDate = false;
-				tmpEnd.isDate = false;
-				var tmpDuration = cal.createDuration();
-				tmpDuration.minutes = -1;
-				tmpEnd.addDuration(tmpDuration);
-	
-				// We make a non-UTC datetime value for exchWebService.commonFunctions.
-				// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
-				//LOG("  ==== tmpStart:"+cal.toRFC3339(tmpStart));
-				e.nsTypes::Start = cal.toRFC3339(tmpStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
-				e.nsTypes::End = cal.toRFC3339(tmpEnd).substr(0, 19); //cal.toRFC3339(tmpEnd).length-6);
-			}
-			else {
-				// We set in bias advanced to UCT datetime values for exchWebService.commonFunctions.
-				e.nsTypes::Start = cal.toRFC3339(tmpStart);
-				e.nsTypes::End = cal.toRFC3339(tmpEnd);
-			} */
-
 			e.nsTypes::Start = exchStart;
 			e.nsTypes::End = exchEnd;
 
