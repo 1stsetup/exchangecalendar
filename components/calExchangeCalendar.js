@@ -4125,7 +4125,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				this.logInfo("We found a child event and we are going to use it's alarm settings for the master.");
 				var alarmTime = this.getAlarmTime(childEvent);
 				var childStart = childEvent.startDate.clone();
-				masterAlarmStart = true;
+				masterAlarmOn = true;
 				var alarmEvent = childEvent;
 				if (childEvent.startDate.isDate) {
 					
@@ -4162,7 +4162,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 					this.logInfo("We found the last child in line which has an alarm.");
 					var alarmTime = this.getAlarmTime(childEvent);
 					var childStart = childEvent.startDate.clone();
-					masterAlarmStart = true;
+					masterAlarmOn = true;
 					var alarmEvent = childEvent;
 					if (childEvent.startDate.isDate) {
 					
@@ -4183,7 +4183,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 						this.logInfo("The master has an alarm. We are going to use this one.");
 						var alarmTime = this.getAlarmTime(aItem);
 						var childStart = aItem.startDate.clone();
-						masterAlarmStart = true;
+						masterAlarmOn = true;
 						var alarmEvent = aItem;
 						if (aItem.startDate.isDate) {
 					
@@ -4208,11 +4208,11 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			this.logInfo("We are converting a Cal single/occurrence/exception to an Exchange single/occurrence/exception");
 			var exchAlarmStart = exchStart;
 			var alarmTime = this.getAlarmTime(aItem);
-			masterAlarmStart = true;
+			masterAlarmOn = true;
 			var alarmEvent = aItem;
 		}
 
-		if ((alarmTime) && (masterAlarmStart)) {
+		if ((alarmTime) && (masterAlarmOn)) {
 			this.logInfo("alarmTime = "+alarmTime.toString());
 
 			this.logInfo("length="+alarmEvent.getAlarms({}).length);
