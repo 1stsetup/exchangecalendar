@@ -3,6 +3,8 @@ Version 1.8.18:
 - Fixed: Problem with dismissing and snoozing alarms.
 - Fixed: Problem on autodiscovery where sometimes a EWS URL select list was shown with duplicate entries.
 - Fixed: Other small problems.
+- Fixed: Bug 116 - Authentication fails after Thunderbird-restart
+- Fixed: Bug 24 - Accepting or rejecting of invitations changes owner
 
 Version 1.8.16:
 - Fixed: Bug 122 - New: I get "Event Invitation" email for my own meetings when I import them
