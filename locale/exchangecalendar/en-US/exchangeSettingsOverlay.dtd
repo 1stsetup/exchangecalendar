@@ -38,7 +38,7 @@
 <!ENTITY button.label.serverandmailboxcheck "Check server and mailbox">
 <!ENTITY button.label.servercheck "Check server and account">
 
-<!ENTITY ecmailbox.label "Mailbox name:">
+<!ENTITY ecmailbox.label "Primary email address:">
 <!ENTITY ecmailbox.tooltip "If you do not specify a mailbox you will only have access to public folders.">
 <!ENTITY ecwindowsuser.label "Username:">
 <!ENTITY ecwindowsdomain.label "Domain name:">

@@ -38,7 +38,7 @@
 <!ENTITY button.label.serverandmailboxcheck "Controleer server en mailbox">
 <!ENTITY button.label.servercheck "Controleer server en account">
 
-<!ENTITY ecmailbox.label "Mailboxnaam:">
+<!ENTITY ecmailbox.label "Primaire email adres:">
 <!ENTITY ecmailbox.tooltip "Als je geen mailbox specificeerd kun je alleen toegang krijgen tot openbare mappen.">
 <!ENTITY ecwindowsuser.label "Gerbuikersnaam:">
 <!ENTITY ecwindowsdomain.label "Domeinnaam:">
