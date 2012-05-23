@@ -3761,7 +3761,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				// We set the next reminder to the alarm time.
 				if (this.getAlarmTime(aSingle)) {
 					this.logInfo("We have no snooze time and no alarmLastAck this means the alarm was never snoozed or dismissed. We set the next reminder to the alarm time.");
-					tmpStr = this.getAlarmTime(aSingle);
+					tmpStr = this.getAlarmTime(aSingle).icalString;
 				}
 				else {
 					this.logInfo("We have no snooze time and no alarmLastAck this means the alarm was never snoozed or dismissed AND we have no alarm time skipping PidLidReminderSignalTime.");
@@ -3952,13 +3952,13 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			eprop.nsTypes::ExtendedFieldURI.@PropertyId = MAPI_PidLidReminderSet;
 			eprop.nsTypes::ExtendedFieldURI.@PropertyType = "Boolean";
 
-			if (nextReminder.indexOf("4501-01-01T00:00:00Z") > -1) {
+		//	if (nextReminder.indexOf("4501-01-01T00:00:00Z") > -1) {
 				// Reminder is turned off.
-				eprop.nsTypes::Value = "false";
-			}
-			else {
+		//		eprop.nsTypes::Value = "false";
+		//	}
+		//	else {
 				eprop.nsTypes::Value = "true";
-			}
+		//	}
 
 			e.appendChild(eprop);
 
