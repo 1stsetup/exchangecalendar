@@ -18,6 +18,7 @@ overlay chrome://messenger/content/preferences/preferences.xul  chrome://exchang
 overlay chrome://messenger/content/preferences/preferences.xul  chrome://exchangecalendar/content/cachePreferences.xul
 overlay chrome://calendar/content/calendar-task-view.xul  chrome://exchangecalendar/content/calendar-task-view.xul
 overlay chrome://communicator/content/pref/preferences.xul chrome://exchangecalendar/content/suite-overlay-preferences.xul application={92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}
+overlay chrome://messenger/content/messenger.xul chrome://exchangecalendar/content/OutOfOfficeMenu.xul
 
 locale exchangecalendar nl locale/exchangecalendar/nl/
 locale exchangecalendar en-US locale/exchangecalendar/en-US/

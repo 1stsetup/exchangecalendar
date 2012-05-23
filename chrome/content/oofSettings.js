@@ -65,9 +65,6 @@ exchWebService.oofSettings = {
 			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+calId+".");
 
 		document.getElementById("exchWebService-oofSettings-title").value = exchWebService.commonFunctions.safeGetCharPref(this.calPrefs, "ecMailbox", "null");
-
-		EditorOnLoad();
-
 		this.getOofSettings();
 	},
 
@@ -128,16 +125,11 @@ exchWebService.oofSettings = {
 
 		document.getElementById("exchWebService-oof-externalaudience").value = aOofSettings.externalAudience;
 
-		var editorElement = document.getElementById("content-frame");
-		if (!document.getElementById("exchWebService-oof-button-internal").disabled) {
-			editorElement.contentDocument.documentElement.innerHTML = exchWebService.oofSettings.HTMLParser2(exchWebService.oofSettings.intOofSettings.internalReply);
-		}
-		else {
-			editorElement.contentDocument.documentElement.innerHTML = exchWebService.oofSettings.HTMLParser2(exchWebService.oofSettings.intOofSettings.externalReply);
-		}
+		
+		document.getElementById("exchWebService-oof-textbox-internal").value = exchWebService.oofSettings.intOofSettings.internalReply.replace(/\<br\>/g , "\n").replace(/\&nbsp\;/g," ");
 
-
-		document.getElementById("exchWebService-oof-externalreply").innerHTML = "Voorbeeld";
+		document.getElementById("exchWebService-oof-textbox-external").value = exchWebService.oofSettings.intOofSettings.externalReply.replace(/\<br\>/g , "\n").replace(/\&nbsp\;/g," ");
+		
 
 	},
 
@@ -153,55 +145,7 @@ exchWebService.oofSettings = {
 		document.getElementById("exchWebService-oof-starttime").disabled = (!document.getElementById("exchWebService-oof-scheduled").checked);
 		document.getElementById("exchWebService-oof-enddate").disabled = (!document.getElementById("exchWebService-oof-scheduled").checked);
 		document.getElementById("exchWebService-oof-endtime").disabled = (!document.getElementById("exchWebService-oof-scheduled").checked);
-	},
-
-	HTMLParser2: function _HTMLParser2(aHTMLString)
-	{
-		var tmpStr = aHTMLString;
-
-		// Strip everything up to <body>
-		var index1 = tmpStr.toLowerCase().indexOf("<body>");
-		if (index1 > -1) {
-			tmpStr = tmpStr.substr(index1+6);
-		}
-
-
-		// Strip everything after </body> including the closing body tag.
-		index1 = tmpStr.toLowerCase().indexOf("</body>");
-		if (index1 > -1) {
-			tmpStr = tmpStr.substr(0, index1);
-		}
-
-		return tmpStr;
-	},
-
-
-	doButtonPressed: function _doButtonPressed(aButton)
-	{
-		aButton.disabled = true;
-		if (aButton.id == "exchWebService-oof-button-internal") {
-			document.getElementById("exchWebService-oof-button-external").disabled = false;
-
-			document.getElementById("exchWebService-oof-label-internal").hidden = true;
-			document.getElementById("exchWebService-oof-label-external").hidden = false;
-
-			var editorElement = document.getElementById("content-frame");
-			// Save internalReply for later usage.
-			exchWebService.oofSettings.intOofSettings.internalReply = editorElement.contentDocument.documentElement.innerHTML;
-			editorElement.contentDocument.documentElement.innerHTML = exchWebService.oofSettings.HTMLParser2(exchWebService.oofSettings.intOofSettings.externalReply);
-		}
-		else {
-			document.getElementById("exchWebService-oof-button-internal").disabled = false;
-
-			document.getElementById("exchWebService-oof-label-internal").hidden = false;
-			document.getElementById("exchWebService-oof-label-external").hidden = true;
-
-			var editorElement = document.getElementById("content-frame");
-			// Save externalReply for later usage.
-			exchWebService.oofSettings.intOofSettings.externalReply = editorElement.contentDocument.documentElement.innerHTML;
-			editorElement.contentDocument.documentElement.innerHTML = exchWebService.oofSettings.HTMLParser2(exchWebService.oofSettings.intOofSettings.internalReply);
-		}
-	},
+	},	
 
 	setOofSettings: function _setOofSettings()
 	{
@@ -237,14 +181,11 @@ exchWebService.oofSettings = {
 
 		var internalReply = this.intOofSettings.internalReply;
 		var externalReply = this.intOofSettings.externalReply;
-		if (!document.getElementById("exchWebService-oof-button-internal").disabled) {
-			var editorElement = document.getElementById("content-frame");
-			internalReply = editorElement.contentDocument.documentElement.innerHTML;
-		}
-		if (!document.getElementById("exchWebService-oof-button-external").disabled) {
-			var editorElement = document.getElementById("content-frame");
-			externalReply = editorElement.contentDocument.documentElement.innerHTML;
-		}
+		
+		internalReply = document.getElementById("exchWebService-oof-textbox-internal").value.replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;');		
+		
+		externalReply = document.getElementById("exchWebService-oof-textbox-external").value.replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;');
+
 
 		var tmpObject = new erSetUserOofSettingsRequest(
 			{user: exchWebService.commonFunctions.safeGetCharPref(this.calPrefs, "ecDomain", "null")+"\\"+exchWebService.commonFunctions.safeGetCharPref(this.calPrefs, "ecUser", "null"), 
