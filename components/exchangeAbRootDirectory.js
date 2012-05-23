@@ -216,7 +216,8 @@ exchangeAbRootDirectory.prototype = {
 	cardForEmailAddress: function _cardForEmailAddress(emailAddress)
 	{
 		exchWebService.commonAbFunctions.logInfo("exchangeAbRootDirectory: cardForEmailAddress");
-		throw Cr.NS_ERROR_NOT_IMPLEMENTED;
+		return null;
+//		throw Cr.NS_ERROR_NOT_IMPLEMENTED;
 	},
 
   /**
