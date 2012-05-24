@@ -31,4 +31,20 @@
 <!ENTITY treecol.label.userid "UserId">
 <!ENTITY treecol.label.email "Email">
 
+<!--
+written by deepak
+
+start
+-->
+<!ENTITY ecsettings.tab.offlineCachingproperties "Offline buffer">
+
+<!ENTITY label.offlineCacheproperties.cachingStartDate "Start datum van buffer:">
+<!ENTITY label.offlineCacheproperties.cachingEndDate "Eind datum van buffer:">
+<!ENTITY label.offlineCacheproperties.totalEvents "Totaal aantal afspraken gebufferd:">
+<!ENTITY label.offlineCacheproperties.totalTasks "Totaal aantal taken gebufferd:">
+
+<!ENTITY label.offlineCacheproperties.monthsBeforeStartDate "Aantal maanden om te bufferen voor vandaag:">
+<!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Aantal maanden om te bufferen na vandaag:">
+
+<!ENTITY button.offlineCacheproperties.clearCache "Verwijder offline gebufferde data">
 

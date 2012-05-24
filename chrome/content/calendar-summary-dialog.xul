@@ -39,26 +39,32 @@
 
 <?xul-overlay href="chrome://exchangecalendar/content/attachments-view.xul"?>
 
-<overlay id="calendar-summary-dialog"
-         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<overlay id="exchWebService-calendar-summary-dialog"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-	<box id="item-description-box" flex="1">
+<dialog id="calendar-summary-dialog" windowtype="Calendar:EventSummaryDialog"
+		buttons="accept,cancel,extra1" onload="onLoad()" buttonlabelextra1="Forward invite"
+		ondialogextra1="exchWebService.forewardEvent.onForward();" persist="screenX screenY width height"
+		xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+		
+		<script type="application/javascript" src="chrome://exchangecalendar/content/calendar-summary-dialog.js" />
+		<box id="item-description-box" flex="1">
 
-    <commandset id="itemCommands">
-    </commandset>
+		<commandset id="itemCommands">
+		</commandset>
 
-    <popupset id="event-dialog-popupset">
-    </popupset>
+		<popupset id="event-dialog-popupset">
+		</popupset>
 
-		<spacer class="default-spacer" id="exchWebService-attachment-summary-space" hidden="true"/>
-		<calendar-caption label="&event.attachments.label;"
-			control="item-description" id="exchWebService-attachment-summary-caption" hidden="true"/>
-		<box orient="horizontal" flex="1" id="exchWebService-attachment-summary-box" hidden="true">
-			<spacer class="default-spacer"/>
-			<listbox id="exchWebService-attachment-link" rows="3" flex="1"/>
+			<spacer class="default-spacer" id="exchWebService-attachment-summary-space" hidden="true"/>
+			<calendar-caption label="&event.attachments.label;"
+				control="item-description" id="exchWebService-attachment-summary-caption" hidden="true"/>
+			<box orient="horizontal" flex="1" id="exchWebService-attachment-summary-box" hidden="true">
+				<spacer class="default-spacer"/>
+				<listbox id="exchWebService-attachment-link" rows="3" flex="1"/>
+			</box>
 		</box>
-	</box>
-
+	</dialog>
 </overlay>
 
 

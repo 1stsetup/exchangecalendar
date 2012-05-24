@@ -29,4 +29,19 @@
 
 <!ENTITY treecol.label.userid "UserId">
 <!ENTITY treecol.label.email "Email">
+<!--
+written by deepak
 
+start
+-->
+<!ENTITY ecsettings.tab.offlineCachingproperties "Offline Caching">
+
+<!ENTITY label.offlineCacheproperties.cachingStartDate "Start Date of caching:">
+<!ENTITY label.offlineCacheproperties.cachingEndDate "End date of caching:">
+<!ENTITY label.offlineCacheproperties.totalEvents "Total number of events cached:">
+<!ENTITY label.offlineCacheproperties.totalTasks "Total number of tasks cached:">
+
+<!ENTITY label.offlineCacheproperties.monthsBeforeStartDate "Number of months to cache items prior to today:">
+<!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Number of months to cache items after today:">
+
+<!ENTITY button.offlineCacheproperties.clearCache "Clear Offline Cached Data">

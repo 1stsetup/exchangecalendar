@@ -70,6 +70,8 @@
                          label="&exchangeWebService.preferences.tab.debug;"/>
                     <tab id="exchangeWebService_preferences_tab_cache"
                          label="&exchangeWebService.preferences.tab.cache;"/>
+		    <tab id="exchangeWebService_preferences_tab_others"
+                         label="&exchangeWebService.preferences.tab.others;"/>
                 </tabs>
                 <tabpanels flex="1">
 <!--                    <tabpanel orient="vertical">
@@ -80,6 +82,9 @@
                     </tabpanel>
                     <tabpanel orient="vertical">
         			<vbox id="exchangeWebService_cache_preferences_vbox"/>
+                    </tabpanel>
+		    <tabpanel orient="vertical">
+        			<vbox id="exchangeWebService_others_preferences_vbox"/>
                     </tabpanel>
                 </tabpanels>
             </tabbox>

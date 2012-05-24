@@ -63,6 +63,32 @@ exchWebService.commonFunctions = {
 		return null;
 	},
 
+	splitUriGetParams: function _splitUriGetParams(aUri)
+	{
+		exchWebService.commonFunctions.LOG("exchWebService.commonFunctions.splitUriGetParams:"+aUri.spec);
+		if (aUri.path.indexOf("?") > -1) {
+			// We have get params.
+			let getParamsStr = aUri.path.substr(aUri.path.indexOf("?")+1);
+			// Split is in the individual params.
+			var getParams = {};
+			while (getParamsStr.indexOf("&") > -1) {
+				var tmpParam = getParamsStr.substr(0, getParamsStr.indexOf("&"));
+				getParamsStr = getParamsStr.substr(getParamsStr.indexOf("&")+1);
+				if (tmpParam.indexOf("=") > -1) {
+					getParams[tmpParam.substr(0,tmpParam.indexOf("="))] = decodeURIComponent(tmpParam.substr(tmpParam.indexOf("=")+1));
+				}
+			}
+			if (getParamsStr.indexOf("=") > -1) {
+				getParams[getParamsStr.substr(0,getParamsStr.indexOf("="))] = decodeURIComponent(getParamsStr.substr(getParamsStr.indexOf("=")+1));
+			}
+
+			return getParams;
+		}
+		
+		return null;
+	},
+
+
 	getBranch: function _getBranche(aName)
 	{
 		var lBranche = "";

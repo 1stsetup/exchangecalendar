@@ -38,30 +38,6 @@ Cu.import("resource://exchangecalendar/erGetAttachments.js");
 if (! exchWebService) var exchWebService = {};
 
 exchWebService.attachments = {
-	splitUriGetParams: function _splitUriGetParams(aUri)
-	{
-		exchWebService.commonFunctions.LOG("exchWebService.attachments.splitUriGetParams:"+aUri.toString());
-		if (aUri.path.indexOf("?") > -1) {
-			// We have get params.
-			let getParamsStr = aUri.path.substr(aUri.path.indexOf("?")+1);
-			// Split is in the individual params.
-			var getParams = {};
-			while (getParamsStr.indexOf("&") > -1) {
-				var tmpParam = getParamsStr.substr(0, getParamsStr.indexOf("&"));
-				getParamsStr = getParamsStr.substr(getParamsStr.indexOf("&")+1);
-				if (tmpParam.indexOf("=") > -1) {
-					getParams[tmpParam.substr(0,tmpParam.indexOf("="))] = decodeURIComponent(tmpParam.substr(tmpParam.indexOf("=")+1));
-				}
-			}
-			if (getParamsStr.indexOf("=") > -1) {
-				getParams[getParamsStr.substr(0,getParamsStr.indexOf("="))] = decodeURIComponent(getParamsStr.substr(getParamsStr.indexOf("=")+1));
-			}
-
-			return getParams;
-		}
-		
-		return null;
-	},
 
 	addAttachmentDialog: function _addAttachmentDialog()
 	{
@@ -122,7 +98,7 @@ exchWebService.attachments = {
 			var extension = "";
 			var stringForExtension = "";
 
-			let getParams = this.splitUriGetParams(aAttachment.uri);
+			let getParams = exchWebService.commonFunctions.splitUriGetParams(aAttachment.uri);
 			if (getParams) {
 				// Set listitem attributes
 				var fileSize = getParams.size;
@@ -223,6 +199,8 @@ exchWebService.attachments = {
 			document.getElementById("exchWebService-attachment-summary-space").hidden=false;
 			document.getElementById("exchWebService-attachment-summary-caption").hidden=false;
 			document.getElementById("exchWebService-attachment-summary-box").hidden=false;
+			document.getElementById("item-description-box").hidden=false;
+
 		}
 		catch (ex) {}
 
@@ -456,7 +434,7 @@ exchWebService.attachments = {
 
 		var self = this;
 
-		let getParams = this.splitUriGetParams(aAttachment.uri);
+		let getParams = exchWebService.commonFunctions.splitUriGetParams(aAttachment.uri);
 		let path = aAttachment.uri.path;
 		if (path.indexOf("/?") > -1) {
 			path = path.substr(0, path.indexOf("/?"));

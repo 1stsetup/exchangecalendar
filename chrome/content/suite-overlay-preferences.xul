@@ -27,6 +27,8 @@
  * Website: http://www.1st-setup.nl/wordpress/?page_id=133
  * email: exchangecalendar@extensions.1st-setup.nl
  *
+ * Contributor(s):
+ *   Deepak Kumar <deepk2u@gmail.com>
  *
  * This code uses parts of the Microsoft Exchange Calendar Provider code on which the
  * "Exchange Data Provider for Lightning" was based.
@@ -42,6 +44,7 @@
 
 <?xul-overlay href="chrome://exchangecalendar/content/debugPreferences.xul"?>
 <?xul-overlay href="chrome://exchangecalendar/content/cachePreferences.xul"?>
+<?xul-overlay href="chrome://exchangecalendar/content/otherPreferences.xul"?>
 
 <!DOCTYPE overlay [
     <!ENTITY % lightningDTD SYSTEM "chrome://lightning/locale/lightning.dtd">
@@ -67,6 +70,9 @@
                 <treeitem id="exchangeWebService_preferences_treeitem_cache"
                           label="&exchangeWebService.preferences.tab.cache;"
                           prefpane="exchangeWebService_preferences_tab_cache"/>
+		<treeitem id="exchangeWebService_preferences_treeitem_others"
+                          label="&exchangeWebService.preferences.tab.others;"
+                          prefpane="exchangeWebService_preferences_tab_others"/>
             </treechildren>
         </treeitem>
     </treechildren>
@@ -84,6 +90,11 @@
                   label="&exchangeWebService.preferences.tab.cache;"
                   onpaneload="exchWebService.debugPreferences.onLoad();">
 		<vbox id="exchangeWebService_cache_preferences_vbox"/>
+        </prefpane>
+	<prefpane id="exchangeWebService_preferences_tab_others"
+                  label="&exchangeWebService.preferences.tab.others;"
+                  onpaneload="exchWebService.debugPreferences.onLoad();">
+		<vbox id="exchangeWebService_others_preferences_vbox"/>
         </prefpane>
     </prefwindow>
 

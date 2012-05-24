@@ -27,3 +27,6 @@
 <!ENTITY exchangeWebService.preference.cache.memory.startupBefore.label "Nombre de jours à charger en cache avant la date présente:">
 <!ENTITY exchangeWebService.preference.cache.memory.startupAfter.label "Nombre de jours à charger en cache après la date présente:">
 
+<!ENTITY exchangeWebService.preferences.tab.others "Others">
+<!ENTITY exchangeWebService.preference.others.prefs.label "Communication Preferences:">
+<!ENTITY exchangeWebService.preference.others.prefs.retryCount.label "Maximum number of retries for exchange communication:">

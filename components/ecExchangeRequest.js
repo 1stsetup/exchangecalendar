@@ -231,7 +231,12 @@ ExchangeRequest.prototype = {
 				this.logInfo("We have a prePassword: *******");
 			}
 
-			this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user, this.prePassword);
+			if (this.prePassword == "") {
+				this.xmlReq.open("POST", this.currentUrl, true);
+			}
+			else {
+				this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user, this.prePassword);
+			}
 
 			if (!this.kerberos) {
 				var basicAuthPw = this.getPrePassword(this.currentUrl, this.mArgument.user);
@@ -317,26 +322,33 @@ ExchangeRequest.prototype = {
 		case 0x804b0003: 
 			this.fail(this.ER_ERROR_RESOLVING_HOST, "Error resolving hostname '"+this._notificationCallbacks.lastStatusArg+"'. Did you type the right hostname. (STATUS_RESOLVING)");
 			xmlReq.abort();
+			if (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl]) exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount = 0;
 			return;
 		case 0x804b000b: 
 			this.fail(this.ER_ERROR_RESOLVING_HOST, "Error resolving hostname '"+this._notificationCallbacks.lastStatusArg+"'. Did you type the right hostname. (STATUS_RESOLVED)");
 			xmlReq.abort();
+			if (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl]) exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount = 0;
 			return;
 		case 0x804b0007:
 			this.fail(this.ER_ERROR_CONNECTING_TO, "Error during connecting to hostname '"+this._notificationCallbacks.lastStatusArg+"'. Is the host down?. (STATUS_CONNECTING_TO)");
 			xmlReq.abort();
+			if (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl]) exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount = 0;
 			return;
 		case 0x804b0004:
 			this.fail(this.ER_ERROR_CONNECED_TO, "Error during connection to hostname '"+this._notificationCallbacks.lastStatusArg+"'. (STATUS_CONNECTED_TO)");
+			if (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl]) exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount = 0;
 			break;
 		case 0x804b0005:
 			this.fail(this.ER_ERROR_SENDING_TO, "Error during sending data to hostname '"+this._notificationCallbacks.lastStatusArg+"'. (STATUS_SENDING_TO)");
+			if (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl]) exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount = 0;
 			break;
 		case 0x804b000a:
 			this.fail(this.ER_ERROR_WAITING_FOR, "Error during waiting for data of hostname '"+this._notificationCallbacks.lastStatusArg+"'. (STATUS_WAITING_FOR)");
+			if (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl]) exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount = 0;
 			break;
 		case 0x804b0006: 
 			this.fail(this.ER_ERROR_RECEIVING_FROM, "Error during receiving of data from hostname '"+this._notificationCallbacks.lastStatusArg+"'. (STATUS_RECEIVING_FROM)");
+			if (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl]) exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount = 0;
 			break;
 		default:
 			this.fail(this.ER_ERROR_UNKNOWN_CONNECTION, "Unknown error during communication with hostname '"+this._notificationCallbacks.lastStatusArg+"'. ("+this._notificationCallbacks.lastStatus+")");

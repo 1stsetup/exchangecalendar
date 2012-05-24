@@ -27,4 +27,6 @@
 <!ENTITY exchangeWebService.preference.cache.memory.startupBefore.label "Aantal dagen voor opstartdatum downloaden:">
 <!ENTITY exchangeWebService.preference.cache.memory.startupAfter.label "Aantal dagen na opstartdatum downloaden:">
 
-
+<!ENTITY exchangeWebService.preferences.tab.others "Others">
+<!ENTITY exchangeWebService.preference.others.prefs.label "Communication Preferences:">
+<!ENTITY exchangeWebService.preference.others.prefs.retryCount.label "Maximum number of retries for exchange communication:">

@@ -80,6 +80,19 @@ exchWebService.calendarCreation = {
 
 			document.getElementById("cache").parentNode.hidden = true;
 			document.getElementById("cache").checked = false;
+			var temp = document.getElementById("cache").parentNode.parentNode;
+
+			if(!document.getElementById("exchange-cache-row")){
+				var exchangeCacheRow = document.createElement("row");
+				exchangeCacheRow.setAttribute("id", "exchange-cache-row");
+				var exchangeCacheRowlabel = document.createElement("label");
+				exchangeCacheRow.appendChild(exchangeCacheRowlabel);
+				var exchangeCache = document.createElement("checkbox");
+				exchangeCache.setAttribute("id", "exchange-cache");
+				exchangeCache.setAttribute("label", "exchange-cache");
+				exchangeCacheRow.appendChild(exchangeCache);
+				temp.appendChild(exchangeCacheRow);
+			}
 
 		}
 		else {
@@ -93,6 +106,12 @@ exchWebService.calendarCreation = {
 
 			document.getElementById("cache").parentNode.hidden = false;
 			document.getElementById("cache").checked = this.oldCache;
+			
+			if(document.getElementById("exchange-cache-row")){
+				var temp = document.getElementById("cache").parentNode.parentNode;
+				var exchangeCacheRow = document.getElementById("exchange-cache-row");
+				temp.removeChild(exchangeCacheRow);
+			}
 		
 		}
 		exchWebServicesCheckRequired();
@@ -131,7 +150,7 @@ exchWebService.calendarCreation = {
 
 	saveSettings: function _saveSettings()
 	{
-		this.createPrefs.setBoolPref("autodiscover", exchWebServicesgAutoDiscover);
+/*		this.createPrefs.setBoolPref("autodiscover", exchWebServicesgAutoDiscover);
 		this.createPrefs.setCharPref("server", exchWebServicesgServer);
 		this.createPrefs.setCharPref("mailbox", exchWebServicesgMailbox);
 		this.createPrefs.setCharPref("displayname", exchWebServicesgDisplayName);
@@ -139,6 +158,7 @@ exchWebService.calendarCreation = {
 		this.createPrefs.setCharPref("domain", exchWebServicesgDomain);
 		this.createPrefs.setCharPref("folderbase", exchWebServicesgFolderBase);
 		this.createPrefs.setCharPref("folderpath", exchWebServicesgFolderPath);
+		this.createPrefs.setBoolPref("useOfflineCache", document.getElementById("exchange-cache").checked);
 	
 		if (exchWebServicesgFolderID != "") {
 			this.createPrefs.setCharPref("folderID", exchWebServicesgFolderID);
@@ -154,7 +174,54 @@ exchWebService.calendarCreation = {
 		Cc["@mozilla.org/preferences-service;1"]
 	                    .getService(Ci.nsIPrefService).savePrefFile(null);
 
-		doCreateCalendar();
+		doCreateCalendar();*/
+// New style..
+		exchWebService.commonFunctions.LOG("saveSettings Going to create the calendar in prefs.js");
+
+		// Calculate the new calendar.id
+		var newCalId = exchWebService.commonFunctions.getUUID();
+
+		// Save settings in dialog to new cal id.
+		exchWebServicesSaveExchangeSettingsByCalId(newCalId);
+
+		// Need to save the useOfflineCache preference separetly because it is not part of the main.
+		this.prefs = Cc["@mozilla.org/preferences-service;1"]
+	                    .getService(Ci.nsIPrefService)
+			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+newCalId+".");
+		this.prefs.setBoolPref("useOfflineCache", document.getElementById("exchange-cache").checked);
+		this.prefs.setIntPref("exchangePrefVersion", 1);
+
+		// We create a new URI for this calendar which will contain the calendar.id
+		var ioService = Cc["@mozilla.org/network/io-service;1"]  
+				.getService(Ci.nsIIOService);  
+		var tmpURI = ioService.newURI("https://auto/"+newCalId, null, null);  
+
+		var calManager = Cc["@mozilla.org/calendar/manager;1"]
+			.getService(Ci.calICalendarManager);
+		var newCal = calManager.createCalendar("exchangecalendar", tmpURI);
+
+		newCal.id = newCalId;
+		newCal.name = document.getElementById("calendar-name").value;
+
+		var calPrefs = Cc["@mozilla.org/preferences-service;1"]
+		            .getService(Ci.nsIPrefService)
+			    .getBranch("calendar.registry."+newCalId+".");
+
+		calPrefs.setCharPref("name", document.getElementById("calendar-name").value);
+
+		newCal.setProperty("color", document.getElementById('calendar-color').color);
+		if (!document.getElementById("fire-alarms").checked) {
+			newCal.setProperty("suppressAlarms", true);
+		}
+
+		newCal.setProperty("imip.identity.key", "none"); // Need to get this fixed to the real one.
+		newCal.setProperty("cache.enabled", false);
+
+		Cc["@mozilla.org/preferences-service;1"]
+	                    .getService(Ci.nsIPrefService).savePrefFile(null);
+
+		calManager.registerCalendar(newCal);
+
 	},
 }
 

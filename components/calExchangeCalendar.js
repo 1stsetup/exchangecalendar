@@ -295,8 +295,12 @@ function calExchangeCalendar() {
 //	this.initialized = false;
 
 	this.prefs = null;
+	this.mUseOfflineCache = null;
+	this.mNotConnected = true;
 
 	this.myAvailable = false;
+
+	this.mPrefs = null;
 
 	this.itemCache = new Array;
 	this.recurringMasterCache = new Array;
@@ -347,6 +351,9 @@ function calExchangeCalendar() {
 
 	this.exporting = false;
 	this.OnlyShowAvailability = false;
+
+	this.mIsOffline = Components.classes["@mozilla.org/network/io-service;1"]
+                             .getService(Components.interfaces.nsIIOService).offline;
 
 }
 
@@ -452,6 +459,19 @@ calExchangeCalendar.prototype = {
 
 	set uri(aUri)
 	{
+		//this.logInfo("set uri:"+aUri.path);
+		this.myId = aUri.path.substr(1);
+
+		this.mPrefs = Cc["@mozilla.org/preferences-service;1"]
+	                    .getService(Ci.nsIPrefService)
+			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+this.myId+".");
+		if (this.exchangePrefVersion < 1) {
+			this.mPrefs = null;
+		}
+		else {
+//			this.id = this.myId;
+		}
+
 	        this.mUri = aUri;
 	        return this.uri;
 	},
@@ -484,7 +504,26 @@ calExchangeCalendar.prototype = {
 
 	//  attribute boolean readOnly;
 	get readOnly() {
-		return this._readOnly;
+		return ((this._readOnly) || (this.notConnected));
+	},
+
+	set notConnected(aValue)
+	{
+		if (aValue != this.mNotConnected) {
+			this.mNotConnected = aValue;
+			if (aValue) {
+				this.observers.notify("onPropertyChanged", [this.superCalendar, "readOnly", true, false]);
+			}
+			else {
+				this.observers.notify("onPropertyChanged", [this.superCalendar, "readOnly", false, true]);
+			}
+		}
+
+	},
+
+	get notConnected()
+	{
+		return this.mNotConnected;
 	},
 
 	//  readonly attribute boolean canRefresh;
@@ -497,13 +536,20 @@ calExchangeCalendar.prototype = {
 	//  nsIVariant getProperty(in AUTF8String aName);
 	getProperty: function _getProperty(aName) 
 	{
-		//LOG("1 getProperty("+aName+")");
 	//	if (!this.isInitialized) {
 	//		return;
 	//	}
 
 		//dump("2 getProperty("+aName+")\n");
 		switch (aName) {
+		case "exchWebService.offlineCacheDBHandle":
+			return this.offlineCacheDB;
+
+		case "exchWebService.offlineOrNotConnected":
+			return ((this.notConnected) || (this.isOffline));
+
+		case "exchWebService.useOfflineCache":
+			return this.useOfflineCache;
 		case "exchWebService.getFolderProperties":
 			exchWebService.commonFunctions.LOG("Requesting exchWebService.getFolderProperties property.");
 			if (this.folderProperties) {
@@ -535,7 +581,7 @@ calExchangeCalendar.prototype = {
 		case "cache.supported":
 			return false;
 		case "requiresNetwork":
-                	return true;
+                	return false;
 		case "disabled":
 			if (this.prefs) {
 				this._disabled = exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "disabled", false);
@@ -552,15 +598,21 @@ calExchangeCalendar.prototype = {
             	case "capabilities.autoschedule.supported":
 			this.logInfo("capabilities.autoschedule.supported");
                 	return true;
-//		case "readOnly":
-//			this.logInfo(" \\\\\\\\\\\\\\\\\\\\ readOnly getProperty ///////////////////////");
+/*		case "currentStatus":
+			if (this.notConnected) {
+				return Cr.NS_ERROR_FAILURE;
+			}
+			else {
+				return Cr.NS_OK;
+			}
+			break;*/
 	        }
 		// itip.disableRevisionChecks
 
 		// capabilities.events.supported
 		// capabilities.tasks.supported
 
-		//LOG("getProperty("+aName+")");
+		//exchWebService.commonFunctions.LOG("1 getProperty("+aName+")");
 	        return this.__proto__.__proto__.getProperty.apply(this, arguments);
 	},
 
@@ -568,6 +620,7 @@ calExchangeCalendar.prototype = {
 	setProperty: function setProperty(aName, aValue)
 	{
 
+		this.logInfo("setProperty. aName:"+aName+", aValue:"+aValue);
 		switch (aName) {
 		case "disabled" :
 			this._disabled = aValue;
@@ -576,6 +629,23 @@ calExchangeCalendar.prototype = {
 				this.resetCalendar();
 			}
 			break;
+		case "exchWebService.useOfflineCache":
+			this.logInfo("The offline cache is now: "+this.useOfflineCache);
+			this.useOfflineCache = aValue;
+
+			if (!aValue) {
+				if (this.offlineCacheDB) {
+					try {
+						this.offlineCacheDB = null;
+					} catch(exc) {}
+				}
+
+				// Remove the offline cache database when we delete the calendar.
+				if (this.dbFile) {
+					this.dbFile.remove(true);
+				}
+			}
+			return;
 		}
 
 		this.__proto__.__proto__.setProperty.apply(this, arguments);
@@ -762,6 +832,7 @@ calExchangeCalendar.prototype = {
 
 	getMeetingRequestByUIDOk: function _getMeetingRequestByUIDOk(erGetMeetingRequestByUIDRequest, aMeetingRequests)
 	{
+		this.notConnected = false;
 		this.saveCredentials(erGetMeetingRequestByUIDRequest.argument);
 		this.logInfo("getMeetingRequestByUIDOk: itemcount="+aMeetingRequests.length);
 
@@ -923,6 +994,7 @@ calExchangeCalendar.prototype = {
 	getMeetingRequestByUIDError: function _getMeetingRequestByUIDError(erGetMeetingRequestByUIDRequest, aCode, aMsg)
 	{
 		this.saveCredentials(erGetMeetingRequestByUIDRequest.argument);
+		this.notConnected = true;
 		this.logInfo("getMeetingRequestByUIDError: aCode:"+aCode+", aMsg:"+aMsg);
 
 		this.notifyOperationComplete(erGetMeetingRequestByUIDRequest.listener,
@@ -1327,8 +1399,8 @@ this.logInfo("singleModified doNotify");
 								this.newMasters[aOldItem.getProperty("X-UID")] = true;
 							}
 
-							this.notifyTheObservers("onDeleteItem", [aOldItem]);
-							delete this.itemCache[aOldItem.id];
+//							this.notifyTheObservers("onDeleteItem", [aOldItem]);
+// removed this because item should not be removed.							delete this.itemCache[aOldItem.id];
 
 							var self = this;
 							this.addToQueue( erUpdateItemRequest,
@@ -1788,6 +1860,13 @@ this.logInfo("singleModified doNotify");
 		if (aRangeEnd) { this.logInfo("getItems 3: aRangeEnd:"+aRangeEnd.toString()); }
 
 		if (!this.isInitialized) {
+			if (aListener) {
+				this.notifyOperationComplete(aListener,
+				      Cr.NS_OK,
+				      Ci.calIOperationListener.GET,
+				      null,
+				      null);
+			}
 			return;
 		}
 
@@ -1953,13 +2032,19 @@ this.logInfo("singleModified doNotify");
 			}
 		}
 
-		if (!dateChanged) {
+//		if (!dateChanged) {
 
-		if (aRangeStart)  { this.logInfo("getItems 5a: aRangeStart:"+aRangeStart.toString()); }
-		if (aRangeEnd) { this.logInfo("getItems 5b: aRangeEnd:"+aRangeEnd.toString()); }
+			if (aRangeStart)  { this.logInfo("getItems 5a: aRangeStart:"+aRangeStart.toString()); }
+			if (aRangeEnd) { this.logInfo("getItems 5b: aRangeEnd:"+aRangeEnd.toString()); }
+
+			var itemsFromCache = this.getItemsFromOfflineCache(aRangeStart, aRangeEnd);
+			if (itemsFromCache) {
+				this.logInfo("We got '"+itemsFromCache.length+"' items from offline cache.");
+			}
 
 			var events = [];
 			var tasks = [];
+
 			for (var index in this.itemCache) {
 				if (isEvent(this.itemCache[index])) {
 					if ( ( (this.itemCache[index].startDate.compare(aRangeEnd) < 1) &&
@@ -1975,7 +2060,9 @@ this.logInfo("singleModified doNotify");
 				}
 			}
 
+			this.logInfo("We got '"+events.length+"' events and  '"+tasks.length+"'  tasks from memory cache.");
 			if (aListener) {
+				this.logInfo("We have a listener so going to inform it.(2)");
 				if ((events.length > 0) && (wantEvents)) {
 					aListener.onGetResult(this,
 						     Cr.NS_OK,
@@ -1984,6 +2071,7 @@ this.logInfo("singleModified doNotify");
 						     events.length,
 						     events);
 				}
+				
 				if ((tasks.length > 0) && (wantTodos)) {
 					aListener.onGetResult(this,
 						     Cr.NS_OK,
@@ -1994,13 +2082,14 @@ this.logInfo("singleModified doNotify");
 				}
 
 				this.notifyOperationComplete(aListener,
-					Cr.NS_OK,
-					Ci.calIOperationListener.GET,
-					null, null);
+				Cr.NS_OK,
+				Ci.calIOperationListener.GET,
+				null, null);
 			}
 
-			return;
-		}
+
+//			return;
+//		}
 
        		var self = this;
 
@@ -2012,69 +2101,22 @@ this.logInfo("singleModified doNotify");
 			}
 		}
 
+
 		if ((wantEvents) && (this.supportsEvents)) {
 			this.logInfo("Requesting events from exchange server.");
 			if ((startChanged) || (endChanged)) {
 				if (startChanged) {
 					this.logInfo("Startdate has changed to an earlier date. Requesting difference.");
 					this.requestPeriod(aRangeStart, oldStartDate, aItemFilter, aCount, false);
-/*
-					this.addToQueue( erFindCalendarItemsRequest, 
-						{user: this.user, 
-						 mailbox: this.mailbox,
-						 serverUrl: this.serverUrl,
-						 count: aCount,
-						 rangeStart: aRangeStart,
-						 rangeEnd: oldStartDate,
-						 folderBase: this.folderBase,
-						 itemFilter: aItemFilter,
-						 folderID: this.folderID,
-						 changeKey: this.changeKey,
-						 actionStart: Date.now() }, 
-						function(erFindCalendarItemsRequest, aIds, aOccurrences) { self.findCalendarItemsOK(erFindCalendarItemsRequest, aIds, aOccurrences);}, 
-						function(erFindCalendarItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erFindCalendarItemsRequest, aCode, aMsg);},
-						null);*/
 				}
 				if (endChanged) {
 					this.logInfo("Enddate has changed to a later date. Requesting difference.");
 					this.requestPeriod(oldEndDate, aRangeEnd, aItemFilter, aCount, true);
-/*
-					this.addToQueue( erFindCalendarItemsRequest, 
-						{user: this.user, 
-						 mailbox: this.mailbox,
-						 serverUrl: this.serverUrl,
-						 count: aCount,
-						 rangeStart: oldEndDate,
-						 rangeEnd: aRangeEnd,
-						 folderBase: this.folderBase,
-						 itemFilter: aItemFilter,
-						 folderID: this.folderID,
-						 changeKey: this.changeKey,
-						 actionStart: Date.now() }, 
-						function(erFindCalendarItemsRequest, aIds, aOccurrences) { self.findCalendarItemsOK(erFindCalendarItemsRequest, aIds, aOccurrences);}, 
-						function(erFindCalendarItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erFindCalendarItemsRequest, aCode, aMsg);},
-						null);*/
 				}
 			}
 			else {
 				this.logInfo("New time period. Requesting items in period.");
 				this.requestPeriod(aRangeStart, aRangeEnd, aItemFilter, aCount, false);
-/*
-				this.addToQueue( erFindCalendarItemsRequest, 
-					{user: this.user, 
-					 mailbox: this.mailbox,
-					 serverUrl: this.serverUrl,
-					 count: aCount,
-					 rangeStart: aRangeStart,
-					 rangeEnd: aRangeEnd,
-					 folderBase: this.folderBase,
-					 itemFilter: aItemFilter,
-					 folderID: this.folderID,
-					 changeKey: this.changeKey,
-					 actionStart: Date.now() }, 
-					function(erFindCalendarItemsRequest, aIds, aOccurrences) { self.findCalendarItemsOK(erFindCalendarItemsRequest, aIds, aOccurrences);}, 
-					function(erFindCalendarItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erFindCalendarItemsRequest, aCode, aMsg);},
-					null); */
 			}
 		}
 	
@@ -2094,13 +2136,6 @@ this.logInfo("singleModified doNotify");
 				null);
 		}
 
-		if (aListener) {
-			this.notifyOperationComplete(aListener,
-			      Cr.NS_OK,
-			      Ci.calIOperationListener.GET,
-			      null,
-			      null);
-		}
 	    },
 
 	requestPeriod: function _requestPeriod(aStartDate, aEndDate, aItemFilter, aCount, findReverse)
@@ -2175,7 +2210,7 @@ this.logInfo("singleModified doNotify");
 	//  calIOperation refresh();
 	refresh: function _refresh() {
 
-		//this.logInfo("refresh");
+		this.logInfo("refresh");
 		if (this.shutdown) {
 			return;
 		}
@@ -2499,24 +2534,33 @@ this.logInfo("singleModified doNotify");
 		return null;
 	},
 
+	get prefs()
+	{
+		return this.mPrefs;
+	},
+
+	get exchangePrefVersion()
+	{
+		return exchWebService.commonFunctions.safeGetIntPref( this.prefs, "exchangePrefVersion", 0);
+	},
+
 	get isInitialized()
 	{
 		if (!this.id) {
 			return false;
 		}
 
-		
-
-		if (this.firstrun) {
-
-			this.prefs = Cc["@mozilla.org/preferences-service;1"]
-		                    .getService(Ci.nsIPrefService)
+		if (!this.mPrefs) {
+			this.logInfo("Found old version preferences. Going to update to the new. This is only for exisiting calendars.");
+			this.mPrefs = Cc["@mozilla.org/preferences-service;1"]
+			            .getService(Ci.nsIPrefService)
 				    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+this.id+".");
-			if (!this.prefs) {
-				LOGInfo("ERROR: No access to our preferences");
-				return false;
-			}
+			this.prefs.setIntPref("exchangePrefVersion", 1);
 
+			var oldPrefs = Cc["@mozilla.org/preferences-service;1"]
+					.getService(Ci.nsIPrefService)
+					.getBranch("calendar.registry."+this.id+".");
+			oldPrefs.setCharPref("uri", "https://auto/"+this.id);
 		}
 
 		var returnVal = false;
@@ -2527,6 +2571,7 @@ this.logInfo("singleModified doNotify");
 		catch(err) {
 			returnVal = false;
 		}
+
 		if (this.firstrun) {
 			this.firstrun = false;
 
@@ -2570,7 +2615,6 @@ this.logInfo("singleModified doNotify");
 
 			// The first thing we want to do is check the folderbase and folderpath for their id & changekey.
 			// It might have changed between restarts.
-			this.newCalendarCheck();
 			this.checkFolderPath();
 
 			this.syncState = exchWebService.commonFunctions.safeGetCharPref(this.prefs,"syncState", "");
@@ -2734,52 +2778,14 @@ this.logInfo("singleModified doNotify");
 		return aDate
 	},
 
-	get endCacheDate() {
+	get endCacheDate() 
+	{
 		var aDate = cal.now();
 		var tmpDur = cal.createDuration();
 		tmpDur.hours = 1 * 24 * this.cacheStartupAfter;
 		aDate.addDuration(tmpDur);
 		this.logInfo("endCacheDate:"+aDate.toString());
 		return aDate
-	},
-
-	newCalendarCheck: function ecnewCalendarCheck() {
-
-		// Check if we have ecServer preference.
-		try {
-			this.prefs.getCharPref("ecServer");
-		}
-		catch(err) {
-			// we did not have the ecServer preference.
-			// This is a new calendar. Fill it with the create values.
-			this.logInfo("We have to create a new calendar in TB prefs");
-			var createPrefs = Cc["@mozilla.org/preferences-service;1"]
-		                    .getService(Ci.nsIPrefService)
-				    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl.createcalendar.");
-
-			this.prefs.setCharPref("ecServer", createPrefs.getCharPref("server"));
-			this.prefs.setCharPref("ecMailbox", createPrefs.getCharPref("mailbox"));
-			this.prefs.setCharPref("ecDisplayname", createPrefs.getCharPref("displayname"));
-			this.prefs.setCharPref("ecUser", createPrefs.getCharPref("user"));
-			this.prefs.setCharPref("ecDomain", createPrefs.getCharPref("domain"));
-			this.prefs.setCharPref("ecFolderbase", createPrefs.getCharPref("folderbase"));
-			this.prefs.setCharPref("ecFolderpath", createPrefs.getCharPref("folderpath"));
-			try {
-				this.prefs.setCharPref("ecFolderID", createPrefs.getCharPref("folderID"));
-				this.prefs.setCharPref("ecChangeKey", createPrefs.getCharPref("changeKey"));
-				this.prefs.setCharPref("ecFolderIDOfShare", createPrefs.getCharPref("folderIDOfShare"));
-			}
-			catch(err) {
-			}
-
-			this.setProperty("refreshInterval", "1");
-			Cc["@mozilla.org/preferences-service;1"]
-		                    .getService(Ci.nsIPrefService).savePrefFile(null);
-		}
-
-		//this.initialized = true;
-		//this.myAvailable = true;
-
 	},
 
 	checkInbox: function _checkInbox()
@@ -2876,6 +2882,7 @@ this.logInfo("singleModified doNotify");
 
 	removeMeetingItemOk: function _removeMeetingItemOk(erDeleteItemRequest)
 	{
+		this.notConnected = false;
 		this.saveCredentials(erDeleteItemRequest.argument);
 		this.logInfo("removeItemOk: "+erDeleteItemRequest.argument.itemType);
 
@@ -2884,12 +2891,14 @@ this.logInfo("singleModified doNotify");
 	removeMeetingItemError: function _removeMeetingItemError(erDeleteItemRequest, aCode, aMsg)
 	{
 		this.saveCredentials(erDeleteItemRequest.argument);
+		this.notConnected = true;
 		this.logInfo("removeItemError: "+erDeleteItemRequest.argument.itemType+" msg:"+String(aMsg));
 	},
 
 	syncInboxOK: function _syncInboxOK(erSyncInboxRequest, creations, updates, deletions, syncState)
 	{
 //		this.logInfo("syncInboxOk.");
+		this.notConnected = false;
 		this.saveCredentials(erSyncFolderItemsRequest.argument);
 
 		if ((creations.meetingrequests.length > 0) || (updates.meetingrequests.length > 0) || (deletions.meetingrequests.length > 0)) {
@@ -3260,6 +3269,7 @@ this.logInfo("singleModified doNotify");
 	syncInboxError: function _syncFolderItemsError(erSyncFolderItemsRequest, aCode, aMsg)
 	{
 		this.saveCredentials(erSyncFolderItemsRequest.argument);
+		this.notConnected = true;
 		this.weAreInboxSyncing = false;
 		//this.processItemSyncQueue();
 		
@@ -3345,6 +3355,7 @@ this.logInfo("singleModified doNotify");
 
 	getUserAvailabilityRequestOK: function _getUserAvailabilityRequestOK(erGetUserAvailabilityRequest, aEvents)
 	{
+		this.notConnected = false;
 		this.logInfo("getUserAvailabilityRequestOK");
 		this.saveCredentials(erGetUserAvailabilityRequest.argument);
 
@@ -3365,6 +3376,7 @@ this.logInfo("singleModified doNotify");
 	getUserAvailabilityRequestError: function _getUserAvailabilityRequestError(erGetUserAvailabilityRequest, aCode, aMsg)
 	{
 		this.saveCredentials(erGetUserAvailabilityRequest.argument);
+		this.notConnected = true;
 
 		if (this.OnlyShowAvailability) {
 			this.OnlyShowAvailability = false;
@@ -4588,6 +4600,7 @@ this.logInfo("!!CHANGED:"+String(e));
 
 	createItemOk: function _createItemOk(erCreateItemRequest, aId, aChangeKey)
 	{
+		this.notConnected = false;
 		this.saveCredentials(erCreateItemRequest.argument);
 		this.logInfo("createItemOk 1");
 
@@ -4640,6 +4653,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	createAttachmentOk: function _createAttachmentOk(erCreateAttachmentRequest, attachmentId, RootItemId, RootItemChangeKey)
 	{
 		this.logInfo("createAttachmentOk");
+		this.notConnected = false;
 
 		if (erCreateAttachmentRequest.argument.attachmentsUpdates.delete.length > 0) {
 			this.logInfo("We also need to delete some attachments: count="+erCreateAttachmentRequest.argument.attachmentsUpdates.delete.length);
@@ -4685,15 +4699,19 @@ this.logInfo("!!CHANGED:"+String(e));
 	createAttachmentError: function _createAttachmentError(erDeleteAttachmentRequest, aCode, aMsg)
 	{
 		this.logInfo("createAttachmentError: aCode:"+aCode+", aMsg:"+aMsg);
+		this.notConnected = true;
 
 	},
 
 	deleteAttachmentOk: function _deleteAttachmentOk(erDeleteAttachmentRequest, aId, aChangeKey)
 	{
 		this.logInfo("deleteAttachmentOk");
+		this.notConnected = false;
 
 		// See if we need to update the item when it is an invitation to others
 		// This to get the invitation uncluding the attachments send out.
+		this.addAttachmentsToOfflineCache(erDeleteAttachmentRequest.argument.item);
+
 		if ((erDeleteAttachmentRequest.argument.sendto) && ((erDeleteAttachmentRequest.argument.sendto != "sendtonone"))) {
 			// The item we processed was a meeting of which I'm the organiser.
 			// It contained new attachments and we need to send an item update to get it to the invited.
@@ -4717,6 +4735,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	deleteAttachmentError: function _deleteAttachmentError(erCreateAttachmentRequest, aCode, aMsg)
 	{
 		this.logInfo("deleteAttachmentError");
+		this.notConnected = true;
 	},
 
 	makeUpdateOneItem: function _makeUpdateOneItem(aNewItem, aOldItem, aIndex, aMasterId, aMasterChangeKey, aInvitation)
@@ -4930,6 +4949,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	{
 		this.logInfo("sendMeetingResponsOk");
 		this.saveCredentials(erSendMeetingResponsRequest.argument);
+		this.notConnected = false;
 
 		if (erSendMeetingResponsRequest.listener) {
 		        this.notifyOperationComplete(erSendMeetingResponsRequest.listener,
@@ -4957,6 +4977,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	{
 		this.logInfo("modifyItemgetOccurrenceIndexOk");
 		this.saveCredentials(erGetOccurrenceIndexRequest.argument);
+		this.notConnected = false;
 
 		var changesObj = this.makeUpdateOneItem(erGetOccurrenceIndexRequest.argument.newItem, erGetOccurrenceIndexRequest.argument.masterItem, aIndex, aMasterId, aMasterChangeKey);
 		var changes;
@@ -5022,6 +5043,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	whichOccurrencegetOccurrenceIndexError: function _whichOccurrencegetOccurrenceIndexError(erGetOccurrenceIndexRequest, aCode, aMsg)
 	{
 		this.logInfo("whichOccurrencegetOccurrenceIndexError:("+aCode+")"+aMsg);
+		this.notConnected = true;
 		this.saveCredentials(erGetOccurrenceIndexRequest.argument);
 
 		if ((aCode == -8) && (aMsg="ErrorCalendarIsCancelledForDecline")) {
@@ -5186,6 +5208,7 @@ this.logInfo("!!CHANGED:"+String(e));
 		this.logInfo("updateItemOk");
 
 		this.saveCredentials(erUpdateItemRequest.argument);
+		this.notConnected = false;
 
 		// Make an event for thistory.
 		if (isEvent(erUpdateItemRequest.argument.newItem)) {
@@ -5212,6 +5235,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	{
 //		this.logInfo("getOccurrenceIndexOk index="+aIndex);
 		this.saveCredentials(erGetOccurrenceIndexRequest.argument);
+		this.notConnected = false;
 		var self = this;
 		switch (erGetOccurrenceIndexRequest.argument.action) {
 			case "deleteItem":
@@ -5239,6 +5263,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	{
 //		this.logInfo("getOccurrenceIndexError");
 		this.saveCredentials(erGetOccurrenceIndexRequest.argument);
+		this.notConnected = true;
 		switch (erGetOccurrenceIndexRequest.argument.action) {
 			case "deleteItem":
 				if (erGetOccurrenceIndexRequest.listener) {
@@ -5256,6 +5281,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	{
 		this.saveCredentials(erDeleteItemRequest.argument);
 		this.logInfo("deleteItemOK");
+		this.notConnected = false;
 
 		if (erDeleteItemRequest.listener) {
 			this.notifyOperationComplete(erDeleteItemRequest.listener,
@@ -5299,6 +5325,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	deleteItemError: function _deleteItemError(erDeleteItemRequest, aCode, aMsg)
 	{
 		this.saveCredentials(erDeleteItemRequest.argument);
+		this.notConnected = true;
 		this.logInfo("deleteItemError msg:"+String(aMsg));
 		if (erDeleteItemRequest.listener) {
 			this.notifyOperationComplete(erDeleteItemRequest.listener,
@@ -5320,7 +5347,7 @@ this.logInfo("!!CHANGED:"+String(e));
 
 	addToQueue: function _addToQueue(aRequest, aArgument, aCbOk, aCbError, aListener, aQueueNumber)
 	{
-		if (this.getProperty("disabled")) {
+		if ((this.getProperty("disabled")) || (this.isOffline)) {
 			return;
 		}
 
@@ -5397,6 +5424,7 @@ this.logInfo("!!CHANGED:"+String(e));
 		//this.logInfo("findCalendarItemsOK: aIds.length="+aIds.length+", aOccurrences.length="+aOccurrences.length);
 
 		this.saveCredentials(erFindCalendarItemsRequest.argument);
+		this.notConnected = false;
 
 		if ((aIds.length == 0) && (aOccurrences.length)) {
 			return;
@@ -5460,18 +5488,21 @@ this.logInfo("!!CHANGED:"+String(e));
 
 	startCalendarPoller: function _startCalendarPoller()
 	{
+	        var self = this;
+		var timerCallback = {
+			notify: function setTimeout_notify() {
+				self.refresh();
+			}
+		};
+
 		if (!this.calendarPoller) {
 
 			// start the calendar poller
 			this.calendarPoller = Cc["@mozilla.org/timer;1"]
 					.createInstance(Ci.nsITimer);
-		        var self = this;
-			var timerCallback = {
-				notify: function setTimeout_notify() {
-					self.refresh();
-				}
-			};
-
+			this.calendarPoller.initWithCallback(timerCallback, exchWebService.commonFunctions.safeGetIntPref(this.prefs, "ecCalendarPollInterval", 60) * 1000, this.calendarPoller.TYPE_REPEATING_SLACK);
+		}
+		else {
 			this.calendarPoller.initWithCallback(timerCallback, exchWebService.commonFunctions.safeGetIntPref(this.prefs, "ecCalendarPollInterval", 60) * 1000, this.calendarPoller.TYPE_REPEATING_SLACK);
 		}
 	},
@@ -5482,6 +5513,9 @@ this.logInfo("!!CHANGED:"+String(e));
 		if ((aCode == -8) && (aMsg == "ErrorCalendarFolderIsInvalidForCalendarView")) {
 			this.supportsEvents = false;
 		}
+		else {
+			this.notConnected = true;
+		}
 		this.saveCredentials(erFindCalendarItemsRequest.argument);
 	},
 
@@ -5490,13 +5524,14 @@ this.logInfo("!!CHANGED:"+String(e));
 		this.logInfo("findMasterOccurrencesOk:Start: aIds.length="+aIds.length);
 
 		this.saveCredentials(erFindCalendarItemsRequest.argument);
+		this.notConnected = false;
 
 		if (aIds.length == 0) {
 			return;
 		}
 
 		// Cache full master details.
-		this.updateCalendar(erGetItemsRequest, aIds);
+		this.updateCalendar(erGetItemsRequest, aIds, true);
 		this.logInfo("findMasterOccurrencesOk:End: aIds.length="+aIds.length);
 
 	},
@@ -5505,6 +5540,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	{
 //		this.logInfo("findOccurrencesOK: aIds.length="+aIds.length);
 		// Get full details of occurrences and exceptions and cache them.
+		this.notConnected = false;
 		this.findCalendarItemsOK(erFindOccurrencesRequest, aIds, []);
 	},
 
@@ -5512,6 +5548,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	{
 //		this.logInfo("findTaskItemsOK: aIds.length:"+aIds.length);
 		this.saveCredentials(erFindTaskItemsRequest.argument);
+		this.notConnected = false;
 
 		if (aIds.length == 0) {
 			return;
@@ -5553,6 +5590,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	findTaskItemsError: function _findTaskItemsError(erFindTaskItemsRequest, aCode, aMsg)
 	{
 		this.saveCredentials(erFindTaskItemsRequest.argument);
+		this.notConnected = true;
 
 	},
 
@@ -5597,6 +5635,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	{
 		this.logInfo("getTaskItemsOK: aItems.length:"+aItems.length);
 		this.saveCredentials(erGetItemsRequest.argument);
+		this.notConnected = false;
 
 this.logInfo("getTaskItemsOK 2");
 
@@ -5608,7 +5647,7 @@ this.logInfo("getTaskItemsOK 2");
 		}
 
 this.logInfo("getTaskItemsOK 3");
-		this.updateCalendar(erGetItemsRequest, aItems);
+		this.updateCalendar(erGetItemsRequest, aItems, true);
 this.logInfo("getTaskItemsOK 4");
 
 		this.syncBusy = false;
@@ -5621,6 +5660,7 @@ this.logInfo("getTaskItemsOK 4");
 	{
 //		this.logInfo("getTaskItemsError: aMsg:"+ aMsg);
 		this.saveCredentials(erGetItemsRequest.argument);
+		this.notConnected = true;
 
 		this.syncBusy = false;
 
@@ -5869,6 +5909,14 @@ this.logInfo("getTaskItemsOK 4");
 		} catch(err) {}
 
 		this.observers.notify(aCommand, aArray);
+
+		switch (aCommand) {
+			case "onDeleteItem": 
+				if (!this.notConnected) {
+					this.removeFromOfflineCache(aArray[0]);
+				}
+				break;
+		}
 	},
 
 	removeChildrenFromMaster: function _removeChildrenFromMaster(aMaster)
@@ -6416,6 +6464,7 @@ this.logInfo("getTaskItemsOK 4");
 			switch (aCalendarItem.nsTypes::CalendarItemType.toString()) {
 				case "Exception" :
 					this.logInfo("@1:"+item.startDate.toString()+":IsException");
+					item.setProperty("X-RecurringType", "RE");
 					this.setAlarm(item, aCalendarItem);  
 					// Try to find master. If found add Exception and link recurrenceinfo.
 					item.recurrenceId = this.tryToSetDateValue(aCalendarItem.nsTypes::RecurrenceId, item.startDate);
@@ -6434,6 +6483,7 @@ this.logInfo("getTaskItemsOK 4");
 					break;
 				case "Occurrence" :
 					this.logInfo("@1:"+item.startDate.toString()+":IsOccurrence");
+					item.setProperty("X-RecurringType", "RO");
 					this.setAlarm(item, aCalendarItem);  
 					// This is a occurrence. Try to find the master and link recurrenceinfo.
 					item.recurrenceId = this.tryToSetDateValue(aCalendarItem.nsTypes::RecurrenceId, item.startDate);
@@ -6502,6 +6552,9 @@ this.logInfo("getTaskItemsOK 4");
 					}
 
 					this.setAlarm(item, aCalendarItem);  
+
+					this.addToOfflineCache(item, aCalendarItem);
+
 					this.recurringMasterCache[aCalendarItem.nsTypes::UID.toString()] = item;
 	
 					// Removed because it probably does not need to be set. We found this out when working on the offline cache (16-05-2012)
@@ -6569,9 +6622,9 @@ this.logInfo("getTaskItemsOK 4");
 		var item = createTodo();
 
 		item.entryDate = this.tryToSetDateValue(aTask.nsTypes::StartDate, null);
-		if (!item.entryDate) {
+/*		if (!item.entryDate) {
 			item.entryDate = this.tryToSetDateValue(aTask.nsTypes::Recurrence.nsTypes::EndDateRecurrence.nsTypes::StartDate, null);
-		}
+		}*/
 
 		item.dueDate = this.tryToSetDateValue(aTask.nsTypes::DueDate, item.dueDate);
 		item.completedDate = this.tryToSetDateValue(aTask.nsTypes::CompleteDate, item.completedDate);
@@ -6580,6 +6633,15 @@ this.logInfo("getTaskItemsOK 4");
 
 		item.id = this.tryToSetValue(aTask.nsTypes::ItemId.@Id.toString(), item.id);
 		item.setProperty("X-ChangeKey", aTask.nsTypes::ItemId.@ChangeKey.toString());
+
+		if (this.itemCache[item.id]) {
+			if (this.itemCache[item.id].getProperty("X-ChangeKey") == aTask.nsTypes::ItemId.@ChangeKey.toString()) {
+				//this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
+				return null;
+			}
+		}
+
+
 		item.setProperty("X-UID", "dummy");
 
 		item.title = this.tryToSetValue(aTask.nsTypes::Subject.toString(), item.title);
@@ -6608,42 +6670,6 @@ this.logInfo("getTaskItemsOK 4");
 			case "Deferred" : 
 				item.status = "CANCELLED";
 				break;
-		}
-
-//		this.setAlarm(item, aTask);
-
-		if (aTask.nsTypes::ReminderIsSet == "true") {
-
-			let alarm = cal.createAlarm();
-			alarm.action = "DISPLAY";
-			alarm.repeat = 0;
-
-			if (item.entryDate) {
-				var alarmDueDate = this.tryToSetDateValue(aTask.nsTypes::ReminderDueBy, item.entryDate.clone());
-			}
-			else {
-				var alarmDueDate = this.tryToSetDateValue(aTask.nsTypes::ReminderDueBy, null);
-			}
-
-			if (alarmDueDate) {
-				let alarmOffset = cal.createDuration();
-				alarmOffset.minutes = - aTask.nsTypes::ReminderMinutesBeforeStart;
-				alarmOffset.normalize();
-
-				if ((!item.entryDate) || (item.entryDate.compare(alarmDueDate) != 0)) {
-					// We have a different due date.
-					alarmDueDate.addDuration(alarmOffset);	
-					alarm.related = Ci.calIAlarm.ALARM_RELATED_ABSOLUTE;
-					alarm.alarmDate = alarmDueDate.clone();
-				}
-				else {
-					// We have an offset to the startdate.
-					alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
-					alarm.offset = alarmOffset;
-				}
-
-				item.addAlarm(alarm);
-			}
 		}
 
 		// Check if our custom fields are set
@@ -6718,7 +6744,7 @@ this.logInfo("getTaskItemsOK 4");
 
 		tmpDate = this.tryToSetDateValue(aTask.nsTypes::LastModifiedTime);
 		if (tmpDate) {
-			item.setProperty("LAST-MODIFIED", tmpDate);
+//			item.setProperty("LAST-MODIFIED", tmpDate);
 		}
 
 		item.setProperty("DESCRIPTION", aTask.nsTypes::Body.toString());
@@ -6771,16 +6797,12 @@ this.logInfo("getTaskItemsOK 4");
 			item.setProperty("X-exchWebService-IsTeamTask",aTask.nsTypes::IsTeamTask.toString());
 		}
 		
-		if (isNotAccepted == 3) {
+		this.setAlarm(item, aTask);  
+		this.setSnoozeTime(item, null);
+
+/*		if (isNotAccepted == 3) {
 			item.makeImmutable();
-		}
-
-		this.setSnoozeTime(items, null);
-
-		// Microsoft remindernexttime
-		if (!doNotHandleOldAddon) {
-			this.readEP_DismissSnoozeState(item, aTask);
-		}
+		}*/
 
 		return item;
 	},
@@ -6819,45 +6841,39 @@ this.logInfo("getTaskItemsOK 4");
 		}
 	},
 
-	updateCalendar: function _updateCalendar(erGetItemsRequest, aItems)
+	updateCalendar: function _updateCalendar(erGetItemsRequest, aItems, doNotify)
 	{
 		//this.logInfo("updateCalendar");
 		var items = [];
+		var convertedItems = [];
 		for each (var exchItem in aItems) {
 
 			var item = this.convertExchangeToCal(exchItem, erGetItemsRequest);
 			if (item) {
+				convertedItems.push(item);
 				if (!this.itemCache[item.id]) {
 					// This is a new unknown item
 					this.itemCache[item.id] = item;
 
 					//this.logInfo("updateCalendar: onAddItem:"+ item.title);
-					this.notifyTheObservers("onAddItem", [item]);
+					if (doNotify) {
+						this.notifyTheObservers("onAddItem", [item]);
+					}
+					this.addToOfflineCache(item, exchItem);
+
 				}
 				else {
 					// I Allready known this one.
 					//this.logInfo("updateCalendar: onModifyItem:"+ item.title);
 
-					//Copy snooze/lastack status
-/*					if (item.isMutable) {
-						if (this.itemCache[item.id].alarmLastAck) {
-							item.alarmLastAck = this.itemCache[item.id].alarmLastAck.clone();
-						}
-						if (this.itemCache[item.id].getProperty("X-MOZ-SNOOZE-TIME")) {
-							item.setProperty("X-MOZ-SNOOZE-TIME", this.itemCache[item.id].getProperty("X-MOZ-SNOOZE-TIME"));
-						}
-					}*/
-
-					this.singleModified(item, true);
-					//this.notifyTheObservers("onModifyItem", [item, this.itemCache[item.id]]);
-					// Remove Alarms of old item.
-					/*var tmpItem = this.itemCache[item.id].clone();
-					tmpItem.clearAlarms();
-					this.itemCache[item.id] = item;*/
+					this.singleModified(item, doNotify);
+					this.addToOfflineCache(item, exchItem);
 				}
 			}
 
 		}
+
+		return convertedItems;
 
 	},
 
@@ -6866,18 +6882,20 @@ this.logInfo("getTaskItemsOK 4");
 	{
 //		this.logInfo("getCalendarItemsOK: aItems.length="+aItems.length);
 		this.saveCredentials(erGetItemsRequest.argument);
+		this.notConnected = false;
 
 		if (aItems.length == 0) {
 			return;
 		}
 
-		this.updateCalendar(erGetItemsRequest, aItems);
+		this.updateCalendar(erGetItemsRequest, aItems, true, true);
 
 	},
 
 	getCalendarItemsError: function _getCalendarItemsError(erGetItemsRequest, aCode, aMsg)
 	{
 		this.saveCredentials(erGetItemsRequest.argument);
+		this.notConnected = true;
 
 	},
 
@@ -6926,6 +6944,7 @@ this.logInfo("getTaskItemsOK 4");
 	{
 		this.folderPathStatus = 0;
 		this.saveCredentials(erSyncFolderItemsRequest.argument);
+		this.notConnected = false;
 
 		//this.logInfo("syncFolderItemsOK: Creation:"+creations.length+", Updates:"+updates.length+", Deletions:"+deletions.length);
 
@@ -7063,6 +7082,7 @@ this.logInfo("getTaskItemsOK 4");
 	{
 		this.folderPathStatus = -1;
 		this.saveCredentials(erSyncFolderItemsRequest.argument);
+		this.notConnected = true;
 		this.weAreSyncing = false;
 		this.processItemSyncQueue();
 	},
@@ -7070,6 +7090,21 @@ this.logInfo("getTaskItemsOK 4");
 	// Check if specified folder still exists. If so get new id and changekey.
 	checkFolderPath: function _checkFolderPath()
 	{
+		// We first restore from prefs.js file from the last time.
+		var tmpFolderClass = exchWebService.commonFunctions.safeGetCharPref(this.prefs,"folderClass", null);
+		if (tmpFolderClass) {
+			this.logInfo("Restore folderClass from prefs.js:"+tmpFolderClass);
+			this.setSupportedItems(tmpFolderClass);
+
+			var tmpFolderProperties = exchWebService.commonFunctions.safeGetCharPref(this.prefs,"folderProperties", null);
+			if (tmpFolderProperties) {
+				//this.logInfo("Restore folderProperties from prefs.js:"+tmpFolderProperties);
+				var tmpXML = new XML(tmpFolderProperties);
+				this.setFolderProperties(tmpXML, tmpFolderClass);
+			}
+		}
+
+
 		if (this.folderPath != "/") {
 			this.logInfo("checkFolderPath 1");
 			this.folderPathStatus = 1;
@@ -7125,6 +7160,7 @@ this.logInfo("getTaskItemsOK 4");
 	{
 		this.folderClass = aFolderClass;
 		this.logInfo("Set folderClass="+this.folderClass);
+		this.prefs.setCharPref("folderClass", aFolderClass);
 		switch (aFolderClass) {
 			case "IPF.Appointment":
 				this.supportsEvents = true;
@@ -7156,6 +7192,7 @@ this.logInfo("getTaskItemsOK 4");
 	{
 		this.saveCredentials(erFindFolderRequest.argument);
 		this.logInfo("checkFolderPathOk: aId"+aId+", aChangeKey:"+aChangeKey+", aFolderClass:"+aFolderClass);
+		this.notConnected = false;
 		
 		this.folderID = aId;
 		this.changeKey = aChangeKey;
@@ -7178,19 +7215,14 @@ this.logInfo("getTaskItemsOK 4");
 		
 	},
 
-	getFolderOk: function _checkFolderPathOk(erGetFolderRequest, aId, aChangeKey, aFolderClass)
+	setFolderProperties: function _setFolderProperties(aFolderProperties, aFolderClass)
 	{
-		this.saveCredentials(erGetFolderRequest.argument);
-		this.logInfo("getFolderOk: aId"+aId+", aChangeKey:"+aChangeKey+", aFolderClass:"+aFolderClass);
-		
-		this.folderProperties = erGetFolderRequest.properties;
-
 		//BUG 111
 		// When the user only has permissions to see free/busy info and also permissions to read the folder
 		// properties we should activate OnlyShowAvailability variable.
 		// Problem is when is this condition true
 		// For now we will set OnlyShowAvailability = true when EffectiveRights.Read == false
-		if (this.folderProperties.nsSoap::Body.nsMessages::GetFolderResponse..nsTypes::EffectiveRights.nsTypes::Read.toString() == "false") {
+		if (aFolderProperties.nsSoap::Body.nsMessages::GetFolderResponse..nsTypes::EffectiveRights.nsTypes::Read.toString() == "false") {
 			this.logInfo("getFolderOk: but EffectiveRights.Read == false. Only getting Free/Busy information.");
 			if (!this.OnlyShowAvailability) {
 				this.OnlyShowAvailability = true;
@@ -7206,6 +7238,18 @@ this.logInfo("getTaskItemsOK 4");
 		}
 	},
 
+	getFolderOk: function _getFolderOk(erGetFolderRequest, aId, aChangeKey, aFolderClass)
+	{
+		this.saveCredentials(erGetFolderRequest.argument);
+		this.logInfo("getFolderOk: aId"+aId+", aChangeKey:"+aChangeKey+", aFolderClass:"+aFolderClass);
+		this.notConnected = false;
+		
+		this.folderProperties = erGetFolderRequest.properties;
+		this.prefs.setCharPref("folderProperties", this.folderProperties.toString());
+
+		this.setFolderProperties(this.folderProperties, aFolderClass);
+	},
+
 	checkFolderPathError: function _checkFolderPathError(erFindFolderRequest, aCode, aMsg)
 	{
 		this.folderPathStatus = -1;
@@ -7213,11 +7257,17 @@ this.logInfo("getTaskItemsOK 4");
 		// We could not get the specified folder anymore. Stop working.
 		// 21-03-2012 Try to get Free/Busy/Tentative information and show that.
 
-		if (!this.OnlyShowAvailability) {
-			this.OnlyShowAvailability = true;
-			this.getOnlyFreeBusyInformation(this.lastValidRangeStart, this.lastValidRangeEnd);
-			this.startCalendarPoller();
-		}		
+		if (aCode == -10) {
+			this.notConnected = true;
+		}
+		else {
+
+			if (!this.OnlyShowAvailability) {
+				this.OnlyShowAvailability = true;
+				this.getOnlyFreeBusyInformation(this.lastValidRangeStart, this.lastValidRangeEnd);
+				this.startCalendarPoller();
+			}		
+		}
 	},
 
 	getOnlyFreeBusyInformation: function _getOnlyFreeBusyInformation(aRangeStart, aRangeEnd)
@@ -7273,6 +7323,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	getTimeZonesOK: function _getTimeZonesOK(erGetTimeZonesRequest, aTimeZoneDefinitions)
 	{
+		this.notConnected = false;
 		this.saveCredentials(erGetTimeZonesRequest.argument);
 		this.EWSTimeZones = aTimeZoneDefinitions;
 		this.logInfo("getTimeZonesOK");
@@ -7283,6 +7334,7 @@ this.logInfo("getTaskItemsOK 4");
 	{
 		this.logInfo("getTimeZonesError: Msg"+aMsg);
 		this.haveTimeZones = false;
+		this.notConnected = true;
 	},
 
 	calculateBiasOffsets: function _calculateBiasOffsets(aCalTimeZone)
@@ -7492,6 +7544,11 @@ this.logInfo("getTaskItemsOK 4");
 	doDeleteCalendar: function _doDeleteCalendar()
 	{
 		this.doShutdown();
+
+		// Remove the offline cache database when we delete the calendar.
+		if (this.dbFile) {
+			this.dbFile.remove(true);
+		}
 	},
 
 	doShutdown: function _doShutdown()
@@ -7548,6 +7605,12 @@ this.logInfo("getTaskItemsOK 4");
 		this.meetingCancelationsCache = [];
 		this.meetingrequestAnswered = [];
 		this.meetingResponsesCache = [];
+
+		if (this.offlineCacheDB) {
+			try {
+				this.offlineCacheDB = null;
+			} catch(exc) {}
+		}
 	},
 
 	removeFromMeetingRequestCache: function _removeFromMeetingRequestCache(aID) {
@@ -7624,6 +7687,663 @@ this.logInfo("getTaskItemsOK 4");
 		return result;
 	},
 
+	createNewOfflineCacheDB: function _createNewOfflineCacheDB()
+	{
+		if ((this.mUseOfflineCache) && (!this.offlineCacheDB)) {
+			this.dbFile = Cc["@mozilla.org/file/directory_service;1"]
+					.getService(Components.interfaces.nsIProperties)
+					.get("ProfD", Components.interfaces.nsIFile);
+			this.dbFile.append("exchange-data");
+			if ( !this.dbFile.exists() || !this.dbFile.isDirectory() ) {
+				this.dbFile.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);  
+			}
+
+			this.dbFile.append(this.id+".offlineCache.sqlite");
+
+			try {
+				this.offlineCacheDB = Services.storage.openDatabase(this.dbFile); // Will also create the file if it does not exist
+			}
+			catch(exc) {
+				this.offlineCacheDB = null;
+				this.logInfo("Could not open offlineCache database.");
+				return;
+			}
+
+			if (!this.offlineCacheDB.connectionReady) {
+				this.offlineCacheDB = null;
+				this.logInfo("connectionReady for offlineCache database.");
+				return;
+			}
+
+			if (!this.offlineCacheDB.tableExists("items")) {
+				this.logInfo("Table 'items' does not yet exist. We are going to create it.");
+				try {
+					this.offlineCacheDB.createTable("items", "event STRING, id STRING, changeKey STRING, startDate STRING, endDate STRING, uid STRING, type STRING, parentItem STRING, item STRING");
+				}
+				catch(exc) {
+					this.logInfo("Could not create table 'items'. Error:"+exc);
+					return;
+				}
+
+				var sqlStr = "CREATE INDEX idx_items_id ON items (id)";
+				if (!this.executeQuery(sqlStr)) {
+					this.logInfo("Could not create index 'idx_items_id'");
+					this.offlineCacheDB = null;
+					return;
+				}
+
+				var sqlStr = "CREATE INDEX idx_items_type ON items (type)";
+				if (!this.executeQuery(sqlStr)) {
+					this.logInfo("Could not create index 'idx_items_type'");
+					this.offlineCacheDB = null;
+					return;
+				}
+
+				var sqlStr = "CREATE UNIQUE INDEX idx_items_id_changekey ON items (id, changeKey)";
+				if (!this.executeQuery(sqlStr)) {
+					this.logInfo("Could not create index 'idx_items_id_changekey'");
+					this.offlineCacheDB = null;
+					return;
+				}
+
+				var sqlStr = "CREATE INDEX idx_items_type_uid ON items (type ASC, uid)";
+				if (!this.executeQuery(sqlStr)) {
+					this.logInfo("Could not create index 'idx_items_type_uid'");
+					this.offlineCacheDB = null;
+					return;
+				}
+
+				var sqlStr = "CREATE INDEX idx_items_uid ON items (uid)";
+				if (!this.executeQuery(sqlStr)) {
+					this.logInfo("Could not create index 'idx_items_uid'");
+					this.offlineCacheDB = null;
+					return;
+				}
+
+				var sqlStr = "CREATE INDEX idx_items_uid_startdate_enddate ON items (uid, startDate ASC, endDate)";
+				if (!this.executeQuery(sqlStr)) {
+					this.logInfo("Could not create index 'idx_items_uid_startdate_enddate'");
+					this.offlineCacheDB = null;
+					return;
+				}
+
+				var sqlStr = "CREATE INDEX idx_items_startdate_enddate ON items (startDate ASC, endDate)";
+				if (!this.executeQuery(sqlStr)) {
+					this.logInfo("Could not create index 'idx_items_startdate_enddate'");
+					this.offlineCacheDB = null;
+					return;
+				}
+
+				var sqlStr = "CREATE INDEX idx_items_parentitem_startdate_enddate ON items (parentitem, startDate ASC, endDate)";
+				if (!this.executeQuery(sqlStr)) {
+					this.logInfo("Could not create index 'idx_items_startdate_enddate'");
+					this.offlineCacheDB = null;
+					return;
+				}
+
+				var sqlStr = "CREATE INDEX idx_items_type_startdate_enddate ON items (type, startDate ASC, endDate)";
+				if (!this.executeQuery(sqlStr)) {
+					this.logInfo("Could not create index 'idx_items_type_startdate_enddate'");
+					this.offlineCacheDB = null;
+					return;
+				}
+
+			}
+
+			if (!this.offlineCacheDB.tableExists("attachments")) {
+				this.logInfo("Table 'attachments' does not yet exist. We are going to create it.");
+				try {
+					this.offlineCacheDB.createTable("attachments", "id STRING, name STRING, size INTEGER, cachePath STRING");
+				}
+				catch(exc) {
+					this.logInfo("Could not create table 'attachments'. Error:"+exc);
+					return;
+				}
+
+				var sqlStr = "CREATE UNIQUE INDEX idx_att_id ON attachments (id)";
+				if (!this.executeQuery(sqlStr)) {
+					this.logInfo("Could not create index 'idx_att_id'");
+					this.offlineCacheDB = null;
+					return;
+				}
+
+			}
+
+			if (!this.offlineCacheDB.tableExists("attachments_per_item")) {
+				this.logInfo("Table 'attachments_per_item' does not yet exist. We are going to create it.");
+				try {
+					this.offlineCacheDB.createTable("attachments_per_item", "itemId STRING, attId STRING");
+				}
+				catch(exc) {
+					this.logInfo("Could not create table 'attachments_per_item'. Error:"+exc);
+					return;
+				}
+
+				var sqlStr = "CREATE INDEX idx_attitem_itemid ON attachments_per_item (itemId)";
+				if (!this.executeQuery(sqlStr)) {
+					this.logInfo("Could not create index 'idx_attitem_itemid'");
+					this.offlineCacheDB = null;
+					return;
+				}
+			}
+
+			this.logInfo("Created offlineCache database.");
+		}
+		else {
+			try{
+				this.offlineCacheDB = null;
+			}
+			catch(exc){
+				this.logInfo("Unable to close offlineCache database connection:"+exc);	
+			}
+		}		
+	},
+
+	get useOfflineCache()
+	{
+		if (this.mUseOfflineCache) {
+			this.createNewOfflineCacheDB();
+			return this.mUseOfflineCache;
+		}
+		else {
+			this.mUseOfflineCache = exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "useOfflineCache", false);
+			this.createNewOfflineCacheDB();
+			return this.mUseOfflineCache;
+		}
+	},
+
+	set useOfflineCache(aValue)
+	{
+		this.mUseOfflineCache = aValue;
+		this.prefs.setBoolPref("useOfflineCache", aValue);
+		if (aValue) {
+			this.createNewOfflineCacheDB();
+		}
+	},
+
+	getItemType: function _getItemType(aCalItem)
+	{
+		if (aCalItem.id == aCalItem.parentItem.id) {
+			// Master or Single
+			if (aCalItem.recurrenceInfo) {
+				return "M";
+			}
+			else {
+				return "S";
+			}
+		}
+		else {
+			return aCalItem.getProperty("X-RecurringType");
+		}
+	},
+
+	executeQuery: function _executeQuery(aQuery)
+	{
+		this.logInfo("sql-query:"+aQuery, 2);
+		try {
+			var sqlStatement = this.offlineCacheDB.createStatement(aQuery);
+		}
+		catch(exc) {
+			this.logInfo("Error on createStatement. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString+", Exception:"+exc+". ("+aQuery+")");
+			return false;
+		}
+
+		try {
+			sqlStatement.executeStep();
+		}
+		finally {  
+			sqlStatement.reset();
+		}
+
+		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
+			return true;
+		}
+		else {
+			this.logInfo("Error executing Query. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString);
+			return false;
+		}
+	},
+
+	addAttachmentsToOfflineCache: function _addAttachmentsToOfflineCache(aCalItem)
+	{
+		var attachments = aCalItem.getAttachments({});
+		this.removeAttachmentsFromOfflineCache(aCalItem);
+		for (var index in attachments) {
+			this.addAttachmentToOfflineCache(aCalItem, attachments[index]);
+		}			
+	},
+
+	addAttachmentToOfflineCache: function _addAttachmentToOfflineCache(aCalItem, aCalAttachment)
+	{
+		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+			return;
+		}
+
+		var attParams = exchWebService.commonFunctions.splitUriGetParams(aCalAttachment.uri);
+
+		if (attParams) {
+
+			var sqlStr = "SELECT COUNT() as attcount from attachments WHERE id='"+attParams.id+"'";
+			this.logInfo("sql-query:"+sqlStr, 2);
+			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
+			sqlStatement.executeStep();
+			if (sqlStatement.row.attcount > 0) {
+				this.logInfo("Going to update the attachment because it all ready exist.");
+				this.updateAttachmentInOfflineCache(aCalItem, aCalAttachment);
+				sqlStatement.reset();
+				return;
+			}
+			sqlStatement.reset();
+		
+			var sqlStr = "INSERT INTO attachments VALUES ('"+attParams.id+"', '"+attParams.name+"', '"+attParams.size+"', '')";
+			if (!this.executeQuery(sqlStr)) {
+				this.logInfo("Error inserting attachment into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
+			}
+			else {
+				this.logInfo("Inserted attachment into offlineCacheDB. Name:"+attParams.name+", Title:"+aCalItem.title);
+			}
+
+			var sqlStr = "INSERT INTO attachments_per_item VALUES ('"+aCalItem.id+"','"+attParams.id+"')";
+			if (!this.executeQuery(sqlStr)) {
+				this.logInfo("Error inserting attachments_per_item into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
+			}
+			else {
+				this.logInfo("Inserted attachments_per_item into offlineCacheDB. Name:"+attParams.name+", Title:"+aCalItem.title);
+			}
+
+		}
+	},
+
+	updateAttachmentInOfflineCache: function _updateAttachmentInOfflineCache(aCalItem, aCalAttachment)
+	{
+		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+			return;
+		}
+
+		var attParams = exchWebService.commonFunctions.splitUriGetParams(aCalAttachment.uri);
+
+		if (attParams) {
+
+			var sqlStr = "UPDATE attachments SET id='"+attParams.id+"', name='"+attParams.name+"', size='"+attParams.size+"', cachePath='' WHERE id='"+attParams.id+"'";
+			if (!this.executeQuery(sqlStr)) {
+				this.logInfo("Error updating attachment into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
+			}
+			else {
+				this.logInfo("Updated attachment into offlineCacheDB. Name:"+attParams.name+", Title:"+aCalItem.title);
+			}
+		}
+	},
+
+	removeAttachmentsFromOfflineCache: function _removeAttachmentsFromOfflineCache(aCalItem)
+	{
+		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+			return;
+		}
+
+		var sqlStr = "SELECT attId FROM attachments_per_item WHERE itemId='"+aCalItem.id+"'";
+
+		this.logInfo("sql-query:"+sqlStr, 2);
+		try {
+			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
+		}
+		catch(exc) {
+			this.logInfo("Error on createStatement. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString+", Exception:"+exc+". ("+sqlStr+")");
+			return false;
+		}
+
+		var doContinue = true;
+		try {
+			while (doContinue) {
+				doContinue = sqlStatement.executeStep();
+
+				if (doContinue) {
+					var sqlStr2 = "DELETE FROM attachments WHERE id='"+sqlStatement.row.attId+"'";
+					if (!this.executeQuery(sqlStr2)) {
+						this.logInfo("Error removing attachment from offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
+					}
+					else {
+						this.logInfo("Removed attachment from offlineCacheDB. Title:"+aCalItem.title);
+					}
+				}
+			}
+		}
+		finally {  
+			sqlStatement.reset();
+		}
+
+		if ((this.offlineCacheDB.lastError != 0) && (this.offlineCacheDB.lastError != 100) && (this.offlineCacheDB.lastError != 101)) {
+			this.logInfo("Error executing Query. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString);
+			return false;
+		}
+
+		var sqlStr2 = "DELETE FROM attachments_per_item WHERE itemId='"+aCalItem.id+"'";
+		if (!this.executeQuery(sqlStr2)) {
+			this.logInfo("Error removing attachments_per_item from offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
+		}
+		else {
+			this.logInfo("Removed attachments_per_item from offlineCacheDB. Title:"+aCalItem.title);
+		}
+
+		return true;
+	},
+
+	removeAttachmentFromOfflineCache: function _removeAttachmentFromOfflineCache(aCalItem, aCalAttachment)
+	{
+		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+			return;
+		}
+
+		var attParams = exchWebService.commonFunctions.splitUriGetParams(aCalAttachment.uri);
+
+		if (attParams) {
+
+			var sqlStr = "DELETE FROM attachments WHERE id='"+attParams.id+"'";
+			if (!this.executeQuery(sqlStr)) {
+				this.logInfo("Error removing attachment from offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
+			}
+			else {
+				this.logInfo("Removed attachment from offlineCacheDB. Name:"+attParams.name+", Title:"+aCalItem.title);
+			}
+
+			var sqlStr = "DELETE FROM attachments_per_item WHERE itemId='"+aCalItem.id+"' AND attId='"+attParams.id+"'";
+			if (!this.executeQuery(sqlStr)) {
+				this.logInfo("Error removing attachments_per_item from offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
+			}
+			else {
+				this.logInfo("Removed attachments_per_item from offlineCacheDB. Name:"+attParams.name+", Title:"+aCalItem.title);
+			}
+		}
+	},
+
+	addToOfflineCache: function _addToOfflineCache(aCalItem, aExchangeItem)
+	{
+		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+			return;
+		}
+
+		if (isEvent(aCalItem)) {
+			var startDate = cal.toRFC3339(aCalItem.startDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+			var endDate = cal.toRFC3339(aCalItem.endDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+			var eventField = "y";
+		}
+		else {
+			if (aCalItem.entryDate) {
+				var startDate = cal.toRFC3339(aCalItem.entryDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+			}
+			else {
+				var startDate = "";
+			};
+
+			if ((aCalItem.completedDate) && (aCalItem.completedDate.compare(aCalItem.dueDate) == 1)) {
+				var endDate = cal.toRFC3339(aCalItem.completedDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+			}
+			else {
+				if (aCalItem.dueDate) {
+					var endDate = cal.toRFC3339(aCalItem.dueDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+				}
+				else {
+					var endDate = "";
+				}
+			}
+			var eventField = "n";
+		}
+
+		var sqlStr = "SELECT COUNT() as itemcount from items WHERE id='"+aCalItem.id+"'";
+		this.logInfo("sql-query:"+sqlStr, 2);
+		var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
+		sqlStatement.executeStep();
+		if (sqlStatement.row.itemcount > 0) {
+			this.logInfo("Going to update the item because it all ready exist.");
+			this.updateInOfflineCache(aCalItem, aExchangeItem);
+			sqlStatement.reset();
+			return;
+		}
+		sqlStatement.reset();
+
+		if (isEvent(aCalItem)) {
+			if (this.getItemType(aCalItem) == "M") {
+				// Lets find the real end date.
+				for (var childIndex in this.itemCache) {
+					if ((this.itemCache[childIndex]) && (aCalItem.getProperty("X-UID") == this.itemCache[childIndex].getProperty("X-UID"))) {
+						var childEnd = cal.toRFC3339(this.itemCache[childIndex].endDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+						if (childEnd > endDate) {
+							endDate = childEnd;
+						}
+					}
+				}
+			}
+			else {
+				if ((this.getItemType(aCalItem) == "RO") || (this.getItemType(aCalItem) == "RE")) {
+					this.updateMasterInOfflineCache(aCalItem.parentItem);
+				}
+			}
+		}
+		
+		var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+aCalItem.id+"', '"+aCalItem.getProperty("X-ChangeKey")+"', '"+startDate+"', '"+endDate+"', '"+aCalItem.getProperty("X-UID")+"', '"+this.getItemType(aCalItem)+"', '"+aCalItem.parentItem.id+"', '"+aExchangeItem.toString().replace(/\x27/g, "''")+"')";
+		if (!this.executeQuery(sqlStr)) {
+			this.logInfo("Error inserting item into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
+		}
+		else {
+			this.logInfo("Inserted item into offlineCacheDB. Title:"+aCalItem.title+", startDate:"+startDate);
+		}
+		this.addAttachmentsToOfflineCache(aCalItem);
+	},
+
+	updateInOfflineCache: function _updateInOfflineCache(aCalItem, aExchangeItem)
+	{
+		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+			return;
+		}
+
+		if ((this.getItemType(aCalItem) != "M") || (isToDo(aCalItem))) {
+			var sqlStr = "SELECT COUNT() as itemcount from items WHERE id='"+aCalItem.id+"' AND changeKey='"+aCalItem.getProperty("X-ChangeKey")+"'";
+			this.logInfo("sql-query:"+sqlStr, 2);
+			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
+			sqlStatement.executeStep();
+			if (sqlStatement.row.itemcount > 0) {
+				this.logInfo("This item is allready in offlineCache database. id and changeKey are the same. Not going to update it.");
+				sqlStatement.reset();
+				return;
+			}
+			sqlStatement.reset();
+		}
+		
+		if (isEvent(aCalItem)) {
+			var startDate = cal.toRFC3339(aCalItem.startDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+			var endDate = cal.toRFC3339(aCalItem.endDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+			var eventField = "y";
+		}
+		else {
+			if (aCalItem.entryDate) {
+				var startDate = cal.toRFC3339(aCalItem.entryDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+			}
+			else {
+				var startDate = "";
+			};
+
+			if ((aCalItem.completedDate) && (aCalItem.completedDate.compare(aCalItem.dueDate) == 1)) {
+				var endDate = cal.toRFC3339(aCalItem.completedDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+			}
+			else {
+				if (aCalItem.dueDate) {
+					var endDate = cal.toRFC3339(aCalItem.dueDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+				}
+				else {
+					var endDate = "";
+				}
+			}
+			var eventField = "n";
+		}
+
+		if (isEvent(aCalItem)) {
+			if (this.getItemType(aCalItem) == "M") {
+				// Lets find the real end date.
+				for (var childIndex in this.itemCache) {
+					if ((this.itemCache[childIndex]) && (aCalItem.getProperty("X-UID") == this.itemCache[childIndex].getProperty("X-UID"))) {
+						var childEnd = cal.toRFC3339(this.itemCache[childIndex].endDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+						if (childEnd > endDate) {
+							endDate = childEnd;
+						}
+					}
+				}
+			}
+			else {
+				if ((this.getItemType(aCalItem) == "RO") || (this.getItemType(aCalItem) == "RE")) {
+					this.updateMasterInOfflineCache(aCalItem.parentItem);
+				}
+			}
+		}
+		
+		var sqlStr = "UPDATE items SET event='"+eventField+"', id='"+aCalItem.id+"', changeKey='"+aCalItem.getProperty("X-ChangeKey")+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+aCalItem.getProperty("X-UID")+"', type='"+this.getItemType(aCalItem)+"', parentItem='"+aCalItem.parentItem.id+"', item='"+aExchangeItem.toString().replace(/\x27/g, "''")+"' WHERE id='"+aCalItem.id+"'";
+		if (!this.executeQuery(sqlStr)) {
+			this.logInfo("Error updating item in offlineCacheDB. Error:"+this.offlineCacheDB.lastErrorString);
+		}
+		else {
+			this.logInfo("Updated item in offlineCacheDB. Title:"+aCalItem.title+", startDate:"+startDate);
+		}
+		this.addAttachmentsToOfflineCache(aCalItem);
+	},
+
+	updateMasterInOfflineCache: function _updateParentInOfflineCache(aCalItem)
+	{
+		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+			return;
+		}
+
+		var endDate = cal.toRFC3339(aCalItem.endDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+
+		if (this.getItemType(aCalItem) == "M") {
+			// Lets find the real end date.
+			for (var childIndex in this.itemCache) {
+				if ((this.itemCache[childIndex]) && (aCalItem.getProperty("X-UID") == this.itemCache[childIndex].getProperty("X-UID"))) {
+					var childEnd = cal.toRFC3339(this.itemCache[childIndex].endDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+					if (childEnd > endDate) {
+						endDate = childEnd;
+					}
+				}
+			}
+		}
+		else {
+			if ((this.getItemType(aCalItem) == "RO") || (this.getItemType(aCalItem) == "RE")) {
+				this.updateParentInOfflineCache(aCalItem.parentItem);
+			}
+		}
+		
+		var sqlStr = "UPDATE items SET endDate='"+endDate+"' WHERE id='"+aCalItem.id+"'";
+		if (!this.executeQuery(sqlStr)) {
+			this.logInfo("Error updating master item in offlineCacheDB. Error:"+this.offlineCacheDB.lastErrorString);
+		}
+		else {
+			this.logInfo("Updated master item in offlineCacheDB. Title:"+aCalItem.title);
+		}
+	},
+
+	removeFromOfflineCache: function _removeFromOfflineCache(aCalItem)
+	{
+		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+			return;
+		}
+
+		var sqlStr = "DELETE FROM items WHERE id='"+aCalItem.id+"'";
+		if (!this.executeQuery(sqlStr)) {
+			this.logInfo("Error deleting item from offlineCacheDB. Error:"+this.offlineCacheDB.lastErrorString);
+		}
+		else {
+			this.logInfo("Removed item from offlineCacheDB. Title:"+aCalItem.title);
+		}
+		this.removeAttachmentsFromOfflineCache(aCalItem);
+	},
+
+	getItemsFromOfflineCache: function _getItemsFromOfflineCache(aStartDate, aEndDate)
+	{
+		this.logInfo("getItemsFromOfflineCache");
+
+		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+			return;
+		}
+
+		var result = [];
+
+		var startDate = cal.toRFC3339(aStartDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+		var endDate = cal.toRFC3339(aEndDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+
+		var sqlStr = "SELECT item FROM items WHERE ";
+		if ((this.supportsEvents) && (!this.supportsTasks)) {
+			sqlStr += "event = 'y' AND startDate <= '"+endDate+"' AND endDate >= '"+startDate+"' ORDER BY type ASC";
+		}
+		else {
+			if ((!this.supportsEvents) && (this.supportsTasks)) {
+				sqlStr += "event = 'n' AND ((startDate = '' AND endDate >= '"+startDate+"' AND endDate <= '"+endDate+"') OR (endDate = '' AND startDate >= '"+startDate+"' AND startDate <= '"+endDate+"') OR (startDate <= '"+endDate+"' AND endDate >= '"+startDate+"') OR (startDate = '' AND endDate = '')) ORDER BY type ASC";
+			}
+		}
+
+		this.logInfo("sql-query:"+sqlStr, 1);
+		try {
+			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
+		}
+		catch(exc) {
+			this.logInfo("Error on createStatement. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString+", Exception:"+exc+". ("+sqlStr+")");
+			return false;
+		}
+
+		var doContinue = true;
+		try {
+			while (doContinue) {
+				doContinue = sqlStatement.executeStep();
+
+				if (doContinue) {
+					this.logInfo("Found item in offline Cache.");
+					var cachedItem = new XML(sqlStatement.row.item);
+					//cachedItem.content = ;
+					//this.logInfo(" --:"+cachedItem.toString());
+					result.push(cachedItem);
+				}
+			}
+		}
+		finally {  
+			sqlStatement.reset();
+		}
+
+		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
+			return this.updateCalendar(null, result, true);
+		}
+		else {
+			this.logInfo("Error executing Query. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString);
+			return null;
+		}
+	},
+
+	set isOffline(aValue)
+	{
+		if (aValue != this.mIsOffline) {
+			this.notConnected = aValue;
+			this.mIsOffline = aValue;
+
+			if (!aValue) {
+				this.refresh();
+				this.startCalendarPoller();
+				this.startSyncInboxPoller();
+			}
+			else {
+				if (this.calendarPoller) {
+					this.calendarPoller.cancel();
+				}
+				this.inboxPoller.cancel();
+			}
+		}
+	},
+
+	get isOffline()
+	{
+		return this.mIsOffline;
+	},
+
+	offlineStateChanged: function _offlineStateChanged(aStatus)
+	{
+		this.logInfo("The offline state of TB changed to:"+aStatus);
+		this.isOffline = (aStatus == "offline");
+	},
+
     /**
      * Internal logging function that should be called on any database error,
      * it will log as much info as possible about the database context and
@@ -7674,9 +8394,6 @@ function ecObserver(inCalendar)
 	this.ecInvitationsCalendarManagerObserver = {
 		onCalendarRegistered: function cMO_onCalendarRegistered(aCalendar) {
 //			self.calendar.logInfo("onCalendarRegistered name="+aCalendar.name+", id="+aCalendar.id);
-/*			if (aCalendar.id == self.calendar.id) {
-				self.calendar.newCalendarCheck();
-			}*/
 		},
 
 		onCalendarUnregistering: function cMO_onCalendarUnregistering(aCalendar) {
@@ -7730,6 +8447,9 @@ ecObserver.prototype = {
 					this.calendar.doTimezoneChanged();
 				}
 				break;
+			case "network:offline-status-changed":
+					this.calendar.offlineStateChanged(data);
+				break;
 		} 
 	},  
 
@@ -7739,6 +8459,7 @@ ecObserver.prototype = {
 		                          .getService(Ci.nsIObserverService);  
 		observerService.addObserver(this, "onCalReset", false);  
 		observerService.addObserver(this, "quit-application", false); 
+		observerService.addObserver(this, "network:offline-status-changed", false);
 
 		Services.prefs.addObserver("calendar.timezone.local", this, false);
 
@@ -7753,6 +8474,7 @@ ecObserver.prototype = {
 		                            .getService(Ci.nsIObserverService);  
 		observerService.removeObserver(this, "onCalReset");  
 		observerService.removeObserver(this, "quit-application");  
+		observerService.removeObserver(this, "network:offline-status-changed");
 		Services.prefs.removeObserver("calendar.timezone.local", this);
 
 		getCalendarManager().removeObserver(this.ecInvitationsCalendarManagerObserver);
