@@ -2031,7 +2031,7 @@ this.logInfo("singleModified doNotify");
 			}
 		}
 
-//		if (!dateChanged) {
+		if (!dateChanged) {
 
 			if (aRangeStart)  { this.logInfo("getItems 5a: aRangeStart:"+aRangeStart.toString()); }
 			if (aRangeEnd) { this.logInfo("getItems 5b: aRangeEnd:"+aRangeEnd.toString()); }
@@ -2087,8 +2087,8 @@ this.logInfo("singleModified doNotify");
 			}
 
 
-//			return;
-//		}
+			return;
+		}
 
        		var self = this;
 
