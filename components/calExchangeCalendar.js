@@ -630,7 +630,6 @@ calExchangeCalendar.prototype = {
 			}
 			break;
 		case "exchWebService.useOfflineCache":
-			this.logInfo("The offline cache is now: "+this.useOfflineCache);
 			this.useOfflineCache = aValue;
 
 			if (!aValue) {
@@ -7687,167 +7686,161 @@ this.logInfo("getTaskItemsOK 4");
 		return result;
 	},
 
-	createNewOfflineCacheDB: function _createNewOfflineCacheDB()
-	{
-		if ((this.mUseOfflineCache) && (!this.offlineCacheDB)) {
-			this.dbFile = Cc["@mozilla.org/file/directory_service;1"]
-					.getService(Components.interfaces.nsIProperties)
-					.get("ProfD", Components.interfaces.nsIFile);
-			this.dbFile.append("exchange-data");
-			if ( !this.dbFile.exists() || !this.dbFile.isDirectory() ) {
-				this.dbFile.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);  
-			}
-
-			this.dbFile.append(this.id+".offlineCache.sqlite");
-
-			try {
-				this.offlineCacheDB = Services.storage.openDatabase(this.dbFile); // Will also create the file if it does not exist
-			}
-			catch(exc) {
-				this.offlineCacheDB = null;
-				this.logInfo("Could not open offlineCache database.");
-				return;
-			}
-
-			if (!this.offlineCacheDB.connectionReady) {
-				this.offlineCacheDB = null;
-				this.logInfo("connectionReady for offlineCache database.");
-				return;
-			}
-
-			if (!this.offlineCacheDB.tableExists("items")) {
-				this.logInfo("Table 'items' does not yet exist. We are going to create it.");
-				try {
-					this.offlineCacheDB.createTable("items", "event STRING, id STRING, changeKey STRING, startDate STRING, endDate STRING, uid STRING, type STRING, parentItem STRING, item STRING");
-				}
-				catch(exc) {
-					this.logInfo("Could not create table 'items'. Error:"+exc);
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_id ON items (id)";
-				if (!this.executeQuery(sqlStr)) {
-					this.logInfo("Could not create index 'idx_items_id'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_type ON items (type)";
-				if (!this.executeQuery(sqlStr)) {
-					this.logInfo("Could not create index 'idx_items_type'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE UNIQUE INDEX idx_items_id_changekey ON items (id, changeKey)";
-				if (!this.executeQuery(sqlStr)) {
-					this.logInfo("Could not create index 'idx_items_id_changekey'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_type_uid ON items (type ASC, uid)";
-				if (!this.executeQuery(sqlStr)) {
-					this.logInfo("Could not create index 'idx_items_type_uid'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_uid ON items (uid)";
-				if (!this.executeQuery(sqlStr)) {
-					this.logInfo("Could not create index 'idx_items_uid'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_uid_startdate_enddate ON items (uid, startDate ASC, endDate)";
-				if (!this.executeQuery(sqlStr)) {
-					this.logInfo("Could not create index 'idx_items_uid_startdate_enddate'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_startdate_enddate ON items (startDate ASC, endDate)";
-				if (!this.executeQuery(sqlStr)) {
-					this.logInfo("Could not create index 'idx_items_startdate_enddate'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_parentitem_startdate_enddate ON items (parentitem, startDate ASC, endDate)";
-				if (!this.executeQuery(sqlStr)) {
-					this.logInfo("Could not create index 'idx_items_startdate_enddate'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_type_startdate_enddate ON items (type, startDate ASC, endDate)";
-				if (!this.executeQuery(sqlStr)) {
-					this.logInfo("Could not create index 'idx_items_type_startdate_enddate'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-			}
-
-			if (!this.offlineCacheDB.tableExists("attachments")) {
-				this.logInfo("Table 'attachments' does not yet exist. We are going to create it.");
-				try {
-					this.offlineCacheDB.createTable("attachments", "id STRING, name STRING, size INTEGER, cachePath STRING");
-				}
-				catch(exc) {
-					this.logInfo("Could not create table 'attachments'. Error:"+exc);
-					return;
-				}
-
-				var sqlStr = "CREATE UNIQUE INDEX idx_att_id ON attachments (id)";
-				if (!this.executeQuery(sqlStr)) {
-					this.logInfo("Could not create index 'idx_att_id'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-			}
-
-			if (!this.offlineCacheDB.tableExists("attachments_per_item")) {
-				this.logInfo("Table 'attachments_per_item' does not yet exist. We are going to create it.");
-				try {
-					this.offlineCacheDB.createTable("attachments_per_item", "itemId STRING, attId STRING");
-				}
-				catch(exc) {
-					this.logInfo("Could not create table 'attachments_per_item'. Error:"+exc);
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_attitem_itemid ON attachments_per_item (itemId)";
-				if (!this.executeQuery(sqlStr)) {
-					this.logInfo("Could not create index 'idx_attitem_itemid'");
-					this.offlineCacheDB = null;
-					return;
-				}
-			}
-
-			this.logInfo("Created offlineCache database.");
-		}
-		else {
-			try{
-				this.offlineCacheDB = null;
-			}
-			catch(exc){
-				this.logInfo("Unable to close offlineCache database connection:"+exc);	
-			}
-		}		
-	},
-
 	get useOfflineCache()
 	{
 		if (this.mUseOfflineCache) {
-			this.createNewOfflineCacheDB();
 			return this.mUseOfflineCache;
 		}
 		else {
-			this.mUseOfflineCache = exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "useOfflineCache", false);
-			this.createNewOfflineCacheDB();
+			this.mUseOfflineCache = exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "useOfflineCache", true);
+			if ((this.mUseOfflineCache) && (!this.offlineCacheDB)) {
+				this.dbFile = Cc["@mozilla.org/file/directory_service;1"]
+						.getService(Components.interfaces.nsIProperties)
+						.get("ProfD", Components.interfaces.nsIFile);
+				this.dbFile.append("exchange-data");
+				if ( !this.dbFile.exists() || !this.dbFile.isDirectory() ) {
+					this.dbFile.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);  
+				}
+
+				this.dbFile.append(this.id+".offlineCache.sqlite");
+
+				try {
+					this.offlineCacheDB = Services.storage.openDatabase(this.dbFile); // Will also create the file if it does not exist
+				}
+				catch(exc) {
+					this.offlineCacheDB = null;
+					this.logInfo("Could not open offlineCache database.");
+					return;
+				}
+
+				if (!this.offlineCacheDB.connectionReady) {
+					this.offlineCacheDB = null;
+					this.logInfo("connectionReady for offlineCache database.");
+					return;
+				}
+
+				if (!this.offlineCacheDB.tableExists("items")) {
+					this.logInfo("Table 'items' does not yet exist. We are going to create it.");
+					try {
+						this.offlineCacheDB.createTable("items", "event STRING, id STRING, changeKey STRING, startDate STRING, endDate STRING, uid STRING, type STRING, parentItem STRING, item STRING");
+					}
+					catch(exc) {
+						this.logInfo("Could not create table 'items'. Error:"+exc);
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_id ON items (id)";
+					if (!this.executeQuery(sqlStr)) {
+						this.logInfo("Could not create index 'idx_items_id'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_type ON items (type)";
+					if (!this.executeQuery(sqlStr)) {
+						this.logInfo("Could not create index 'idx_items_type'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE UNIQUE INDEX idx_items_id_changekey ON items (id, changeKey)";
+					if (!this.executeQuery(sqlStr)) {
+						this.logInfo("Could not create index 'idx_items_id_changekey'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_type_uid ON items (type ASC, uid)";
+					if (!this.executeQuery(sqlStr)) {
+						this.logInfo("Could not create index 'idx_items_type_uid'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_uid ON items (uid)";
+					if (!this.executeQuery(sqlStr)) {
+						this.logInfo("Could not create index 'idx_items_uid'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_uid_startdate_enddate ON items (uid, startDate ASC, endDate)";
+					if (!this.executeQuery(sqlStr)) {
+						this.logInfo("Could not create index 'idx_items_uid_startdate_enddate'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_startdate_enddate ON items (startDate ASC, endDate)";
+					if (!this.executeQuery(sqlStr)) {
+						this.logInfo("Could not create index 'idx_items_startdate_enddate'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_parentitem_startdate_enddate ON items (parentitem, startDate ASC, endDate)";
+					if (!this.executeQuery(sqlStr)) {
+						this.logInfo("Could not create index 'idx_items_startdate_enddate'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_type_startdate_enddate ON items (type, startDate ASC, endDate)";
+					if (!this.executeQuery(sqlStr)) {
+						this.logInfo("Could not create index 'idx_items_type_startdate_enddate'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+				}
+
+				if (!this.offlineCacheDB.tableExists("attachments")) {
+					this.logInfo("Table 'attachments' does not yet exist. We are going to create it.");
+					try {
+						this.offlineCacheDB.createTable("attachments", "id STRING, name STRING, size INTEGER, cachePath STRING");
+					}
+					catch(exc) {
+						this.logInfo("Could not create table 'attachments'. Error:"+exc);
+						return;
+					}
+
+					var sqlStr = "CREATE UNIQUE INDEX idx_att_id ON attachments (id)";
+					if (!this.executeQuery(sqlStr)) {
+						this.logInfo("Could not create index 'idx_att_id'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+				}
+
+				if (!this.offlineCacheDB.tableExists("attachments_per_item")) {
+					this.logInfo("Table 'attachments_per_item' does not yet exist. We are going to create it.");
+					try {
+						this.offlineCacheDB.createTable("attachments_per_item", "itemId STRING, attId STRING");
+					}
+					catch(exc) {
+						this.logInfo("Could not create table 'attachments_per_item'. Error:"+exc);
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_attitem_itemid ON attachments_per_item (itemId)";
+					if (!this.executeQuery(sqlStr)) {
+						this.logInfo("Could not create index 'idx_attitem_itemid'");
+						this.offlineCacheDB = null;
+						return;
+					}
+				}
+
+				this.logInfo("Created offlineCache database.");
+			}
+			else {
+				try{
+					this.offlineCacheDB = null;
+				}
+				catch(exc){
+					this.logInfo("Unable to close offlineCache database connection:"+exc);	
+				}
+			}		
 			return this.mUseOfflineCache;
 		}
 	},
@@ -7856,9 +7849,6 @@ this.logInfo("getTaskItemsOK 4");
 	{
 		this.mUseOfflineCache = aValue;
 		this.prefs.setBoolPref("useOfflineCache", aValue);
-		if (aValue) {
-			this.createNewOfflineCacheDB();
-		}
 	},
 
 	getItemType: function _getItemType(aCalItem)
