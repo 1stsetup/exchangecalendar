@@ -392,7 +392,7 @@ ExchangeRequest.prototype = {
 			// The location could be a relative path
 			if (loc.indexOf("http") == -1) {
 				this.logInfo("new location looks to be relative.");
-				if (log.indexOf("/") == 0) {
+				if (loc.indexOf("/") == 0) {
 					this.logInfo("Relative to the root of the server.");
 					// Relative to the root of the server
 					//Find position of third slash https://xxx/
