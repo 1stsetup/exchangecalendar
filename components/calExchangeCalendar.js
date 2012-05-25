@@ -4902,54 +4902,85 @@ this.logInfo("!!CHANGED:"+String(e));
 			var tmpResponse = me.participationStatus;
 		}
 
-		var input= { item: aItem, 
-			     response: tmpResponse,
-			     answer: "",
-			     bodyText: ""};
+		var messageDisposition = null;
 
-		if (aBodyText) {
-			input.bodyText = aBodyText;
-			input.answer = "send";
-		}
-
+		// First ask the user if he wans to send a response.
 		// Get the eventsummarywindow to attach dialog to.
 		let wm = Cc["@mozilla.org/appshell/window-mediator;1"]
 	                          .getService(Ci.nsIWindowMediator);
 		let calWindow = wm.getMostRecentWindow("Calendar:EventSummaryDialog") || cal.getCalendarWindow();
 
-		if ((calWindow) && (!aBodyText)) {
-			calWindow.openDialog("chrome://exchangecalendar/content/invitationResponse.xul",
-				"invitationResponseId",
+		var preInput= { item: aItem, 
+			     response: tmpResponse,
+			     answer: ""};
+
+		if (calWindow) {
+			calWindow.openDialog("chrome://exchangecalendar/content/preInvitationResponse.xul",
+				"preInvitationResponseId",
 				"chrome,titlebar,toolbar,centerscreen,dialog,modal=yes,resizable=yes",
-				input); 
+				preInput); 
 		}
 
-		if (input.answer == "send") {
-				
-			var self = this;
-			this.addToQueue( erSendMeetingResponsRequest,
-				{user: this.user, 
-				 mailbox: this.mailbox,
-				 folderBase: this.folderBase,
-				 serverUrl: this.serverUrl,
-				 item: aItem,
-				 folderID: this.folderID,
-				 changeKey: this.changeKey,
-				 response: input.response,
-				 bodyText: input.bodyText,
-				 senderMailbox: this.mailbox,
-		 		 actionStart: Date.now(),
-				 itemType: aItemType}, 
-				function(erSendMeetingResponsRequest) { self.sendMeetingResponsOk(erSendMeetingResponsRequest);}, 
-				function(erSendMeetingResponsRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erSendMeetingResponsRequest, aCode, aMsg);},
-				aListener,
-				2);
-			return true;
-		}
-		else {
-			this.logInfo("sendMeetingRespons: canceled by user.");
+		if (preInput.answer != "send") {
+			this.logInfo("User canceled preInvitationDialog.");
 			return false;
 		}
+
+		var input= { item: aItem, 
+			     response: tmpResponse,
+			     answer: "",
+			     bodyText: ""};
+
+		if (preInput.response == "edit") {
+			// If the user would like to edit his response we show him the window for it.
+			this.logInfo("User indicated he would like to edit response.");
+			if (aBodyText) {
+				input.bodyText = aBodyText;
+				input.answer = "send";
+			}
+
+			if ((calWindow) && (!aBodyText)) {
+				calWindow.openDialog("chrome://exchangecalendar/content/invitationResponse.xul",
+					"invitationResponseId",
+					"chrome,titlebar,toolbar,centerscreen,dialog,modal=yes,resizable=yes",
+					input); 
+			}
+
+			if (input.answer != "send") {
+				this.logInfo("User canceled invitationDialog.");
+				return false;
+			}
+
+		}
+		else {
+			this.logInfo("User indicated he does not want to edit the response.");
+			if (preInput.response == "donotsend") {
+				this.logInfo("User indicated he does not want to send a response.");
+				messageDisposition = "SaveOnly";
+			}
+		}
+		this.logInfo("  -------------- messageDisposition="+messageDisposition);
+
+		var self = this;
+		this.addToQueue( erSendMeetingResponsRequest,
+			{user: this.user, 
+			 mailbox: this.mailbox,
+			 folderBase: this.folderBase,
+			 serverUrl: this.serverUrl,
+			 item: aItem,
+			 folderID: this.folderID,
+			 changeKey: this.changeKey,
+			 response: input.response,
+			 bodyText: input.bodyText,
+			 senderMailbox: this.mailbox,
+	 		 actionStart: Date.now(),
+			 itemType: aItemType,
+			 messageDisposition: messageDisposition}, 
+			function(erSendMeetingResponsRequest) { self.sendMeetingResponsOk(erSendMeetingResponsRequest);}, 
+			function(erSendMeetingResponsRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erSendMeetingResponsRequest, aCode, aMsg);},
+			aListener,
+			2);
+		return true;
 	},
 
 	sendMeetingResponsOk: function _sendMeetingResponsOk(erSendMeetingResponsRequest)

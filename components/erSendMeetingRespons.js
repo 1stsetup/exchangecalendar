@@ -69,6 +69,7 @@ function erSendMeetingResponsRequest(aArgument, aCbOk, aCbError, aListener)
 	this.senderMailbox = aArgument.senderMailbox;
 	this.response = aArgument.response;
 	this.item = aArgument.item;
+	this.messageDisposition = aArgument.messageDisposition;
 
 	this.isRunning = true;
 	this.execute();
@@ -83,11 +84,17 @@ erSendMeetingResponsRequest.prototype = {
 		var req = <nsMessages:CreateItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
 
 		var SendMeetingInvitations = "SendToAllAndSaveCopy";
-		if (cal.isEvent(this.argument.item)) {
+
+		if ((cal.isEvent(this.argument.item)) && (!this.messageDisposition)) {
 			req.@SendMeetingInvitations = SendMeetingInvitations;
 		}	
 
-		req.@MessageDisposition="SendAndSaveCopy";
+		if (this.messageDisposition) {
+			req.@MessageDisposition = this.messageDisposition;
+		}
+		else {
+			req.@MessageDisposition="SendAndSaveCopy";
+		}
 
 	//	req.nsMessages::SavedItemFolderId = makeParentFolderIds("SavedItemFolderId", this.argument);
 
