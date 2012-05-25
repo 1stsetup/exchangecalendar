@@ -43,7 +43,7 @@
 ]>
 <overlay id="forwardOnRightClick"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-	<script type="application/javascript" src="chrome://exchangecalendar/content/calendar-summary-dialog.js" />
+	<script type="application/javascript" src="chrome://exchangecalendar/content/calendar-common-sets.js" />
 
 	<commandset id="calendar_commands" commandupdater="true"
 		events="calendar_commands" oncommandupdate="calendarController.updateCommands()">

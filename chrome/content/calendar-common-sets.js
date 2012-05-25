@@ -48,12 +48,13 @@ Cu.import("resource://exchangecalendar/erForewardItem.js");
 if (! exchWebService) var exchWebService = {};
 
 
-exchWebService.forewardEvent2 = {
-	onForward : function _onForward()
-	{	
-		var args = window.arguments[0];
-		var item = args.calendarEvent;
-		item =item.clone();
+exchWebService.forewardEvent = {
+	currentView: function _currentView() {
+		    return document.getElementById("view-deck").selectedPanel;
+	},
+
+	onForEve : function _onForEve(){		
+		var item = exchWebService.forewardEvent.currentView().getSelectedItems({})[0];
 		var calendar = item.calendar;
 		var args = new Object();
 		args.startTime = item.startDate;
@@ -62,28 +63,26 @@ exchWebService.forewardEvent2 = {
 		args.item = item;
 		args.attendees =item.organizer;
 		args.calendar =calendar;
-		args.onOk = exchWebService.forewardEvent2.callOnOk;
-		args.opener="exchWebService-onForward";
+		args.onOk = exchWebService.forewardEvent.callOnRightClick;
+		args.opener="exchWebService-onForEve";
 		window.openDialog("chrome://calendar/content/calendar-event-dialog-attendees.xul","_blank", "chrome,titlebar,modal,resizable",args);
-		
-	},	
-	
-	callOnOk : function(attendee,organizer,startTime,endTime){
-		
-		var args = window.arguments[0];
-		var item = args.calendarEvent;
+
+	},
+
+	callOnRightClick : function(attendee,organizer,startTime,endTime){		
+		var item =exchWebService.forewardEvent.currentView().getSelectedItems({})[0];
 		var calendar = item.calendar;
 		var calId = calendar.id;
 		var calPrefs = Cc["@mozilla.org/preferences-service;1"]
 		            .getService(Ci.nsIPrefService)
 			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+calId+".");
-		
 		var tmpObject = new erForewardItemRequest(
 			{user: exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecDomain")+"\\"+exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecUser"), 
-			mailbox: exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecMailbox"),
-			serverUrl: exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecServer"), item: item, attendees: attendee, 
-			changeKey :  item.getProperty("X-ChangeKey"), description : item.getProperty("description")}, 					
-			exchWebService.forewardEvent2.erForewardItemRequestOK, exchWebService.forewardEvent2.erForewardItemRequestError);		
+			 mailbox: exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecMailbox"),
+			 serverUrl: exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecServer"), item: item, attendees: attendee, 
+			changeKey :  item.getProperty("X-ChangeKey"), description : item.getProperty("description")}, 		
+			exchWebService.forewardEvent.erForewardItemRequestOK, exchWebService.forewardEvent.erForewardItemRequestError);
+		return true;
 	},
 
 	erForewardItemRequestOK : function _erForewardItemRequestOK(aForewardItemRequest, aResp)
@@ -96,35 +95,7 @@ exchWebService.forewardEvent2 = {
 		alert(aCode+":"+aMsg);
 	},
 
-	onLoad: function _onLoad()
-	{
-exchWebService.commonFunctions.LOG(" ------------ our Load");
-		if (document.getElementById("calendar-event-summary-dialog")) {
-exchWebService.commonFunctions.LOG(" ------------ our Load 2222222222222222");
-			window.removeEventListener("load", exchWebService.forewardEvent2.onLoad, false);
-			var args = window.arguments[0];
-			var item = args.calendarEvent;
-			var calendar = item.calendar;
-			var tmpButtons = document.getElementById("calendar-event-summary-dialog").getAttribute("buttons");
-			if (calendar.getProperty("exchWebService.offlineOrNotConnected")) {
-				var tmpArray = tmpButtons.split(",");
-				var newArray = [];
-				for (var index in tmpArray) {
-					if (tmpArray[index] != "extra1") {
-						newArray.push(tmpArray[index]);
-					}
-				}
-exchWebService.commonFunctions.LOG(" !! our new buttons:"+newArray.join(","));
-				document.getElementById("calendar-event-summary-dialog").buttons = newArray.join(",");
-			}
-			else {
-				document.getElementById("calendar-event-summary-dialog").buttons += ",extra1";
-			}
-		}
-	},
 }
 
-window.addEventListener("load", exchWebService.forewardEvent2.onLoad, false);
-
-exchWebService.commonFunctions.LOG(" YEEHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 2");
+exchWebService.commonFunctions.LOG(" YEEHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 1");
 
