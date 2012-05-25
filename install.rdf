@@ -31,7 +31,7 @@
           <!-- Seamonkey -->
         <em:id>{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}</em:id>
         <em:minVersion>2.6</em:minVersion>
-        <em:maxVersion>2.9.1</em:maxVersion>
+        <em:maxVersion>2.9.*</em:maxVersion>
       </Description>
     </em:targetApplication>
 

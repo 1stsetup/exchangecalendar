@@ -1,3 +1,14 @@
+Version 2.0.2:
+- Improved: Further improved Offline cache items retrieval.
+- Fixed: Bug when receiving a HTTP 302 relative redirect. Because of a typo in the code it threw an exception. Possibly bug 51.
+
+Version 2.0.1:
+- Improved: Offline cache items retrieval.
+
+Version 2.0.0:
+- Added: Offline cache functionality. (When not connected or offline it goes into Read-Only mode)
+- Added: Invitation forwarding functionality.
+
 Version 1.8.19:
 - Fixes: problem where Out Of Office stopped working int TB12. Fix replaces the WYSIWYG editor into a flat text editor.
 - Fixes: Several small bugs.

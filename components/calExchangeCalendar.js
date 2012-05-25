@@ -1256,33 +1256,39 @@ this.logInfo("singleModified doNotify");
 				var iAmOrganizer = ((aNewItem.organizer) && (aNewItem.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()));
 				if (iAmOrganizer) {
 
-					input.response = "sendtoall";
+					if (!changesObj.onlySnoozeChanged) {
+
+						input.response = "sendtoall";
+
+						// Get the eventsummarywindow to attach dialog to.
+						let wm = Cc["@mozilla.org/appshell/window-mediator;1"]
+						                  .getService(Ci.nsIWindowMediator);
+						let calWindow = wm.getMostRecentWindow("Calendar:EventSummaryDialog") || cal.getCalendarWindow() || wm.getMostRecentWindow("mail:3pane") ;
 	
+						var attendees = aNewItem.getAttendees({}).length + aOldItem.getAttendees({}).length;
+						this.logInfo("  -- aOldItem.getAttendees({}).length="+aOldItem.getAttendees({}).length);
+						this.logInfo("  -- aNewItem.getAttendees({}).length="+aNewItem.getAttendees({}).length);
+						if (this.getInvitedAttendee(aOldItem)) {
+							attendees--;
+						}
+						if (this.getInvitedAttendee(aNewItem)) {
+							attendees--;
+						}
 
-					// Get the eventsummarywindow to attach dialog to.
-					let wm = Cc["@mozilla.org/appshell/window-mediator;1"]
-				                          .getService(Ci.nsIWindowMediator);
-					let calWindow = wm.getMostRecentWindow("Calendar:EventSummaryDialog") || cal.getCalendarWindow() || wm.getMostRecentWindow("mail:3pane") ;
-	
-					var attendees = aNewItem.getAttendees({}).length + aOldItem.getAttendees({}).length;
-					this.logInfo("  -- aOldItem.getAttendees({}).length="+aOldItem.getAttendees({}).length);
-					this.logInfo("  -- aNewItem.getAttendees({}).length="+aNewItem.getAttendees({}).length);
-					if (this.getInvitedAttendee(aOldItem)) {
-						attendees--;
-					}
-					if (this.getInvitedAttendee(aNewItem)) {
-						attendees--;
-					}
+						if ((calWindow) && (attendees > 0) && (weHaveChanges)) {
+							calWindow.openDialog("chrome://exchangecalendar/content/sendUpdateTo.xul",
+								"sendUpdateTo",
+								"chrome,titlebar,toolbar,centerscreen,dialog,modal=yes,resizable=yes",
+								input); 
+						}
 
-					if ((calWindow) && (attendees > 0) && (weHaveChanges)) {
-						calWindow.openDialog("chrome://exchangecalendar/content/sendUpdateTo.xul",
-							"sendUpdateTo",
-							"chrome,titlebar,toolbar,centerscreen,dialog,modal=yes,resizable=yes",
-							input); 
+						if ((attendees == 0) || (!weHaveChanges)) {
+							this.logInfo(" -- There are no attendees left");
+							input.response = "sendtonone";
+						}
 					}
-
-					if ((attendees == 0) || (!weHaveChanges)) {
-						this.logInfo(" -- There are no attendees left");
+					else {
+						this.logInfo(" -- The user/organizer only dismissed or removed a reminder. We are not going to send this update to the invited people of the meeting.");
 						input.response = "sendtonone";
 					}
 				}
@@ -4835,16 +4841,20 @@ this.logInfo("!!CHANGED:"+String(e));
 					onlySnoozeChanged = false;
 				}
 			} else {
-				onlySnoozeChanged = false;
 
 				if ((fieldPathMap[prop.localName()] == "calendar") && (isEvent(aOldItem))) {
+					onlySnoozeChanged = false;
 					se.nsTypes::FieldURI.@FieldURI = 'calendar:' + prop.localName();
 				}
 				else {
 					if ((fieldPathMap[prop.localName()] == "calendar") && (isToDo(aOldItem))) {
+						onlySnoozeChanged = false;
 						se.nsTypes::FieldURI.@FieldURI = 'task:' + prop.localName();
 					}
 					else {
+						if ((prop.localName() != "ReminderMinutesBeforeStart") && (prop.localName() != "ReminderIsSet")) {
+							onlySnoozeChanged = false;
+						}
 						se.nsTypes::FieldURI.@FieldURI = fieldPathMap[prop.localName()] + ':' + prop.localName();
 					}
 				}
@@ -4866,7 +4876,7 @@ this.logInfo("!!CHANGED:"+String(e));
 		}
 
 		if (onlySnoozeChanged) {
-			this.logInfo("onlySnoozeChanged");
+			this.logInfo("onlySnoozeChanged Or reminder time before start.");
 		}
 
 		return {changes: upd, onlySnoozeChanged: onlySnoozeChanged};
