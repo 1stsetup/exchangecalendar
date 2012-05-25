@@ -510,9 +510,11 @@ calExchangeCalendar.prototype = {
 			this.mNotConnected = aValue;
 			if (aValue) {
 				this.observers.notify("onPropertyChanged", [this.superCalendar, "readOnly", true, false]);
+				this.observerService.notifyObservers(this, "onExchangeReadOnlyChange", this.name);  
 			}
 			else {
 				this.observers.notify("onPropertyChanged", [this.superCalendar, "readOnly", false, true]);
+				this.observerService.notifyObservers(this, "onExchangeReadOnlyChange", this.name);  
 			}
 		}
 
