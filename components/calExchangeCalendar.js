@@ -7925,7 +7925,7 @@ this.logInfo("getTaskItemsOK 4");
 			}
 			sqlStatement.reset();
 		
-			var sqlStr = "INSERT INTO attachments VALUES ('"+attParams.id+"', '"+attParams.name+"', '"+attParams.size+"', '')";
+			var sqlStr = "INSERT INTO attachments VALUES ('"+attParams.id+"', '"+attParams.name.replace(/\x27/g, "''")+"', '"+attParams.size+"', '')";
 			if (!this.executeQuery(sqlStr)) {
 				this.logInfo("Error inserting attachment into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
 			}
@@ -7954,7 +7954,7 @@ this.logInfo("getTaskItemsOK 4");
 
 		if (attParams) {
 
-			var sqlStr = "UPDATE attachments SET id='"+attParams.id+"', name='"+attParams.name+"', size='"+attParams.size+"', cachePath='' WHERE id='"+attParams.id+"'";
+			var sqlStr = "UPDATE attachments SET id='"+attParams.id+"', name='"+attParams.name.replace(/\x27/g, "''")+"', size='"+attParams.size+"', cachePath='' WHERE id='"+attParams.id+"'";
 			if (!this.executeQuery(sqlStr)) {
 				this.logInfo("Error updating attachment into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
 			}
