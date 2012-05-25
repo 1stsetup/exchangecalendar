@@ -468,9 +468,6 @@ calExchangeCalendar.prototype = {
 		if (this.exchangePrefVersion < 1) {
 			this.mPrefs = null;
 		}
-		else {
-//			this.id = this.myId;
-		}
 
 	        this.mUri = aUri;
 	        return this.uri;
@@ -635,6 +632,7 @@ calExchangeCalendar.prototype = {
 			if (!aValue) {
 				if (this.offlineCacheDB) {
 					try {
+						if (this.offlineCacheDB) this.offlineCacheDB.close();
 						this.offlineCacheDB = null;
 					} catch(exc) {}
 				}
@@ -7160,19 +7158,22 @@ this.logInfo("getTaskItemsOK 4");
 		this.folderClass = aFolderClass;
 		this.logInfo("Set folderClass="+this.folderClass);
 		this.prefs.setCharPref("folderClass", aFolderClass);
+		var itemType = Ci.calICalendar.ITEM_FILTER_TYPE_EVENT;
+
 		switch (aFolderClass) {
 			case "IPF.Appointment":
 				this.supportsEvents = true;
 				this.supportsTasks = false;
 				this.logInfo("This folder supports only events.");
-				this.getItems(Ci.calICalendar.ITEM_FILTER_TYPE_EVENT, 0, this.startCacheDate, this.endCacheDate, null);
+				//this.getItems(Ci.calICalendar.ITEM_FILTER_TYPE_EVENT, 0, this.startCacheDate, this.endCacheDate, null);
 				break;
 			case "IPF.Task":
 				this.supportsEvents = false;
 				this.supportsTasks = true;
 				this.logInfo("This folder supports only tasks.");
+				itemType = Ci.calICalendar.ITEM_FILTER_TYPE_TODO;
 				// Get the tasks for the current know time frame
-				this.getItems(Ci.calICalendar.ITEM_FILTER_TYPE_TODO, 0, this.startCacheDate, this.endCacheDate, null);
+				//this.getItems(Ci.calICalendar.ITEM_FILTER_TYPE_TODO, 0, this.startCacheDate, this.endCacheDate, null);
 				break;
 			case "IPF.Note":
 				this.supportsEvents = true;
@@ -7185,6 +7186,82 @@ this.logInfo("getTaskItemsOK 4");
 				this.logInfo("Unknown folderclass. We do not know if it supports events or tasks so turning it off.");
 				break;
 		}		
+
+		// We are going to find out what is allready in cache. And only going to set the date range to request items for the period
+		// still missing.
+
+		// Get our this.startDate and this.endDate from offlineCache;
+		var requestItem = false;
+		if (!this.startDate) {
+			requestItems = true;
+			var tmpStartDate = this.executeQueryWithResults("SELECT min(endDate) as newStartDate FROM items", ["newStartDate"]);
+			if ((tmpStartDate) && (tmpStartDate.length > 0)) {
+				var newStartDate = tmpStartDate[0].newStartDate;
+				if (newStartDate) {
+					if (newStartDate.length == 10) {
+						newStartDate += "T00:00:00Z";
+					}
+					this.logInfo("We have a newStartDate of '"+newStartDate+"'");
+					this.startDate = cal.createDateTime(newStartDate);
+				}
+			}
+		}
+
+		if (!this.endDate) {
+			requestItems = true;
+			var tmpEndDate = this.executeQueryWithResults("SELECT max(startDate) as newEndDate FROM items", ["newEndDate"]);
+			if ((tmpEndDate) && (tmpEndDate.length > 0)) {
+				var newEndDate = tmpEndDate[0].newEndDate;
+				if (newEndDate) {
+					if (newEndDate.length == 10) {
+						newEndDate += "T00:00:00Z";
+					}
+					this.logInfo("We have a newEndDate of '"+newEndDate+"'");
+					this.endDate = cal.createDateTime(newEndDate);
+				}
+			}
+		}
+
+		if (requestItems) {
+			var maxStartDate = this.executeQueryWithResults("SELECT max(startDate) as maxStartDate FROM items", ["maxStartDate"]);
+			if ((maxStartDate) && (maxStartDate.length > 0)) {
+				this.logInfo("maxStartDate:"+maxStartDate[0].maxStartDate);
+				var startDateStr = maxStartDate[0].maxStartDate;
+				if (startDateStr) {
+					if (startDateStr.length == 10) {
+						startDateStr += "T00:00:00Z";
+					}
+					this.logInfo("We have a maxStartDate of '"+startDateStr+"'");
+					startDateStr = cal.createDateTime(startDateStr);
+					if (startDateStr.compare(this.endCacheDate) < 1) {
+						this.logInfo("maxStartDate is smaller than or equal to this.endCacheDate");
+						this.getItems(itemType, 0, startDateStr, this.endCacheDate, null);
+					}
+				}
+				else {
+					this.logInfo("We do not have a maxStartDate. Going to request full cache period.");
+					startDateStr = this.startCacheDate;
+					this.getItems(itemType, 0, this.startCacheDate, this.endCacheDate, null);
+				}
+			}
+
+			var minEndDate = this.executeQueryWithResults("SELECT min(endDate) as minEndDate FROM items", ["minEndDate"]);
+			if ((minEndDate) && (minEndDate.length > 0)) {
+				this.logInfo("minEndDate:"+minEndDate[0].minEndDate);
+				var endDateStr = minEndDate[0].minEndDate;
+				if (endDateStr) {
+					if (endDateStr.length == 10) {
+						endDateStr += "T23:59:59Z";
+					}
+					this.logInfo("We have a minEndDate of '"+endDateStr+"'");
+					endDateStr = cal.createDateTime(endDateStr);
+					if (endDateStr.compare(this.startCacheDate) > -1) {
+						this.logInfo("minEndDate is bigger than or equal to this.startCacheDate");
+						this.getItems(itemType, 0, this.startCacheDate, endDateStr, null);
+					}
+				}
+			}
+		}
 	},
 
 	checkFolderPathOk: function _checkFolderPathOk(erFindFolderRequest, aId, aChangeKey, aFolderClass)
@@ -7607,6 +7684,7 @@ this.logInfo("getTaskItemsOK 4");
 
 		if (this.offlineCacheDB) {
 			try {
+				if (this.offlineCacheDB) this.offlineCacheDB.close();
 				this.offlineCacheDB = null;
 			} catch(exc) {}
 		}
@@ -7831,10 +7909,13 @@ this.logInfo("getTaskItemsOK 4");
 					}
 				}
 
-				this.logInfo("Created offlineCache database.");
+				this.logInfo("Created/opened offlineCache database.");
+				this.executeQuery("UPDATE items set event='y' where event='y_'");
+				this.executeQuery("UPDATE items set event='n' where event='n_'");
 			}
 			else {
 				try{
+					if (this.offlineCacheDB) this.offlineCacheDB.close();
 					this.offlineCacheDB = null;
 				}
 				catch(exc){
@@ -7891,6 +7972,49 @@ this.logInfo("getTaskItemsOK 4");
 		else {
 			this.logInfo("Error executing Query. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString);
 			return false;
+		}
+	},
+
+	executeQueryWithResults: function _executeQuery(aQuery, aFieldArray)
+	{
+		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+			return null;
+		}
+
+		this.logInfo("sql-query:"+aQuery, 2);
+		try {
+			var sqlStatement = this.offlineCacheDB.createStatement(aQuery);
+		}
+		catch(exc) {
+			this.logInfo("Error on createStatement. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString+", Exception:"+exc+". ("+aQuery+")");
+			return false;
+		}
+
+		var results = [];
+		try {
+			while (sqlStatement.executeStep()) {
+				var tmpResult = {};
+				for (var index in aFieldArray) {
+					try {
+						tmpResult[aFieldArray[index]] = sqlStatement.row[aFieldArray[index]];
+					}
+					catch(exc) {
+						this.logInfo("Error on getting field '"+aFieldArray[index]+"' from query '"+aQuery+"' result.("+exc+")");
+					}
+				}
+				results.push(tmpResult);
+			}
+		}
+		finally {  
+			sqlStatement.reset();
+		}
+
+		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
+			return results;
+		}
+		else {
+			this.logInfo("Error executing Query. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString);
+			return null;
 		}
 	},
 
@@ -8257,13 +8381,16 @@ this.logInfo("getTaskItemsOK 4");
 		var startDate = cal.toRFC3339(aStartDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
 		var endDate = cal.toRFC3339(aEndDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
 
-		var sqlStr = "SELECT item FROM items WHERE ";
+		var sqlStr = "SELECT item FROM items";
+		var whereStr = "";
 		if ((this.supportsEvents) && (!this.supportsTasks)) {
-			sqlStr += "event = 'y' AND startDate <= '"+endDate+"' AND endDate >= '"+startDate+"' ORDER BY type ASC";
+			whereStr = " WHERE event = 'y' AND startDate <= '"+endDate+"' AND endDate >= '"+startDate+"'";
+			sqlStr += whereStr+" ORDER BY type ASC";
 		}
 		else {
 			if ((!this.supportsEvents) && (this.supportsTasks)) {
-				sqlStr += "event = 'n' AND ((startDate = '' AND endDate >= '"+startDate+"' AND endDate <= '"+endDate+"') OR (endDate = '' AND startDate >= '"+startDate+"' AND startDate <= '"+endDate+"') OR (startDate <= '"+endDate+"' AND endDate >= '"+startDate+"') OR (startDate = '' AND endDate = '')) ORDER BY type ASC";
+				whereStr = " WHERE event = 'n' AND ((startDate = '' AND endDate >= '"+startDate+"' AND endDate <= '"+endDate+"') OR (endDate = '' AND startDate >= '"+startDate+"' AND startDate <= '"+endDate+"') OR (startDate <= '"+endDate+"' AND endDate >= '"+startDate+"') OR (startDate = '' AND endDate = ''))";
+				sqlStr += whereStr+" ORDER BY type ASC";
 			}
 		}
 
@@ -8294,8 +8421,14 @@ this.logInfo("getTaskItemsOK 4");
 			sqlStatement.reset();
 		}
 
+		this.logInfo("Retreived '"+result.length+"' records from offline cache. startDate:"+startDate+", endDate:"+endDate);
 		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
-			return this.updateCalendar(null, result, true);
+
+			if (result.length > 0) {
+				this.executeQuery("UPDATE items set event=(event || '_')"+whereStr);
+
+				return this.updateCalendar(null, result, true);
+			}
 		}
 		else {
 			this.logInfo("Error executing Query. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString);
