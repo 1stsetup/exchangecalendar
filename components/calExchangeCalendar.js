@@ -6248,6 +6248,7 @@ this.logInfo("getTaskItemsOK 4");
 
 			alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
 			alarm.offset = alarmOffset;
+
 			this.logInfo("Alarm set with an offset of "+alarmOffset.minutes+" minutes from the start");
 			aItem.setProperty("X-ReminderDueBy", aCalendarItem.nsTypes::ReminderDueBy.toString());
 
@@ -6886,9 +6887,11 @@ this.logInfo("getTaskItemsOK 4");
 		//this.logInfo("updateCalendar");
 		var items = [];
 		var convertedItems = [];
-		for each (var exchItem in aItems) {
+//		for each (var exchItem in aItems) {
+		for (var index in aItems) {
 
-			var item = this.convertExchangeToCal(exchItem, erGetItemsRequest);
+//			var item = this.convertExchangeToCal(exchItem, erGetItemsRequest);
+			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest);
 			if (item) {
 				convertedItems.push(item);
 				if (!this.itemCache[item.id]) {
@@ -6899,7 +6902,8 @@ this.logInfo("getTaskItemsOK 4");
 					if (doNotify) {
 						this.notifyTheObservers("onAddItem", [item]);
 					}
-					this.addToOfflineCache(item, exchItem);
+//					this.addToOfflineCache(item, exchItem);
+					this.addToOfflineCache(item, aItems[index]);
 
 				}
 				else {
@@ -6907,7 +6911,8 @@ this.logInfo("getTaskItemsOK 4");
 					//this.logInfo("updateCalendar: onModifyItem:"+ item.title);
 
 					this.singleModified(item, doNotify);
-					this.addToOfflineCache(item, exchItem);
+//					this.addToOfflineCache(item, exchItem);
+					this.addToOfflineCache(item, aItems[index]);
 				}
 			}
 
@@ -7252,7 +7257,7 @@ this.logInfo("getTaskItemsOK 4");
 
 		if (!this.endDate) {
 			requestItems = true;
-			var tmpEndDate = this.executeQueryWithResults("SELECT max(startDate) as newEndDate FROM items", ["newEndDate"]);
+			var tmpEndDate = this.executeQueryWithResults("SELECT max(endDate) as newEndDate FROM items", ["newEndDate"]);
 			if ((tmpEndDate) && (tmpEndDate.length > 0)) {
 				var newEndDate = tmpEndDate[0].newEndDate;
 				if (newEndDate) {
@@ -8018,7 +8023,7 @@ this.logInfo("getTaskItemsOK 4");
 		}
 	},
 
-	executeQueryWithResults: function _executeQuery(aQuery, aFieldArray)
+	executeQueryWithResults: function _executeQueryWithResults(aQuery, aFieldArray)
 	{
 		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
 			return null;
@@ -8030,7 +8035,7 @@ this.logInfo("getTaskItemsOK 4");
 		}
 		catch(exc) {
 			this.logInfo("Error on createStatement. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString+", Exception:"+exc+". ("+aQuery+")");
-			return false;
+			return null;
 		}
 
 		var results = [];
@@ -8335,14 +8340,33 @@ this.logInfo("getTaskItemsOK 4");
 		if (isEvent(aCalItem)) {
 			if (this.getItemType(aCalItem) == "M") {
 				// Lets find the real end date.
-				for (var childIndex in this.itemCache) {
+				var newMasterEndDate = this.executeQueryWithResults("SELECT max(endDate) as newEndDate FROM items WHERE uid='"+aCalItem.getProperty("X-UID")+"'",["newEndDate"]);
+				if ((newMasterEndDate) && (newMasterEndDate.length > 0)) {
+					this.logInfo("newMasterEndDate:"+newMasterEndDate[0].newEndDate);
+					var endDateStr = newMasterEndDate[0].newEndDate;
+					if (endDateStr) {
+						if (endDateStr.length == 10) {
+							endDateStr += "T23:59:59Z";
+						}
+						this.logInfo("newEndDate for master setting it to:"+endDateStr);
+						endDate = endDateStr;
+					}
+					else {
+						this.logInfo("newEndDate for master is null not going to use this. Strange!!");
+					}
+				}
+				else {
+					this.logInfo("Could not get newEndDate for Master. What is wrong!!"); 
+				} 
+
+/*				for (var childIndex in this.itemCache) {
 					if ((this.itemCache[childIndex]) && (aCalItem.getProperty("X-UID") == this.itemCache[childIndex].getProperty("X-UID"))) {
 						var childEnd = cal.toRFC3339(this.itemCache[childIndex].endDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
 						if (childEnd > endDate) {
 							endDate = childEnd;
 						}
 					}
-				}
+				}*/ // Old code which did not work right.
 			}
 			else {
 				if ((this.getItemType(aCalItem) == "RO") || (this.getItemType(aCalItem) == "RE")) {
