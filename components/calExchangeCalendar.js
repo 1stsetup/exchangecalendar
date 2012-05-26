@@ -7960,6 +7960,33 @@ this.logInfo("getTaskItemsOK 4");
 				this.logInfo("Created/opened offlineCache database.");
 				this.executeQuery("UPDATE items set event='y' where event='y_'");
 				this.executeQuery("UPDATE items set event='n' where event='n_'");
+
+				// Fix the database corruption bug from version 2.0.0-2.0.3 (fixed in version 2.0.4) 26-05-2012
+				this.logInfo("Running fix for database corruption bug from version 2.0.0-2.0.3 (fixed in version 2.0.4)");
+				var masters = this.executeQueryWithResults("SELECT uid FROM items WHERE type='M'",["uid"]);
+				if ((masters) && (masters.length > 0)) {
+					for (var index in masters) {
+						var newMasterEndDate = this.executeQueryWithResults("SELECT max(endDate) as newEndDate FROM items WHERE uid='"+masters[index].uid+"'",["newEndDate"]);
+						if ((newMasterEndDate) && (newMasterEndDate.length > 0)) {
+							this.logInfo("newMasterEndDate:"+newMasterEndDate[0].newEndDate);
+							var endDateStr = newMasterEndDate[0].newEndDate;
+							if (endDateStr) {
+								if (endDateStr.length == 10) {
+									endDateStr += "T23:59:59Z";
+								}
+								this.logInfo("newEndDate for master setting it to:"+endDateStr);
+								this.executeQuery("UPDATE items set endDate='"+endDateStr+"' where type='M' AND uid='"+masters[index].uid+"'");
+							}
+							else {
+								this.logInfo("newEndDate for master is null not going to use this. Strange!!");
+							}
+						}
+						else {
+							this.logInfo("Could not get newEndDate for Master. What is wrong!!"); 
+						} 
+					}
+				} 
+
 			}
 			else {
 				try{
@@ -8366,7 +8393,7 @@ this.logInfo("getTaskItemsOK 4");
 							endDate = childEnd;
 						}
 					}
-				}*/ // Old code which did not work right.
+				} */ // Old code which did not work right.
 			}
 			else {
 				if ((this.getItemType(aCalItem) == "RO") || (this.getItemType(aCalItem) == "RE")) {
