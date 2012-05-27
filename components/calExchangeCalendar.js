@@ -326,6 +326,9 @@ function calExchangeCalendar() {
 	this.processItemSyncQueueBusy = false;
 	this.timers = [];
 
+	this.offlineTimer = null;
+	this.offlineQueue = [];
+
 	this.doReset = false;
 
 	this.haveTimeZones = false;
@@ -2042,10 +2045,11 @@ this.logInfo("singleModified doNotify");
 			if (aRangeStart)  { this.logInfo("getItems 5a: aRangeStart:"+aRangeStart.toString()); }
 			if (aRangeEnd) { this.logInfo("getItems 5b: aRangeEnd:"+aRangeEnd.toString()); }
 
-			var itemsFromCache = this.getItemsFromOfflineCache(aRangeStart, aRangeEnd);
+			this.addToOfflineQueue(aRangeStart, aRangeEnd);
+/*			var itemsFromCache = this.getItemsFromOfflineCache(aRangeStart, aRangeEnd);
 			if (itemsFromCache) {
 				this.logInfo("We got '"+itemsFromCache.length+"' items from offline cache.");
-			}
+			}*/
 
 			var events = [];
 			var tasks = [];
@@ -3409,6 +3413,7 @@ this.logInfo("singleModified doNotify");
 		}
 
 		this.queue = new Array;
+		this.offlineQueue = [];
 
 		this.doReset = true;
 
@@ -3421,6 +3426,9 @@ this.logInfo("singleModified doNotify");
 				delete this.timers[index];
 			}
 		}
+		this.offlineTimer.cancel();
+		this.offlineTimer = null;
+
 		if (this.calendarPoller) {
 			this.calendarPoller.cancel();
 		}
@@ -3467,6 +3475,7 @@ this.logInfo("singleModified doNotify");
 		}
 
 		this.queue = new Array;
+		this.offlineQueue = [];
 
 		// Now we can initialize.
 		this.syncState = null;
@@ -5455,6 +5464,53 @@ this.logInfo("!!CHANGED:"+String(e));
 
 			queueItem.arguments["ServerVersion"] = getEWSServerVersion(this.serverUrl);
 			this.tmpJobs[aQueueNumber] = new queueItem.ecRequest(queueItem.arguments, queueItem.cbOk, queueItem.cbError, queueItem.listener);
+		}
+
+	},
+
+	addToOfflineQueue: function _addToOfflineQueue(aRangeStart, aRangeEnd)
+	{
+		if (this.getProperty("disabled")) {
+			return;
+		}
+
+		this.offlineQueue.push({rangeStart:aRangeStart,
+				 rangeEnd: aRangeEnd});
+
+//		this.observerService.notifyObservers(this, "onExchangeProgressChange", "1");  
+
+
+		if (!this.offlineTimer) {
+			this.logInfo("Arming timer for offlineQueue.");
+			this.offlineTimer = Cc["@mozilla.org/timer;1"]
+					.createInstance(Ci.nsITimer);
+
+		        let self = this;
+			let timerCallback = {
+				notify: function setTimeout_notify() {
+					self.processOfflineQueue();
+				}
+			};
+			if (!this.shutdown) {
+				this.offlineTimer.initWithCallback(timerCallback, 50, this.offlineTimer.TYPE_REPEATING_SLACK);
+			}
+			this.logInfo("Timer for offlineQueue.");
+
+		}
+	},
+
+	processOfflineQueue: function _processOfflineQueue()
+	{
+		if (this.offlineQueue.length > 0) {
+			var queueItem = this.offlineQueue[0];
+			this.offlineQueue.shift();
+
+			//exchWebService.commonFunctions.LOG("["+this.name+"] processQueue:"+aQueueNumber+" ("+exchWebService.commonFunctions.STACKshort()+")");
+			//this.observerService.notifyObservers(this, "onExchangeProgressChange", "-1");  
+			var itemsFromCache = this.getItemsFromOfflineCache(queueItem.rangeStart, queueItem.rangeEnd);
+			if (itemsFromCache) {
+				this.logInfo("We got '"+itemsFromCache.length+"' items from offline cache.");
+			}
 		}
 
 	},
@@ -7690,6 +7746,8 @@ this.logInfo("getTaskItemsOK 4");
 			}
 		}
 
+		this.offlineTimer.cancel();
+
 		if (this.calendarPoller) {
 			this.calendarPoller.cancel();
 		}
@@ -7707,6 +7765,7 @@ this.logInfo("getTaskItemsOK 4");
 		}
 
 		this.queue = new Array;
+		this.offlineQueue = [];
 
 		// Now we can initialize.
 		this.syncState = null;
