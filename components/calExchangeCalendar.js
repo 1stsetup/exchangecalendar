@@ -68,7 +68,6 @@ Cu.import("resource://exchangecalendar/erCreateItem.js");
 Cu.import("resource://exchangecalendar/erSendMeetingRespons.js");
 Cu.import("resource://exchangecalendar/erSyncInbox.js");
 Cu.import("resource://exchangecalendar/erGetTimeZones.js");
-Cu.import("resource://exchangecalendar/ecEWSTimeZoneDefinitions.js");
 Cu.import("resource://exchangecalendar/erCreateAttachment.js");
 Cu.import("resource://exchangecalendar/erDeleteAttachment.js");
 
@@ -283,6 +282,37 @@ const MAPI_PidLidReminderSet = "34051";
 //
 
 var EXPORTED_SYMBOLS = ["calExchangeCalendar", "fixPrefBug", "removeOldPrefs"];
+
+function urlToPath (aPath) {
+
+    if (!aPath || !/^file:/.test(aPath))
+      return ;
+    var rv;
+   var ph = Components.classes["@mozilla.org/network/protocol;1?name=file"]
+        .createInstance(Components.interfaces.nsIFileProtocolHandler);
+    rv = ph.getFileFromURLSpec(aPath).path;
+    return rv;
+}
+
+function chromeToPath (aPath) {
+
+   if (!aPath || !(/^chrome:/.test(aPath)))
+      return; //not a chrome url
+   var rv;
+   
+      var ios = Components.classes['@mozilla.org/network/io-service;1'].getService(Components.interfaces["nsIIOService"]);
+        var uri = ios.newURI(aPath, "UTF-8", null);
+        var cr = Components.classes['@mozilla.org/chrome/chrome-registry;1'].getService(Components.interfaces["nsIChromeRegistry"]);
+        rv = cr.convertChromeURL(uri).spec;
+
+        if (/^file:/.test(rv))
+          rv = urlToPath(rv);
+        else
+          rv = urlToPath("file://"+rv);
+
+      return rv;
+}
+
 
 function calExchangeCalendar() {
 	this.initProviderBase();
@@ -7478,6 +7508,55 @@ this.logInfo("getTaskItemsOK 4");
 			null);
 	},
 
+	get ews_2010_timezonedefinitions()
+	{
+		if (!this._ews_2010_timezonedefinitions) {
+
+			var somefile = chromeToPath("chrome://exchangecalendar/content/ewsTimesZoneDefinitions_2007.xml");
+			var file = Components.classes["@mozilla.org/file/local;1"]
+					.createInstance(Components.interfaces.nsILocalFile);
+			this.logInfo("Will use local file for timezone data for 2007. name:"+somefile);
+			file.initWithPath(somefile);
+
+			var istream = Components.classes["@mozilla.org/network/file-input-stream;1"].  
+					 createInstance(Components.interfaces.nsIFileInputStream);  
+			istream.init(file, -1, -1, 0);  
+			istream.QueryInterface(Components.interfaces.nsILineInputStream);  
+			  
+			// read lines into array  
+			var line = {}, lines = "", hasmore;  
+			do {  
+				hasmore = istream.readLine(line);  
+				lines += line.value;   
+			} while(hasmore);  
+			  
+			istream.close();
+
+			try {
+				this._ews_2010_timezonedefinitions = new XML(lines);
+			}
+			catch(exc) {this.logInfo("Could not convert timezone xml file into XML object:"+exc); };
+
+			this.logInfo("End of get ews_2010_timezonedefinitions");
+		}
+
+		return this._ews_2010_timezonedefinitions;
+	},
+
+	getEWSTimeZones: function _getEWSTimeZones(aTimeZoneDefinitions)
+	{
+		var rm = aTimeZoneDefinitions..nsMessages::GetServerTimeZonesResponseMessage;
+
+		var timeZoneDefinitions = {};
+
+		for each( var timeZoneDefinition in rm.nsMessages::TimeZoneDefinitions.nsTypes::TimeZoneDefinition) {
+			//cal.LOG("ss:"+timeZoneDefinition.@Name);
+			timeZoneDefinitions[timeZoneDefinition.@Id] = timeZoneDefinition;
+		}
+
+		return timeZoneDefinitions;
+	},
+
 	getTimeZones: function _getTimeZones()
 	{
 		// This only works for Exchange 2010 servers
@@ -7496,7 +7575,7 @@ this.logInfo("getTaskItemsOK 4");
 		if (this.isVersion2007) {
 			this.logInfo("getTimeZones 2");
 			this.logInfo("getTimeZones for 2007");
-			this.EWSTimeZones = ecGetEWSTimeZones(ews_2010_timezonedefinitions);
+			this.EWSTimeZones = this.getEWSTimeZones(this.ews_2010_timezonedefinitions);
 			this.haveTimeZones = true;
 		}
 	},
@@ -7505,7 +7584,7 @@ this.logInfo("getTaskItemsOK 4");
 	{
 		this.notConnected = false;
 		this.saveCredentials(erGetTimeZonesRequest.argument);
-		this.EWSTimeZones = aTimeZoneDefinitions;
+		this.EWSTimeZones = this.getEWSTimeZones(aTimeZoneDefinitions);
 		this.logInfo("getTimeZonesOK");
 		this.haveTimeZones = true;
 	},

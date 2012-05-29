@@ -1,5 +1,9 @@
+Version 2.0.5:
+- Added: Processing of getItemsFromOfflineCache into a seperate thread.
+- Fixed: Problem when turning on offline cache this would only start after restarting TB. 
+
 Version 2.0.4:
-- Fixed; bug with reminders in offline cache.
+- Fixed: bug with reminders in offline cache.
 - Added: Extra dialog when answering an invitation.
 
 Version 2.0.2:

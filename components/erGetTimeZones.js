@@ -46,7 +46,6 @@ Cu.import("resource://calendar/modules/calAuthUtils.jsm");
 
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
-Cu.import("resource://exchangecalendar/ecEWSTimeZoneDefinitions.js");
 
 var EXPORTED_SYMBOLS = ["erGetTimeZonesRequest"];
 
@@ -97,10 +96,8 @@ erGetTimeZonesRequest.prototype = {
 
 		if (ResponseCode == "NoError") {
 
-			var timeZoneDefinitions = ecGetEWSTimeZones(aResp);
-
 			if (this.mCbOk) {
-				this.mCbOk(this, timeZoneDefinitions);
+				this.mCbOk(this, aResp);
 			}
 			this.isRunning = false;
 		}
