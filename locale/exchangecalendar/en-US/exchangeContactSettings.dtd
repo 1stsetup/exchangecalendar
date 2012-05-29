@@ -2,7 +2,7 @@
 <!ENTITY label.cancelbutton "Cancel">
 
 <!ENTITY ecsettings.tab.adsettings "Exchange/Windows AD">
-<!ENTITY ecsettings.tab.meetingrequestsettings "Vergader verzoeken">
+<!ENTITY ecsettings.tab.meetingrequestsettings "Meeting request">
 
 <!ENTITY label.ecExchangeSettings.title "Name in list:">
 <!ENTITY exchangeWebService.preference.contacts.pollinterval "Refresh interval in seconds:">

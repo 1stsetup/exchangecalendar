@@ -8,7 +8,7 @@
 <!ENTITY label.ecExchangeSettings.title "Settings for calendar:">
 
 <!ENTITY label.poll.inbox "Poll inbox for requests, changes and cancellations.">
-<!ENTITY label.poll.inbox.interval "Frequency to poll inbox in seconds:">
+<!ENTITY label.poll.inbox.interval "Frequency (in seconds) to poll inbox:">
 <!ENTITY label.poll.calendar.interval "Frequency (in seconds) to poll calendar:">
 
 <!ENTITY label.nomeetingrequestsettings "You cannot set meeting request because you did not select the main calendar for the mailbox">
@@ -31,14 +31,9 @@
 <!ENTITY treecol.label.email "Email">
 
 
-<!--
-written by deepak
-
-start
--->
 <!ENTITY ecsettings.tab.offlineCachingproperties "Offline Caching">
 
-<!ENTITY label.offlineCacheproperties.cachingStartDate "Start Date of caching:">
+<!ENTITY label.offlineCacheproperties.cachingStartDate "Start date of caching:">
 <!ENTITY label.offlineCacheproperties.cachingEndDate "End date of caching:">
 <!ENTITY label.offlineCacheproperties.totalEvents "Total number of events cached:">
 <!ENTITY label.offlineCacheproperties.totalTasks "Total number of tasks cached:">
@@ -46,5 +41,5 @@ start
 <!ENTITY label.offlineCacheproperties.monthsBeforeStartDate "Number of months to cache items prior to today:">
 <!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Number of months to cache items after today:">
 
-<!ENTITY button.offlineCacheproperties.clearCache "Clear Offline Cached Data">
+<!ENTITY button.offlineCacheproperties.clearCache "Clear offline cached data">
 

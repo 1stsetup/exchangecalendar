@@ -1292,7 +1292,7 @@ this.logInfo("singleModified doNotify");
 				var iAmOrganizer = ((aNewItem.organizer) && (aNewItem.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()));
 				if (iAmOrganizer) {
 
-					if (!changesObj.onlySnoozeChanged) {
+					if ((!changes) || ((changes) && (!changes.onlySnoozeChanged))) {
 
 						input.response = "sendtoall";
 
