@@ -40,37 +40,59 @@ var components = Components;
 
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 
-function showHide(){
-	var myCal = getSelectedCalendar();
-	var calType= myCal.type;
-	var menuItem = document.getElementById("exchangecalendar-OutOfOfficeMenu");
-	if (myCal && calType=="exchangecalendar"){
-		menuItem.setAttribute("hidden", false);
-	}
-	else{
-		menuItem.setAttribute("hidden", true);
-	}
-}
+if (! exchWebService) var exchWebService = {};
 
-function showHideonTools(){
-	var myCal = getSelectedCalendar();
-	var calType= myCal.type;
-	var menuItem = document.getElementById("exchangecalendar-tools-OutOfOfficeMenu");
-	if (myCal && calType=="exchangecalendar"){
-		menuItem.setAttribute("hidden", false);
-	}
-	else{
-		menuItem.setAttribute("hidden", true);
-	}
-}
 
-function openOutofOfficeDialog(){
-	var myCal = getSelectedCalendar();		
-	var aResult = "";
-	aResult = { calendar: myCal, answer: ""};
-	window.openDialog("chrome://exchangecalendar/content/oofSettings.xul",
-		"oofSettings",
-		"chrome,titlebar,toolbar,centerscreen,dialog,modal=yes,resizable=yes",
-		aResult); 
+exchWebService.outOfOfficeMenu = {
+
+	isLoaded: false,
+
+	showHide: function _showHide(){
+		var myCal = getSelectedCalendar();
+		var calType= myCal.type;
+		var menuItem = document.getElementById("exchangecalendar-OutOfOfficeMenu");
+		if (myCal && calType=="exchangecalendar"){
+			menuItem.setAttribute("hidden", false);
+		}
+		else{
+			menuItem.setAttribute("hidden", true);
+		}
+	},
+
+	showHideonTools: function _showHideonTools(){
+		var myCal = getSelectedCalendar();
+		var calType= myCal.type;
+		var menuItem = document.getElementById("exchangecalendar-tools-OutOfOfficeMenu");
+		if (myCal && calType=="exchangecalendar"){
+			menuItem.setAttribute("hidden", false);
+		}
+		else{
+			menuItem.setAttribute("hidden", true);
+		}
+	},
+
+	openOutofOfficeDialog: function _openOutofOfficeDialog(){
+		var myCal = getSelectedCalendar();		
+		var aResult = "";
+		aResult = { calendar: myCal, answer: ""};
+		window.openDialog("chrome://exchangecalendar/content/oofSettings.xul",
+			"oofSettings",
+			"chrome,titlebar,toolbar,centerscreen,dialog,modal=yes,resizable=yes",
+			aResult); 
 	
+	},
+
+	onLoad: function _onLoad()
+	{
+		if (!this.isLoaded) {
+			this.isLoaded = true;
+			window.removeEventListener("load", exchWebService.outOfOfficeMenu.onLoad, true);
+			document.getElementById("taskPopup").addEventListener("popupshowing", exchWebService.outOfOfficeMenu.showHideonTools, true);
+			document.getElementById("menu_Event_Task_Popup").addEventListener("popupshowing", exchWebService.outOfOfficeMenu.showHide, true);
+		}
+	},
+
 }
+
+window.addEventListener("load", exchWebService.outOfOfficeMenu.onLoad, true);
+

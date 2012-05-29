@@ -41,13 +41,13 @@
 <overlay id="outOfOfficeMenu"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 	<script type="application/javascript" src="chrome://exchangecalendar/content/OutOfOfficeMenu.js" />
-	<menupopup id="menu_Event_Task_Popup" onpopupshowing="return showHide();">
+	<menupopup id="menu_Event_Task_Popup">
 		<menuitem id="exchangecalendar-OutOfOfficeMenu" label="Out of Office..."
-			oncommand="return openOutofOfficeDialog();" hidden="true"/>
+			oncommand="exchWebService.outOfOfficeMenu.openOutofOfficeDialog();" hidden="true"/>
 	</menupopup>
 
-	<menupopup id="taskPopup" onpopupshowing="return showHideonTools();">
+	<menupopup id="taskPopup">
 		<menuitem id="exchangecalendar-tools-OutOfOfficeMenu" label="Out of Office..."
-			oncommand="return openOutofOfficeDialog();" hidden="true"/>
+			oncommand="exchWebService.outOfOfficeMenu.openOutofOfficeDialog();" hidden="true"/>
 	</menupopup>
 </overlay>

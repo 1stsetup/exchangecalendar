@@ -51,10 +51,19 @@ exchWebService.selectEWSurl = {
 	onLoad: function _onLoad()
 	{
 		var ewsUrls = window.arguments[0];
-		var firstItem = false;
+		var firstItem = false;		
+		var results = new Array();
 
-		for (var i= 0; i < ewsUrls.length(); i++) {
-			var newItem = document.getElementById("exchWebService_selectEWSurl_urllist").appendItem( ewsUrls[i].text(), ewsUrls[i].text(), ewsUrls[i].text() );
+		for (var i = 0; i < ((ewsUrls.length()) - 1); i++) {
+		    if (ewsUrls[i + 1] == ewsUrls[i]) {
+			results.push(ewsUrls[i].toString());
+		    }
+		}
+		
+
+		for (var i= 0; i < results.length; i++) {
+			var newItem = document.getElementById("exchWebService_selectEWSurl_urllist").appendItem( results[i].toString(), results[i].toString(), results[i].toString() );
+
 			if (!firstItem) {
 				document.getElementById("exchWebService_selectEWSurl_urllist").selectedItem = newItem;
 				firstItem = true;

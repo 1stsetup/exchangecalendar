@@ -845,7 +845,8 @@ calExchangeCalendar.prototype = {
 				 createReq: ewsItem,
 				 newItem: aItem,
 				 attachmentsUpdates: attachmentsUpdates,
-				 actionStart: Date.now()}, 
+				 actionStart: Date.now(),
+				 sendto: "sendtoall"}, 
 				function(erCreateItemRequest, aId, aChangeKey) { self.createItemOk(erCreateItemRequest, aId, aChangeKey);}, 
 				function(erCreateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erCreateItemRequest, aCode, aMsg);},
 				aListener,
@@ -4659,7 +4660,8 @@ this.logInfo("!!CHANGED:"+String(e));
 				 parentItemId: aId,
 				 parentItemChangeKey: aChangeKey, 
 				 attachmentsUpdates: erCreateItemRequest.argument.attachmentsUpdates,
-				 actionStart: Date.now()}, 
+				 actionStart: Date.now(),
+				 sendto: erCreateItemRequest.argument.sendto}, 
 				function(erCreateAttachmentRequest, attachmentId, RootItemId, RootItemChangeKey) { self.createAttachmentOk(erCreateAttachmentRequest, attachmentId, RootItemId, RootItemChangeKey);}, 
 				function(erCreateAttachmentRequest, aCode, aMsg) { self.createAttachmentError(erCreateAttachmentRequest, aCode, aMsg);},
 				erCreateItemRequest.listener,
@@ -4718,15 +4720,16 @@ this.logInfo("!!CHANGED:"+String(e));
 			return;
 		}
 		else {
-
+			this.logInfo("We have no attachment deletions.");
 			if ((erCreateAttachmentRequest.argument.sendto) && ((erCreateAttachmentRequest.argument.sendto != "sendtonone"))) {
 				// The item we processed was a meeting of which I'm the organiser.
 				// It contained new attachments and we need to send an item update to get it to the invited.
-				this.logInfo("We had attachment changes and it is a meeting for which we are the organiser send the changed item to the others as specified:"+erDeleteAttachmentRequest.argument.sendto);
+				this.logInfo("We had attachment changes and it is a meeting for which we are the organiser send the changed item to the others as specified:"+erCreateAttachmentRequest.argument.sendto);
 				this.doAttachmentUpdatesFinalize(erCreateAttachmentRequest.argument.attachmentsUpdates, erCreateAttachmentRequest.argument.item, RootItemId, RootItemChangeKey, erCreateAttachmentRequest.argument.sendto, erCreateAttachmentRequest.listener);
 				return;
 			}
 			else {
+				this.logInfo("createAttachmentOk erCreateAttachmentRequest.argument.sendto is not set.");
 				if (erCreateAttachmentRequest.listener) {
 					this.notifyOperationComplete(erCreateAttachmentRequest.listener,
 					      Cr.NS_OK,
