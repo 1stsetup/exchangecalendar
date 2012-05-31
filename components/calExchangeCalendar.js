@@ -1292,7 +1292,7 @@ this.logInfo("singleModified doNotify");
 				var iAmOrganizer = ((aNewItem.organizer) && (aNewItem.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()));
 				if (iAmOrganizer) {
 
-					if ((!changes) || ((changes) && (!changes.onlySnoozeChanged))) {
+					if (((changes) && ((changesObj) && (!changesObj.onlySnoozeChanged))) || (attachmentsUpdates.create.length > 0) || (attachmentsUpdates.delete.length > 0)) {
 
 						input.response = "sendtoall";
 
@@ -4915,12 +4915,12 @@ this.logInfo("!!CHANGED:"+String(e));
 	
 		upd.nsTypes::Updates.content = ce;
 	
-		if (!ce[0]) {
-			return null;
-		}
-
 		if (onlySnoozeChanged) {
 			this.logInfo("onlySnoozeChanged Or reminder time before start.");
+		}
+
+		if (!ce[0]) {
+			return {changes: null, onlySnoozeChanged: onlySnoozeChanged};
 		}
 
 		return {changes: upd, onlySnoozeChanged: onlySnoozeChanged};
