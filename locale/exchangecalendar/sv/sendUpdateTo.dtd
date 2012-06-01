@@ -1,0 +1,8 @@
+<!ENTITY title.sendupdateto "Till vilka ska uppdateringen skickas?">
+<!ENTITY label.acceptbutton "Utför">
+<!ENTITY label.cancelbutton "Avbryt">
+<!ENTITY label.calendaritem.title "Skicka en mötesuppdatering:">
+
+<!ENTITY radio.label.sendtonone "Skicka inte till någon.">
+<!ENTITY radio.label.sendtoall "Skicka till alla inbjudna.">
+<!ENTITY radio.label.sendtochanged "Skicka bara till tillagda eller borttagna personer.">

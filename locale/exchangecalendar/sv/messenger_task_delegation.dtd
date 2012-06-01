@@ -1,0 +1,5 @@
+<!ENTITY exchWebService.task.delegation.owner.name "Uppgiftsägare">
+<!ENTITY exchWebService.task.delegation.delegator.name "Uppgiftsdelegerare">
+<!ENTITY exchWebService.task.delegation.accept.button "Acceptera">
+<!ENTITY exchWebService.task.delegation.decline.button "Avböj">
+<!ENTITY exchWebService.task.delegation.lastUpdateDate "Senast ändrad">

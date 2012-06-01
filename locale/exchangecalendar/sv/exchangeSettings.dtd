@@ -1,0 +1,44 @@
+<!ENTITY label.acceptbutton "Spara">
+<!ENTITY label.cancelbutton "Avbryt">
+
+<!ENTITY ecsettings.tab.adsettings "Exchange/Windows AD">
+<!ENTITY ecsettings.tab.meetingrequestsettings "Mötesförfrågningar">
+<!ENTITY ecsettings.tab.calendarfolderproperties "Mappegenskaper">
+
+<!ENTITY label.ecExchangeSettings.title "Kalenderinställningar:">
+
+<!ENTITY label.poll.inbox "Titta efter inbjudningar, uppdateringar och avbokningar i inkorgen.">
+<!ENTITY label.poll.inbox.interval "Intervall (i sekunder) för att kontrollera inkorg:">
+<!ENTITY label.poll.calendar.interval "Intervall (i sekunder) för att kontollera kalender:">
+
+<!ENTITY label.nomeetingrequestsettings "Du kan inte skapa en mötesförfrågning eftersom du inte har valt E-postlådans huvudkalender">
+
+<!ENTITY label.autorespond.meetingrequest "Besvara automatiskt nya inbjudningar med ">
+
+<!ENTITY menuitem.label.ec-autorespond-answer.tentative "Jag kommer kanske att närvara">
+<!ENTITY menuitem.label.ec-autorespond-answer.accepted "Jag kommer att närvara">
+<!ENTITY menuitem.label.ec-autorespond-answer.declined "Jag kommer inte att närvara">
+
+<!ENTITY label.autoremove.invitation_cancellation1 "Ta automatiskt bort inbjudning och motsvarande avbokning om du ännu inte har besvarat förfrågningen.">
+<!ENTITY label.autoremove.invitation_cancellation2 "Ta automatiskt bort en accepterad inbjudning när du tar emot en avbokning.">
+
+<!ENTITY label.autoremove.invitation_response1 "Ta automatiskt bort andras svar på mötesinbjudningar som du inte har arrangerat.">
+
+<!ENTITY label.doautorespond.meetingrequest.message "Skicka följande meddelande som svar i stället för att fråga efter ett meddelande.">
+<!ENTITY label.autorespond.meetingrequest.message "Ditt meddelande:">
+
+<!ENTITY treecol.label.userid "Användarnamn">
+<!ENTITY treecol.label.email "E-postadress">
+
+
+<!ENTITY ecsettings.tab.offlineCachingproperties "Nerkopplad cachning">
+
+<!ENTITY label.offlineCacheproperties.cachingStartDate "Startdatum för cachning:">
+<!ENTITY label.offlineCacheproperties.cachingEndDate "Slutdatum för cachning:">
+<!ENTITY label.offlineCacheproperties.totalEvents "Totalt antal cachade händelser:">
+<!ENTITY label.offlineCacheproperties.totalTasks "Totalt antal cachade uppgifter:">
+
+<!ENTITY label.offlineCacheproperties.monthsBeforeStartDate "Antal månader före idag som objekt ska cachas:">
+<!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Antal månader efter idag som objekt ska cachas:">
+
+<!ENTITY button.offlineCacheproperties.clearCache "Töm nerkopplad cache">

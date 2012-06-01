@@ -1,0 +1,7 @@
+<!ENTITY toolbar.button.label.addaccount "Lägg till kontaktmapp för Exchange">
+<!ENTITY toolbar.button.tooltip.addaccount "Det här kommer att lägga till en ny kontaktmapp för Exchange">
+
+<!ENTITY toolbar.button.label.deleteaccount "Ta bort kontaktmapp för Exchange">
+<!ENTITY toolbar.button.tooltip.deleteaccount "Det här kommer att ta bort en existerande kontaktmapp för Exchange">
+
+<!ENTITY deleteExchangeCmd.label "Ta bort kontaktmapp för Exchange">

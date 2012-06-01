@@ -1,0 +1,4 @@
+<!ENTITY calendar.context.exchange.convert.label "Omvandla till Exchange 2007/2010 kalender- och uppgiftstillägg">
+<!ENTITY calendar.context.exchange.properties.label "Inställningar för Exchange (EWS)">
+<!ENTITY calendar.context.exchange.oof.settings.label "Frånvaroinställningar">
+<!ENTITY calendar.context.exchange.clone.settings.label "Klona inställningar till ny kalender">

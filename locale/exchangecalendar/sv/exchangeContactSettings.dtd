@@ -1,0 +1,8 @@
+<!ENTITY label.acceptbutton "Spara">
+<!ENTITY label.cancelbutton "Avbryt">
+
+<!ENTITY ecsettings.tab.adsettings "Exchange/Windows AD">
+<!ENTITY ecsettings.tab.meetingrequestsettings "Mötesförfrågning">
+
+<!ENTITY label.ecExchangeSettings.title "Namn i listan:">
+<!ENTITY exchangeWebService.preference.contacts.pollinterval "Uppdateringsintervall i sekunder:">

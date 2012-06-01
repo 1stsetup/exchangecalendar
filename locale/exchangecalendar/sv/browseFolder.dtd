@@ -1,0 +1,7 @@
+<!ENTITY label.acceptbutton "Välj">
+<!ENTITY label.cancelbutton "Avbryt">
+
+<!ENTITY browsefolder.title "Sök mapp">
+
+<!ENTITY treecol.label.foldername "Mappnamn">
+<!ENTITY treecol.label.folderclass "Mappklass">

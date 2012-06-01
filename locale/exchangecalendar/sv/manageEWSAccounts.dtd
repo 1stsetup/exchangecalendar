@@ -1,0 +1,15 @@
+<!ENTITY label.acceptbutton "Stäng">
+
+<!ENTITY exchWebService.manageEWSAccounts.newAccount.button "Lägg till konto">
+<!ENTITY exchWebService.manageEWSAccounts.removeAccount.button "Ta bort konto">
+<!ENTITY exchWebService.manageEWSAccounts.saveAccount.button "Spara inställningar">
+
+<!ENTITY exchWebService.manageEWSAccounts.autodiscover.label "Använd Exchanges funktion för automatisk utforskning.">
+<!ENTITY exchWebService.manageEWSAccounts.mailbox.label "Namn på postlåda:">
+<!ENTITY exchWebService.manageEWSAccounts.windowsuser.label "Användarnamn:">
+<!ENTITY exchWebService.manageEWSAccounts.windowsdomain.label "Domännamn:">
+<!ENTITY exchWebService.manageEWSAccounts.autodiscover.button "Utforska automatiskt">
+<!ENTITY exchWebService.manageEWSAccounts.servercheck.button "Kontrollera server och konto">
+<!ENTITY exchWebService.manageEWSAccounts.name.label "Namn:">
+
+<!ENTITY exchWebService.manageEWSAccounts.menuitem "Konton för Exchanges webbtjänster">

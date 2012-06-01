@@ -1,0 +1,23 @@
+<!ENTITY title.oofsettings "Inställningar för frånvaro">
+<!ENTITY label.acceptbutton "Spara">
+<!ENTITY label.cancelbutton "Stäng">
+<!ENTITY label.oofsettings.title "Frånvaroinställningar för:">
+
+<!ENTITY label.oofstatus "Frånvarotillstånd:">
+
+<!ENTITY label.externalaudience "Till vilka externa avsändare vill du skicka frånvaromeddelanden: ">
+<!ENTITY menuitem.label.exchWebService-oof-externalaudience.none "Inga">
+<!ENTITY menuitem.label.exchWebService-oof-externalaudience.known "Endast avsändare i kontaktlistan">
+<!ENTITY menuitem.label.exchWebService-oof-externalaudience.all "Alla">
+
+<!ENTITY button.label.internal "Internt meddelande">
+<!ENTITY button.label.external "Externt meddelande">
+<!ENTITY label.internalreply "Meddelande som skickas till avsändare inom organisationen:">
+<!ENTITY label.externalreply "Meddelande som skickas till avsändare utanför organisationen:">
+
+<!ENTITY menuitem.label.exchWebService-oof-status.disabled "Inaktiverad">
+<!ENTITY menuitem.label.exchWebService-oof-status.enabled "Aktiverad">
+
+<!ENTITY checkbox.label.exchWebService-oof-scheduled "Aktiverad endast under denna tidsperiod:">
+<!ENTITY label.hbox-oof-scheduled-startTime "Starttid:">
+<!ENTITY label.hbox-oof-scheduled-endTime "Sluttid:">

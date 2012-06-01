@@ -1,0 +1,50 @@
+<!ENTITY ecautodiscover "Använd Exchanges funktion för automatisk utforskning.">
+<!ENTITY ecfolderbase.label "Basmapp:">
+<!ENTITY ecfolderpath.label "Sökväg under basmapp:">
+<!ENTITY ecfolderidofshare.label "Basmapps-ID:">
+<!ENTITY exchWebServices.SharedFolderID.label "Visat namn för Delat-mappen:">
+
+<!ENTITY menuitem.label.ecfolderbase.calendar "Kalender">
+<!ENTITY menuitem.label.ecfolderbase.publicfoldersroot "Publika mappar">
+<!ENTITY menuitem.label.ecfolderbase.inbox "Inkorgen">
+<!ENTITY menuitem.label.ecfolderbase.voicemail "Röstmeddelanden">
+<!ENTITY menuitem.label.ecfolderbase.msgfolderroot "Meddelandemappens rot">
+<!ENTITY menuitem.label.ecfolderbase.root "E-postlådans rot">
+<!ENTITY menuitem.label.ecfolderbase.tasks "Uppgifter">
+
+<!ENTITY menuitem.label.ecfolderbase.contacts "Kontakter">
+<!ENTITY menuitem.label.ecfolderbase.deleteditems "Borttaget">
+<!ENTITY menuitem.label.ecfolderbase.drafts "Utkast">
+<!ENTITY menuitem.label.ecfolderbase.journal "Journal">
+<!ENTITY menuitem.label.ecfolderbase.notes "Anteckningar">
+<!ENTITY menuitem.label.ecfolderbase.outbox "Utkorgen">
+<!ENTITY menuitem.label.ecfolderbase.sentitems "Skickat">
+<!ENTITY menuitem.label.ecfolderbase.junkemail "Skräppost">
+<!ENTITY menuitem.label.ecfolderbase.searchfolders "Sökmappar">
+<!ENTITY menuitem.label.ecfolderbase.version2010 "-- Nedanstående gäller endast Exchange2010 --">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsroot "Dumpster root">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsdeletions "Dumpster deletions">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsversion "Dumpster versions">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemspurges "Dumpster purges">
+<!ENTITY menuitem.label.ecfolderbase.archiveroot "Root archive">
+<!ENTITY menuitem.label.ecfolderbase.archivemsgfolderroot "Root archive message">
+<!ENTITY menuitem.label.ecfolderbase.archivedeleteditems "Archive deleted items">
+<!ENTITY menuitem.label.ecfolderbase.archiverecoverableitemsroot "Archive recoverable items root">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsdeletions "Archive recoverable items deletions">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsversions "Archive recoverable items versions">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemspurges "Archive recoverable items purges">
+
+<!ENTITY button.label.autodiscovercheck "Utforska automatiskt">
+<!ENTITY button.label.serverandmailboxcheck "Kontrollera server och E-postlåda">
+<!ENTITY button.label.servercheck "Kontrollera server och konto">
+
+<!ENTITY ecmailbox.label "Primär E-postaddress:">
+<!ENTITY ecmailbox.tooltip "Om du inte anger en E-postlåda får du endast access till publika mappar.">
+<!ENTITY ecwindowsuser.label "Användarnamn:">
+<!ENTITY ecwindowsdomain.label "Domännamn:">
+<!ENTITY ecwindowspassword.label "Lösenord:">
+
+<!ENTITY button.label.folderpathcheck "Kontrollera">
+<!ENTITY button.label.folderbrowse "Bläddra">
+
+<!ENTITY exchWebServices.UserAvailability.label "Användarens tillgänglighetsstatus för E-postlådans kalender visas endast om du har rättigheter att se den.">
