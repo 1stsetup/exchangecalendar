@@ -28,6 +28,7 @@ locale exchangecalendar nl locale/exchangecalendar/nl/
 locale exchangecalendar en-US locale/exchangecalendar/en-US/
 locale exchangecalendar fr-FR locale/exchangecalendar/fr-FR/
 locale exchangecalendar de locale/exchangecalendar/de/
+locale exchangecalendar sv locale/exchangecalendar/sv/
 
 component {720a458e-b6cd-4883-8a4d-5be27ec454d8} components/calExchangeCalendar.js
 contract @mozilla.org/calendar/calendar;1?type=exchangecalendar {720a458e-b6cd-4883-8a4d-5be27ec454d8}
