@@ -2095,7 +2095,10 @@ this.logInfo("singleModified doNotify");
 				}
 				else {
 					if (isToDo(this.itemCache[index])) {
-						tasks.push(this.itemCache[index]);
+						if ( (this.itemCache[index].status != "COMPLETED") || (aItemFilter & Ci.calICalendar
+			.ITEM_FILTER_COMPLETED_YES)) {
+							tasks.push(this.itemCache[index]);
+						}
 					}
 				}
 			}
