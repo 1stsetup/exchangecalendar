@@ -8413,7 +8413,7 @@ this.logInfo("getTaskItemsOK 4");
 				var startDate = "";
 			};
 
-			if ((aCalItem.completedDate) && (aCalItem.completedDate.compare(aCalItem.dueDate) == 1)) {
+			if (((aCalItem.completedDate) && (aCalItem.dueDate) && (aCalItem.completedDate.compare(aCalItem.dueDate) == 1)) || ((aCalItem.completedDate) && (!aCalItem.dueDate))) {
 				var endDate = cal.toRFC3339(aCalItem.completedDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
 			}
 			else {
