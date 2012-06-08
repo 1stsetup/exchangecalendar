@@ -345,7 +345,7 @@ function calExchangeCalendar() {
 	this.syncState = null;
 	this.syncInboxState = null;
 	this.syncBusy = false;
-	this.weAreSyncing = false;
+	this._weAreSyncing = false;
 	this.firstSyncDone = false;
 
 	this.meetingRequestsCache = [];
@@ -527,13 +527,21 @@ calExchangeCalendar.prototype = {
 				this.endDate = this.offlineEndDate;
 			}
 
-//			this.addToOfflineQueue(this.startDate, this.endDate);
 			var itemsFromCache = this.getItemsFromOfflineCache(this.startDate, this.endDate);
 			if (itemsFromCache) {
 				var endTime = cal.createDateTime();
 				var duration = endTime.subtractDate(startTime);
 				this.logInfo("We got '"+itemsFromCache.length+"' items from offline cache.(took "+duration.inSeconds+" seconds)");
 			}
+
+		}
+
+		if (!this.isOffline) {
+			// Start online processes.
+			// 1. Check folder.
+			// 2. Get timezone settings.
+			// 3. Start pollers.
+			this.logInfo("Initialized:"+this.isInitialized);
 		}
 
 	        return this.uri;
@@ -688,9 +696,10 @@ calExchangeCalendar.prototype = {
 		this.logInfo("setProperty. aName:"+aName+", aValue:"+aValue);
 		switch (aName) {
 		case "disabled" :
+			var oldDisabledState = this._disabled;
 			this._disabled = aValue;
 			this.prefs.setBoolPref("disabled", aValue);
-			if (aValue) {
+			if ((aValue) && (oldDisabledState != this._disabled)) {
 				this.resetCalendar();
 			}
 			break;
@@ -717,7 +726,7 @@ calExchangeCalendar.prototype = {
 
 		switch (aName) {
 		case "disabled" :
-			if (!this._disabled) {
+			if ((!this._disabled) && (oldDisabledState != this._disabled)) {
 				this.doReset = true;
 				this.performReset();
 			}
@@ -2167,6 +2176,8 @@ this.logInfo("singleModified doNotify");
 			return;
 		}
 
+		if (this.isOffline) return;
+
        		var self = this;
 
 		if ((!this.syncInboxState) && (!this.weAreInboxSyncing)) {
@@ -2304,6 +2315,16 @@ this.logInfo("singleModified doNotify");
 
 		if (!this.isInitialized) {	
 			this.logInfo("Not initialized yet. So no refresh.");
+			return;
+		}
+
+		if (this.isOffline) {
+			this.logInfo("We are offline. So no refresh.");
+			return;
+		}
+
+		if (this._disabled) {
+			this.logInfo("We are disabled. So no refresh.");
 			return;
 		}
 
@@ -2635,66 +2656,16 @@ this.logInfo("singleModified doNotify");
 		}
 
 		if (!this.mPrefs) {
-			this.logInfo("Found old version preferences. Going to update to the new. This is only for exisiting calendars.");
-			this.mPrefs = Cc["@mozilla.org/preferences-service;1"]
-			            .getService(Ci.nsIPrefService)
-				    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+this.id+".");
-			this.myId = this.id;
-			this.prefs.setIntPref("exchangePrefVersion", 1);
-
-			var oldPrefs = Cc["@mozilla.org/preferences-service;1"]
-					.getService(Ci.nsIPrefService)
-					.getBranch("calendar.registry."+this.id+".");
-			oldPrefs.setCharPref("uri", "https://auto/"+this.id);
+			this.logInfo("Found old version preferences. THIS IS A PROBLEM.");
+			return false;
 		}
 
-		var returnVal = false;
-		try {
-			this.prefs.getCharPref("ecServer");
-			returnVal = true;
-		}
-		catch(err) {
-			returnVal = false;
+		if (exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "disabled", false)) {
+			return false;
 		}
 
 		if (this.firstrun) {
 			this.firstrun = false;
-
-			// Convert oldstyle ExchangeCalendar prefs to newstyle. (since version 0.7.26)
-			var oldPrefs = Cc["@mozilla.org/preferences-service;1"]
-					.getService(Ci.nsIPrefService)
-					.getBranch("calendar.registry."+this.id+".");
-			try {
-				oldPrefs.getCharPref("ecServer");
-				// If we get here old prefs exists. We need to move them.
-				this.logInfo("Performing upgrade of userpreferences.");
-				this.prefs.setCharPref("ecServer", oldPrefs.getCharPref("ecServer"));
-				oldPrefs.clearUserPref("ecServer");
-				this.prefs.setCharPref("ecMailbox", oldPrefs.getCharPref("ecMailbox"));
-				oldPrefs.clearUserPref("ecMailbox");
-				this.prefs.setCharPref("ecDisplayname", oldPrefs.getCharPref("ecDisplayname"));
-				oldPrefs.clearUserPref("ecDisplayname");
-				this.prefs.setCharPref("ecUser", oldPrefs.getCharPref("ecUser"));
-				oldPrefs.clearUserPref("ecUser");
-				this.prefs.setCharPref("ecDomain", oldPrefs.getCharPref("ecDomain"));
-				oldPrefs.clearUserPref("ecDomain");
-				this.prefs.setCharPref("ecFolderbase", oldPrefs.getCharPref("ecFolderbase"));
-				oldPrefs.clearUserPref("ecFolderbase");
-				this.prefs.setCharPref("ecFolderpath", oldPrefs.getCharPref("ecFolderpath"));
-				oldPrefs.clearUserPref("ecFolderpath");
-				try {
-					this.prefs.setCharPref("ecFolderID", oldPrefs.getCharPref("ecFolderID"));
-					oldPrefs.clearUserPref("ecFolderID");
-					this.prefs.setCharPref("ecChangeKey", oldPrefs.getCharPref("ecChangeKey"));
-					oldPrefs.clearUserPref("ecChangeKey");
-				}
-				catch(err) {
-				}
-				this.addActivity(calGetString("calExchangeCalendar", "updateUserPrefs1", null, "exchangecalendar"), "xx", Date.now(), Date.now());
-			}
-			catch(err) {
-				// If we get here old prefs do not exists. Al is fine.
-			}
 
 			getFreeBusyService().addProvider(this);
 
@@ -2709,7 +2680,7 @@ this.logInfo("singleModified doNotify");
 			this.getTimeZones();
 
 		}
-		return returnVal;
+		return true;
 
 	},
 
@@ -2876,6 +2847,9 @@ this.logInfo("singleModified doNotify");
 	checkInbox: function _checkInbox()
 	{
 //		this.logInfo("checkInbox.");
+
+		if (this.isOffline) return;
+
 		if ((this.weAreInboxSyncing) || (!this.doPollInbox) || (this.OnlyShowAvailability)) {
 			return;
 		}
@@ -2900,6 +2874,9 @@ this.logInfo("singleModified doNotify");
 	syncInbox: function _syncInbox()
 	{
 //		this.logInfo("syncInbox.");
+
+		if (this.isOffline) return;
+
 		if ((this.weAreInboxSyncing) || (!this.doPollInbox)) {
 			return;
 		}
@@ -3454,7 +3431,9 @@ this.logInfo("singleModified doNotify");
 				items.push(item);
 			}
 		
-			erGetUserAvailabilityRequest.listener.onResult(null, items);
+			if (erGetUserAvailabilityRequest.listener) {
+				erGetUserAvailabilityRequest.listener.onResult(null, items);
+			}
 		}
 	},
 	
@@ -3467,7 +3446,9 @@ this.logInfo("singleModified doNotify");
 			this.OnlyShowAvailability = false;
 		}
 		else {
-			erGetUserAvailabilityRequest.listener.onResult(null, null);
+			if (erGetUserAvailabilityRequest.listener) {
+				erGetUserAvailabilityRequest.listener.onResult(null, null);
+			}
 		}
 	},
 
@@ -5474,7 +5455,7 @@ this.logInfo("!!CHANGED:"+String(e));
 
 	addToQueue: function _addToQueue(aRequest, aArgument, aCbOk, aCbError, aListener, aQueueNumber)
 	{
-		if ((this.getProperty("disabled")) || (this.isOffline)) {
+		if (this.getProperty("disabled")) {
 			return;
 		}
 
@@ -7098,8 +7079,23 @@ this.logInfo("getTaskItemsOK 4");
 		return false;
 	},
 
+	set weAreSyncing(aValue)
+	{
+		if (aValue != this._weAreSyncing) {
+			this.logInfo("this._weAreSyncing changed from '"+this._weAreSyncing+"' to '"+aValue+"'");
+		}
+		this._weAreSyncing = aValue;
+	},
+
+	get weAreSyncing()
+	{
+		return this._weAreSyncing;
+	},
+
 	getSyncState: function _getSyncState()
 	{
+		if (this.isOffline) return;
+
 		if (!this.weAreSyncing) {
 			// We do not yet have a syncState. Get it first.
 			this.logInfo("Creating erSyncFolderItemsRequest");
@@ -7290,6 +7286,7 @@ this.logInfo("getTaskItemsOK 4");
 			}
 		}
 
+		if (this.isOffline) return;
 
 		if (this.folderPath != "/") {
 			this.logInfo("checkFolderPath 1");
@@ -8674,18 +8671,15 @@ this.logInfo("getTaskItemsOK 4");
 			this.mIsOffline = aValue;
 
 			if (!aValue) {
-				this.checkFolderPath();
-				this.getSyncState();
-				this.getTimeZones();
+				this.logInfo("Initialized:"+this.isInitialized);
 				this.refresh();
-				this.startCalendarPoller();
-				this.startSyncInboxPoller();
 			}
 			else {
 				if (this.calendarPoller) {
 					this.calendarPoller.cancel();
 				}
 				this.inboxPoller.cancel();
+				this.firstrun = true;
 			}
 		}
 	},
@@ -8872,80 +8866,57 @@ ecObserver.prototype = {
 	}  
 }
 
-function fixPrefBug()
+function convertToVersion1()
 {
-	var createPrefs = Cc["@mozilla.org/preferences-service;1"]
+	var tmpPrefs = Cc["@mozilla.org/preferences-service;1"]
                     .getService(Ci.nsIPrefService)
-		    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl.createcalendar.");
+		    .getBranch("calendar.registry.");
 
-	createPrefs.clearUserPref("autodiscover");
-	createPrefs.clearUserPref("server");
-	createPrefs.clearUserPref("mailbox");
-	createPrefs.clearUserPref("displayname");
-	createPrefs.clearUserPref("user");
-	createPrefs.clearUserPref("domain");
-	createPrefs.clearUserPref("folderbase");
-	createPrefs.clearUserPref("folderpath");
-	createPrefs.clearUserPref("folderID");
-	createPrefs.clearUserPref("changeKey");
-	createPrefs.clearUserPref("folderIDOfShare");
-
-	var children = createPrefs.getChildList("");
+	var children = tmpPrefs.getChildList("");
 	if (children.length > 0) {
 		// Move prefs from old location to new location.
-		for (var index in children) {
-			exchWebService.commonFunctions.LOG("Going to move pref key:"+children[index]);
-			var newPrefs = Cc["@mozilla.org/preferences-service;1"]
-		                    .getService(Ci.nsIPrefService)
-				    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl.");
-			switch (createPrefs.getPrefType(children[index])) {
-			case createPrefs.PREF_STRING:
-				exchWebService.commonFunctions.LOG("STRING pref");
-				newPrefs.setCharPref(children[index], createPrefs.getCharPref(children[index]));
-				break;
-			case createPrefs.PREF_INT:
-				exchWebService.commonFunctions.LOG("INT pref");
-				newPrefs.setIntPref(children[index], createPrefs.getIntPref(children[index]));
-				break;
-			case createPrefs.PREF_BOOL:
-				exchWebService.commonFunctions.LOG("BOOL pref");
-				newPrefs.setBoolPref(children[index], createPrefs.getBoolPref(children[index]));
-				break;
-			}
-			createPrefs.clearUserPref(children[index]);
-		}
-		
-	}
-
-}
-
-function removeOldPrefs()
-{
-	var currentPrefs = Cc["@mozilla.org/preferences-service;1"]
-                    .getService(Ci.nsIPrefService)
-		    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl.");
-
-	var children = currentPrefs.getChildList("");
-	if (children.length > 0) {
 		var oldUUID = "";
-		children.sort();
+		var newUUID = false;
+		var exchangeType = false;
+		var updateToUUID = null;
 		for (var index in children) {
-			if (children[index].indexOf("createcalendar.") == -1) {
-				var uuid = children[index].substr(0, children[index].indexOf("."));
-				if (uuid != oldUUID) {
-					exchWebService.commonFunctions.LOG("removeOldPrefs Checking uuid:"+uuid);
-					oldUUID = uuid;
-					var calPrefs = Cc["@mozilla.org/preferences-service;1"]
-				                    .getService(Ci.nsIPrefService)
-						    .getBranch("calendar.registry."+uuid+".");
-					try {
-						var type = calPrefs.getCharPref("type");
-					}
-					catch(err) {
-						exchWebService.commonFunctions.LOG("   -- Removing uuid:"+uuid);
-						currentPrefs.deleteBranch(uuid);
-					}
 
+			var pos = children[index].indexOf(".");
+			var tmpUUID = children[index].substr(0, pos);
+			var tmpField = children[index].substr(pos+1); 
+
+			if (tmpUUID != oldUUID) {
+
+				if ((updateToUUID) && (exchangeType)) {
+					// update uri preference
+					exchWebService.commonFunctions.LOG("Going to upgrade calendar registry '"+updateToUUID+"'");
+					
+					var updatePrefs = Cc["@mozilla.org/preferences-service;1"]
+						    .getService(Ci.nsIPrefService)
+						    .getBranch("calendar.registry."+updateToUUID+".");
+					updatePrefs.setCharPref("uri", "https://auto/"+updateToUUID);
+
+					var updatePrefs = Cc["@mozilla.org/preferences-service;1"]
+						    .getService(Ci.nsIPrefService)
+						    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+updateToUUID+".");
+					updatePrefs.setIntPref("exchangePrefVersion", 1);
+				}
+				newUUID = true;
+				oldUUID = tmpUUID;
+				exchangeType = false;
+				updateToUUID = null;
+			}
+
+			if (tmpField == "type") {
+				exchangeType = true;
+			}
+
+			if (tmpField == "uri") {
+				exchWebService.commonFunctions.LOG("Going to check calendar registry '"+tmpUUID+"' if it needs to be updated.");
+
+				var tmpURI = exchWebService.commonFunctions.safeGetCharPref(null, "calendar.registry."+children[index], null, false);
+				if (tmpURI != "https://auto/"+tmpUUID) {
+					updateToUUID = tmpUUID;
 				}
 			}
 		}
@@ -9018,8 +8989,7 @@ function NSGetFactory(cid) {
 		throw e;
 	}
 
-	fixPrefBug();
-	removeOldPrefs();
+	convertToVersion1();
 
 	exchWebService.commonFunctions.LOG("---XX- calExchangeCalendar-miv");
 	return NSGetFactory.mainEC(cid);
