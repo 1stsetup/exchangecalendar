@@ -315,6 +315,9 @@ function chromeToPath (aPath) {
 
 
 function calExchangeCalendar() {
+
+	this.myId = null;
+
 	this.initProviderBase();
 
 	this.folderPathStatus = 1;
@@ -387,6 +390,8 @@ function calExchangeCalendar() {
 
 	this.mIsOffline = Components.classes["@mozilla.org/network/io-service;1"]
                              .getService(Components.interfaces.nsIIOService).offline;
+
+	exchWebService.commonFunctions.LOG("Our offline status is:"+this.mIsOffline);
 
 }
 
@@ -484,6 +489,11 @@ calExchangeCalendar.prototype = {
 
 	//  attribute calICalendar superCalendar;
 
+	get id()
+	{
+		return this.myId;
+	},
+
 	//  attribute nsIURI uri;
 	get uri()
 	{
@@ -500,9 +510,32 @@ calExchangeCalendar.prototype = {
 			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+this.myId+".");
 		if (this.exchangePrefVersion < 1) {
 			this.mPrefs = null;
+			this.myId = null;
 		}
 
 	        this.mUri = aUri;
+
+		// Load from offline Cache into memory cache.
+		if (this.useOfflineCache) {
+			this.logInfo("Getting items from offlineCache.");
+			var startTime = cal.createDateTime();
+
+			if (!this.startDate) {
+				this.startDate = this.offlineStartDate;
+			}
+			if (!this.endDate) {
+				this.endDate = this.offlineEndDate;
+			}
+
+//			this.addToOfflineQueue(this.startDate, this.endDate);
+			var itemsFromCache = this.getItemsFromOfflineCache(this.startDate, this.endDate);
+			if (itemsFromCache) {
+				var endTime = cal.createDateTime();
+				var duration = endTime.subtractDate(startTime);
+				this.logInfo("We got '"+itemsFromCache.length+"' items from offline cache.(took "+duration.inSeconds+" seconds)");
+			}
+		}
+
 	        return this.uri;
 	},
 
@@ -2076,7 +2109,7 @@ this.logInfo("singleModified doNotify");
 			if (aRangeStart)  { this.logInfo("getItems 5a: aRangeStart:"+aRangeStart.toString()); }
 			if (aRangeEnd) { this.logInfo("getItems 5b: aRangeEnd:"+aRangeEnd.toString()); }
 
-			this.addToOfflineQueue(aRangeStart, aRangeEnd);
+			//this.addToOfflineQueue(aRangeStart, aRangeEnd);
 /*			var itemsFromCache = this.getItemsFromOfflineCache(aRangeStart, aRangeEnd);
 			if (itemsFromCache) {
 				this.logInfo("We got '"+itemsFromCache.length+"' items from offline cache.");
@@ -2255,14 +2288,22 @@ this.logInfo("singleModified doNotify");
 
 		this.logInfo("refresh");
 		if (this.shutdown) {
+			this.logInfo("Shutting down. So no refresh.");
 			return;
 		}
 
 		if ((!this.syncState) || (this.weAreSyncing)) {
+			if (this.weAreSyncing) {
+				this.logInfo("weAreSyncing. So no refresh.");
+			}
+			else {
+				this.logInfo("No syncState yet. So no refresh.");
+			}
 			return;
 		}
 
 		if (!this.isInitialized) {	
+			this.logInfo("Not initialized yet. So no refresh.");
 			return;
 		}
 
@@ -2598,6 +2639,7 @@ this.logInfo("singleModified doNotify");
 			this.mPrefs = Cc["@mozilla.org/preferences-service;1"]
 			            .getService(Ci.nsIPrefService)
 				    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+this.id+".");
+			this.myId = this.id;
 			this.prefs.setIntPref("exchangePrefVersion", 1);
 
 			var oldPrefs = Cc["@mozilla.org/preferences-service;1"]
@@ -6348,11 +6390,15 @@ this.logInfo("getTaskItemsOK 4");
 		}
 	},
 
-	convertExchangeAppointmentToCalAppointment: function _convertExchangeAppointmentToCalAppointment(aCalendarItem, isMeetingRequest, erGetItemsRequest)
+	convertExchangeAppointmentToCalAppointment: function _convertExchangeAppointmentToCalAppointment(aCalendarItem, isMeetingRequest, erGetItemsRequest, doNotify)
 	{
 		this.logInfo("convertExchangeAppointmentToCalAppointment:"+String(aCalendarItem), 2);
 		var item = createEvent();
 		item.calendar = this.superCalendar;
+
+		if (!doNotify) {
+			doNotify = false;
+		}
 
 		item.id = this.tryToSetValue(aCalendarItem.nsTypes::ItemId.@Id.toString(), item.id);
 		if (! item.id) {
@@ -6699,29 +6745,31 @@ this.logInfo("getTaskItemsOK 4");
 						this.logInfo("We have a master and it was set as new. So we download it's children.title:"+item.title);
 						delete this.newMasters[aCalendarItem.nsTypes::UID.toString()];
 
-						var self = this;
-						// Request children from EWS server.
-						var childRequestItem = {Id: aCalendarItem.nsTypes::ItemId.@Id.toString(),
-							  ChangeKey: aCalendarItem.nsTypes::ItemId.@ChangeKey.toString(),
-							  type: aCalendarItem.nsTypes::CalendarItemType.toString(),
-							  uid: aCalendarItem.nsTypes::UID.toString(),
-							  start: aCalendarItem.nsTypes::Start.toString(),
-							  end: aCalendarItem.nsTypes::End.toString()};
+						if (!doNotify) {
+							var self = this;
+							// Request children from EWS server.
+							var childRequestItem = {Id: aCalendarItem.nsTypes::ItemId.@Id.toString(),
+								  ChangeKey: aCalendarItem.nsTypes::ItemId.@ChangeKey.toString(),
+								  type: aCalendarItem.nsTypes::CalendarItemType.toString(),
+								  uid: aCalendarItem.nsTypes::UID.toString(),
+								  start: aCalendarItem.nsTypes::Start.toString(),
+								  end: aCalendarItem.nsTypes::End.toString()};
 					
-						this.addToQueue( erFindOccurrencesRequest, 
-						{user: this.user, 
-						 mailbox: this.mailbox,
-						 folderBase: this.folderBase,
-						 serverUrl: this.serverUrl,
-						 masterItem: childRequestItem,
-						 folderID: this.folderID,
-						 changeKey: this.changeKey,
-						 startDate: this.startDate,
-						 endDate: this.endDate,
-				 		 GUID: calExchangeCalendarGUID}, 
-						function(erGetItemsRequest, aIds) { self.findOccurrencesOK(erGetItemsRequest, aIds);}, 
-						function(erGetItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erGetItemsRequest, aCode, aMsg);},
-						null);
+							this.addToQueue( erFindOccurrencesRequest, 
+							{user: this.user, 
+							 mailbox: this.mailbox,
+							 folderBase: this.folderBase,
+							 serverUrl: this.serverUrl,
+							 masterItem: childRequestItem,
+							 folderID: this.folderID,
+							 changeKey: this.changeKey,
+							 startDate: this.startDate,
+							 endDate: this.endDate,
+					 		 GUID: calExchangeCalendarGUID}, 
+							function(erGetItemsRequest, aIds) { self.findOccurrencesOK(erGetItemsRequest, aIds);}, 
+							function(erGetItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erGetItemsRequest, aCode, aMsg);},
+							null);
+						}
 					}
 
 /*					// Microsoft remindernexttime
@@ -6940,7 +6988,7 @@ this.logInfo("getTaskItemsOK 4");
 		return item;
 	},
 
-	convertExchangeToCal: function _convertExchangeToCal(aExchangeItem, erGetItemsRequest)
+	convertExchangeToCal: function _convertExchangeToCal(aExchangeItem, erGetItemsRequest, doNotify)
 	{
 		//this.logInfo("convertExchangeToCal");
 		if (!aExchangeItem) { return; }
@@ -6964,7 +7012,7 @@ this.logInfo("getTaskItemsOK 4");
 			case "IPM.OLE.CLASS" :
 			case "IPM.Schedule.Meeting.Request":
 			case "IPM.Schedule.Meeting.Canceled":
-				return this.convertExchangeAppointmentToCalAppointment(aExchangeItem, false, erGetItemsRequest);
+				return this.convertExchangeAppointmentToCalAppointment(aExchangeItem, false, erGetItemsRequest, doNotify);
 				break;
 			case "IPM.Task" :
 				return this.convertExchangeTaskToCalTask(aExchangeItem, erGetItemsRequest);
@@ -6979,11 +7027,9 @@ this.logInfo("getTaskItemsOK 4");
 		//this.logInfo("updateCalendar");
 		var items = [];
 		var convertedItems = [];
-//		for each (var exchItem in aItems) {
 		for (var index in aItems) {
 
-//			var item = this.convertExchangeToCal(exchItem, erGetItemsRequest);
-			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest);
+			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify);
 			if (item) {
 				convertedItems.push(item);
 				if (!this.itemCache[item.id]) {
@@ -6994,7 +7040,6 @@ this.logInfo("getTaskItemsOK 4");
 					if (doNotify) {
 						this.notifyTheObservers("onAddItem", [item]);
 					}
-//					this.addToOfflineCache(item, exchItem);
 					this.addToOfflineCache(item, aItems[index]);
 
 				}
@@ -7003,7 +7048,6 @@ this.logInfo("getTaskItemsOK 4");
 					//this.logInfo("updateCalendar: onModifyItem:"+ item.title);
 
 					this.singleModified(item, doNotify);
-//					this.addToOfflineCache(item, exchItem);
 					this.addToOfflineCache(item, aItems[index]);
 				}
 			}
@@ -7058,6 +7102,7 @@ this.logInfo("getTaskItemsOK 4");
 	{
 		if (!this.weAreSyncing) {
 			// We do not yet have a syncState. Get it first.
+			this.logInfo("Creating erSyncFolderItemsRequest");
 			var self = this;
 			this.weAreSyncing = true;
 
@@ -7075,6 +7120,9 @@ this.logInfo("getTaskItemsOK 4");
 				null);
 
 		}
+		else {
+			this.logInfo("not creating erSyncFolderItemsRequest because we are allready syncing");
+		}
 	},
 
 	syncFolderItemsOK: function _syncFolderItemsOK(erSyncFolderItemsRequest, creations, updates, deletions, syncState)
@@ -7083,7 +7131,7 @@ this.logInfo("getTaskItemsOK 4");
 		this.saveCredentials(erSyncFolderItemsRequest.argument);
 		this.notConnected = false;
 
-		//this.logInfo("syncFolderItemsOK: Creation:"+creations.length+", Updates:"+updates.length+", Deletions:"+deletions.length);
+		this.logInfo("syncFolderItemsOK: Creation:"+creations.length+", Updates:"+updates.length+", Deletions:"+deletions.length);
 
 		if ((creations.length > 0) || (updates.length > 0) || (deletions.length > 0)) {
 			this.addActivity(calGetString("calExchangeCalendar", "syncFolderEventMessage", [creations.length, updates.length, deletions.length, this.name], "exchangecalendar"), "", erSyncFolderItemsRequest.argument.actionStart, Date.now());
@@ -7217,6 +7265,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	syncFolderItemsError: function _syncFolderItemsError(erSyncFolderItemsRequest, aCode, aMsg)
 	{
+		this.logInfo("syncFolderItemsError");
 		this.folderPathStatus = -1;
 		this.saveCredentials(erSyncFolderItemsRequest.argument);
 		this.notConnected = true;
@@ -7327,81 +7376,6 @@ this.logInfo("getTaskItemsOK 4");
 				break;
 		}		
 
-		// We are going to find out what is allready in cache. And only going to set the date range to request items for the period
-		// still missing.
-
-		// Get our this.startDate and this.endDate from offlineCache;
-		var requestItem = false;
-		if (!this.startDate) {
-			requestItems = true;
-			var tmpStartDate = this.executeQueryWithResults("SELECT min(endDate) as newStartDate FROM items", ["newStartDate"]);
-			if ((tmpStartDate) && (tmpStartDate.length > 0)) {
-				var newStartDate = tmpStartDate[0].newStartDate;
-				if (newStartDate) {
-					if (newStartDate.length == 10) {
-						newStartDate += "T00:00:00Z";
-					}
-					this.logInfo("We have a newStartDate of '"+newStartDate+"'");
-					this.startDate = cal.createDateTime(newStartDate);
-				}
-			}
-		}
-
-		if (!this.endDate) {
-			requestItems = true;
-			var tmpEndDate = this.executeQueryWithResults("SELECT max(endDate) as newEndDate FROM items", ["newEndDate"]);
-			if ((tmpEndDate) && (tmpEndDate.length > 0)) {
-				var newEndDate = tmpEndDate[0].newEndDate;
-				if (newEndDate) {
-					if (newEndDate.length == 10) {
-						newEndDate += "T00:00:00Z";
-					}
-					this.logInfo("We have a newEndDate of '"+newEndDate+"'");
-					this.endDate = cal.createDateTime(newEndDate);
-				}
-			}
-		}
-
-		if (requestItems) {
-			var maxStartDate = this.executeQueryWithResults("SELECT max(startDate) as maxStartDate FROM items", ["maxStartDate"]);
-			if ((maxStartDate) && (maxStartDate.length > 0)) {
-				this.logInfo("maxStartDate:"+maxStartDate[0].maxStartDate);
-				var startDateStr = maxStartDate[0].maxStartDate;
-				if (startDateStr) {
-					if (startDateStr.length == 10) {
-						startDateStr += "T00:00:00Z";
-					}
-					this.logInfo("We have a maxStartDate of '"+startDateStr+"'");
-					startDateStr = cal.createDateTime(startDateStr);
-					if (startDateStr.compare(this.endCacheDate) < 1) {
-						this.logInfo("maxStartDate is smaller than or equal to this.endCacheDate");
-						this.getItems(itemType, 0, startDateStr, this.endCacheDate, null);
-					}
-				}
-				else {
-					this.logInfo("We do not have a maxStartDate. Going to request full cache period.");
-					startDateStr = this.startCacheDate;
-					this.getItems(itemType, 0, this.startCacheDate, this.endCacheDate, null);
-				}
-			}
-
-			var minEndDate = this.executeQueryWithResults("SELECT min(endDate) as minEndDate FROM items", ["minEndDate"]);
-			if ((minEndDate) && (minEndDate.length > 0)) {
-				this.logInfo("minEndDate:"+minEndDate[0].minEndDate);
-				var endDateStr = minEndDate[0].minEndDate;
-				if (endDateStr) {
-					if (endDateStr.length == 10) {
-						endDateStr += "T23:59:59Z";
-					}
-					this.logInfo("We have a minEndDate of '"+endDateStr+"'");
-					endDateStr = cal.createDateTime(endDateStr);
-					if (endDateStr.compare(this.startCacheDate) > -1) {
-						this.logInfo("minEndDate is bigger than or equal to this.startCacheDate");
-						this.getItems(itemType, 0, this.startCacheDate, endDateStr, null);
-					}
-				}
-			}
-		}
 	},
 
 	checkFolderPathOk: function _checkFolderPathOk(erFindFolderRequest, aId, aChangeKey, aFolderClass)
@@ -8202,7 +8176,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	executeQueryWithResults: function _executeQueryWithResults(aQuery, aFieldArray)
 	{
-		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return null;
 		}
 
@@ -8254,7 +8228,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	addAttachmentToOfflineCache: function _addAttachmentToOfflineCache(aCalItem, aCalAttachment)
 	{
-		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
 		}
 
@@ -8295,7 +8269,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	updateAttachmentInOfflineCache: function _updateAttachmentInOfflineCache(aCalItem, aCalAttachment)
 	{
-		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
 		}
 
@@ -8315,7 +8289,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	removeAttachmentsFromOfflineCache: function _removeAttachmentsFromOfflineCache(aCalItem)
 	{
-		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
 		}
 
@@ -8368,7 +8342,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	removeAttachmentFromOfflineCache: function _removeAttachmentFromOfflineCache(aCalItem, aCalAttachment)
 	{
-		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
 		}
 
@@ -8396,7 +8370,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	addToOfflineCache: function _addToOfflineCache(aCalItem, aExchangeItem)
 	{
-		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
 		}
 
@@ -8470,7 +8444,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	updateInOfflineCache: function _updateInOfflineCache(aCalItem, aExchangeItem)
 	{
-		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
 		}
 
@@ -8564,7 +8538,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	updateMasterInOfflineCache: function _updateParentInOfflineCache(aCalItem)
 	{
-		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
 		}
 
@@ -8598,7 +8572,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	removeFromOfflineCache: function _removeFromOfflineCache(aCalItem)
 	{
-		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
 		}
 
@@ -8616,14 +8590,25 @@ this.logInfo("getTaskItemsOK 4");
 	{
 		this.logInfo("getItemsFromOfflineCache");
 
-		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
 		}
 
 		var result = [];
 
-		var startDate = cal.toRFC3339(aStartDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
-		var endDate = cal.toRFC3339(aEndDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+		if (aStartDate) {
+			var startDate = cal.toRFC3339(aStartDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+		}
+		else {
+			var startDate = "1900-01-01";
+		}
+
+		if (aEndDate) {
+			var endDate = cal.toRFC3339(aEndDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+		}
+		else {
+			var endDate = "3500-01-01";
+		}
 
 		var sqlStr = "SELECT item FROM items";
 		var whereStr = "";
@@ -8671,7 +8656,7 @@ this.logInfo("getTaskItemsOK 4");
 			if (result.length > 0) {
 				this.executeQuery("UPDATE items set event=(event || '_')"+whereStr);
 
-				return this.updateCalendar(null, result, true);
+				return this.updateCalendar(null, result, false);
 			}
 		}
 		else {
@@ -8682,11 +8667,16 @@ this.logInfo("getTaskItemsOK 4");
 
 	set isOffline(aValue)
 	{
+		this.logInfo("setting mIsOffline="+aValue);
+
 		if (aValue != this.mIsOffline) {
 			this.notConnected = aValue;
 			this.mIsOffline = aValue;
 
 			if (!aValue) {
+				this.checkFolderPath();
+				this.getSyncState();
+				this.getTimeZones();
 				this.refresh();
 				this.startCalendarPoller();
 				this.startSyncInboxPoller();
@@ -8711,6 +8701,40 @@ this.logInfo("getTaskItemsOK 4");
 		this.isOffline = (aStatus == "offline");
 	},
 
+	get offlineStartDate()
+	{
+		var tmpStartDate = this.executeQueryWithResults("SELECT min(endDate) as newStartDate FROM items", ["newStartDate"]);
+		if ((tmpStartDate) && (tmpStartDate.length > 0)) {
+			var newStartDate = tmpStartDate[0].newStartDate;
+			if (newStartDate) {
+				if (newStartDate.length == 10) {
+					newStartDate += "T00:00:00Z";
+				}
+				this.logInfo("get offlineStartDate = '"+newStartDate+"'");
+				return cal.createDateTime(newStartDate);
+			}
+		}
+
+		return null;
+	},
+
+	get offlineEndDate()
+	{
+		var tmpEndDate = this.executeQueryWithResults("SELECT max(endDate) as newEndDate FROM items", ["newEndDate"]);
+		if ((tmpEndDate) && (tmpEndDate.length > 0)) {
+			var newEndDate = tmpEndDate[0].newEndDate;
+			if (newEndDate) {
+				if (newEndDate.length == 10) {
+					newEndDate += "T00:00:00Z";
+				}
+				this.logInfo("get offlineEndDate = '"+newEndDate+"'");
+				return cal.createDateTime(newEndDate);
+			}
+		}
+
+		return null;
+	},
+	
     /**
      * Internal logging function that should be called on any database error,
      * it will log as much info as possible about the database context and
