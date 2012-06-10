@@ -61,6 +61,8 @@
 			oncommand="exchWebService.exchangeSettings.doPollInboxChanged(this);" />
 		<command id="exchWebService_cmd_autorespond"
 			oncommand="exchWebService.exchangeSettings.doAutoRespondChanged(this);" />
+		<command id="exchWebService_cmd_offlineCache"
+			oncommand="exchWebService.offlineCacheSettings.doCheckOfflineCacheChanged(this);" />
 	</commandset>
 
 	<hbox>
@@ -302,7 +304,8 @@
 						<caption label="Details:" />
 						<vbox>
 							<hbox>
-								<checkbox label="Cache" id="exchWebService-offlineCacheproperties-cacheState"/>
+								<checkbox label="Cache" id="exchWebService-offlineCacheproperties-cacheState"
+									command="exchWebService_cmd_offlineCache"/>
 							</hbox>
 						</vbox>
 						<vbox id="exchWebService-offlineCacheproperties-detaisvbox" collapsed="true">					

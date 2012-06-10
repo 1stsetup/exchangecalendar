@@ -59,6 +59,7 @@ exchWebService.offlineCacheSettings = {
 
 		// Load cache preferences
 
+		this.oldUseOfflineCache = aCalendar.getProperty("exchWebService.useOfflineCache"); 
 		if(aCalendar.getProperty("exchWebService.useOfflineCache")){			
 			document.getElementById("exchWebService-offlineCacheproperties-cacheState").checked=true;
 			document.getElementById("exchWebService-offlineCacheproperties-detaisvbox").removeAttribute("collapsed");
@@ -105,21 +106,25 @@ exchWebService.offlineCacheSettings = {
 		var aCalendar = window.arguments[0].calendar;
 		exchWebServicesSaveExchangeSettingsByCalId(calId);
 
-		// Save caching preferences
-		if(document.getElementById("exchWebService-offlineCacheproperties-cacheState").checked){
-			aCalendar.setProperty("exchWebService.useOfflineCache", true);	
-		}
-		else{
-			aCalendar.setProperty("exchWebService.useOfflineCache", false);					
-		}
-		
-
 		var exchWebServicesCalPrefs = Cc["@mozilla.org/preferences-service;1"]
 						.getService(Ci.nsIPrefService)
 						.getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+calId+".");
 
+		// Save caching preferences
+		/*if(document.getElementById("exchWebService-offlineCacheproperties-cacheState").checked){
+			exchWebServicesCalPrefs.setBoolPref("useOfflineCache", true);	
+		}
+		else{
+			exchWebServicesCalPrefs.setBoolPref("useOfflineCache", false);					
+		}*/
+		
 		exchWebServicesCalPrefs.setIntPref("ecOfflineCacheMonthsBeforeToday", document.getElementById("exchWebService-offlineCacheproperties-monthsBeforeToday").value); 
 		exchWebServicesCalPrefs.setIntPref("ecOfflineCacheMonthsAfterToday", document.getElementById("exchWebService-offlineCacheproperties-monthsAfterToday").value); 
+
+		if (this.oldUseOfflineCache != document.getElementById("exchWebService-offlineCacheproperties-cacheState").checked) {
+			aCalendar.setProperty("exchWebService.useOfflineCache", document.getElementById("exchWebService-offlineCacheproperties-cacheState").checked)
+		}
+
 	},
 	
 	getDBConn : function _aDBConn(aCalendar)
@@ -213,6 +218,20 @@ exchWebService.offlineCacheSettings = {
 			var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 			observerService.notifyObservers(aCalendar, "onCalReset", aCalendar.id);			
 			exchWebService.offlineCacheSettings.onLoad();		
+		}
+	},
+
+	doCheckOfflineCacheChanged: function _doCheckOfflineCacheChanged(aCheckBox)
+	{
+		if (document.getElementById("exchWebService-offlineCacheproperties-cacheState").checked) {
+			document.getElementById("exchWebService-offlineCacheproperties-detaisvbox").setAttribute("collapsed", "false");
+			document.getElementById("exchWebService-offlineCacheproperties-maintainancegroupbox").setAttribute("collapsed", "false");
+			document.getElementById("exchWebService-offlineCacheproperties-preferencesgroupbox").setAttribute("collapsed", "false");
+		}
+		else {
+			document.getElementById("exchWebService-offlineCacheproperties-detaisvbox").setAttribute("collapsed", "true");
+			document.getElementById("exchWebService-offlineCacheproperties-maintainancegroupbox").setAttribute("collapsed", "true");
+			document.getElementById("exchWebService-offlineCacheproperties-preferencesgroupbox").setAttribute("collapsed", "true");
 		}
 	},
 
