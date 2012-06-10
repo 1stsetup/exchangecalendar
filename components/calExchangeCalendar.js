@@ -2180,8 +2180,9 @@ this.logInfo("singleModified doNotify");
 			}
 			else {
 				if (isToDo(this.itemCache[index])) {
-					if ( (this.itemCache[index].status != "COMPLETED") || (aItemFilter & Ci.calICalendar
-		.ITEM_FILTER_COMPLETED_YES)) {
+					if ( ((this.itemCache[index].status == "COMPLETED") && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_YES)) ||
+					     ((this.itemCache[index].status != "COMPLETED") && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_NO)) ||
+					     (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_ALL) ) {
 						tasks.push(this.itemCache[index]);
 					}
 				}
