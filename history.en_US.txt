@@ -1,3 +1,9 @@
+Version 2.1.0:
+- Fixed filtering of events
+- Fixed saving of the EWS settings.
+- Fixed calendarReset.
+- Improved getItems function.
+
 Version 2.0.5:
 - Added: Processing of getItemsFromOfflineCache into a seperate thread.
 - Fixed: Problem when turning on offline cache this would only start after restarting TB. 
