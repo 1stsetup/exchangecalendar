@@ -7496,6 +7496,18 @@ this.logInfo("getTaskItemsOK 4");
 
 			try {
 				this._ews_2010_timezonedefinitions = new XML(lines);
+
+/*				try {
+				    var mivXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
+						       .createInstance(Ci.mivIxml2jxon);
+				}
+				catch(exc) { this.logInfo("createInstance error:"+exc);}
+
+				try {
+					mivXML.processXMLString(lines, 0, null);
+				}
+				catch(exc) { this.logInfo("processXMLString error:"+exc.name+", "+exc.message);} */
+
 			}
 			catch(exc) {this.logInfo("Could not convert timezone xml file into XML object:"+exc); };
 

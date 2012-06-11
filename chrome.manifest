@@ -44,3 +44,8 @@ contract @mozilla.org/addressbook/directory-factory;1?name=exchWebService-contac
 
 overlay chrome://messenger/content/addressbook/addressbook.xul chrome://exchangecalendar/content/addressbookOverlay.xul
 
+interfaces interfaces/mivIxml2jxon.xpt
+component {d7165a60-7d64-42b2-ac48-6ccfc0962abb} interfaces/xml.js
+contract @1st-setup.nl/conversion/xml2jxon;1 {d7165a60-7d64-42b2-ac48-6ccfc0962abb}
+ 
+

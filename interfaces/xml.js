@@ -31,7 +31,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 Cu.import("resource://1st-setup/ecFunctions.js");
 
-function xml2jxon(aXMLString, aStartPos, aParent) {
+function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 
 	this.content = {};
 	this.itemCount = 0;
@@ -47,7 +47,7 @@ function xml2jxon(aXMLString, aStartPos, aParent) {
 
 var xml2jxonGUID = "d7165a60-7d64-42b2-ac48-6ccfc0962abb";
 
-xml2jxon.prototype = {
+mivIxml2jxon.prototype = {
 
 	// methods from nsISupport
 
@@ -64,9 +64,9 @@ xml2jxon.prototype = {
 	  in nsIIDRef uuid,
 	  [iid_is(uuid),retval] out nsQIResult result
 	);	 */
-	QueryInterface: function _QueryInterface(aIID) {
-		return cal.doQueryInterface(this, calExchangeCalendar.prototype, aIID,null, this);
-	},
+	QueryInterface: XPCOMUtils.generateQI([Ci.mivIxml2jxon,
+			Ci.nsIClassInfo,
+			Ci.nsISupports]),
 
 	//nsrefcnt Release();
 	Release: function _Release()
@@ -85,7 +85,7 @@ xml2jxon.prototype = {
 	// void getInterfaces(out PRUint32 count, [array, size_is(count), retval] out nsIIDPtr array);
 	getInterfaces: function _getInterfaces(count) 
 	{
-		var ifaces = [Ci.1st-setupIxml2jxon,
+		var ifaces = [Ci.mivIxml2jxon,
 			Ci.nsIClassInfo,
 			Ci.nsISupports];
 		count.value = ifaces.length;
@@ -103,42 +103,33 @@ xml2jxon.prototype = {
 	// External methods
 
 	// External attributes
-	ERR_MISSING_SPECIAL_TAG: 1,
+/*	ERR_MISSING_SPECIAL_TAG: 1,
 	ERR_INVALID_TAG: 2,
 	ERR_INVALID_SPECIAL_TAG: 3,
-	ERR_WRONG_CLOSING_TAG: 4,
+	ERR_WRONG_CLOSING_TAG: 4,*/
 
 	// Internal methods.
 
-	findCharacter: function _findCharacter(aString, aStartPos, aChar)
+	xmlError: function _xmlError(aErrorID)
 	{
-		var pos = aStartPos;
-		var strLength = aString.length;
-		while ((pos < strLength) && (aString.substr(pos, 1) != aChar)) {
-			pos++;
+		switch (aErrorID) {
+			case Ci.mivIxml2jxon.ERR_MISSING_SPECIAL_TAG: 
+				return { name: "ERR_MISSING_SPECIAL_TAG",
+					 message: "A special tag like '?' is missing",
+				         code: aErrorID};
+			case Ci.mivIxml2jxon.ERR_INVALID_TAG: 
+				return { name: "ERR_INVALID_TAG",
+					 message: "Tag is invalid",
+				         code: aErrorID};
+			case Ci.mivIxml2jxon.ERR_INVALID_SPECIAL_TAG: 
+				return { name: "ERR_INVALID_SPECIAL_TAG",
+					 message: "Special Tag is invalid",
+				         code: aErrorID};
+			case Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG: 
+				return { name: "ERR_WRONG_CLOSING_TAG",
+					 message: "Found wrong closing tag. Expected another.",
+				         code: aErrorID};
 		}
-
-		if ((pos < strLength) && (aString.substr(pos, 1) == aChar)) {
-			return pos;
-		}
-		
-		return -1;
-	},
-
-	findString: function _findString(aString, aStartPos, aNeedle)
-	{
-		var pos = aStartPos;
-		var strLength = aString.length;
-		var needleLength = aNeedle.length;
-		while ((pos < strLength) && (aString.substr(pos, needleLength) != aNeedle)) {
-			pos++;
-		}
-
-		if ((pos < strLength) && (aString.substr(pos, needleLength) == aNeedle)) {
-			return pos;
-		}
-		
-		return -1;
 	},
 
 	addToContent: function _addToContent(aValue)
@@ -150,7 +141,7 @@ xml2jxon.prototype = {
 	processXMLString: function _processXMLString(aString, aStartPos, aParent)
 	{
 		//Search for Tag opening character "<"
-		var pos = this.findChar(aString, aStartPos, "<");
+		var pos = this.findCharacter(aString, aStartPos, "<");
 		var strLength = aString.length;
 
 		if (pos > -1) {
@@ -167,19 +158,19 @@ xml2jxon.prototype = {
 					// We have a header.
 					var tmpPos = this.findString(aString, pos, "?>");
 					if (tmpPos == -1) {
-						throw ERR_INVALID_SPECIAL_TAG;
+						throw this.xmlError(Ci.mivIxml2jxon.ERR_INVALID_SPECIAL_TAG);
 					}
 					else {
 						// found complete special tag.
 						this.isXMLHeader = true;
 						this.XMLHeader = aString.substr(this.startPos, tmpPos-this.startPos+1);
-						this.addToContent(new xml2jxon(aString, tmpPos+2, this));
+						this.addToContent(new mivIxml2jxon(aString, tmpPos+2, this));
 						return;						
 					}
 				}
 				else {
 					// Error no valid header.
-					throw ERR_MISSING_SPECIAL_TAG;
+					throw this.xmlError(Ci.mivIxml2jxon.ERR_MISSING_SPECIAL_TAG);
 				}
 			}
 			else {
@@ -190,56 +181,67 @@ xml2jxon.prototype = {
 					var tmpStartPos = pos;
 					if (pos < strLength) {
 						// We still have characters left.
-						var tmpPos = this.findChar(aString, pos, ">");
+						var tmpPos = this.findCharacter(aString, pos, ">");
 						if (tmpPos > -1) {
 							// We found a closing character.
 							// Disassemble the tag. And see if it is the same tag as our parent. If so return else Error.
 							var closingTag = aString.substr(tmpStartPos, tmpPos-tmpStartPos);
 							if ((aParent) && (closingTag == aParent.tagName)) {
+								this.logInfo("Found content:"+aString.substr(aStartPos, this.startPos-aStartPos));
+								this.logInfo("Found closing tag:"+closingTag);
 								aParent.messageLength = tmpPos - aParent.startPos + 1; 
 								return;
 							}
 							else {
-								throw ERR_WRONG_CLOSING_TAG;
+								this.logInfo("Found closing tag:"+closingTag+" but expected tag:"+aParent.tagName);
+								throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG);
 							}
 						}
 						else {
-							throw ERR_INVALID_TAG;
+							throw this.xmlError(Ci.mivIxml2jxon.ERR_INVALID_TAG);
 						}
 					}
 					else {
 						// No more characters left in aString.
-						throw ERR_INVALID_TAG;
+						throw this.xmlError(Ci.mivIxml2jxon.ERR_INVALID_TAG);
 					}
 				}
 				else {
 					// did not find special character or aString is not long enough.
 					if (pos < strLength) {
 						// We still have characters left.
-						var tmpPos = this.findChar(aString, pos, ">");
+						var tmpPos = this.findCharacter(aString, pos, ">");
 						if (tmpPos > -1) {
 							// We found a closing character.
 							// Disassemble the tag. And process the content.
 						
 							// get tag name.
+							var tmpStart = this.startPos + 1;
+							this.tagName = "";
+							while ((tmpStart < strLength) && (aString.substr(tmpStart,1) != ">") && 
+								(aString.substr(tmpStart,1) != "/") && (aString.substr(tmpStart,1) != " ")) {
+								this.tagName = this.tagName + aString.substr(tmpStart,1);
+								tmpStart++;
+							}
 
 							// get attributes
 
 							// get namespaces
 
-
-							this.addToContent(new xml2jxon(aString, tmpPos+1, this));
+							this.logInfo("Found opening tag:"+this.tagName);
+							this.addToContent(new mivIxml2jxon(aString, tmpPos+1, this));
 
 							// When this one returns this.messageLength should be set and specifies where we should continue.
+							this.processXMLString(aString, this.startPos + this.messageLength, aParent)
 							
 						}
 						else {
-							throw ERR_INVALID_TAG;
+							throw this.xmlError(Ci.mivIxml2jxon.ERR_INVALID_TAG);
 						}
 					}
 					else {
 						// No more characters left in aString.
-						throw ERR_INVALID_TAG;
+						throw this.xmlError(Ci.mivIxml2jxon.ERR_INVALID_TAG);
 					}
 				}
 			}
@@ -254,6 +256,38 @@ xml2jxon.prototype = {
 		}
 	},
 
+	findCharacter: function _findCharacter(aString, aStartPos, aChar)
+	{
+		var pos = aStartPos;
+		var strLength = aString.length;
+		while ((pos < strLength) && (aString.substr(pos, 1) != aChar)) {
+			pos++;
+		}
+
+		if ((pos < strLength) && (aString.substr(pos, 1) == aChar)) {
+			return pos;
+		}
+	
+		return -1;
+	},
+
+	findString: function _findString(aString, aStartPos, aNeedle)
+	{
+		var pos = aStartPos;
+		var strLength = aString.length;
+		var needleLength = aNeedle.length;
+		while ((pos < strLength) && (aString.substr(pos, needleLength) != aNeedle)) {
+			pos++;
+		}
+
+		if ((pos < strLength) && (aString.substr(pos, needleLength) == aNeedle)) {
+			return pos;
+		}
+	
+		return -1;
+	},
+
+
 	logInfo: function _logInfo(message, aDebugLevel) {
 
 		if (!aDebugLevel) {
@@ -267,10 +301,9 @@ xml2jxon.prototype = {
 		var storedDebugLevel = exchWebService.commonFunctions.safeGetIntPref(prefB, "extensions.1st-setup.core.debuglevel", 0, true);
 
 		if (debugLevel <= storedDebugLevel) {
-			exchWebService.commonFunctions.LOG("["+this.contractID+"] "+message + " ("+exchWebService.commonFunctions.STACKshort()+")");
+			exchWebService.commonFunctions.LOG("[xml2jxon] "+message + " ("+exchWebService.commonFunctions.STACKshort()+")");
 		}
 	},
-
 
 }
 
@@ -280,7 +313,7 @@ function NSGetFactory(cid) {
 	try {
 		if (!NSGetFactory.xml2json) {
 			// Load main script from lightning that we need.
-			NSGetFactory.xml2json = XPCOMUtils.generateNSGetFactory([xml2jxon]);
+			NSGetFactory.xml2json = XPCOMUtils.generateNSGetFactory([mivIxml2jxon]);
 			exchWebService.commonFunctions.LOG("--NSGetFactory xml.js -- 2");
 			
 	}
