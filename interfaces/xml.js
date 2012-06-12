@@ -224,12 +224,26 @@ mivIxml2jxon.prototype = {
 								tmpStart++;
 							}
 
-							// get attributes
+							var isClosed = false;
+							if (((tmpStart < strLength) && (aString.substr(tmpStart,1) != "/")) {
+								this.logInfo("Found close character '/' at end of opening tag."); 
+								isClosed = true;
+								this.messageLength = tmpStart - this.startPos + 2;
+							}
+							else {
+								if (((tmpStart < strLength) && (aString.substr(tmpStart,1) != " ")) {
+									this.logInfo("Found space character '/'. There are attributes."); 
+									// get attributes
 
-							// get namespaces
+									// get namespaces
+								}
+						
+							}
 
 							this.logInfo("Found opening tag:"+this.tagName);
-							this.addToContent(new mivIxml2jxon(aString, tmpPos+1, this));
+							if (!isClosed) {
+								this.addToContent(new mivIxml2jxon(aString, tmpPos+1, this));
+							}
 
 							// When this one returns this.messageLength should be set and specifies where we should continue.
 							this.processXMLString(aString, this.startPos + this.messageLength, aParent)
