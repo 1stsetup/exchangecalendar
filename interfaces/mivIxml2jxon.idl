@@ -30,6 +30,8 @@ interface mivIxml2jxon : nsISupports
   const unsigned long ERR_INVALID_TAG = 2;
   const unsigned long ERR_INVALID_SPECIAL_TAG = 3;
   const unsigned long ERR_WRONG_CLOSING_TAG = 4;
+  const unsigned long ERR_WRONG_ATTRIBUTE_SEPARATOR = 5;
+  const unsigned long ERR_ATTRIBUTE_VALUE_QUOTES = 6;
 
 
   readonly attribute AUTF8String XMLHeader;

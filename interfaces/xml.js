@@ -129,6 +129,14 @@ mivIxml2jxon.prototype = {
 				return { name: "ERR_WRONG_CLOSING_TAG",
 					 message: "Found wrong closing tag. Expected another.",
 				         code: aErrorID};
+			case Ci.mivIxml2jxon.ERR_WRONG_ATTRIBUTE_SEPARATOR: 
+				return { name: "ERR_WRONG_ATTRIBUTE_SEPARATOR",
+					 message: "Found wrong attribute separator. Expected '=' character.",
+				         code: aErrorID};
+			case Ci.mivIxml2jxon.ERR_ATTRIBUTE_VALUE_QUOTES: 
+				return { name: "ERR_ATTRIBUTE_VALUE_QUOTES",
+					 message: "Found error in attribute value quotes.",
+				         code: aErrorID};
 		}
 	},
 
@@ -136,6 +144,47 @@ mivIxml2jxon.prototype = {
 	{
 		this.itemCount++;
 		this.content[this.itemCount] = aValue;
+	},
+
+	trim: function _trim(aValue)
+	{
+		var strLength = aValue.length;
+		var leftPos = 0;
+		while ((leftPos < strLength) && (aValue.substr(leftPos,1) == " ")) {
+			leftPos++;
+		}
+		var rightPos = strLength-1;
+		while ((rightPos >= 0) && (aValue.substr(rightPos,1) == " ")) {
+			rightPos--;
+		}
+		return aValue.substr(leftPos, rightPos - leftPos + 1);
+	},
+
+	explodeAttribute: function _explodeAttribute(aValue)
+	{
+		var splitPos = aValue.indexOf("=");
+		if (splitPos == -1) {
+			throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_ATTRIBUTE_SEPARATOR);
+		}
+ 
+		// trim left and right.
+		var attributeName = this.trim(aValue.substr(0, splitPos));
+		var attributeValue = this.trim(aValue.substr(splitPos+1));
+
+		if ((attributeValue.substr(0,1) == "'") || (attributeValue.substr(0,1) == '"')) {
+			var valueLength = attributeValue.length;
+			if (attributeValue.substr(0,1) == attributeValue.substr(valueLength-1,1)) {
+				// Remove quote around attribute value.
+				attributeValue = attributeValue.substr(1, valueLength-2);
+			}
+			else {
+				throw this.xmlError(Ci.mivIxml2jxon.ERR_ATTRIBUTE_VALUE_QUOTES);
+			}
+		}
+
+		this.logInfo("Added attribute to tag '"+this.tagName+"'. "+attributeName+"="+attributeValue,2);
+
+		this["@"+attributeName] = attributeValue;
 	},
 
 	processXMLString: function _processXMLString(aString, aStartPos, aParent)
@@ -264,6 +313,7 @@ mivIxml2jxon.prototype = {
 										if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == " ") && (!quoteOpen)) {
 											this.logInfo("a. Found attribute '"+attribute+"' for tag '"+this.tagName+"'",2);
 											attributes.push(attribute);
+											this.explodeAttribute(attribute);
 											attribute = "";
 											tmpStart++;
 										}
@@ -271,6 +321,7 @@ mivIxml2jxon.prototype = {
 									if ((tmpStart < strLength) && ((aString.substr(tmpStart,1) == "/") || (aString.substr(tmpStart,1) == ">"))) {
 										this.logInfo("b. Found attribute '"+attribute+"' for tag '"+this.tagName+"'",2);
 										attributes.push(attribute);
+										this.explodeAttribute(attribute);
 									}
 
 									if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == "/")) {
