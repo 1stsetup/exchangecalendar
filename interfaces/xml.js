@@ -36,6 +36,8 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 	this.content = {};
 	this.itemCount = 0;
 
+	this.logInfo("mivIxml2jxon.init");
+
 	if (aXMLString) {
 		this.processXMLString(aXMLString, aStartPos, aParent);
 	}
@@ -182,9 +184,25 @@ mivIxml2jxon.prototype = {
 			}
 		}
 
-		this.logInfo("Added attribute to tag '"+this.tagName+"'. "+attributeName+"="+attributeValue,2);
+		if (attributeName.toLowerCase().indexOf("xmlns") == 0) {
+			if (!this.nameSpaces) {
+				this.nameSpaces = {};
+			}
+			var xmlnsPos = attributeName.indexOf(":");
+			if (xmlnsPos > -1) {
+				this.logInfo("Found xml namespace:"+attributeName.substr(xmlnsPos+1)+"="+attributeValue, 2);
+				this.nameSpaces[attributeName.substr(xmlnsPos+1)] = attributeValue;
+			}
+			else {
+				this.logInfo("Found xml namespace:_default_="+attributeValue, 2);
+				this.nameSpaces["_default_"] = attributeValue;
+			}
+		}
+		else {
+			this.logInfo("Added attribute to tag '"+this.tagName+"'. "+attributeName+"="+attributeValue,2);
 
-		this["@"+attributeName] = attributeValue;
+			this["@"+attributeName] = attributeValue;
+		}
 	},
 
 	processXMLString: function _processXMLString(aString, aStartPos, aParent)
@@ -235,14 +253,23 @@ mivIxml2jxon.prototype = {
 							// We found a closing character.
 							// Disassemble the tag. And see if it is the same tag as our parent. If so return else Error.
 							var closingTag = aString.substr(tmpStartPos, tmpPos-tmpStartPos);
-							if ((aParent) && (closingTag == aParent.tagName)) {
+							var xmlnsPos = closingTag.indexOf(":");
+							if (xmlnsPos > -1) {
+								var nameSpace = closingTag.substr(0, xmlnsPos);
+								closingTag = closingTag.substr(xmlnsPos+1);
+							}
+							else {
+								var nameSpace = "_default_";
+							}
+
+							if ((aParent) && (closingTag == aParent.tagName) && (nameSpace == aParent.nameSpace)) {
 								this.logInfo("Found content:"+aString.substr(aStartPos, this.startPos-aStartPos),2);
-								this.logInfo("Found closing tag:"+closingTag,2);
+								this.logInfo("Found closing tag '"+closingTag+"' in namespace '"+nameSpace+"'",2);
 								aParent.messageLength = tmpPos - aParent.startPos + 1; 
 								return;
 							}
 							else {
-								this.logInfo("Found closing tag:"+closingTag+" but expected tag:"+aParent.tagName,2);
+								this.logInfo("Found closing tag '"+closingTag+"' in namespace '"+nameSpace+"' but expected tag '"+aParent.tagName+"' in namespace '"+aParent.nameSpace+"'",2);
 								throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG);
 							}
 						}
@@ -273,7 +300,16 @@ mivIxml2jxon.prototype = {
 								tmpStart++;
 							}
 
-							this.logInfo("Found opening tag:"+this.tagName,2);
+							var xmlnsPos = this.tagName.indexOf(":");
+							if (xmlnsPos > -1) {
+								this.nameSpace = this.tagName.substr(0, xmlnsPos);
+								this.tagName = this.tagName.substr(xmlnsPos+1);
+							}
+							else {
+								this.nameSpace = "_default_";
+							}
+
+							this.logInfo("Found opening tag '"+this.tagName+"' in xml namespace '"+this.nameSpace+"'",1);
 
 							var isClosed = false;
 							if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == "/")) {
