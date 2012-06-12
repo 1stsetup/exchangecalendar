@@ -187,13 +187,13 @@ mivIxml2jxon.prototype = {
 							// Disassemble the tag. And see if it is the same tag as our parent. If so return else Error.
 							var closingTag = aString.substr(tmpStartPos, tmpPos-tmpStartPos);
 							if ((aParent) && (closingTag == aParent.tagName)) {
-								this.logInfo("Found content:"+aString.substr(aStartPos, this.startPos-aStartPos));
-								this.logInfo("Found closing tag:"+closingTag);
+								this.logInfo("Found content:"+aString.substr(aStartPos, this.startPos-aStartPos),2);
+								this.logInfo("Found closing tag:"+closingTag,2);
 								aParent.messageLength = tmpPos - aParent.startPos + 1; 
 								return;
 							}
 							else {
-								this.logInfo("Found closing tag:"+closingTag+" but expected tag:"+aParent.tagName);
+								this.logInfo("Found closing tag:"+closingTag+" but expected tag:"+aParent.tagName,2);
 								throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG);
 							}
 						}
@@ -224,23 +224,65 @@ mivIxml2jxon.prototype = {
 								tmpStart++;
 							}
 
+							this.logInfo("Found opening tag:"+this.tagName,2);
+
 							var isClosed = false;
-							if (((tmpStart < strLength) && (aString.substr(tmpStart,1) != "/")) {
-								this.logInfo("Found close character '/' at end of opening tag."); 
+							if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == "/")) {
+								this.logInfo("a. Found close character '/' at end of opening tag.",2); 
 								isClosed = true;
 								this.messageLength = tmpStart - this.startPos + 2;
 							}
 							else {
-								if (((tmpStart < strLength) && (aString.substr(tmpStart,1) != " ")) {
-									this.logInfo("Found space character '/'. There are attributes."); 
-									// get attributes
+								if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == " ")) {
+									this.logInfo("Found space character ' '. There are attributes.",2); 
 
+									// get attributes &
 									// get namespaces
+									var attribute = "";
+									var attributes = [];
+									tmpStart++;
+									var quoteOpen = false;
+									var quoteChar = "";
+									while ((tmpStart < strLength) && 
+										(((aString.substr(tmpStart,1) != ">") && (aString.substr(tmpStart,1) != "/")) || (quoteOpen)) ) {
+										attribute = attribute + aString.substr(tmpStart,1);
+										if ((aString.substr(tmpStart,1) == '"') || (aString.substr(tmpStart,1) == "'")) {
+											if ((!quoteOpen) || ((quoteOpen) && (quoteChar == aString.substr(tmpStart,1)))) {
+												quoteOpen = !quoteOpen;
+												if (quoteOpen) {
+													this.logInfo("Found opening quote:"+tmpStart,2);
+													quoteChar = aString.substr(tmpStart,1);
+												}
+												else {
+													this.logInfo("Found closing quote:"+tmpStart,2);
+												}
+											}
+										}
+
+										tmpStart++;
+
+										if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == " ") && (!quoteOpen)) {
+											this.logInfo("a. Found attribute '"+attribute+"' for tag '"+this.tagName+"'",2);
+											attributes.push(attribute);
+											attribute = "";
+											tmpStart++;
+										}
+									}
+									if ((tmpStart < strLength) && ((aString.substr(tmpStart,1) == "/") || (aString.substr(tmpStart,1) == ">"))) {
+										this.logInfo("b. Found attribute '"+attribute+"' for tag '"+this.tagName+"'",2);
+										attributes.push(attribute);
+									}
+
+									if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == "/")) {
+										this.logInfo("b. Found close character '/' at end of opening tag.",2); 
+										isClosed = true;
+										this.messageLength = tmpStart - this.startPos + 2;
+									}
+
 								}
 						
 							}
 
-							this.logInfo("Found opening tag:"+this.tagName);
 							if (!isClosed) {
 								this.addToContent(new mivIxml2jxon(aString, tmpPos+1, this));
 							}
