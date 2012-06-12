@@ -504,6 +504,7 @@ calExchangeCalendar.prototype = {
 	{
 		//this.logInfo("set uri:"+aUri.path);
 		this.myId = aUri.path.substr(1);
+	        this.mUri = aUri;
 
 		this.mPrefs = Cc["@mozilla.org/preferences-service;1"]
 	                    .getService(Ci.nsIPrefService)
@@ -513,8 +514,6 @@ calExchangeCalendar.prototype = {
 			this.myId = null;
 		}
 
-	        this.mUri = aUri;
-
 		this.performStartup();
 
 	        return this.uri;
@@ -523,6 +522,11 @@ calExchangeCalendar.prototype = {
 	performStartup: function _performStartup()
 	{
 		this.logInfo("Performing startup.");
+
+		if (this.getProperty("disabled")) {
+			this.logInfo("This calendar is disabled so not doing the startup.");
+			return;
+		}
 
 		// Load from offline Cache into memory cache.
 		if (this.useOfflineCache) {
@@ -7496,6 +7500,7 @@ this.logInfo("getTaskItemsOK 4");
 
 			try {
 				this._ews_2010_timezonedefinitions = new XML(lines);
+
 			}
 			catch(exc) {this.logInfo("Could not convert timezone xml file into XML object:"+exc); };
 
