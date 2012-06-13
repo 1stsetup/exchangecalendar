@@ -42,5 +42,7 @@ interface mivIxml2jxon : nsISupports
 
 //  void addToContent(in jsval aValue);
   void processXMLString(in AUTF8String aString, in long aStartPos, in mivIxml2jxon aParent);
+  jsval XPath(in AUTF8String aString);
+  AUTF8String contentStr();
 
 };

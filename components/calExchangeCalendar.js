@@ -7511,6 +7511,10 @@ this.logInfo("getTaskItemsOK 4");
 					mivXML.processXMLString(lines, 0, null);
 				}
 				catch(exc) { this.logInfo("processXMLString error:"+exc.name+", "+exc.message);} 
+				try {
+					this.logInfo("[[[[[[[[[[[MajorVersion:"+mivXML.XPath("/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage/m:ResponseCode()")+"]]]]]]]]]]]]");
+				}
+				catch(exc) { this.logInfo("MajorVersion error:"+exc.name+", "+exc.message);} 
 
 			}
 			catch(exc) {this.logInfo("Could not convert timezone xml file into XML object:"+exc); };

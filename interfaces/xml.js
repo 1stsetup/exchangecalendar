@@ -38,7 +38,7 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 	this.messageLength = 0;
 	this.closed = false;
 
-	this.logInfo("mivIxml2jxon.init");
+	this.logInfo("mivIxml2jxon.init",2);
 
 	if (aXMLString) {
 		this.processXMLString(aXMLString, aStartPos, aParent);
@@ -50,6 +50,9 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 }
 
 var xml2jxonGUID = "d7165a60-7d64-42b2-ac48-6ccfc0962abb";
+
+const tagSeparator = ":";
+
 
 mivIxml2jxon.prototype = {
 
@@ -146,8 +149,11 @@ mivIxml2jxon.prototype = {
 
 	addToContent: function _addToContent(aValue)
 	{
-		this.itemCount++;
+		if (aValue == "NoError") {
+			this.logInfo("-- tagName:"+this.tagName+"placed value '"+aValue+"' into slot '"+this.itemCount+"'", 2);
+		}
 		this.content[this.itemCount] = aValue;
+		this.itemCount++;
 	},
 
 	trim: function _trim(aValue)
@@ -205,6 +211,129 @@ mivIxml2jxon.prototype = {
 
 			this["@"+attributeName] = attributeValue;
 		}
+	},
+
+	addChildTagObject: function _addChildTagObject(aTagName, aNameSpace, aObject)
+	{
+		if (!this[aNameSpace+tagSeparator+aTagName]) {
+			this.logInfo("First childTag: "+this.tagName+"."+aNameSpace+tagSeparator+aTagName+"="+aObject,2);
+			this[aNameSpace+tagSeparator+aTagName] = aObject;
+			this.isNotAnArray = true;
+		}
+		else {
+			if (this.isNotAnArray) {
+				var firstObject = this[aNameSpace+tagSeparator+aTagName];
+				this[aNameSpace+tagSeparator+aTagName] = new Array();
+				this[aNameSpace+tagSeparator+aTagName].push(firstObject);
+				this.isNotAnArray = false;
+			}
+			this.logInfo("childTag : "+this.tagName+"."+aNameSpace+tagSeparator+aTagName+"["+(this[aNameSpace+tagSeparator+aTagName].length+1)+"]",2);
+			this[aNameSpace+tagSeparator+aTagName].push(aObject);
+		}
+	},
+
+	addChildTag: function _addChildTag(aTagName, aNameSpace, aValue)
+	{
+		if (aNameSpace) {
+			var nameSpace = aNameSpace;
+		}
+		else {
+			var nameSpace = aParent.nameSpace;
+		}
+
+		var result = new mivIxml2jxon("<"+nameSpace+":"+aTagName+"/>", 0, this);
+		result.addToContent(aValue);
+		this.addToContent(result);
+		return result;
+	},
+
+	contentStr: function _contentStr()
+	{
+		if (this.content[0]) {
+			this.logInfo("We have content getting first record.", 2);
+			return this.content[0];
+		}
+		else {
+			this.logInfo("We have no content.tagName:"+this.tagName, 2);
+			return "";
+		}
+	},
+
+	XPath: function XPath(aPath)
+	{
+		var tmpPath = aPath;
+		var result = null;
+
+		if (tmpPath.substr(0, 1) == "/") {
+			tmpPath = tmpPath.substr(1);
+		}
+
+		try {
+			while (tmpPath.indexOf("/") > -1) {
+				this.logInfo("XPath:"+tmpPath, 2);
+				var pathPart = tmpPath.substr(0, tmpPath.indexOf("/"));
+				this.logInfo("--pathPart="+pathPart, 2);
+				if (!result) {
+					result = this[pathPart];
+				}
+				else {
+					result = result[pathPart];
+				}
+				tmpPath = tmpPath.substr(tmpPath.indexOf("/")+1);
+			}
+			this.logInfo("last XPath:"+tmpPath, 2);
+			if (tmpPath != "") {
+				if (tmpPath.indexOf("[") > -1) {
+					this.logInfo("Requested XPath contains an index or attribute request.", 2);
+					var pathPart = tmpPath.substr(0, tmpPath.indexOf("["));
+					var index = tmpPath.substr(tmpPath.indexOf("[")+1);
+					index = index.substr(0, index.length-1);
+				}
+
+				// Currently only the object, Array index [#], Attribute [@att] or content () are supported.
+				if ((!index) || ((index) && (isNaN(index)))) {
+
+					if (index) {
+						if (index.substr(0,1) == "@") {
+							this.logInfo("Requested XPath contains attribute request.", 2);
+							if (!result) {
+								result = this[pathPart][index];
+							}
+							else {
+								result = result[pathPart][index];
+							}
+						}
+					}
+					else {
+						if (tmpPath.indexOf("()") > -1) {
+							pathPart = tmpPath.substr(0, tmpPath.indexOf("()"));
+							this.logInfo("Requested XPath contains content request.", 2);
+							if (!result) {
+								result = this[pathPart].contentStr();
+							}
+							else {
+								result = result[pathPart].contentStr();
+							}
+						}
+					}
+				}
+				else {
+					this.logInfo("Requested XPath contains an index:"+Number(index), 2);
+					if (!result) {
+						result = this[pathPart][Number(index)];
+					}
+					else {
+						result = result[pathPart][Number(index)];
+					}
+				}
+			}
+		}
+		catch(exc) {
+			this.logInfo("XPath Error:"+exc);
+			result = null;
+		}
+
+		return result;
 	},
 
 	processXMLString: function _processXMLString(aString, aStartPos, aParent)
@@ -317,10 +446,14 @@ mivIxml2jxon.prototype = {
 							else {
 								this.nameSpace = "_default_";
 							}
+							this.logInfo("Found opening tag '"+this.tagName+"' in xml namespace '"+this.nameSpace+"'",2);
+							if (aParent) {
+								aParent.addChildTagObject(this.tagName, this.nameSpace, this);
+							}
+							else {
+								this.addChildTagObject(this.tagName, this.nameSpace, this);
+							}
 
-							this.logInfo("Found opening tag '"+this.tagName+"' in xml namespace '"+this.nameSpace+"'",1);
-
-//							var isClosed = false;
 							if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == "/")) {
 								this.logInfo("a. Found close character '/' at end of opening tag.",2); 
 								this.messageLength = tmpStart - this.startPos + 2;
@@ -377,13 +510,11 @@ mivIxml2jxon.prototype = {
 										this.logInfo("b. Found close character '/' at end of opening tag.",2); 
 										this.messageLength = tmpStart - this.startPos + 2;
 										this.lastPos = tmpStart+1;
-										//this.closed = true;
 										return;
 									}
 									else {
 										if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == ">")) {
 											// Found opening tag with attributes.
-											//this.messageLength = tmpStart - this.startPos + 1;
 										}
 										else {
 											// Found opening tag but is not closed and we reached end of string.
@@ -395,7 +526,6 @@ mivIxml2jxon.prototype = {
 								else {
 									if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == ">")) {
 										// Found opening tag without attributes and not a closing character '/'
-										//this.messageLength = tmpStart - this.startPos + 1;
 									}
 									else {
 										// Found opening tag but is not closed and we reached end of string.
@@ -405,22 +535,18 @@ mivIxml2jxon.prototype = {
 						
 							}
 
-//							if (!isClosed) {
 
 							var tmpChild = null;
 							while ((!tmpChild) || (!tmpChild.closed)) {
-								this.logInfo("Going to proces content of tag '"+this.tagName+"'.startPos:"+this.startPos+", messageLength:"+this.messageLength);
+								this.logInfo("Going to proces content of tag '"+this.tagName+"'.startPos:"+this.startPos+", messageLength:"+this.messageLength, 2);
 								tmpChild = new mivIxml2jxon(aString, tmpPos+1, this);
 								this.addToContent(tmpChild);
 								this.messageLength = tmpChild.lastPos - this.startPos + 1;
 								tmpPos = tmpChild.lastPos;
-								this.logInfo("finished processing content of tag '"+this.tagName+"'.startPos:"+this.startPos+", messageLength:"+this.messageLength+",tmpChild.lastpos:"+tmpChild.lastPos);
+								this.logInfo("finished processing content of tag '"+this.tagName+"'.startPos:"+this.startPos+", messageLength:"+this.messageLength+",tmpChild.lastpos:"+tmpChild.lastPos, 2);
 							}
 							this.lastPos = tmpPos;
-//							}
 
-							// When this one returns this.messageLength should be set and specifies where we should continue.
-							//this.processXMLString(aString, tmpChild.lastPos+1, aParent)
 							
 						}
 						else {
