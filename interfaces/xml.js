@@ -35,6 +35,8 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 
 	this.content = {};
 	this.itemCount = 0;
+	this.messageLength = 0;
+	this.closed = false;
 
 	this.logInfo("mivIxml2jxon.init");
 
@@ -214,6 +216,11 @@ mivIxml2jxon.prototype = {
 		if (pos > -1) {
 			// Found opening character for Tag.
 			this.startPos = pos;
+			this.skipped = pos - aStartPos;
+			if ((this.skipped > 0) && (aParent)) {
+				this.logInfo("Added content '"+aString.substr(aStartPos, this.skipped)+"' to tag '"+aParent.tagName+"'.", 2);
+				aParent.addToContent(aString.substr(aStartPos, this.skipped));
+			}
 
 			pos++;
 			// check if next character is special character "?"
@@ -232,6 +239,8 @@ mivIxml2jxon.prototype = {
 						this.isXMLHeader = true;
 						this.XMLHeader = aString.substr(this.startPos, tmpPos-this.startPos+1);
 						this.addToContent(new mivIxml2jxon(aString, tmpPos+2, this));
+						this.messageLength = tmpPos - this.startPos + 3;
+						this.closed = true; 
 						return;						
 					}
 				}
@@ -263,9 +272,9 @@ mivIxml2jxon.prototype = {
 							}
 
 							if ((aParent) && (closingTag == aParent.tagName) && (nameSpace == aParent.nameSpace)) {
-								this.logInfo("Found content:"+aString.substr(aStartPos, this.startPos-aStartPos),2);
 								this.logInfo("Found closing tag '"+closingTag+"' in namespace '"+nameSpace+"'",2);
-								aParent.messageLength = tmpPos - aParent.startPos + 1; 
+								this.lastPos = tmpPos;
+								this.closed = true;
 								return;
 							}
 							else {
@@ -311,11 +320,13 @@ mivIxml2jxon.prototype = {
 
 							this.logInfo("Found opening tag '"+this.tagName+"' in xml namespace '"+this.nameSpace+"'",1);
 
-							var isClosed = false;
+//							var isClosed = false;
 							if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == "/")) {
 								this.logInfo("a. Found close character '/' at end of opening tag.",2); 
-								isClosed = true;
 								this.messageLength = tmpStart - this.startPos + 2;
+								this.lastPos = tmpStart+1;
+								this.closed = true;
+								return;
 							}
 							else {
 								if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == " ")) {
@@ -354,6 +365,7 @@ mivIxml2jxon.prototype = {
 											tmpStart++;
 										}
 									}
+
 									if ((tmpStart < strLength) && ((aString.substr(tmpStart,1) == "/") || (aString.substr(tmpStart,1) == ">"))) {
 										this.logInfo("b. Found attribute '"+attribute+"' for tag '"+this.tagName+"'",2);
 										attributes.push(attribute);
@@ -361,21 +373,54 @@ mivIxml2jxon.prototype = {
 									}
 
 									if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == "/")) {
+										// Found opening tag with attributes which is also closed.
 										this.logInfo("b. Found close character '/' at end of opening tag.",2); 
-										isClosed = true;
 										this.messageLength = tmpStart - this.startPos + 2;
+										this.lastPos = tmpStart+1;
+										//this.closed = true;
+										return;
+									}
+									else {
+										if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == ">")) {
+											// Found opening tag with attributes.
+											//this.messageLength = tmpStart - this.startPos + 1;
+										}
+										else {
+											// Found opening tag but is not closed and we reached end of string.
+											throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG);
+										}
 									}
 
+								}
+								else {
+									if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == ">")) {
+										// Found opening tag without attributes and not a closing character '/'
+										//this.messageLength = tmpStart - this.startPos + 1;
+									}
+									else {
+										// Found opening tag but is not closed and we reached end of string.
+										throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG);
+									}
 								}
 						
 							}
 
-							if (!isClosed) {
-								this.addToContent(new mivIxml2jxon(aString, tmpPos+1, this));
+//							if (!isClosed) {
+
+							var tmpChild = null;
+							while ((!tmpChild) || (!tmpChild.closed)) {
+								this.logInfo("Going to proces content of tag '"+this.tagName+"'.startPos:"+this.startPos+", messageLength:"+this.messageLength);
+								tmpChild = new mivIxml2jxon(aString, tmpPos+1, this);
+								this.addToContent(tmpChild);
+								this.messageLength = tmpChild.lastPos - this.startPos + 1;
+								tmpPos = tmpChild.lastPos;
+								this.logInfo("finished processing content of tag '"+this.tagName+"'.startPos:"+this.startPos+", messageLength:"+this.messageLength+",tmpChild.lastpos:"+tmpChild.lastPos);
 							}
+							this.lastPos = tmpPos;
+//							}
 
 							// When this one returns this.messageLength should be set and specifies where we should continue.
-							this.processXMLString(aString, this.startPos + this.messageLength, aParent)
+							//this.processXMLString(aString, tmpChild.lastPos+1, aParent)
 							
 						}
 						else {
@@ -394,7 +439,9 @@ mivIxml2jxon.prototype = {
 			// We stop here.
 			if (aParent) {
 				aParent.addToContent(aString);
+				aParent.messageLength = aParent.messageLength+aString.length; 
 			}
+			this.lastPos = aString.length - 1;
 			return;
 		}
 	},
