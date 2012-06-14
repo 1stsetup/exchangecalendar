@@ -514,7 +514,14 @@ calExchangeCalendar.prototype = {
 			this.myId = null;
 		}
 
-		this.performStartup();
+		if (this.name) {
+			this.newCalendar = false;
+			this.performStartup();
+		}
+		else {
+			this.logInfo("We are not going to perform a startup because we do not have a name yet and the calendar is probably still created.");
+			this.newCalendar = true;
+		}
 
 	        return this.uri;
 	},
@@ -1952,7 +1959,7 @@ this.logInfo("singleModified doNotify");
 	getItems: function _getItems(aItemFilter, aCount,
                                     aRangeStart, aRangeEnd, aListener) 
 	{
-		this.logInfo("getItems 1:");
+		this.logInfo("getItems 1: aCount:"+aCount);
 
 		if (aRangeStart)  { 
 			this.logInfo("getItems 2: aRangeStart:"+aRangeStart.toString()); 
@@ -1965,6 +1972,73 @@ this.logInfo("singleModified doNotify");
 		}
 		else { 
 			this.logInfo("getItems 3: aRangeEnd:null");
+		}
+
+		var wantEvents = ((aItemFilter & Ci.calICalendar
+			.ITEM_FILTER_TYPE_EVENT) != 0);
+
+		var wantTodos = ((aItemFilter & Ci.calICalendar
+			.ITEM_FILTER_TYPE_TODO) != 0);
+
+		if (wantEvents) this.logInfo("Events are requested by calendar.");
+		if (wantTodos) this.logInfo("Tasks are requested by calendar.");
+
+		if (this.newCalendar) {
+			this.logInfo("We are still creating this calendar. Ignore getItems for now.");
+			if (aRangeStart) {
+				if (wantEvents) {
+					if (this.newCalRangeStartEvents) {
+						if (aRangeStart.compare(this.newCalRangeStartEvents) < 0) {
+							this.newCalRangeStartEvents = aRangeStart.clone();
+						}
+					}
+					else {
+						this.newCalRangeStartEvents = aRangeStart.clone();
+					}
+				}
+				if (wantTodos) {
+					if (this.newCalRangeStartTodos) {
+						if (aRangeStart.compare(this.newCalRangeStartTodos) < 0) {
+							this.newCalRangeStartTodos = aRangeStart.clone();
+						}
+					}
+					else {
+						this.newCalRangeStartTodos = aRangeStart.clone();
+					}
+				}
+			}
+		
+			if (aRangeEnd) {
+				if (wantEvents) {
+					if (this.newCalRangeEndEvents) {
+						if (aRangeEnd.compare(this.newCalRangeEndEvents) > 0) {
+							this.newCalRangeEndEvents = aRangeEnd.clone();
+						}
+					}
+					else {
+						this.newCalRangeEndEvents = aRangeEnd.clone();
+					}
+				}
+				if (wantTodos) {
+					if (this.newCalRangeEndTodos) {
+						if (aRangeEnd.compare(this.newCalRangeEndTodos) > 0) {
+							this.newCalRangeEndTodos = aRangeEnd.clone();
+						}
+					}
+					else {
+						this.newCalRangeEndTodos = aRangeEnd.clone();
+					}
+				}
+			}
+		
+			if (aListener) {
+				this.notifyOperationComplete(aListener,
+				      Cr.NS_OK,
+				      Ci.calIOperationListener.GET,
+				      null,
+				      null);
+			}
+			return;
 		}
 
 		if (!this.isInitialized) {
@@ -2009,12 +2083,6 @@ this.logInfo("singleModified doNotify");
 			this.exporting = true;
 		}
 
-		var wantEvents = ((aItemFilter & Ci.calICalendar
-			.ITEM_FILTER_TYPE_EVENT) != 0);
-
-		var wantTodos = ((aItemFilter & Ci.calICalendar
-			.ITEM_FILTER_TYPE_TODO) != 0);
-
 		var asOccurrences = ((aItemFilter & Ci.calICalendar
 			.ITEM_FILTER_CLASS_OCCURRENCES) != 0);
 
@@ -2029,8 +2097,6 @@ this.logInfo("singleModified doNotify");
 			return;
 		}
 
-		if (wantEvents) this.logInfo("Events are requested by calendar.");
-		if (wantTodos) this.logInfo("Tasks are requested by calendar.");
 		if (wantInvitations) this.logInfo("Invitations are requested by calendar.");
 
 		if ((!this.supportsEvents) && (!this.supportsTasks)) {
@@ -2057,11 +2123,21 @@ this.logInfo("singleModified doNotify");
 		if (tasksRequestedAndPossible) this.logInfo("Tasks are requested and this is possible for this folder");
 
 		if (!aRangeStart) {
-			aRangeStart = cal.createDateTime(cal.fromRFC3339("1900-01-01T00:00:00Z"));
+			if (this.startDate) {
+				aRangeStart = this.startDate.clone();
+			}
+			else {
+				aRangeStart = cal.fromRFC3339("1900-01-01T00:00:00Z");
+			}
 		}
 
 		if (!aRangeEnd) {
-			aRangeEnd = cal.createDateTime(cal.fromRFC3339("3500-01-01T00:00:00Z"));
+			if (this.endDate) {
+				aRangeEnd = this.endDate.clone();
+			}
+			else {
+				aRangeEnd = cal.fromRFC3339("3500-01-01T00:00:00Z");
+			}
 		} 
 
 		var dateChanged = false;
@@ -2100,12 +2176,12 @@ this.logInfo("singleModified doNotify");
 			}
 		}
 
-		if (!dateChanged) {
 
 			if (aRangeStart)  { this.logInfo("getItems 5a: aRangeStart:"+aRangeStart.toString()); }
 			if (aRangeEnd) { this.logInfo("getItems 5b: aRangeEnd:"+aRangeEnd.toString()); }
 
 			this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
+		if (!dateChanged) {
 			return;
 		}
 
@@ -2126,7 +2202,7 @@ this.logInfo("singleModified doNotify");
 			this.logInfo("Requesting events from exchange server.");
 			if ((startChanged) || (endChanged)) {
 
-				this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
+//				this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
 
 				if (startChanged) {
 					this.logInfo("Startdate has changed to an earlier date. Requesting difference.");
@@ -5458,6 +5534,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	addToQueue: function _addToQueue(aRequest, aArgument, aCbOk, aCbError, aListener, aQueueNumber)
 	{
 		if (this.getProperty("disabled")) {
+			this.logInfo("Not adding to queue because we are disabled.");
 			return;
 		}
 
@@ -7424,6 +7501,16 @@ this.logInfo("getTaskItemsOK 4");
 		this.prefs.setCharPref("folderProperties", this.folderProperties.toString());
 
 		this.setFolderProperties(this.folderProperties, aFolderClass);
+
+		if (this.newCalendar) {
+			this.newCalendar = false;
+			if (this.supportsEvents) {
+				this.getItems(Ci.calICalendar.ITEM_FILTER_TYPE_EVENT, 0, this.newCalRangeStartEvents, this.newCalRangeEndEvents, null);
+			}
+			if (this.supportsTasks) {
+				this.getItems(Ci.calICalendar.ITEM_FILTER_TYPE_TODO, 0, this.newCalRangeStartTodos, this.newCalRangeEndTodos, null);
+			}
+		}
 	},
 
 	checkFolderPathError: function _checkFolderPathError(erFindFolderRequest, aCode, aMsg)
@@ -8584,7 +8671,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	getItemsFromOfflineCache: function _getItemsFromOfflineCache(aStartDate, aEndDate)
 	{
-		this.logInfo("getItemsFromOfflineCache");
+		this.logInfo("getItemsFromOfflineCache startDate:"+aStartDate+", endDate:"+aEndDate);
 
 		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
