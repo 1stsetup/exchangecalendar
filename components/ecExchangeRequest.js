@@ -99,7 +99,7 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.prePassword = "";
 
-	this.kerberos = false;
+	this.kerberos = true;
 
 	this.prefB = Cc["@mozilla.org/preferences-service;1"]
 			.getService(Ci.nsIPrefBranch);
@@ -581,9 +581,9 @@ ExchangeRequest.prototype = {
 		return this._notificationCallbacks.getPrePassword(aUser, tmpURL);
 	},
 
-	retryForKerberos: function _retryForKerberos()
+	retryForBasicAuth: function _retryForBasicAuth()
 	{
-		this.logInfo("exchangeRequest.retryForKerberos: We will try Kerberos Authentication.");
+		this.logInfo("exchangeRequest.retryForBasicAuth: We will try Basic Auth Authentication.");
 		this.kerberos = true;
 
                 let xmlReq = this.mXmlReq;
@@ -643,7 +643,7 @@ ExchangeRequest.prototype = {
 				}
 
 			/*	if ((xmlReq.status == 401) && (!this.kerberos)) {
-					this.retryForKerberos();
+					this.retryForBasicAuth();
 					return true;
 				}*/
 
