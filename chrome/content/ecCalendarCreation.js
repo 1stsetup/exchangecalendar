@@ -150,32 +150,6 @@ exchWebService.calendarCreation = {
 
 	saveSettings: function _saveSettings()
 	{
-/*		this.createPrefs.setBoolPref("autodiscover", exchWebServicesgAutoDiscover);
-		this.createPrefs.setCharPref("server", exchWebServicesgServer);
-		this.createPrefs.setCharPref("mailbox", exchWebServicesgMailbox);
-		this.createPrefs.setCharPref("displayname", exchWebServicesgDisplayName);
-		this.createPrefs.setCharPref("user", exchWebServicesgUser);
-		this.createPrefs.setCharPref("domain", exchWebServicesgDomain);
-		this.createPrefs.setCharPref("folderbase", exchWebServicesgFolderBase);
-		this.createPrefs.setCharPref("folderpath", exchWebServicesgFolderPath);
-		this.createPrefs.setBoolPref("useOfflineCache", document.getElementById("exchange-cache").checked);
-	
-		if (exchWebServicesgFolderID != "") {
-			this.createPrefs.setCharPref("folderID", exchWebServicesgFolderID);
-		}
-		if (exchWebServicesgChangeKey != "") {
-			this.createPrefs.setCharPref("changeKey", exchWebServicesgChangeKey);
-		}
-
-		if (exchWebServicesgFolderIdOfShare != "") {
-			this.createPrefs.setCharPref("folderIDOfShare", exchWebServicesgFolderIdOfShare);
-		}
-	
-		Cc["@mozilla.org/preferences-service;1"]
-	                    .getService(Ci.nsIPrefService).savePrefFile(null);
-
-		doCreateCalendar();*/
-// New style..
 		exchWebService.commonFunctions.LOG("saveSettings Going to create the calendar in prefs.js");
 
 		// Calculate the new calendar.id
@@ -214,7 +188,18 @@ exchWebService.calendarCreation = {
 			newCal.setProperty("suppressAlarms", true);
 		}
 
-		newCal.setProperty("imip.identity.key", "none"); // Need to get this fixed to the real one.
+
+		var selItem = document.getElementById("email-identity-menulist").selectedItem;
+		if (selItem) {
+			var identity = selItem.getAttribute("value");
+		}
+		else {
+			var identity = "";
+		}
+
+		newCal.setProperty("imip.identity.key", identity); 
+
+
 		newCal.setProperty("cache.enabled", false);
 
 		Cc["@mozilla.org/preferences-service;1"]
