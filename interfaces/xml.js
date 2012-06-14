@@ -591,7 +591,9 @@ mivIxml2jxon.prototype = {
 							while ((!tmpChild) || (!tmpChild.closed)) {
 								this.logInfo("Going to proces content of tag '"+this.tagName+"'.startPos:"+this.startPos+", messageLength:"+this.messageLength, 2);
 								tmpChild = new mivIxml2jxon(aString, tmpPos+1, this);
-								this.addToContent(tmpChild);
+								if (tmpChild.tagName) {
+									this.addToContent(tmpChild);
+								}
 								this.messageLength = tmpChild.lastPos - this.startPos + 1;
 								tmpPos = tmpChild.lastPos;
 								this.logInfo("finished processing content of tag '"+this.tagName+"'.startPos:"+this.startPos+", messageLength:"+this.messageLength+",tmpChild.lastpos:"+tmpChild.lastPos, 2);
