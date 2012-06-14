@@ -45,4 +45,7 @@ interface mivIxml2jxon : nsISupports
   jsval XPath(in AUTF8String aString);
   AUTF8String contentStr();
 
+  AUTF8String toString();
+
+
 };

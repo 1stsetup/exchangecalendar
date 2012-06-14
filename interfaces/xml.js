@@ -149,9 +149,6 @@ mivIxml2jxon.prototype = {
 
 	addToContent: function _addToContent(aValue)
 	{
-		if (aValue == "NoError") {
-			this.logInfo("-- tagName:"+this.tagName+"placed value '"+aValue+"' into slot '"+this.itemCount+"'", 2);
-		}
 		this.content[this.itemCount] = aValue;
 		this.itemCount++;
 	},
@@ -216,7 +213,7 @@ mivIxml2jxon.prototype = {
 	addChildTagObject: function _addChildTagObject(aTagName, aNameSpace, aObject)
 	{
 		if (!this[aNameSpace+tagSeparator+aTagName]) {
-			this.logInfo("First childTag: "+this.tagName+"."+aNameSpace+tagSeparator+aTagName+"="+aObject,2);
+//			this.logInfo("First childTag: "+this.tagName+"."+aNameSpace+tagSeparator+aTagName+"="+aObject,2);
 			this[aNameSpace+tagSeparator+aTagName] = aObject;
 			this.isNotAnArray = true;
 		}
@@ -257,6 +254,11 @@ mivIxml2jxon.prototype = {
 			this.logInfo("We have no content.tagName:"+this.tagName, 2);
 			return "";
 		}
+	},
+
+	toString: function _toString()
+	{
+		exchWebService.commonFunctions.LOG("[xml2jxon] toString ("+exchWebService.commonFunctions.STACK()+")");
 	},
 
 	XPath: function XPath(aPath)
