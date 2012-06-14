@@ -7599,9 +7599,10 @@ this.logInfo("getTaskItemsOK 4");
 				}
 				catch(exc) { this.logInfo("processXMLString error:"+exc.name+", "+exc.message);} 
 				try {
-					this.logInfo("[[[[[[[[[[[MajorVersion:"+mivXML.XPath("/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage/m:ResponseCode()")+"]]]]]]]]]]]]");
+//					this.logInfo("[[[[[[[[[[[Header:"+mivXML.XPath("/s:Header").toString()+"]]]]]]]]]]]]");
+					this.logInfo("[[[[[[[[[[[Header:"+mivXML.XPath("/s:Envelope").toString()+"]]]]]]]]]]]]");
 				}
-				catch(exc) { this.logInfo("MajorVersion error:"+exc.name+", "+exc.message);} 
+				catch(exc) { this.logInfo("Header error:"+exc.name+", "+exc.message);} 
 
 			}
 			catch(exc) {this.logInfo("Could not convert timezone xml file into XML object:"+exc); };

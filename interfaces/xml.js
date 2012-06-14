@@ -256,9 +256,49 @@ mivIxml2jxon.prototype = {
 		}
 	},
 
+	attributesToString: function _attributesToString()
+	{
+		var result = "";
+		for (var index in this) {
+			if (index.substr(0,1) == "@") {
+				result += " "+index.substr(1) + '="'+this[index]+'"';
+			}
+		}
+		return result;
+	},
+
 	toString: function _toString()
 	{
-		exchWebService.commonFunctions.LOG("[xml2jxon] toString ("+exchWebService.commonFunctions.STACK()+")");
+		this.logInfo(this.tagName+":toString", 2);
+		var result = "";
+		var contentCount = 0;
+		for (var index in this.content) {
+			contentCount++;
+			if ((this.content[index] instanceof Ci.mivIxml2jxon) || (this.content[index] instanceof mivIxml2jxon)) {
+				this.logInfo(this.tagName+":Found object at content index '"+index+"'.", 2);
+				result += this.content[index].toString();
+			}
+			else {
+				if (this.content[index] instanceof String) {
+					this.logInfo(this.tagName+":Found string at content index '"+index+"'.", 2);
+					result += this.content[index];
+				}
+				else {
+					this.logInfo(this.tagName+":Found UNKNOWN at content index '"+index+"'.", 2);
+				}
+			}
+		}
+
+		var attributes = this.attributesToString();
+
+		if (contentCount == 0) {
+			result = "<"+this.tagName+attributes+"/>";
+		}
+		else {
+			result = "<"+this.tagName+attributes+">" + result + "</"+this.tagName+">";
+		}
+
+		return result;
 	},
 
 	XPath: function XPath(aPath)
@@ -272,7 +312,7 @@ mivIxml2jxon.prototype = {
 
 		try {
 			while (tmpPath.indexOf("/") > -1) {
-				this.logInfo("XPath:"+tmpPath, 2);
+				this.logInfo("XPath:"+tmpPath, 1);
 				var pathPart = tmpPath.substr(0, tmpPath.indexOf("/"));
 				this.logInfo("--pathPart="+pathPart, 2);
 				if (!result) {
@@ -283,7 +323,7 @@ mivIxml2jxon.prototype = {
 				}
 				tmpPath = tmpPath.substr(tmpPath.indexOf("/")+1);
 			}
-			this.logInfo("last XPath:"+tmpPath, 2);
+			this.logInfo("last XPath:"+tmpPath, 1);
 			if (tmpPath != "") {
 				if (tmpPath.indexOf("[") > -1) {
 					this.logInfo("Requested XPath contains an index or attribute request.", 2);
@@ -315,6 +355,15 @@ mivIxml2jxon.prototype = {
 							}
 							else {
 								result = result[pathPart].contentStr();
+							}
+						}
+						else {
+							this.logInfo("Requested XPath contains object request.", 1);
+							if (!result) {
+								result = this[tmpPath];
+							}
+							else {
+								result = result[tmpPath];
 							}
 						}
 					}
@@ -350,7 +399,7 @@ mivIxml2jxon.prototype = {
 			this.skipped = pos - aStartPos;
 			if ((this.skipped > 0) && (aParent)) {
 				this.logInfo("Added content '"+aString.substr(aStartPos, this.skipped)+"' to tag '"+aParent.tagName+"'.", 2);
-				aParent.addToContent(aString.substr(aStartPos, this.skipped));
+				aParent.addToContent(new String(aString.substr(aStartPos, this.skipped)));
 			}
 
 			pos++;
@@ -566,7 +615,7 @@ mivIxml2jxon.prototype = {
 			// Did not find opening character for Tag.
 			// We stop here.
 			if (aParent) {
-				aParent.addToContent(aString);
+				aParent.addToContent(new String(aString));
 				aParent.messageLength = aParent.messageLength+aString.length; 
 			}
 			this.lastPos = aString.length - 1;
@@ -616,7 +665,8 @@ mivIxml2jxon.prototype = {
 		}
 
 		var prefB = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
-		var storedDebugLevel = exchWebService.commonFunctions.safeGetIntPref(prefB, "extensions.1st-setup.xml2jxon", 0, true);
+		var storedDebugLevel = exchWebService.commonFunctions.safeGetIntPref(prefB, "extensions.1st-setup.xml2jxon", 1, true);
+		var storedDebugLevel = 1;
 
 		if (debugLevel <= storedDebugLevel) {
 			exchWebService.commonFunctions.LOG("[xml2jxon] "+message + " ("+exchWebService.commonFunctions.STACKshort()+")");
