@@ -1,4 +1,10 @@
 Version 2.1.1:
+- Fixed: Bug 52 - Incorrect sync: random calendar events missing, others duplicated
+
+Version 2.1.2:
+-Fixed: Bug 118 - Kerberos authentication broken in 1.8.11
+
+Version 2.1.1:
 - Fixed: Bug 151 - Email id property of exchange calendar becomes None on updating thunderbird to 13.0
 - Fixed: Bug 153 - "allday" event -> invite someone -> password request -> communication stopped
 - Improved: Disabled calendars are not started on TB startup.

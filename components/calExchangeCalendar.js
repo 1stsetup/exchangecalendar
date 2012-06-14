@@ -6799,7 +6799,7 @@ this.logInfo("getTaskItemsOK 4");
 						this.logInfo("We have a master and it was set as new. So we download it's children.title:"+item.title);
 						delete this.newMasters[aCalendarItem.nsTypes::UID.toString()];
 
-						if (!doNotify) {
+						if (doNotify) {
 							var self = this;
 							// Request children from EWS server.
 							var childRequestItem = {Id: aCalendarItem.nsTypes::ItemId.@Id.toString(),
