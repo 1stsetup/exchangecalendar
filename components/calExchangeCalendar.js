@@ -2554,6 +2554,11 @@ this.logInfo("singleModified doNotify");
 			return;
 		}
 
+		var tmpStartDate = aRangeStart.clone();
+		tmpStartDate.isDate = false;
+		var tmpEndDate = aRangeEnd.clone();
+		tmpEndDate.isDate = false;
+
 		var self = this;
 		this.addToQueue( erGetUserAvailabilityRequest, 
 			{user: this.user, 
@@ -2562,8 +2567,8 @@ this.logInfo("singleModified doNotify");
 			 serverUrl: this.serverUrl,
 			 email: aCalId.replace(/^MAILTO:/, ""),
 			 attendeeType: 'Required',
-			 start: cal.toRFC3339(aRangeStart.getInTimezone(exchWebService.commonFunctions.ecUTC())),
-			 end: cal.toRFC3339(aRangeEnd.getInTimezone(exchWebService.commonFunctions.ecUTC())),
+			 start: cal.toRFC3339(tmpStartDate.getInTimezone(exchWebService.commonFunctions.ecUTC())),
+			 end: cal.toRFC3339(tmpEndDate.getInTimezone(exchWebService.commonFunctions.ecUTC())),
 			 calId: aCalId,
 			 folderID: this.folderID,
 			 changeKey: this.changeKey }, 
