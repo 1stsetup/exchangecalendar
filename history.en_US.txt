@@ -1,3 +1,9 @@
+Version 2.1.1:
+- Fixed: Bug 151 - Email id property of exchange calendar becomes None on updating thunderbird to 13.0
+- Fixed: Bug 153 - "allday" event -> invite someone -> password request -> communication stopped
+- Improved: Disabled calendars are not started on TB startup.
+- Fixed: The way a calendar startup after is has been created newly.
+
 Version 2.1.0:
 - Fixed filtering of events
 - Fixed saving of the EWS settings.
