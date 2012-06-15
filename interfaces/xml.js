@@ -121,26 +121,32 @@ mivIxml2jxon.prototype = {
 	{
 		switch (aErrorID) {
 			case Ci.mivIxml2jxon.ERR_MISSING_SPECIAL_TAG: 
+				this.logInfo(this.tagName+":Error:ERR_MISSING_SPECIAL_TAG. ("+exchWebService.commonFunctions.STACKshort()+")");
 				return { name: "ERR_MISSING_SPECIAL_TAG",
 					 message: "A special tag like '?' is missing",
 				         code: aErrorID};
 			case Ci.mivIxml2jxon.ERR_INVALID_TAG: 
-				return { name: "ERR_INVALID_TAG",
+				this.logInfo(this.tagName+":Error:ERR_INVALID_SPECIAL_TAG. ("+exchWebService.commonFunctions.STACKshort()+")");
+				return { name: "ERR_INVALID_SPECIAL_TAG",
 					 message: "Tag is invalid",
 				         code: aErrorID};
 			case Ci.mivIxml2jxon.ERR_INVALID_SPECIAL_TAG: 
+				this.logInfo(this.tagName+":Error:ERR_INVALID_SPECIAL_TAG. ("+exchWebService.commonFunctions.STACKshort()+")");
 				return { name: "ERR_INVALID_SPECIAL_TAG",
 					 message: "Special Tag is invalid",
 				         code: aErrorID};
 			case Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG: 
+				this.logInfo(this.tagName+":Error:ERR_WRONG_CLOSING_TAG. ("+exchWebService.commonFunctions.STACKshort()+")");
 				return { name: "ERR_WRONG_CLOSING_TAG",
 					 message: "Found wrong closing tag. Expected another.",
 				         code: aErrorID};
 			case Ci.mivIxml2jxon.ERR_WRONG_ATTRIBUTE_SEPARATOR: 
+				this.logInfo(this.tagName+":Error:ERR_WRONG_ATTRIBUTE_SEPARATOR. ("+exchWebService.commonFunctions.STACKshort()+")");
 				return { name: "ERR_WRONG_ATTRIBUTE_SEPARATOR",
 					 message: "Found wrong attribute separator. Expected '=' character.",
 				         code: aErrorID};
 			case Ci.mivIxml2jxon.ERR_ATTRIBUTE_VALUE_QUOTES: 
+				this.logInfo(this.tagName+":Error:ERR_ATTRIBUTE_VALUE_QUOTES. ("+exchWebService.commonFunctions.STACKshort()+")");
 				return { name: "ERR_ATTRIBUTE_VALUE_QUOTES",
 					 message: "Found error in attribute value quotes.",
 				         code: aErrorID};
@@ -235,12 +241,39 @@ mivIxml2jxon.prototype = {
 			var nameSpace = aNameSpace;
 		}
 		else {
-			var nameSpace = aParent.nameSpace;
+			if (aParent.nameSpace) {
+				var nameSpace = aParent.nameSpace;
+			}
+			else {
+				var nameSpace = "_default_";
+			}
 		}
 
 		var result = new mivIxml2jxon("<"+nameSpace+":"+aTagName+"/>", 0, this);
 		result.addToContent(aValue);
 		this.addToContent(result);
+		return result;
+	},
+
+	addSibblingTag: function _addChildTag(aTagName, aNameSpace, aValue)
+	{
+		if (!aParent) return null;
+
+		if (aNameSpace) {
+			var nameSpace = aNameSpace;
+		}
+		else {
+			if (aParent.nameSpace) {
+				var nameSpace = aParent.nameSpace;
+			}
+			else {
+				var nameSpace = "_default_";
+			}
+		}
+
+		var result = new mivIxml2jxon("<"+nameSpace+":"+aTagName+"/>", 0, this);
+		result.addToContent(aValue);
+		aParent.addToContent(result);
 		return result;
 	},
 
@@ -458,7 +491,7 @@ mivIxml2jxon.prototype = {
 								return;
 							}
 							else {
-								this.logInfo("Found closing tag '"+closingTag+"' in namespace '"+nameSpace+"' but expected tag '"+aParent.tagName+"' in namespace '"+aParent.nameSpace+"'",2);
+								this.logInfo("Found closing tag '"+closingTag+"' in namespace '"+nameSpace+"' but expected tag '"+aParent.tagName+"' in namespace '"+aParent.nameSpace+"'",1);
 								throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG);
 							}
 						}

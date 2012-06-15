@@ -459,6 +459,19 @@ ExchangeRequest.prototype = {
 
 		xml = xml.replace(/&#x10;/g, ""); // BUG 61 remove hexadecimal code 0x10. It will fail in xml conversion.
 
+		// START VERY EXPERIMENTAL
+/*		try {
+		    var newXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
+				       .createInstance(Ci.mivIxml2jxon);
+		}
+		catch(exc) { this.logInfo("createInstance error:"+exc);}
+
+		try {
+			newXML.processXMLString(xml, 0, null);
+		}
+		catch(exc) { this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
+		// END VERY EXPERIMENTAL */
+
 		try {
 			xml = new XML(xml);
 		}
