@@ -820,47 +820,59 @@ ecnsIAuthPrompt2.prototype = {
 
 	getInterface: function(iid)
 	{
-		if (iid.equals(Ci.nsIAuthPrompt2)) {    // id == 651395eb-8612-4876-8ac0-a88d4dce9e1e
+		if ((Ci.nsIAuthPrompt2) && (iid.equals(Ci.nsIAuthPrompt2))) {    // id == 651395eb-8612-4876-8ac0-a88d4dce9e1e
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIAuthPrompt2");
 			return this;
 		} 
 
-		if (iid.equals(Ci.nsIBadCertListener2)) {
+		if ((Ci.nsIBadCertListener2) && (iid.equals(Ci.nsIBadCertListener2))) {
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIBadCertListener2");
 			if (!this.exchangeRequest.badCert) {
 	        		return this;
 			}
 		} 
 
-		if (iid.equals(Ci.nsIProgressEventSink)) {   // iid == d974c99e-4148-4df9-8d98-de834a2f6462
+		if ((Ci.nsIProgressEventSink) && (iid.equals(Ci.nsIProgressEventSink))) {   // iid == d974c99e-4148-4df9-8d98-de834a2f6462
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIProgressEventSink");
         		return this;
 		} 
 
-		if (iid.equals(Ci.nsISecureBrowserUI)) {   // iid == 081e31e0-a144-11d3-8c7c-00609792278c
+		if ((Ci.nsISecureBrowserUI) && (iid.equals(Ci.nsISecureBrowserUI))) {   // iid == 081e31e0-a144-11d3-8c7c-00609792278c
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsISecureBrowserUI");
         		return this;
 		} 
 
-		if (iid.equals(Ci.nsIDocShellTreeItem)) {   // iid == 09b54ec1-d98a-49a9-bc95-3219e8b55089
+		if ((Ci.nsIDocShellTreeItem) && (iid.equals(Ci.nsIDocShellTreeItem))) {   // iid == 09b54ec1-d98a-49a9-bc95-3219e8b55089
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIDocShellTreeItem");
         		return Cr.NS_NOINTERFACE;
 		} 
 
-		if (iid.equals(Ci.nsIAuthPromptProvider)) {   // iid == bd9dc0fa-68ce-47d0-8859-6418c2ae8576
+		if ((Ci.nsIAuthPromptProvider) && (iid.equals(Ci.nsIAuthPromptProvider))) {   // iid == bd9dc0fa-68ce-47d0-8859-6418c2ae8576
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIAuthPromptProvider");
         		return this;
 		} 
 
-		if (iid.equals(Ci.nsIChannelEventSink)) {   // iid == a430d870-df77-4502-9570-d46a8de33154
+		if ((Ci.nsIChannelEventSink) && (iid.equals(Ci.nsIChannelEventSink))) {   // iid == a430d870-df77-4502-9570-d46a8de33154
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIChannelEventSink");
         		return this;
 		} 
 
-		if (iid.equals(Ci.nsIRedirectResultListener)) {   // iid == 85cd2640-e91e-41ac-bdca-1dbf10dc131e
+		if ((Ci.nsIRedirectResultListener) && (iid.equals(Ci.nsIRedirectResultListener))) {   // iid == 85cd2640-e91e-41ac-bdca-1dbf10dc131e
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIRedirectResultListener");
         		return this;
 		} 
+
+		// The next iid is available sine TB 13.
+		if ((Ci.nsILoadContext) && (iid.equals(Ci.nsILoadContext))) {   // iid == 386806c3-c4cb-4b3d-b05d-c08ea10f5585
+			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsILoadContext");
+			return Cr.NS_NOINTERFACE;  // We do not support this.
+		}
+
+		// The next iid is called when the TB goes into offline mode.
+		if ((Ci.nsIApplicationCacheContainer) && (iid.equals(Ci.nsIApplicationCacheContainer))) {   // iid == bbb80700-1f7f-4258-aff4-1743cc5a7d23
+			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIApplicationCacheContainer");
+			return Cr.NS_NOINTERFACE;  // We do not support this.
+		}
 
 		exchWebService.commonFunctions.LOG("  >>>>>>>>>>> MAIL THIS LINE TO exchangecalendar@extensions.1st-setup.nl: ecnsIAuthPrompt2.getInterface("+iid+")");
 		throw Cr.NS_NOINTERFACE;
