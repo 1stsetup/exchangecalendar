@@ -464,7 +464,7 @@ mivIxml2jxon.prototype = {
 			}
 			else {
 				if ( (pos < strLength) && (aString.substr(pos, 1) == "/")) {
-					// found special character "/"
+					// found special character "/" at start of tag
 					// this should be a closing tag.
 					pos++;
 					var tmpStartPos = pos;
@@ -542,7 +542,7 @@ mivIxml2jxon.prototype = {
 								this.logInfo("a. Found close character '/' at end of opening tag.",2); 
 								this.messageLength = tmpStart - this.startPos + 2;
 								this.lastPos = tmpStart+1;
-								this.closed = true;
+								//this.closed = false;
 								return;
 							}
 							else {
@@ -625,11 +625,21 @@ mivIxml2jxon.prototype = {
 								this.logInfo("Going to proces content of tag '"+this.tagName+"'.startPos:"+this.startPos+", messageLength:"+this.messageLength, 2);
 								tmpChild = new mivIxml2jxon(aString, tmpPos+1, this);
 								if (tmpChild.tagName) {
+									this.logInfo("This child contains a tagName '"+tmpChild.tagName+"' so going to add it to the content of tag '"+this.tagName+"'.", 2);
 									this.addToContent(tmpChild);
+								}
+								else {
+									this.logInfo("This child DOES NOT contain a tagName so NOT going to add it to the content.", 2);
 								}
 								this.messageLength = tmpChild.lastPos - this.startPos + 1;
 								tmpPos = tmpChild.lastPos;
-								this.logInfo("finished processing content of tag '"+this.tagName+"'.startPos:"+this.startPos+", messageLength:"+this.messageLength+",tmpChild.lastpos:"+tmpChild.lastPos, 2);
+
+								if (tmpChild.tagName) {
+									this.logInfo("finished processing content of tag '"+tmpChild.tagName+"'.startPos:"+this.startPos+", messageLength:"+this.messageLength+",tmpChild.lastpos:"+tmpChild.lastPos, 2);
+								}
+								else {
+									this.logInfo("finished processing content of tag '"+this.tagName+"'.startPos:"+this.startPos+", messageLength:"+this.messageLength+",tmpChild.lastpos:"+tmpChild.lastPos, 2);
+								}
 							}
 							this.lastPos = tmpPos;
 
@@ -701,7 +711,7 @@ mivIxml2jxon.prototype = {
 
 		var prefB = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
 		var storedDebugLevel = exchWebService.commonFunctions.safeGetIntPref(prefB, "extensions.1st-setup.xml2jxon", 1, true);
-		var storedDebugLevel = 1;
+		var storedDebugLevel = 0;
 
 		if (debugLevel <= storedDebugLevel) {
 			exchWebService.commonFunctions.LOG("[xml2jxon] "+message + " ("+exchWebService.commonFunctions.STACKshort()+")");

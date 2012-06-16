@@ -7593,6 +7593,7 @@ this.logInfo("getTaskItemsOK 4");
 			try {
 				this._ews_2010_timezonedefinitions = new XML(lines);
 
+		// START VERY EXPERIMENTAL
 				try {
 				    var mivXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
 						       .createInstance(Ci.mivIxml2jxon);
@@ -7605,11 +7606,12 @@ this.logInfo("getTaskItemsOK 4");
 					mivXML.processXMLString(lines2, 0, null);
 				}
 				catch(exc) { this.logInfo("processXMLString error:"+exc.name+", "+exc.message);} 
-/*				try {
+				try {
 //					this.logInfo("[[[[[[[[[[[Header:"+mivXML.XPath("/s:Header").toString()+"]]]]]]]]]]]]");
-					this.logInfo("[[[[[[[[[[[Header:"+mivXML.XPath("/s:Envelope").toString()+"]]]]]]]]]]]]");
+//					this.logInfo("[[[[[[[[[[[Header:"+mivXML.XPath("/s:Envelope").toString()+"]]]]]]]]]]]]");
 				}
-				catch(exc) { this.logInfo("Header error:"+exc.name+", "+exc.message);} */
+				catch(exc) { this.logInfo("Header error:"+exc.name+", "+exc.message);} 
+		// END VERY EXPERIMENTAL */
 
 			}
 			catch(exc) {this.logInfo("Could not convert timezone xml file into XML object:"+exc); };
