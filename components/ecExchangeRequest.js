@@ -84,6 +84,7 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 	this.currentUrl = "";
 	this.listener = aListener;
 	this.e4x = true;
+	this.xml2jxon = false;
 	this.retryCount = 0;
 
 	this.mAuthFail = 0;
@@ -782,6 +783,10 @@ ExchangeRequest.prototype = {
 
 	makeSoapMessage: function erMakeSoapMessage(aReq)
 	{
+		if (aReq instanceof XML) {
+			this.logInfo(" ============ E4X instace ===============");
+		}
+
 		var msg = <nsSoap:Envelope xmlns:nsSoap={nsSoap} xmlns:nsTypes={nsTypes} xmlns:nsMessages={nsMessages}/>;
 
 		if (this.mArgument.ServerVersion) {
