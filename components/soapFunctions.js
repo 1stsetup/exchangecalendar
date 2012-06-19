@@ -36,9 +36,10 @@
 
 var Cu = Components.utils;
 
-Cu.import("resource://1st-setup/ecExchangeRequest.js");
+Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
+Cu.import("resource://exchangecalendar/ecFunctions.js");
 
-var EXPORTED_SYMBOLS = ["makeParentFolderIds", "publicFoldersMap"];
+var EXPORTED_SYMBOLS = ["makeParentFolderIds", "makeParentFolderIds2", "publicFoldersMap"];
 
 const publicFoldersMap = { "publicfoldersroot" : true };
 
@@ -72,4 +73,36 @@ function makeParentFolderIds(aParentItem, aArgument)
 	return ParentFolderIds;
 }
 
+function makeParentFolderIds2(aParentItem, aArgument)
+{
+	var ParentFolderIds = exchWebService.commonFunctions.xmlToJxon('<nsMessages:'+aParentItem+' xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+
+	if (! aArgument.folderID) {
+		var DistinguishedFolderId = exchWebService.commonFunctions.xmlToJxon('<nsTypes:DistinguishedFolderId xmlns:nsTypes="'+nsTypesStr+'"/>');
+		DistinguishedFolderId.setAttribute("Id", aArgument.folderBase);
+
+		// If the folderBase is a public folder then do not provide mailbox if
+		// available.
+		if (! publicFoldersMap[aArgument.folderBase]) {
+			if (aArgument.mailbox) {
+				//DistinguishedFolderId.nsTypes::Mailbox.nsTypes::EmailAddress = aArgument.mailbox;
+				DistinguishedFolderId.addChildTag("Mailbox", "nsTypes", null).addChildTag("EmailAddress", "nsTypes", aArgument.mailbox);
+			}
+		}
+//		ParentFolderIds.appendChild(DistinguishedFolderId);		
+		ParentFolderIds.addChildTagObject(DistinguishedFolderId);
+	}
+	else {
+		var FolderId = exchWebService.commonFunctions.xmlToJxon('<nsTypes:FolderId xmlns:nsTypes="'+nsTypesStr+'"/>');
+		FolderId.setAttribute("Id", aArgument.folderID);
+		if ((aArgument.changeKey) && (aArgument.changeKey != "")) {
+			FolderId.setAttribute("ChangeKey", aArgument.changeKey);
+		}
+		
+//		ParentFolderIds.appendChild(FolderId);		
+		ParentFolderIds.addChildTagObject(FolderId);
+	}
+
+	return ParentFolderIds;
+}
 

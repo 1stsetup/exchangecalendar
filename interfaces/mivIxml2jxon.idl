@@ -47,5 +47,8 @@ interface mivIxml2jxon : nsISupports
 
   AUTF8String toString();
 
+  void setAttribute(in AUTF8String aAttribute, in AUTF8String aValue);
+  jsval addChildTagObject(in jsval aObject);
+  jsval addChildTag(in AUTF8String aTagName, in AUTF8String aNameSpace, in AUTF8String aValue);
 
 };

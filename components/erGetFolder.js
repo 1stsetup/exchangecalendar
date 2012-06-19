@@ -39,7 +39,7 @@ var Cu = Components.utils;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
-Cu.import("resource://1st-setup/ecFunctions.js");
+Cu.import("resource://exchangecalendar/ecFunctions.js");
 
 /*Cu.import("resource://calendar/modules/calUtils.jsm");
 Cu.import("resource://calendar/modules/calAlarmUtils.jsm");
@@ -91,6 +91,22 @@ erGetFolderRequest.prototype = {
 		req.nsMessages::FolderShape.nsTypes::BaseShape = "AllProperties";
 
 		req.nsMessages::FolderIds = makeParentFolderIds("FolderIds", this.argument);
+		exchWebService.commonFunctions.LOG(" ++ E4X ++:"+this.parent.makeSoapMessage(req));
+
+try {
+exchWebService.commonFunctions.LOG("A1a nsMessages="+nsMessagesStr);
+		var req2 = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetFolder xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+exchWebService.commonFunctions.LOG("A2");
+
+		//req.nsMessages::FolderShape.nsTypes::BaseShape = "AllProperties";
+		req2.addChildTag("FolderShape", "nsMessages", null).addChildTag("BaseShape", "nsTypes", "AllProperties");
+
+		//req.nsMessages::FolderIds = makeParentFolderIds("FolderIds", this.argument);
+exchWebService.commonFunctions.LOG("A3");
+		req2.addChildTagObject(makeParentFolderIds2("FolderIds", this.argument));
+exchWebService.commonFunctions.LOG("A4");
+		exchWebService.commonFunctions.LOG(" ++ xml2jxon ++:"+this.parent.makeSoapMessage(req2));
+} catch(exc) { exchWebService.commonFunctions.LOG(" ++ xml2jxon ++: ERROR:"+exc+"("+exchWebService.commonFunctions.STACKshort()+")"); }
 
 		//exchWebService.commonFunctions.LOG("erGetFolderRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);

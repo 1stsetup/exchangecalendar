@@ -43,14 +43,18 @@ var components = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
-Cu.import("resource://1st-setup/ecFunctions.js");
+Cu.import("resource://exchangecalendar/ecFunctions.js");
 
-var EXPORTED_SYMBOLS = ["ExchangeRequest","nsSoap","nsTypes","nsMessages", "nsAutodiscoverResponse", "xml_tag", "getEWSServerVersion"];
+var EXPORTED_SYMBOLS = ["ExchangeRequest","nsSoap","nsTypes","nsMessages", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponse", "xml_tag", "getEWSServerVersion"];
 
 var xml_tag = '<?xml version="1.0" encoding="utf-8"?>\n';
 var nsSoap = new Namespace("nsSoap", "http://schemas.xmlsoap.org/soap/envelope/");
 var nsTypes = new Namespace("nsTypes", "http://schemas.microsoft.com/exchange/services/2006/types");
 var nsMessages = new Namespace("nsMessages", "http://schemas.microsoft.com/exchange/services/2006/messages");
+
+const nsSoapStr = "http://schemas.xmlsoap.org/soap/envelope/";
+const nsTypesStr = "http://schemas.microsoft.com/exchange/services/2006/types";
+const nsMessagesStr = "http://schemas.microsoft.com/exchange/services/2006/messages";
 
 var nsAutodiscoverResponse = new Namespace("nsAutodiscoverResponse", "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a");
 
@@ -798,7 +802,23 @@ ExchangeRequest.prototype = {
 			return xml_tag + String(msg);
 		}
 		else {
+
 			this.logInfo("makeSoapMessage: aReq is NOT xml.");
+
+			var msg = exchWebService.commonFunctions.xmlToJxon('<nsSoap:Envelope xmlns:nsSoap="'+nsSoap+'" xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+
+			if (this.mArgument.ServerVersion) {
+//				msg.nsSoap::Header.nsTypes::RequestServerVersion.@Version = this.mArgument.ServerVersion; 
+				msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", this.mArgument.ServerVersion);
+			}
+			else {
+//				msg.nsSoap::Header.nsTypes::RequestServerVersion.@Version = getEWSServerVersion(); 
+				msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", getEWSServerVersion());
+			}
+//			msg.nsSoap::Body.request = aReq;
+			msg.addChildTag("Body", "nsSoap", null).addChildTagObject(aReq);
+
+			return xml_tag + msg.toString();
 		}
 	},
 

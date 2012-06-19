@@ -327,7 +327,7 @@ function calExchangeCalendar() {
 
 //	this.initialized = false;
 
-	this.prefs = null;
+//	this.prefs = null;
 	this.mUseOfflineCache = null;
 	this.mNotConnected = true;
 

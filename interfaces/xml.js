@@ -29,7 +29,7 @@ var components = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
-Cu.import("resource://1st-setup/ecFunctions.js");
+Cu.import("resource://exchangecalendar/ecFunctions.js");
 
 function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 
@@ -216,11 +216,23 @@ mivIxml2jxon.prototype = {
 		}
 	},
 
-	addChildTagObject: function _addChildTagObject(aTagName, aNameSpace, aObject)
+	setAttribute: function _setAttribute(aAttribute, aValue)
 	{
+		this["@"+aAttribute] = aValue;
+	},
+
+	addChildTagObject: function _addChildTagObject(aObject)
+	{
+		if (!aObject) {
+			return;
+		}
+
+		var aNameSpace = aObject.nameSpace;
+		var aTagName = aObject.tagName;
 		if (!this[aNameSpace+tagSeparator+aTagName]) {
-//			this.logInfo("First childTag: "+this.tagName+"."+aNameSpace+tagSeparator+aTagName+"="+aObject,2);
+			this.logInfo("First childTag: "+this.tagName+"."+aNameSpace+tagSeparator+aTagName+"="+aObject,2);
 			this[aNameSpace+tagSeparator+aTagName] = aObject;
+			this.addToContent(aObject);
 			this.isNotAnArray = true;
 		}
 		else {
@@ -232,6 +244,7 @@ mivIxml2jxon.prototype = {
 			}
 			this.logInfo("childTag : "+this.tagName+"."+aNameSpace+tagSeparator+aTagName+"["+(this[aNameSpace+tagSeparator+aTagName].length+1)+"]",2);
 			this[aNameSpace+tagSeparator+aTagName].push(aObject);
+			this.addToContent(aObject);
 		}
 	},
 
@@ -250,8 +263,10 @@ mivIxml2jxon.prototype = {
 		}
 
 		var result = new mivIxml2jxon("<"+nameSpace+":"+aTagName+"/>", 0, this);
-		result.addToContent(aValue);
-		this.addToContent(result);
+		if ((aValue) && (aValue != "")) {
+			result.addToContent(aValue);
+		}
+		this.addChildTagObject(result);
 		return result;
 	},
 
@@ -734,7 +749,7 @@ mivIxml2jxon.prototype = {
 
 		var prefB = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
 		var storedDebugLevel = exchWebService.commonFunctions.safeGetIntPref(prefB, "extensions.1st-setup.xml2jxon", 1, true);
-		var storedDebugLevel = 0;
+		var storedDebugLevel = 1;
 
 		if (debugLevel <= storedDebugLevel) {
 			exchWebService.commonFunctions.LOG("[xml2jxon] "+message + " ("+exchWebService.commonFunctions.STACKshort()+")");
@@ -745,12 +760,10 @@ mivIxml2jxon.prototype = {
 
 function NSGetFactory(cid) {
 
-	exchWebService.commonFunctions.LOG("--NSGetFactory xml.js -- 1");
 	try {
 		if (!NSGetFactory.xml2json) {
 			// Load main script from lightning that we need.
 			NSGetFactory.xml2json = XPCOMUtils.generateNSGetFactory([mivIxml2jxon]);
-			exchWebService.commonFunctions.LOG("--NSGetFactory xml.js -- 2");
 			
 	}
 
@@ -760,7 +773,6 @@ function NSGetFactory(cid) {
 		throw e;
 	}
 
-	exchWebService.commonFunctions.LOG("--NSGetFactory xml.js -- 3");
 	return NSGetFactory.xml2json(cid);
 } 
 
