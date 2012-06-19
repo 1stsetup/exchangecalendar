@@ -86,27 +86,20 @@ erGetFolderRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erFindFolderRequest.execute\n");
 
-		var req = <nsMessages:GetFolder xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+/*		var req = <nsMessages:GetFolder xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
 
 		req.nsMessages::FolderShape.nsTypes::BaseShape = "AllProperties";
 
 		req.nsMessages::FolderIds = makeParentFolderIds("FolderIds", this.argument);
-		exchWebService.commonFunctions.LOG(" ++ E4X ++:"+this.parent.makeSoapMessage(req));
+		//exchWebService.commonFunctions.LOG(" ++ E4X ++:"+this.parent.makeSoapMessage(req));*/
 
-try {
-exchWebService.commonFunctions.LOG("A1a nsMessages="+nsMessagesStr);
-		var req2 = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetFolder xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
-exchWebService.commonFunctions.LOG("A2");
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetFolder xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		//req.nsMessages::FolderShape.nsTypes::BaseShape = "AllProperties";
-		req2.addChildTag("FolderShape", "nsMessages", null).addChildTag("BaseShape", "nsTypes", "AllProperties");
+		req.addChildTag("FolderShape", "nsMessages", null).addChildTag("BaseShape", "nsTypes", "AllProperties");
 
-		//req.nsMessages::FolderIds = makeParentFolderIds("FolderIds", this.argument);
-exchWebService.commonFunctions.LOG("A3");
-		req2.addChildTagObject(makeParentFolderIds2("FolderIds", this.argument));
-exchWebService.commonFunctions.LOG("A4");
-		exchWebService.commonFunctions.LOG(" ++ xml2jxon ++:"+this.parent.makeSoapMessage(req2));
-} catch(exc) { exchWebService.commonFunctions.LOG(" ++ xml2jxon ++: ERROR:"+exc+"("+exchWebService.commonFunctions.STACKshort()+")"); }
+		req.addChildTagObject(makeParentFolderIds2("FolderIds", this.argument));
+
+		//exchWebService.commonFunctions.LOG(" ++ xml2jxon ++:"+this.parent.makeSoapMessage(req2));
 
 		//exchWebService.commonFunctions.LOG("erGetFolderRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);

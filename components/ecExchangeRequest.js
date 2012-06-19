@@ -808,14 +808,11 @@ ExchangeRequest.prototype = {
 			var msg = exchWebService.commonFunctions.xmlToJxon('<nsSoap:Envelope xmlns:nsSoap="'+nsSoap+'" xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
 			if (this.mArgument.ServerVersion) {
-//				msg.nsSoap::Header.nsTypes::RequestServerVersion.@Version = this.mArgument.ServerVersion; 
 				msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", this.mArgument.ServerVersion);
 			}
 			else {
-//				msg.nsSoap::Header.nsTypes::RequestServerVersion.@Version = getEWSServerVersion(); 
 				msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", getEWSServerVersion());
 			}
-//			msg.nsSoap::Body.request = aReq;
 			msg.addChildTag("Body", "nsSoap", null).addChildTagObject(aReq);
 
 			return xml_tag + msg.toString();

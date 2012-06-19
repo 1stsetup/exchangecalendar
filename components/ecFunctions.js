@@ -608,14 +608,11 @@ exchWebService.commonFunctions = {
 
 	xmlToJxon: function _xmlToJxon(aXMLString) 
 	{
-		this.LOG("B1");
 		var result = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
 				.createInstance(Ci.mivIxml2jxon);
-		this.LOG("B2");
 		if ((result) && (aXMLString) && (aXMLString != ""))	{
 			result.processXMLString(aXMLString, 0, null);
 		}
-		this.LOG("B3");
 
 		return result;
 	},

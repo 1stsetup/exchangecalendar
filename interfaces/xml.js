@@ -262,10 +262,13 @@ mivIxml2jxon.prototype = {
 			}
 		}
 
-		var result = new mivIxml2jxon("<"+nameSpace+":"+aTagName+"/>", 0, this);
 		if ((aValue) && (aValue != "")) {
-			result.addToContent(aValue);
+			var result = new mivIxml2jxon("<"+nameSpace+":"+aTagName+">"+aValue+"</"+nameSpace+":"+aTagName+">", 0, this);
 		}
+		else {
+			var result = new mivIxml2jxon("<"+nameSpace+":"+aTagName+"/>", 0, this);
+		}
+
 		this.addChildTagObject(result);
 		return result;
 	},

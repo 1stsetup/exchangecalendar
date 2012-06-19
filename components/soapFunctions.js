@@ -73,6 +73,7 @@ function makeParentFolderIds(aParentItem, aArgument)
 	return ParentFolderIds;
 }
 
+// This is the xml2jxon version.
 function makeParentFolderIds2(aParentItem, aArgument)
 {
 	var ParentFolderIds = exchWebService.commonFunctions.xmlToJxon('<nsMessages:'+aParentItem+' xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
@@ -85,11 +86,9 @@ function makeParentFolderIds2(aParentItem, aArgument)
 		// available.
 		if (! publicFoldersMap[aArgument.folderBase]) {
 			if (aArgument.mailbox) {
-				//DistinguishedFolderId.nsTypes::Mailbox.nsTypes::EmailAddress = aArgument.mailbox;
 				DistinguishedFolderId.addChildTag("Mailbox", "nsTypes", null).addChildTag("EmailAddress", "nsTypes", aArgument.mailbox);
 			}
 		}
-//		ParentFolderIds.appendChild(DistinguishedFolderId);		
 		ParentFolderIds.addChildTagObject(DistinguishedFolderId);
 	}
 	else {
@@ -99,7 +98,6 @@ function makeParentFolderIds2(aParentItem, aArgument)
 			FolderId.setAttribute("ChangeKey", aArgument.changeKey);
 		}
 		
-//		ParentFolderIds.appendChild(FolderId);		
 		ParentFolderIds.addChildTagObject(FolderId);
 	}
 
