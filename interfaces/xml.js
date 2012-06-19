@@ -300,6 +300,20 @@ mivIxml2jxon.prototype = {
 		return result;
 	},
 
+	nameSpacesToString: function _nameSpacesToString()
+	{
+		var result = "";
+		for (var index in this.nameSpaces) {
+			if (index == "_default_") {   
+				result += ' xmlns="'+this.nameSpaces[index]+'"';
+			}
+			else {
+				result += " xmlns:"+index+'="'+this.nameSpaces[index]+'"';
+			}
+		}
+		return result;
+	},
+
 	toString: function _toString()
 	{
 		this.logInfo(this.tagName+":toString", 2);
@@ -323,12 +337,21 @@ mivIxml2jxon.prototype = {
 		}
 
 		var attributes = this.attributesToString();
+		var nameSpaces = this.nameSpacesToString();
 
-		if (contentCount == 0) {
-			result = "<"+this.tagName+attributes+"/>";
+		var nameSpace = this.nameSpace;
+		if (nameSpace == "_default_") {
+			nameSpace = "";
 		}
 		else {
-			result = "<"+this.tagName+attributes+">" + result + "</"+this.tagName+">";
+			nameSpace += ":";
+		}
+
+		if (contentCount == 0) {
+			result = "<"+nameSpace+this.tagName+attributes+nameSpaces+"/>";
+		}
+		else {
+			result = "<"+nameSpace+this.tagName+attributes+nameSpaces+">" + result + "</"+nameSpace+this.tagName+">";
 		}
 
 		return result;
