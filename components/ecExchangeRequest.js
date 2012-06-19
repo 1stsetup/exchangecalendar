@@ -84,7 +84,8 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 	this.currentUrl = "";
 	this.listener = aListener;
 	this.e4x = true;
-	this.xml2jxon = false;
+	this.xml2jxon_receive = false;
+	this.xml2jxon_send = false;
 	this.retryCount = 0;
 
 	this.mAuthFail = 0;
@@ -783,21 +784,22 @@ ExchangeRequest.prototype = {
 
 	makeSoapMessage: function erMakeSoapMessage(aReq)
 	{
-		if (aReq instanceof XML) {
-			this.logInfo(" ============ E4X instace ===============");
-		}
+		if (typeof(aReq) == "xml") {
+			var msg = <nsSoap:Envelope xmlns:nsSoap={nsSoap} xmlns:nsTypes={nsTypes} xmlns:nsMessages={nsMessages}/>;
 
-		var msg = <nsSoap:Envelope xmlns:nsSoap={nsSoap} xmlns:nsTypes={nsTypes} xmlns:nsMessages={nsMessages}/>;
+			if (this.mArgument.ServerVersion) {
+				msg.nsSoap::Header.nsTypes::RequestServerVersion.@Version = this.mArgument.ServerVersion; 
+			}
+			else {
+				msg.nsSoap::Header.nsTypes::RequestServerVersion.@Version = getEWSServerVersion(); 
+			}
+			msg.nsSoap::Body.request = aReq;
 
-		if (this.mArgument.ServerVersion) {
-			msg.nsSoap::Header.nsTypes::RequestServerVersion.@Version = this.mArgument.ServerVersion; 
+			return xml_tag + String(msg);
 		}
 		else {
-			msg.nsSoap::Header.nsTypes::RequestServerVersion.@Version = getEWSServerVersion(); 
+			this.logInfo("makeSoapMessage: aReq is NOT xml.");
 		}
-		msg.nsSoap::Body.request = aReq;
-
-		return xml_tag + String(msg);
 	},
 
 	passwordError: function erPasswordError(aMsg)
