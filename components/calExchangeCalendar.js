@@ -372,6 +372,10 @@ function calExchangeCalendar() {
 	this.inboxPoller = Cc["@mozilla.org/timer;1"]
 			.createInstance(Ci.nsITimer);
 
+	this.cacheLoader = Cc["@mozilla.org/timer;1"]
+			.createInstance(Ci.nsITimer);
+	this.loadingFromCache = false;
+
 	this.observerService = Cc["@mozilla.org/observer-service;1"]  
 	                          .getService(Ci.nsIObserverService);  
 
@@ -526,6 +530,33 @@ calExchangeCalendar.prototype = {
 	        return this.uri;
 	},
 
+	startupLoadFromOfflineCache: function _startupLoadFromOfflineCache()
+	{
+
+		if (this.loadingFromCache) return;
+
+		this.loadingFromCache = true;
+
+		var startTime = cal.createDateTime();
+
+		if (!this.startDate) {
+			this.startDate = this.offlineStartDate;
+		}
+		if (!this.endDate) {
+			this.endDate = this.offlineEndDate;
+		}
+
+		var itemsFromCache = this.getItemsFromOfflineCache(this.startDate, this.endDate);
+		if (itemsFromCache) {
+			var endTime = cal.createDateTime();
+			var duration = endTime.subtractDate(startTime);
+			this.logInfo("We got '"+itemsFromCache.length+"' items from offline cache.(took "+duration.inSeconds+" seconds)");
+		}
+
+		this.loadingFromCache = false;
+
+	},
+
 	performStartup: function _performStartup()
 	{
 		this.logInfo("Performing startup.");
@@ -538,21 +569,10 @@ calExchangeCalendar.prototype = {
 		// Load from offline Cache into memory cache.
 		if (this.useOfflineCache) {
 			this.logInfo("Getting items from offlineCache.");
-			var startTime = cal.createDateTime();
 
-			if (!this.startDate) {
-				this.startDate = this.offlineStartDate;
-			}
-			if (!this.endDate) {
-				this.endDate = this.offlineEndDate;
-			}
-
-			var itemsFromCache = this.getItemsFromOfflineCache(this.startDate, this.endDate);
-			if (itemsFromCache) {
-				var endTime = cal.createDateTime();
-				var duration = endTime.subtractDate(startTime);
-				this.logInfo("We got '"+itemsFromCache.length+"' items from offline cache.(took "+duration.inSeconds+" seconds)");
-			}
+			let self = this;
+			this.cacheLoader.cancel();
+			this.cacheLoader.initWithCallback({ notify: function setTimeout_notify() {self.startupLoadFromOfflineCache();	}}, 0, this.cacheLoader.TYPE_ONE_SHOT);
 
 		}
 
