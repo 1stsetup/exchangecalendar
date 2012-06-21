@@ -84,7 +84,7 @@ erGetFolderRequest.prototype = {
 
 	execute: function _execute()
 	{
-//		exchWebService.commonFunctions.LOG("erFindFolderRequest.execute\n");
+		//exchWebService.commonFunctions.LOG("erGetFolderRequest.execute 1");
 
 /*		var req = <nsMessages:GetFolder xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
 
@@ -99,7 +99,7 @@ erGetFolderRequest.prototype = {
 
 		req.addChildTagObject(makeParentFolderIds2("FolderIds", this.argument));
 
-		//exchWebService.commonFunctions.LOG(" ++ xml2jxon ++:"+this.parent.makeSoapMessage(req2));
+		//exchWebService.commonFunctions.LOG(" ++ xml2jxon ++:"+this.parent.makeSoapMessage(req));
 
 		//exchWebService.commonFunctions.LOG("erGetFolderRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);

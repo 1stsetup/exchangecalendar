@@ -7608,7 +7608,7 @@ this.logInfo("getTaskItemsOK 4");
 				catch(exc) { this.logInfo("processXMLString error:"+exc.name+", "+exc.message);} 
 				try {
 //					this.logInfo("[[[[[[[[[[[Header:"+mivXML.XPath("/s:Header").toString()+"]]]]]]]]]]]]");
-//					this.logInfo("[[[[[[[[[[[Header:"+mivXML.XPath("/s:Envelope").toString()+"]]]]]]]]]]]]");
+					this.logInfo("[[[[[[[[[[[Header:"+mivXML.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage/m:Items/t:CalendarItem/t:ExtendedProperty/t:ExtendedFieldURI[@PropertyId]")+"]]]]]]]]]]]]");
 				}
 				catch(exc) { this.logInfo("Header error:"+exc.name+", "+exc.message);} 
 		// END VERY EXPERIMENTAL */

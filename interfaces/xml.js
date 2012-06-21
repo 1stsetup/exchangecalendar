@@ -269,7 +269,7 @@ mivIxml2jxon.prototype = {
 			var result = new mivIxml2jxon("<"+nameSpace+":"+aTagName+"/>", 0, this);
 		}
 
-		this.addChildTagObject(result);
+//		this.addChildTagObject(result);
 		return result;
 	},
 
@@ -340,8 +340,11 @@ mivIxml2jxon.prototype = {
 		for (var index in this.content) {
 			contentCount++;
 			if ((this.content[index] instanceof Ci.mivIxml2jxon) || (this.content[index] instanceof mivIxml2jxon)) {
-				this.logInfo(this.tagName+":Found object at content index '"+index+"'.", 2);
-				result += this.content[index].toString();
+
+				if (this.content[index].tagName != this.tagName) {
+					this.logInfo(this.tagName+":Found object at content index '"+index+"'.", 2);
+					result += this.content[index].toString();
+				}
 			}
 			else {
 				if (this.content[index] instanceof String) {
@@ -377,6 +380,7 @@ mivIxml2jxon.prototype = {
 
 	XPath: function XPath(aPath)
 	{
+		this.logInfo("XPath:"+aPath,2);
 		var tmpPath = aPath;
 		var result = null;
 
@@ -384,26 +388,26 @@ mivIxml2jxon.prototype = {
 			tmpPath = tmpPath.substr(1);
 		}
 
+
+		if (tmpPath.indexOf("/") > -1) {
+			var tmpPath2 = tmpPath.substr(0, tmpPath.indexOf("/"));
+			tmpPath = tmpPath.substr(tmpPath.indexOf("/"));
+		}
+		else {
+			var tmpPath2 = tmpPath;
+			tmpPath = "";
+		}
+
 		try {
-			while (tmpPath.indexOf("/") > -1) {
-				this.logInfo("XPath:"+tmpPath, 1);
-				var pathPart = tmpPath.substr(0, tmpPath.indexOf("/"));
-				this.logInfo("--pathPart="+pathPart, 2);
-				if (!result) {
-					result = this[pathPart];
+			if (tmpPath2 != "") {
+				if (tmpPath2.indexOf("[") > -1) {
+					this.logInfo("Requested XPath contains an index or attribute request.", 2);
+					var pathPart = tmpPath2.substr(0, tmpPath2.indexOf("["));
+					var index = tmpPath2.substr(tmpPath2.indexOf("[")+1);
+					index = index.substr(0, index.length-1);
 				}
 				else {
-					result = result[pathPart];
-				}
-				tmpPath = tmpPath.substr(tmpPath.indexOf("/")+1);
-			}
-			this.logInfo("last XPath:"+tmpPath, 1);
-			if (tmpPath != "") {
-				if (tmpPath.indexOf("[") > -1) {
-					this.logInfo("Requested XPath contains an index or attribute request.", 2);
-					var pathPart = tmpPath.substr(0, tmpPath.indexOf("["));
-					var index = tmpPath.substr(tmpPath.indexOf("[")+1);
-					index = index.substr(0, index.length-1);
+					var pathPart = tmpPath2;
 				}
 
 				// Currently only the object, Array index [#], Attribute [@att] or content () are supported.
@@ -412,44 +416,48 @@ mivIxml2jxon.prototype = {
 					if (index) {
 						if (index.substr(0,1) == "@") {
 							this.logInfo("Requested XPath contains attribute request.", 2);
-							if (!result) {
-								result = this[pathPart][index];
-							}
-							else {
-								result = result[pathPart][index];
-							}
+							result = this[pathPart][index];
 						}
 					}
 					else {
-						if (tmpPath.indexOf("()") > -1) {
-							pathPart = tmpPath.substr(0, tmpPath.indexOf("()"));
-							this.logInfo("Requested XPath contains content request.", 2);
-							if (!result) {
-								result = this[pathPart].contentStr();
-							}
-							else {
-								result = result[pathPart].contentStr();
-							}
+						if (tmpPath2.indexOf("()") > -1) {
+							pathPart = tmpPath2.substr(0, tmpPath2.indexOf("()"));
+							this.logInfo("Requested XPath contains content request. a:"+tmpPath2, 2);
+							result = this[pathPart].contentStr();
 						}
 						else {
-							this.logInfo("Requested XPath contains object request.", 1);
-							if (!result) {
-								result = this[tmpPath];
-							}
-							else {
-								result = result[tmpPath];
-							}
+							this.logInfo("Requested XPath contains object request. a:"+tmpPath2, 2);
+							result = this[tmpPath2];
 						}
 					}
 				}
 				else {
-					this.logInfo("Requested XPath contains an index:"+Number(index), 2);
-					if (!result) {
-						result = this[pathPart][Number(index)];
+					this.logInfo("Requested XPath contains an index:"+Number(index), 1);
+					if (tmpPath2.indexOf("()") > -1) {
+						this.logInfo("Requested XPath contains content request. b:"+tmpPath2, 2);
+						result = this[pathPart][Number(index)].contentStr();
 					}
 					else {
-						result = result[pathPart][Number(index)];
+						this.logInfo("Requested XPath contains object request. b:"+tmpPath2, 2);
+						result = this[pathPart][Number(index)];
 					}
+				}
+			}
+
+			if ((result) && (tmpPath != "")) {
+				this.logInfo("tmpPath:"+tmpPath,2);
+				if (Array.isArray(result)) {
+					var finalResult = new Array();
+					for (var index in result) {
+						var tmpResult = result[index].XPath(tmpPath);
+						if (tmpResult) {
+							finalResult.push(tmpResult);
+						}
+					}
+					result = finalResult;
+				}
+				else {
+					result = result.XPath(tmpPath);
 				}
 			}
 		}
@@ -458,6 +466,7 @@ mivIxml2jxon.prototype = {
 			result = null;
 		}
 
+		this.logInfo("XPath return.....",2);
 		return result;
 	},
 
@@ -573,10 +582,10 @@ mivIxml2jxon.prototype = {
 							}
 							this.logInfo("Found opening tag '"+this.tagName+"' in xml namespace '"+this.nameSpace+"'",2);
 							if (aParent) {
-								aParent.addChildTagObject(this.tagName, this.nameSpace, this);
+								aParent.addChildTagObject(this);
 							}
 							else {
-								this.addChildTagObject(this.tagName, this.nameSpace, this);
+								this.addChildTagObject(this);
 							}
 
 							if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == "/")) {
@@ -667,7 +676,7 @@ mivIxml2jxon.prototype = {
 								tmpChild = new mivIxml2jxon(aString, tmpPos+1, this);
 								if (tmpChild.tagName) {
 									this.logInfo("This child contains a tagName '"+tmpChild.tagName+"' so going to add it to the content of tag '"+this.tagName+"'.", 2);
-									this.addToContent(tmpChild);
+									//this.addToContent(tmpChild);
 								}
 								else {
 									this.logInfo("This child DOES NOT contain a tagName so NOT going to add it to the content.", 2);
@@ -701,6 +710,7 @@ mivIxml2jxon.prototype = {
 			// Did not find opening character for Tag.
 			// We stop here.
 			if (aParent) {
+				this.logInfo(" =======++++++++++");
 				aParent.addToContent(new String(aString));
 				aParent.messageLength = aParent.messageLength+aString.length; 
 			}
