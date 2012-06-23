@@ -246,6 +246,9 @@ mivIxml2jxon.prototype = {
 			this[aNameSpace+tagSeparator+aTagName].push(aObject);
 			this.addToContent(aObject);
 		}
+		if (aObject != this) {
+			aObject.addChildTagObject(aObject);
+		}
 	},
 
 	addChildTag: function _addChildTag(aTagName, aNameSpace, aValue)
@@ -380,90 +383,208 @@ mivIxml2jxon.prototype = {
 
 	XPath: function XPath(aPath)
 	{
-		this.logInfo("XPath:"+aPath,2);
+		//this.logInfo("XPath:"+aPath,1);
 		var tmpPath = aPath;
-		var result = null;
+		var result = new Array();
 
 		if (tmpPath.substr(0, 1) == "/") {
 			tmpPath = tmpPath.substr(1);
 		}
 
+		switch (tmpPath.substr(0,1)) {
+		case "/" : // Find all elements by specified element name
+			for (var index in this) {
+				if ((index.indexOf(":") > -1) && (this[index].tagName != this.tagName)) {
+					result.push(this[index]);
+				}
+			}
+			tmpPath = "/"+tmpPath;
+			break;
 
-		if (tmpPath.indexOf("/") > -1) {
-			var tmpPath2 = tmpPath.substr(0, tmpPath.indexOf("/"));
-			tmpPath = tmpPath.substr(tmpPath.indexOf("/"));
-		}
-		else {
-			var tmpPath2 = tmpPath;
-			tmpPath = "";
-		}
+		case "@" : // Find attribute within this element
+			result.push(this[tmpPath]);
+			break;
 
-		try {
+		case "*" : // Wildcard. Will parse all children.
+			tmpPath = tmpPath.substr(1);
+			for (var index in this) {
+				if ((index.indexOf(":") > -1) && (this[index].tagName != this.tagName)) {
+					this.logInfo(" -- tag:"+index, 2);
+					result.push(this[index]);
+				}
+			}
+			break;
+
+		default:
+			if (tmpPath.indexOf("/") > -1) {
+				var tmpPath2 = tmpPath.substr(0, tmpPath.indexOf("/"));
+				tmpPath = tmpPath.substr(tmpPath.indexOf("/"));
+			}
+			else {
+				var tmpPath2 = tmpPath;
+				tmpPath = "";
+			}
+
 			if (tmpPath2 != "") {
 				if (tmpPath2.indexOf("[") > -1) {
-					this.logInfo("Requested XPath contains an index or attribute request.", 2);
+					this.logInfo("Requested XPath contains an index, attribute or compare request.", 2);
 					var pathPart = tmpPath2.substr(0, tmpPath2.indexOf("["));
 					var index = tmpPath2.substr(tmpPath2.indexOf("[")+1);
-					index = index.substr(0, index.length-1);
+					index = this.trim(index.substr(0, index.length-1)); // We expect it is normally closed.. TODO: Checkfor this.
 				}
 				else {
+					this.logInfo(" == tmpPath2:"+tmpPath2, 2);
 					var pathPart = tmpPath2;
 				}
 
-				// Currently only the object, Array index [#], Attribute [@att] or content () are supported.
 				if ((!index) || ((index) && (isNaN(index)))) {
+					// No square brackets or the content is an attribute or compare request
+					if ((index) && (index != "")) {
+						// We have a compare request. The index could be a number, string or XPath.
 
-					if (index) {
-						if (index.substr(0,1) == "@") {
-							this.logInfo("Requested XPath contains attribute request.", 2);
-							result = this[pathPart][index];
-						}
-					}
-					else {
-						if (tmpPath2.indexOf("()") > -1) {
-							pathPart = tmpPath2.substr(0, tmpPath2.indexOf("()"));
-							this.logInfo("Requested XPath contains content request. a:"+tmpPath2, 2);
-							result = this[pathPart].contentStr();
+						// See if we have to compare something? <=>
+						var smallerThen = index.indexOf("<");
+						var equalTo = index.indexOf("=");
+						var biggerThen = index.indexOf(">");
+
+						if ((smallerThen > -1) || (equalTo > -1) || (biggerThen > -1)) {
+							var value1 = this.trim(index.substr(0,Math.min(smallerThen, equalTo, biggerThen)));
+							var value2 = this.trim(index.substr(Math.max(smallerThen, equalTo, biggerThen)+1));
 						}
 						else {
-							this.logInfo("Requested XPath contains object request. a:"+tmpPath2, 2);
-							result = this[tmpPath2];
+							var value1 = index;
+							var value2 = "";
+						}
+
+						// Find left side results.
+						if (value1 != "") {
+							if ((value1.substr(0,1) == "/") || (value1.substr(0,1) == ".") || (value1.substr(0,1) == "@")) {
+								// Left side is a XPath query.
+								var tmpResult1 = this.XPath(value1);
+							}
+							else {
+								// Left side is a number or string.
+								var tmpResult1 = new Array();
+								if (isNaN(value1)) {
+									tmpResult1.push(value1);
+								}
+								else {
+									tmpResult1.push(value1.substr(1,value1.length-2));
+								}
+							}
+						}
+
+						// Find right side results
+						if (value2 != "") {
+							if ((value2.substr(0,1) == "/") || (value2.substr(0,1) == ".") || (value2.substr(0,1) == "@")) {
+								// Right side is a XPath query
+								var tmpResult2 = this.XPath(value2);
+							}
+							else {
+								// Right side is a number or string.
+								var tmpResult2 = new Array();
+								if (isNaN(value1)) {
+									tmpResult2.push(value2);
+								}
+								else {
+									tmpResult2.push(value1.substr(1,value2.length-2));
+								}
+							}
+						}
+
+						if (tmpResult1.length > 0) {
+							if ((smallerThen > -1) || (equalTo > -1) || (biggerThen > -1)) {
+								// Filter out ony the valid ones.
+								if (tmpResult2.length > 0) {
+									var x = 0;
+									var matchFound = false;
+									while ((x < tmpResult1.length) && (!matchFound)) {
+
+										if (tmpResult1[x] instanceof String) {
+											var left = tmpResult1[x];
+										}
+										else {
+											var left = tmpResult1[x].contentStr();
+										}
+
+										var y = 0;
+										while ((y < tmpResult2.length) && (!matchFound)) {
+
+											if (tmpResult2[y] instanceof String) {
+												var right = tmpResult2[y];
+											}
+											else {
+												var right = tmpResult2[y].contentStr();
+											}
+
+											matchFound = ( ((smallerThen > -1) && (left < right)) ||
+													((equalTo > -1) && (left == right)) ||
+													((biggerThen > -1) && (left > right)) );
+											y++;
+										}
+										x++;
+									}
+								}
+								else {
+									// Error... We have nothing to compare against...!
+									throw "XPath compare error:"+this.tagName+"["+index+"]";
+								}
+							}
+							else {
+								// Return all results.
+								result.push(this);
+							}
+						}
+					}
+					else {
+						this.logInfo("We will check if specified element '"+tmpPath2+"' exists as child in '"+this.tagName+"'", 2);
+						for (var index in this) {
+							if (index.indexOf(":") > -1) {
+								this.logInfo(" %%:"+index, 2);
+								if (index == tmpPath2) {
+									if (Array.isArray(this[index])) {
+										this.logInfo(" ^^ found tag:"+index+" and is an array with "+this[index].length+" elements.", 2);
+										for (var index2 in this[index]) {
+											result.push(this[index][index2]);
+										}
+									}
+									else {
+										this.logInfo(" ^^ found tag:"+index, 2);
+										result.push(this[index]);
+									}
+								}
+							}
 						}
 					}
 				}
 				else {
-					this.logInfo("Requested XPath contains an index:"+Number(index), 1);
-					if (tmpPath2.indexOf("()") > -1) {
-						this.logInfo("Requested XPath contains content request. b:"+tmpPath2, 2);
-						result = this[pathPart][Number(index)].contentStr();
-					}
-					else {
-						this.logInfo("Requested XPath contains object request. b:"+tmpPath2, 2);
-						result = this[pathPart][Number(index)];
-					}
+					this.logInfo("Requested XPath contains an index:"+Number(index), 2);
+					this.logInfo("Requested XPath contains object request. b:"+tmpPath2, 2);
+					result.push(this[pathPart][Number(index)]);
 				}
 			}
 
-			if ((result) && (tmpPath != "")) {
-				this.logInfo("tmpPath:"+tmpPath,2);
-				if (Array.isArray(result)) {
-					var finalResult = new Array();
-					for (var index in result) {
-						var tmpResult = result[index].XPath(tmpPath);
-						if (tmpResult) {
-							finalResult.push(tmpResult);
-						}
-					}
-					result = finalResult;
+		} // End of switch
+
+		if ((result.length > 0) && (tmpPath != "")) {
+			this.logInfo("tmpPath:"+tmpPath,2);
+			var finalResult = new Array();
+			for (var index in result) {
+
+				if (result[index] instanceof String) {
+					finalResult.push(result[index]);
 				}
 				else {
-					result = result.XPath(tmpPath);
+					this.logInfo("~~"+result[index].tagName, 2);
+					var tmpResult = result[index].XPath(tmpPath);
+					if (tmpResult) {
+						for (var index2 in tmpResult) {
+							finalResult.push(tmpResult[index2]);
+						}
+					}
 				}
 			}
-		}
-		catch(exc) {
-			this.logInfo("XPath Error:"+exc);
-			result = null;
+			result = finalResult;
 		}
 
 		this.logInfo("XPath return.....",2);
