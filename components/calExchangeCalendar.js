@@ -7607,7 +7607,10 @@ this.logInfo("getTaskItemsOK 4");
 				catch(exc) { this.logInfo("processXMLString error:"+exc.name+", "+exc.message);} 
 				try {
 //					this.logInfo("[[[[[[[[[[[Header:"+mivXML.XPath("/s:Header").toString()+"]]]]]]]]]]]]");
-					this.logInfo("[[[[[[[[[[[Header:"+mivXML.XPath("/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage/m:TimeZoneDefinitions/t:TimeZoneDefinition").length+"]]]]]]]]]]]]");
+//					var timeZone = mivXML.XPath("/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage/m:TimeZoneDefinitions/t:TimeZoneDefinition[@Id='UTC']//t:To[@Kind='Period']");
+//					this.logInfo("[[[[[xx:"+timeZone[0].contentStr()+", timeZone.length:"+timeZone.length);
+//					var bias = timeZone[0].XPath("//t:To[@Kind='Group']");
+//					this.logInfo("[[[[[[[[[[[Header:"+bias[0].contentStr()+", bias.length:"+bias.length+"]]]]]]]]]]]]");
 				}
 				catch(exc) { this.logInfo("Header error:"+exc.name+", "+exc.message);} 
 		// END VERY EXPERIMENTAL */

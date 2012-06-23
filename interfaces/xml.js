@@ -301,8 +301,17 @@ mivIxml2jxon.prototype = {
 	contentStr: function _contentStr()
 	{
 		if (this.content[0]) {
-			this.logInfo("We have content getting first record.", 2);
-			return this.content[0];
+			this.logInfo("We have content getting first string record.", 2);
+			var index = 0;
+			var value = "";
+			while ((index < this.itemCount) && (value == "")) {
+				if ((typeof this.content[index] === "string") || (this.content[index] instanceof String)) {
+					this.logInfo(" @@: index:"+index+", content:"+this.content[index], 2);
+					value = this.content[index];
+				}
+				index++;
+			}
+			return value;
 		}
 		else {
 			this.logInfo("We have no content.tagName:"+this.tagName, 2);
@@ -350,7 +359,7 @@ mivIxml2jxon.prototype = {
 				}
 			}
 			else {
-				if (this.content[index] instanceof String) {
+				if ((typeof this.content[index] === "string") || (this.content[index] instanceof String)) {
 					this.logInfo(this.tagName+":Found string at content index '"+index+"'.", 2);
 					result += this.content[index];
 				}
@@ -393,6 +402,22 @@ mivIxml2jxon.prototype = {
 
 		switch (tmpPath.substr(0,1)) {
 		case "/" : // Find all elements by specified element name
+			var allTag = tmpPath.substr(1);
+			var nextForwardSlashSplit = allTag.indexOf("/");
+			var nextSquareBracketSplit = allTag.indexOf("[");
+
+			var nextSplit = 99999;
+			if ((nextForwardSlashSplit < nextSplit) && (nextForwardSlashSplit > -1)) {
+				nextSplit = nextForwardSlashSplit;
+			}
+			if ((nextSquareBracketSplit < nextSplit) && (nextSquareBracketSplit > -1)) {
+				nextSplit = nextSquareBracketSplit;
+			}
+
+			if (nextSplit < 99999) {
+				allTag = allTag.substr(0, nextSplit);
+			}
+
 			for (var index in this) {
 				if ((index.indexOf(":") > -1) && (this[index].tagName != this.tagName)) {
 					result.push(this[index]);
@@ -402,7 +427,12 @@ mivIxml2jxon.prototype = {
 			break;
 
 		case "@" : // Find attribute within this element
-			result.push(this[tmpPath]);
+			this.logInfo("Attribute search:"+tmpPath+" in tag '"+this.tagName+"'", 2);
+			if (this[tmpPath]) {
+				this.logInfo("  --==--:"+this[tmpPath], 2);
+				result.push(this[tmpPath]);
+			}
+			tmpPath = "";
 			break;
 
 		case "*" : // Wildcard. Will parse all children.
@@ -415,167 +445,222 @@ mivIxml2jxon.prototype = {
 			}
 			break;
 
-		default:
-			if (tmpPath.indexOf("/") > -1) {
-				var tmpPath2 = tmpPath.substr(0, tmpPath.indexOf("/"));
-				tmpPath = tmpPath.substr(tmpPath.indexOf("/"));
-			}
-			else {
-				var tmpPath2 = tmpPath;
-				tmpPath = "";
-			}
+		case "[" : // Compare/match function
+			this.logInfo("Requested XPath contains an index, attribute or compare request.", 2);
+			var tmpPos = 1;
+			var index = "";
+			var notClosed = true;
+			var notQuoteOpen = true;
+			var quotesUsed = "";
+			while ((tmpPos < tmpPath.length) && (notClosed)) {
+				if ((tmpPath.substr(tmpPos,1) == "'") || (tmpPath.substr(tmpPos,1) == '"')) {
+					// We found quotes. Do they belong to our string.
+					if (notQuoteOpen) {
+						quotesUsed = tmpPath.substr(tmpPos,1);
+						notQuoteOpen = false;
+					}
+					else {
+						if (tmpPath.substr(tmpPos,1) == quotesUsed) {
+							quotesUsed = "";
+							notQuoteOpen = true;
+						}
+					}
+				}
 
-			if (tmpPath2 != "") {
-				if (tmpPath2.indexOf("[") > -1) {
-					this.logInfo("Requested XPath contains an index, attribute or compare request.", 2);
-					var pathPart = tmpPath2.substr(0, tmpPath2.indexOf("["));
-					var index = tmpPath2.substr(tmpPath2.indexOf("[")+1);
-					index = this.trim(index.substr(0, index.length-1)); // We expect it is normally closed.. TODO: Checkfor this.
+				if ((tmpPath.substr(tmpPos,1) == "]") && (notQuoteOpen)) {
+					notClosed = false;
 				}
 				else {
-					this.logInfo(" == tmpPath2:"+tmpPath2, 2);
-					var pathPart = tmpPath2;
+					index += tmpPath.substr(tmpPos,1);
+				}
+				tmpPos++;
+			}
+
+			if (!notClosed) {
+				tmpPath = tmpPath.substr(tmpPos);
+			}
+
+			this.logInfo("["+index+"], tmpPath:"+tmpPath,2);
+
+//			var pathPart = tmpPath.substr(1);
+//			var index = tmpPath.substr(1, tmpPath2.indexOf("]"));
+			index = this.trim(index); // We expect it is normally closed.. TODO: Checkfor this.
+
+			// No square brackets or the content is an attribute or compare request
+			if (index != "") {
+				// We have a compare request. The index could be a number, string or XPath.
+
+				// See if we have to compare something? <=>
+				var smallerThen = index.indexOf("<");
+				var equalTo = index.indexOf("=");
+				var biggerThen = index.indexOf(">");
+
+				if ((smallerThen > -1) || (equalTo > -1) || (biggerThen > -1)) {
+
+					var minValue = smallerThen;
+					if (minValue == -1) minValue = 999;
+					if ((equalTo < minValue) && (equalTo > -1)) {
+						minValue = equalTo;
+					}
+					if ((biggerThen < minValue) && (biggerThen > -1)) {
+						minValue = biggerThen;
+					}
+					var value1 = this.trim(index.substr(0,minValue));
+					var value2 = this.trim(index.substr(Math.max(smallerThen, equalTo, biggerThen)+1));
+				}
+				else {
+					var value1 = index;
+					var value2 = "";
 				}
 
-				if ((!index) || ((index) && (isNaN(index)))) {
-					// No square brackets or the content is an attribute or compare request
-					if ((index) && (index != "")) {
-						// We have a compare request. The index could be a number, string or XPath.
-
-						// See if we have to compare something? <=>
-						var smallerThen = index.indexOf("<");
-						var equalTo = index.indexOf("=");
-						var biggerThen = index.indexOf(">");
-
-						if ((smallerThen > -1) || (equalTo > -1) || (biggerThen > -1)) {
-							var value1 = this.trim(index.substr(0,Math.min(smallerThen, equalTo, biggerThen)));
-							var value2 = this.trim(index.substr(Math.max(smallerThen, equalTo, biggerThen)+1));
+				// Find left side results.
+				if (value1 != "") {
+					if ((value1.substr(0,1) == "/") || (value1.substr(0,1) == ".") || (value1.substr(0,1) == "@")) {
+						// Left side is a XPath query.
+						this.logInfo("1 Left side is a XPath query. value1:"+value1,2);
+						var tmpResult1 = this.XPath(value1);
+					}
+					else {
+						// Left side is a number or string.
+						var tmpResult1 = new Array();
+						if (isNaN(value1)) {
+							tmpResult1.push(new String(value1.substr(1,value1.length-2)));
 						}
 						else {
-							var value1 = index;
-							var value2 = "";
+							tmpResult1.push(value1);
 						}
+					}
+				}
 
-						// Find left side results.
-						if (value1 != "") {
-							if ((value1.substr(0,1) == "/") || (value1.substr(0,1) == ".") || (value1.substr(0,1) == "@")) {
-								// Left side is a XPath query.
-								var tmpResult1 = this.XPath(value1);
-							}
-							else {
-								// Left side is a number or string.
-								var tmpResult1 = new Array();
-								if (isNaN(value1)) {
-									tmpResult1.push(value1);
+				// Find right side results
+				this.logInfo("-- value2:"+value2,2);
+				if (value2 != "") {
+					if ((value2.substr(0,1) == "/") || (value2.substr(0,1) == ".") || (value2.substr(0,1) == "@")) {
+						// Right side is a XPath query
+						var tmpResult2 = this.XPath(value2);
+					}
+					else {
+						// Right side is a number or string.
+						var tmpResult2 = new Array();
+						if (isNaN(value1)) {
+							this.logInfo(" Right side is a String. value2:"+value2.substr(1,value2.length-2),2);
+							tmpResult2.push(new String(value2.substr(1,value2.length-2)));
+						}
+						else {
+							this.logInfo(" Right side is a number. value2:"+value2,2);
+							tmpResult2.push(value2);
+						}
+					}
+				}
+
+				if (tmpResult1.length > 0) {
+					this.logInfo("tmpResult1.length:"+tmpResult1.length,2);
+					if ((smallerThen > -1) || (equalTo > -1) || (biggerThen > -1)) {
+						// Filter out ony the valid ones.
+						if (tmpResult2.length > 0) {
+							this.logInfo("tmpResult2.length:"+tmpResult2.length,2);
+							this.logInfo("Going to match found results to compare function",2);
+							var x = 0;
+							var matchFound = false;
+							while ((x < tmpResult1.length) && (!matchFound)) {
+
+								if ((typeof tmpResult1[x] === "string") || (tmpResult1[x] instanceof String)) {
+									var left = tmpResult1[x];
 								}
 								else {
-									tmpResult1.push(value1.substr(1,value1.length-2));
+									var left = tmpResult1[x].contentStr();
 								}
-							}
-						}
 
-						// Find right side results
-						if (value2 != "") {
-							if ((value2.substr(0,1) == "/") || (value2.substr(0,1) == ".") || (value2.substr(0,1) == "@")) {
-								// Right side is a XPath query
-								var tmpResult2 = this.XPath(value2);
-							}
-							else {
-								// Right side is a number or string.
-								var tmpResult2 = new Array();
-								if (isNaN(value1)) {
-									tmpResult2.push(value2);
-								}
-								else {
-									tmpResult2.push(value1.substr(1,value2.length-2));
-								}
-							}
-						}
+								var y = 0;
+								while ((y < tmpResult2.length) && (!matchFound)) {
 
-						if (tmpResult1.length > 0) {
-							if ((smallerThen > -1) || (equalTo > -1) || (biggerThen > -1)) {
-								// Filter out ony the valid ones.
-								if (tmpResult2.length > 0) {
-									var x = 0;
-									var matchFound = false;
-									while ((x < tmpResult1.length) && (!matchFound)) {
-
-										if (tmpResult1[x] instanceof String) {
-											var left = tmpResult1[x];
-										}
-										else {
-											var left = tmpResult1[x].contentStr();
-										}
-
-										var y = 0;
-										while ((y < tmpResult2.length) && (!matchFound)) {
-
-											if (tmpResult2[y] instanceof String) {
-												var right = tmpResult2[y];
-											}
-											else {
-												var right = tmpResult2[y].contentStr();
-											}
-
-											matchFound = ( ((smallerThen > -1) && (left < right)) ||
-													((equalTo > -1) && (left == right)) ||
-													((biggerThen > -1) && (left > right)) );
-											y++;
-										}
-										x++;
+									if ((typeof tmpResult2[y] === "string") || (tmpResult2[y] instanceof String)) {
+										var right = tmpResult2[y];
 									}
+									else {
+										var right = tmpResult2[y].contentStr();
+									}
+
+									matchFound = ( ((smallerThen > -1) && (left < right)) ||
+											((equalTo > -1) && (left == right)) ||
+											((biggerThen > -1) && (left > right)) );
+									y++;
 								}
-								else {
-									// Error... We have nothing to compare against...!
-									throw "XPath compare error:"+this.tagName+"["+index+"]";
-								}
+								x++;
 							}
-							else {
-								// Return all results.
+							if (matchFound) {
+								this.logInfo(" @@@@@@@@@@@@ -------- MATCHFOUND ---------- @@@@@@@@@@@@@", 2);
 								result.push(this);
 							}
 						}
+						else {
+							// Error... We have nothing to compare against...!
+							this.logInfo("XPath compare error:"+this.tagName+"["+index+"]");
+							throw "XPath compare error:"+this.tagName+"["+index+"]";
+						}
 					}
 					else {
-						this.logInfo("We will check if specified element '"+tmpPath2+"' exists as child in '"+this.tagName+"'", 2);
-						for (var index in this) {
-							if (index.indexOf(":") > -1) {
-								this.logInfo(" %%:"+index, 2);
-								if (index == tmpPath2) {
-									if (Array.isArray(this[index])) {
-										this.logInfo(" ^^ found tag:"+index+" and is an array with "+this[index].length+" elements.", 2);
-										for (var index2 in this[index]) {
-											result.push(this[index][index2]);
-										}
-									}
-									else {
-										this.logInfo(" ^^ found tag:"+index, 2);
-										result.push(this[index]);
-									}
+						// Return all results.
+						result.push(this);
+					}
+				}
+			}
+			else {
+				this.logInfo("Nothing specified between the square brackets!!??");
+				throw "XPath compare error:No Value between square brackets:"+this.tagName+"["+index+"]";
+			}
+			break;
+
+		default:
+			var bracketPos = tmpPath.indexOf("[");
+			var forwardSlashPos = tmpPath.indexOf("/");
+			var splitPos = tmpPath.length;
+			if ((bracketPos < splitPos) && (bracketPos > -1)) {
+				splitPos = bracketPos;
+			}
+			if ((forwardSlashPos < splitPos) && (forwardSlashPos > -1)) {
+				splitPos = forwardSlashPos;
+			}
+
+			var tmpPath2 = tmpPath.substr(0, splitPos);
+			tmpPath = tmpPath.substr(splitPos);
+
+			if (tmpPath2 != "") {
+
+				this.logInfo("We will check if specified element '"+tmpPath2+"' exists as child in '"+this.tagName+"'", 2);
+				for (var index in this) {
+					if (index.indexOf(":") > -1) {
+						this.logInfo(" %%:"+index, 2);
+						if (index == tmpPath2) {
+							if (Array.isArray(this[index])) {
+								this.logInfo(" ^^ found tag:"+index+" and is an array with "+this[index].length+" elements.", 2);
+								for (var index2 in this[index]) {
+									result.push(this[index][index2]);
 								}
+							}
+							else {
+								this.logInfo(" ^^ found tag:"+index, 2);
+								result.push(this[index]);
 							}
 						}
 					}
 				}
-				else {
-					this.logInfo("Requested XPath contains an index:"+Number(index), 2);
-					this.logInfo("Requested XPath contains object request. b:"+tmpPath2, 2);
-					result.push(this[pathPart][Number(index)]);
-				}
+
 			}
 
 		} // End of switch
 
+			this.logInfo("tmpPath:"+tmpPath+", result.length="+result.length,2);
 		if ((result.length > 0) && (tmpPath != "")) {
 			this.logInfo("tmpPath:"+tmpPath,2);
 			var finalResult = new Array();
 			for (var index in result) {
 
-				if (result[index] instanceof String) {
+				if ((typeof result[index] === "string") || (result[index] instanceof String)) {
 					finalResult.push(result[index]);
 				}
 				else {
-					this.logInfo("~~"+result[index].tagName, 2);
+					this.logInfo("~~a:"+result[index].tagName, 2);
 					var tmpResult = result[index].XPath(tmpPath);
 					if (tmpResult) {
 						for (var index2 in tmpResult) {
@@ -585,6 +670,39 @@ mivIxml2jxon.prototype = {
 				}
 			}
 			result = finalResult;
+		}
+		else {
+			if ((tmpPath != "") && (tmpPath.substr(0,2) != "//")) {
+				var finalResult = new Array();
+				this.logInfo("~~b:"+this.tagName, 2);
+				var tmpResult = this.XPath(tmpPath);
+				if (tmpResult) {
+					for (var index2 in tmpResult) {
+						finalResult.push(tmpResult[index2]);
+					}
+				}
+				result = finalResult;
+			}
+		}
+
+			this.logInfo("@@ tmpPath:"+tmpPath+", tag:"+this.tagName+", allTag:"+allTag+", result.length="+result.length,2);
+		if ((tmpPath != "") && (tmpPath.substr(0,2) == "//") && (this[allTag]) && (this.tagName == this[allTag].tagName)) {
+			this.logInfo(" !!:tag:"+this.tagName, 2);
+
+			tmpPath = tmpPath.substr(1); // We remove one of double forward slash so it becomes a normal xpath and filtering will take place.
+			if ((tmpPath != "") && (tmpPath.substr(0,2) != "//")) {
+				var finalResult = new Array();
+				this.logInfo("~~c:"+this.tagName, 2);
+				var tmpResult = this.XPath(tmpPath);
+				if (tmpResult) {
+					for (var index2 in tmpResult) {
+						finalResult.push(tmpResult[index2]);
+					}
+				}
+				result = finalResult;
+			}
+
+//			result.push(this);
 		}
 
 		this.logInfo("XPath return.....",2);
