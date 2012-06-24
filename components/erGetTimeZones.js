@@ -77,13 +77,13 @@ erGetTimeZonesRequest.prototype = {
 	execute: function _execute()
 	{
 //		exchWebService.commonFunctions.LOG("erGetTimeZonesRequest\n");
-		// We are going to do a dummy FindItem. It will return the real primarySMTP
-		var req = <nsMessages:GetServerTimeZones xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
-		req.@ReturnFullTimeZoneData = "true";
 
-		//req.nsMessages::Ids = "";
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetServerTimeZones xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		req.setAttribute("ReturnFullTimeZoneData", "true");
 
 		//exchWebService.commonFunctions.LOG("erGetTimeZonesRequest.execute:"+String(this.parent.makeSoapMessage(req)));
+
+		this.parent.xml2jxon = true;
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
@@ -91,6 +91,7 @@ erGetTimeZonesRequest.prototype = {
 	{
 		//exchWebService.commonFunctions.LOG("erGetTimeZonesRequest.onSendOk:"+String(aResp));
 		var rm = aResp..nsMessages::GetServerTimeZonesResponseMessage;
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
 		var ResponseCode = rm.nsMessages::ResponseCode.toString();
 

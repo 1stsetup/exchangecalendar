@@ -97,7 +97,11 @@ erGetFolderRequest.prototype = {
 
 		req.addChildTag("FolderShape", "nsMessages", null).addChildTag("BaseShape", "nsTypes", "AllProperties");
 
-		req.addChildTagObject(makeParentFolderIds2("FolderIds", this.argument));
+exchWebService.commonFunctions.LOG(" ###1 ");
+		var parentFolder = makeParentFolderIds2("FolderIds", this.argument);
+exchWebService.commonFunctions.LOG(" ###2 ");
+		req.addChildTagObject(parentFolder);
+exchWebService.commonFunctions.LOG(" ###3 ");
 
 		//exchWebService.commonFunctions.LOG(" ++ xml2jxon ++:"+this.parent.makeSoapMessage(req));
 

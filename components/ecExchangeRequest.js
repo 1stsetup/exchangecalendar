@@ -45,7 +45,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 
-var EXPORTED_SYMBOLS = ["ExchangeRequest","nsSoap","nsTypes","nsMessages", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponse", "xml_tag", "getEWSServerVersion"];
+var EXPORTED_SYMBOLS = ["ExchangeRequest","nsSoap","nsTypes","nsMessages", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponse", "xml_tag", "getEWSServerVersion", "setEWSServerVersion"];
 
 var xml_tag = '<?xml version="1.0" encoding="utf-8"?>\n';
 var nsSoap = new Namespace("nsSoap", "http://schemas.xmlsoap.org/soap/envelope/");
@@ -73,6 +73,11 @@ function getEWSServerVersion(aURL)
 	return "Exchange2007_SP1";
 }
 
+function setEWSServerVersion(aURL, aValue)
+{
+	gEWSServerVersion[aURL] = aValue;
+}
+
 if (! exchWebService) var exchWebService = {};
 
 exchWebService.prePasswords = {};
@@ -88,8 +93,7 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 	this.currentUrl = "";
 	this.listener = aListener;
 	this.e4x = true;
-	this.xml2jxon_receive = false;
-	this.xml2jxon_send = false;
+	this.xml2jxon = false;
 	this.retryCount = 0;
 
 	this.mAuthFail = 0;
@@ -465,49 +469,52 @@ ExchangeRequest.prototype = {
 
 		xml = xml.replace(/&#x10;/g, ""); // BUG 61 remove hexadecimal code 0x10. It will fail in xml conversion.
 
-		// START VERY EXPERIMENTAL
-		try {
-		    var newXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
-				       .createInstance(Ci.mivIxml2jxon);
-		}
-		catch(exc) { this.logInfo("createInstance error:"+exc);}
-
-		try {
-			newXML.processXMLString(xml, 0, null);
-		}
-		catch(exc) { this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
-		// END VERY EXPERIMENTAL 
-
-		try {
-			xml = new XML(xml);
-		}
-		catch(er) {
-			this.logInfo("XML conversion error 1: "+ er);
-			// BUG 61 Convert all Hex codes to decimal
-			xml = xml.replace(/&#x([0123456789ABCDEF][0123456789ABCDEF]?);/g, function(str, ent) { return "&#"+parseInt(ent,16)+";"; }); 
+		if (this.xml2jxon) {
 			try {
-				xml = new XML(xml);
+			    var newXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
+					       .createInstance(Ci.mivIxml2jxon);
 			}
-			catch(er2) {
-				this.logInfo("XML conversion error 2: "+ er);
-				 // BUG 61 remove all decimal codes below character 32 (space) 
-				xml = xml.replace(/&#([0123456789]?);/g, function(str, ent) parseInt(ent,10) < 32 ? "" : "&#"+parseInt(ent,10)+";" );
+			catch(exc) { this.logInfo("createInstance error:"+exc);}
+
+			try {
+				newXML.processXMLString(xml, 0, null);
+			}
+			catch(exc) { this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
+		}
+		else {
+			if (this.e4x) {
 				try {
 					xml = new XML(xml);
 				}
-				catch (er3) {
-					this.logInfo("FATAL XML conversion error 3: "+ er3);
-					this.logInfo("          String which fails: "+ xml, 2);
-
-					var answer = xmlReq.responseText.substr(0,100)+"\n\n";
-					
-					this.fail(this.ER_ERROR_XML_CONVERSION_ERROR, "Fatal XML conversion error. Probably because we did not receive a page with XML. (onLoad)\n\n"+answer);
-					if (this.tryNextURL()) {
-						return;
+				catch(er) {
+					this.logInfo("XML conversion error 1: "+ er);
+					// BUG 61 Convert all Hex codes to decimal
+					xml = xml.replace(/&#x([0123456789ABCDEF][0123456789ABCDEF]?);/g, function(str, ent) { return "&#"+parseInt(ent,16)+";"; }); 
+					try {
+						xml = new XML(xml);
 					}
+					catch(er2) {
+						this.logInfo("XML conversion error 2: "+ er);
+						 // BUG 61 remove all decimal codes below character 32 (space) 
+						xml = xml.replace(/&#([0123456789]?);/g, function(str, ent) parseInt(ent,10) < 32 ? "" : "&#"+parseInt(ent,10)+";" );
+						try {
+							xml = new XML(xml);
+						}
+						catch (er3) {
+							this.logInfo("FATAL XML conversion error 3: "+ er3);
+							this.logInfo("          String which fails: "+ xml, 2);
 
-					xmlReq.abort();
-					return;
+							var answer = xmlReq.responseText.substr(0,100)+"\n\n";
+					
+							this.fail(this.ER_ERROR_XML_CONVERSION_ERROR, "Fatal XML conversion error. Probably because we did not receive a page with XML. (onLoad)\n\n"+answer);
+							if (this.tryNextURL()) {
+								return;
+							}
+
+							xmlReq.abort();
+							return;
+						}
+					}
 				}
 			}
 		}

@@ -37,6 +37,7 @@ interface mivIxml2jxon : nsISupports
   readonly attribute AUTF8String XMLHeader;
   readonly attribute boolean isXMLHeader;
 
+  attribute AUTF8String uuid;
   attribute AUTF8String tagName;
   attribute AUTF8String nameSpace;
 
@@ -44,6 +45,7 @@ interface mivIxml2jxon : nsISupports
   void processXMLString(in AUTF8String aString, in long aStartPos, in mivIxml2jxon aParent);
   jsval XPath(in AUTF8String aString);
   AUTF8String contentStr();
+  readonly attribute AUTF8String value;
 
   AUTF8String toString();
 

@@ -38,6 +38,8 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 	this.messageLength = 0;
 	this.closed = false;
 
+	this.uuid = exchWebService.commonFunctions.getUUID();
+
 	this.logInfo("mivIxml2jxon.init",2);
 
 	if (aXMLString) {
@@ -246,7 +248,8 @@ mivIxml2jxon.prototype = {
 			this[aNameSpace+tagSeparator+aTagName].push(aObject);
 			this.addToContent(aObject);
 		}
-		if (aObject != this) {
+		if (aObject.uuid != this.uuid) {
+			this.logInfo("Going to add myself to myself. aObject.uuid:"+aObject.uuid+", this.uuid:"+this.uuid, 2 );
 			aObject.addChildTagObject(aObject);
 		}
 	},
@@ -317,6 +320,11 @@ mivIxml2jxon.prototype = {
 			this.logInfo("We have no content.tagName:"+this.tagName, 2);
 			return "";
 		}
+	},
+
+	get value()
+	{
+		return this.contentStr();
 	},
 
 	attributesToString: function _attributesToString()
@@ -568,7 +576,7 @@ mivIxml2jxon.prototype = {
 									var left = tmpResult1[x];
 								}
 								else {
-									var left = tmpResult1[x].contentStr();
+									var left = tmpResult1[x].value;
 								}
 
 								var y = 0;
@@ -578,7 +586,7 @@ mivIxml2jxon.prototype = {
 										var right = tmpResult2[y];
 									}
 									else {
-										var right = tmpResult2[y].contentStr();
+										var right = tmpResult2[y].value;
 									}
 
 									matchFound = ( ((smallerThen > -1) && (left < right)) ||

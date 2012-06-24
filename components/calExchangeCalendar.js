@@ -2756,7 +2756,7 @@ this.logInfo("singleModified doNotify");
 			this.syncInboxState = exchWebService.commonFunctions.safeGetCharPref(this.prefs,"syncInboxState", "");
 
 			this.getSyncState();
-			this.getTimeZones();
+			//this.getTimeZones(); moved to setFolderProperties.
 
 		}
 		return true;
@@ -7357,6 +7357,12 @@ this.logInfo("getTaskItemsOK 4");
 			}
 		}
 
+		var prefServerVersion = exchWebService.commonFunctions.safeGetCharPref(this.prefs,"lastServerVersion", null);
+		if (prefServerVersion) {
+			this.logInfo("Restored prefServerVersion from prefs.js:"+prefServerVersion);
+			setEWSServerVersion(this.serverUrl, prefServerVersion);
+		}
+
 		if (this.isOffline) return;
 
 		if (this.folderPath != "/") {
@@ -7494,6 +7500,9 @@ this.logInfo("getTaskItemsOK 4");
 
 			this.setSupportedItems(aFolderClass);		
 		}
+
+		this.getTimeZones();
+
 	},
 
 	getFolderOk: function _getFolderOk(erGetFolderRequest, aId, aChangeKey, aFolderClass)
@@ -7504,6 +7513,8 @@ this.logInfo("getTaskItemsOK 4");
 		
 		this.folderProperties = erGetFolderRequest.properties;
 		this.prefs.setCharPref("folderProperties", this.folderProperties.toString());
+
+		this.prefs.setCharPref("lastServerVersion", getEWSServerVersion(this.serverUrl));
 
 		this.setFolderProperties(this.folderProperties, aFolderClass);
 
@@ -7792,6 +7803,7 @@ this.logInfo("getTaskItemsOK 4");
 	getEWSTimeZoneId: function _getEWSTimeZoneId(aCalTimeZone)
 	{
 		this.logInfo("getEWSTimeZoneId:"+aCalTimeZone.tzid);
+
 		if (this.EWSTimeZones) {
 			
 			if (aCalTimeZone.isFloating) {
@@ -7906,7 +7918,9 @@ this.logInfo("getTaskItemsOK 4");
 			}
 		}
 
-		this.offlineTimer.cancel();
+		if (this.offlineTimer) {
+			this.offlineTimer.cancel();
+		}
 
 		if (this.calendarPoller) {
 			this.calendarPoller.cancel();
