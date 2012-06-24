@@ -81,8 +81,6 @@ erGetTimeZonesRequest.prototype = {
 		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetServerTimeZones xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 		req.setAttribute("ReturnFullTimeZoneData", "true");
 
-		//exchWebService.commonFunctions.LOG("erGetTimeZonesRequest.execute:"+String(this.parent.makeSoapMessage(req)));
-
 		this.parent.xml2jxon = true;
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},

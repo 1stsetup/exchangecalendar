@@ -86,64 +86,50 @@ erGetFolderRequest.prototype = {
 	{
 		//exchWebService.commonFunctions.LOG("erGetFolderRequest.execute 1");
 
-/*		var req = <nsMessages:GetFolder xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
-
-		req.nsMessages::FolderShape.nsTypes::BaseShape = "AllProperties";
-
-		req.nsMessages::FolderIds = makeParentFolderIds("FolderIds", this.argument);
-		//exchWebService.commonFunctions.LOG(" ++ E4X ++:"+this.parent.makeSoapMessage(req));*/
-
 		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetFolder xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
 		req.addChildTag("FolderShape", "nsMessages", null).addChildTag("BaseShape", "nsTypes", "AllProperties");
 
-exchWebService.commonFunctions.LOG(" ###1 ");
 		var parentFolder = makeParentFolderIds2("FolderIds", this.argument);
-exchWebService.commonFunctions.LOG(" ###2 ");
 		req.addChildTagObject(parentFolder);
-exchWebService.commonFunctions.LOG(" ###3 ");
 
 		//exchWebService.commonFunctions.LOG(" ++ xml2jxon ++:"+this.parent.makeSoapMessage(req));
 
 		//exchWebService.commonFunctions.LOG("erGetFolderRequest.execute:"+String(this.parent.makeSoapMessage(req)));
-                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		this.parent.xml2jxon = true;
+		this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erGetFolderRequest.onSendOk:"+String(aResp));
+		exchWebService.commonFunctions.LOG("erGetFolderRequest.onSendOk:"+String(aResp));
 		// Get FolderID and ChangeKey
-		var aContinue = true;
 		var aError = false;
 		var aCode = 0;
 		var aMsg = "";
 		var aResult = undefined;
 
-		try {
-			var responseCode = aResp..nsMessages::ResponseCode.toString();
-		}
-		catch(err) {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
-			return;
-		}
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetFolderResponse/m:ResponseMessages/m:GetFolderResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
-		if (responseCode != "NoError") {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getfolder:"+responseCode);
-			return;
-		}
-		else {
-			try {
-				var folderID = aResp.nsSoap::Body.nsMessages::GetFolderResponse..nsTypes::FolderId.@Id.toString();
-				var changeKey = aResp.nsSoap::Body.nsMessages::GetFolderResponse..nsTypes::FolderId.@ChangeKey.toString();
-				var folderClass = aResp.nsSoap::Body.nsMessages::GetFolderResponse..nsTypes::FolderClass.toString();
+		if (rm.length > 0) {
+			var calendarFolder = rm[0].XPath("/m:Folders/t:CalendarFolder");
+			if (calendarFolder.length > 0) {
+				var folderID = calendarFolder[0]["t:FolderId"]["@Id"];
+				var changeKey = calendarFolder[0]["t:FolderId"]["@ChangeKey"];
+				var folderClass = calendarFolder[0]["t:FolderClass"].value;
+				this.displayName = calendarFolder[0]["t:DisplayName"].value;
 			}
-			catch(err) {
-				aMsg = err;
+			else {
+				aMsg = "Did not find any CalendarFolder parts.";
 				aCode = this.parent.ER_ERROR_FINDFOLDER_FOLDERID_DETAILS;
-				aContinue = false;
 				aError = true;
 			}
+		}
+		else {
+			aCode = this.parent.ER_ERROR_FINDFOLDER_FOLDERID_DETAILS;
+			aError = true;
+			aMsg = "Wrong response received.";
 		}
 
 		if (aError) {
@@ -152,7 +138,6 @@ exchWebService.commonFunctions.LOG(" ###3 ");
 		else {
 			if (this.mCbOk) {
 				this.properties = aResp;
-				this.displayName = aResp.nsSoap::Body.nsMessages::GetFolderResponse..nsTypes::DisplayName[0].toString();
 				this.mCbOk(this, folderID, changeKey, folderClass);
 			}
 			this.isRunning = false;

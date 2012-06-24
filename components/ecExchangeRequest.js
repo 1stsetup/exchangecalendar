@@ -537,13 +537,26 @@ ExchangeRequest.prototype = {
 		if (this.mCbOk) {
 			// Try to get server version and store it.
 			try {
-				var serverVersion = resp.nsSoap::Header.nsTypes::ServerVersionInfo;
-				if ((serverVersion) && (serverVersion.@Version != "")) {
-					if (serverVersion.@Version == "Exchange2010_SP2") {
-						gEWSServerVersion[this.currentUrl] = "Exchange2010_SP1";
+				if (this.xml2jxon) {
+					var serverVersion = resp.XPath("/s:Header/t:ServerVersionInfo");
+					if ((serverVersion.length > 0) && (serverVersion[0]["@Version"] != "")) {
+						if (serverVersion[0]["@Version"] == "Exchange2010_SP2") {
+							gEWSServerVersion[this.currentUrl] = "Exchange2010_SP1";
+						}
+						else {
+							gEWSServerVersion[this.currentUrl] = serverVersion[0]["@Version"];
+						}
 					}
-					else {
-						gEWSServerVersion[this.currentUrl] = serverVersion.@Version;
+				}
+				else {
+					var serverVersion = resp.nsSoap::Header.nsTypes::ServerVersionInfo;
+					if ((serverVersion) && (serverVersion.@Version != "")) {
+						if (serverVersion.@Version == "Exchange2010_SP2") {
+							gEWSServerVersion[this.currentUrl] = "Exchange2010_SP1";
+						}
+						else {
+							gEWSServerVersion[this.currentUrl] = serverVersion.@Version;
+						}
 					}
 				}
 			}

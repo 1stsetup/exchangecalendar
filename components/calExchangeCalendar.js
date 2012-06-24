@@ -575,11 +575,19 @@ calExchangeCalendar.prototype = {
 	{
 
 		if (this.folderProperties) {
-			var effectiveRights = this.folderProperties.nsSoap::Body.nsMessages::GetFolderResponse.nsMessages::ResponseMessages.nsMessages::GetFolderResponseMessage.nsMessages::Folders.nsTypes::CalendarFolder.nsTypes::EffectiveRights;
+			var effectiveRights = this.folderProperties.XPath("/s:Envelope/s:Body/m:GetFolderResponse/m:ResponseMessages/m:GetFolderResponseMessage/m:Folders/t:CalendarFolder/t:EffectiveRights");
+			if (effectiveRights.length > 0) {
+				if (((effectiveRights[0]["t:Delete"].value == "false") || (effectiveRights[0]["t:Modify"].value == "false")) &&
+					(effectiveRights[0]["t:CreateContents"].value == "false")) {
+					aValue = true;
+				}
+			}
+
+/*			var effectiveRights = this.folderProperties.nsSoap::Body.nsMessages::GetFolderResponse.nsMessages::ResponseMessages.nsMessages::GetFolderResponseMessage.nsMessages::Folders.nsTypes::CalendarFolder.nsTypes::EffectiveRights;
 			if (((effectiveRights.nsTypes::Delete.toString() == "false") || (effectiveRights.nsTypes::Modify.toString() == "false")) &&
 				(effectiveRights.nsTypes::CreateContents.toString() == "false")) {
 				aValue = true;
-			}
+			}*/
 		}
 
 		var changed = false;
@@ -7353,7 +7361,8 @@ this.logInfo("getTaskItemsOK 4");
 			var tmpFolderProperties = exchWebService.commonFunctions.safeGetCharPref(this.prefs,"folderProperties", null);
 			if (tmpFolderProperties) {
 				//this.logInfo("Restore folderProperties from prefs.js:"+tmpFolderProperties);
-				var tmpXML = new XML(tmpFolderProperties);
+				//var tmpXML = new XML(tmpFolderProperties);
+				var tmpXML = exchWebService.commonFunctions.xmlToJxon(tmpFolderProperties);
 				this.setFolderProperties(tmpXML, tmpFolderClass);
 			}
 		}
@@ -7420,11 +7429,11 @@ this.logInfo("getTaskItemsOK 4");
 	setSupportedItems: function _setSupportedItems(aFolderClass)
 	{
 		this.folderClass = aFolderClass;
-		this.logInfo("Set folderClass="+this.folderClass);
+		this.logInfo("Set folderClass="+this.folderClass.toString());
 		this.prefs.setCharPref("folderClass", aFolderClass);
 		var itemType = Ci.calICalendar.ITEM_FILTER_TYPE_EVENT;
 
-		switch (aFolderClass) {
+		switch (aFolderClass.toString()) {
 			case "IPF.Appointment":
 				this.supportsEvents = true;
 				this.supportsTasks = false;
@@ -7487,7 +7496,9 @@ this.logInfo("getTaskItemsOK 4");
 		// properties we should activate OnlyShowAvailability variable.
 		// Problem is when is this condition true
 		// For now we will set OnlyShowAvailability = true when EffectiveRights.Read == false
-		if (aFolderProperties.nsSoap::Body.nsMessages::GetFolderResponse..nsTypes::EffectiveRights.nsTypes::Read.toString() == "false") {
+		var rm = aFolderProperties.XPath("/s:Envelope/s:Body/m:GetFolderResponse/m:ResponseMessages/m:GetFolderResponseMessage/m:Folders/t:CalendarFolder/t:EffectiveRights[t:Read='true']");
+
+		if (rm.length == 0) {
 			this.logInfo("getFolderOk: but EffectiveRights.Read == false. Only getting Free/Busy information.");
 			if (!this.OnlyShowAvailability) {
 				this.OnlyShowAvailability = true;

@@ -328,7 +328,7 @@ mivIxml2jxon.prototype = {
 
 	get value()
 	{
-		return this.contentStr();
+		return this.contentStr().toString();
 	},
 
 	attributesToString: function _attributesToString()
