@@ -90,12 +90,9 @@ erGetTimeZonesRequest.prototype = {
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
 		//exchWebService.commonFunctions.LOG("erGetTimeZonesRequest.onSendOk:"+String(aResp));
-		var rm = aResp..nsMessages::GetServerTimeZonesResponseMessage;
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
-		var ResponseCode = rm.nsMessages::ResponseCode.toString();
-
-		if (ResponseCode == "NoError") {
+		if (rm.length > 0) {
 
 			if (this.mCbOk) {
 				this.mCbOk(this, aResp);
@@ -103,6 +100,7 @@ erGetTimeZonesRequest.prototype = {
 			this.isRunning = false;
 		}
 		else {
+			exchWebService.commonFunctions.LOG("erGetTimeZonesRequest.onSendOk: DID NOT FIND valid response.");
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SYNCFOLDERITEMS_UNKNOWN, "Error during SyncFolderItems:"+ResponseCode);
 			return;
 		}

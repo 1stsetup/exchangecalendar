@@ -523,10 +523,15 @@ ExchangeRequest.prototype = {
 		this.mRunning  = false;
 
 		var resp;
-		if (this.e4x) {
-			resp = xml;
-		} else {
-			resp = xmlReq.responseXML;
+		if (this.xml2jxon) {
+			resp = newXML;
+		}
+		else {
+			if (this.e4x) {
+				resp = xml;
+			} else {
+				resp = xmlReq.responseXML;
+			}
 		}
 
 		if (this.mCbOk) {

@@ -70,6 +70,7 @@ Cu.import("resource://exchangecalendar/erSyncInbox.js");
 Cu.import("resource://exchangecalendar/erGetTimeZones.js");
 Cu.import("resource://exchangecalendar/erCreateAttachment.js");
 Cu.import("resource://exchangecalendar/erDeleteAttachment.js");
+//Cu.import("resource://interfaces/xml.js");
 
 
 var tmpActivityManager = Cc["@mozilla.org/activity-manager;1"];
@@ -7602,29 +7603,19 @@ this.logInfo("getTaskItemsOK 4");
 			istream.close();
 
 			try {
-				this._ews_2010_timezonedefinitions = new XML(lines);
+				//this._ews_2010_timezonedefinitions = new XML(lines);
 
-		// START VERY EXPERIMENTAL
 				try {
-				    var mivXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
+				    this._ews_2010_timezonedefinitions = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
 						       .createInstance(Ci.mivIxml2jxon);
 				}
 				catch(exc) { this.logInfo("createInstance error:"+exc);}
 
 
 				try {
-					mivXML.processXMLString(lines, 0, null);
+					this._ews_2010_timezonedefinitions.processXMLString(lines, 0, null);
 				}
 				catch(exc) { this.logInfo("processXMLString error:"+exc.name+", "+exc.message);} 
-				try {
-//					this.logInfo("[[[[[[[[[[[Header:"+mivXML.XPath("/s:Header").toString()+"]]]]]]]]]]]]");
-//					var timeZone = mivXML.XPath("/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage/m:TimeZoneDefinitions/t:TimeZoneDefinition[@Id='UTC']//t:To[@Kind='Period']");
-//					this.logInfo("[[[[[xx:"+timeZone[0].contentStr()+", timeZone.length:"+timeZone.length);
-//					var bias = timeZone[0].XPath("//t:To[@Kind='Group']");
-//					this.logInfo("[[[[[[[[[[[Header:"+bias[0].contentStr()+", bias.length:"+bias.length+"]]]]]]]]]]]]");
-				}
-				catch(exc) { this.logInfo("Header error:"+exc.name+", "+exc.message);} 
-		// END VERY EXPERIMENTAL */
 
 			}
 			catch(exc) {this.logInfo("Could not convert timezone xml file into XML object:"+exc); };
@@ -7637,13 +7628,16 @@ this.logInfo("getTaskItemsOK 4");
 
 	getEWSTimeZones: function _getEWSTimeZones(aTimeZoneDefinitions)
 	{
-		var rm = aTimeZoneDefinitions..nsMessages::GetServerTimeZonesResponseMessage;
+		//var rm = aTimeZoneDefinitions..nsMessages::GetServerTimeZonesResponseMessage;
+		var rm = aTimeZoneDefinitions.XPath("/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage");
+		if (rm.length == 0) return null;
 
 		var timeZoneDefinitions = {};
 
-		for each( var timeZoneDefinition in rm.nsMessages::TimeZoneDefinitions.nsTypes::TimeZoneDefinition) {
-			//cal.LOG("ss:"+timeZoneDefinition.@Name);
-			timeZoneDefinitions[timeZoneDefinition.@Id] = timeZoneDefinition;
+		var timeZoneDefinitionArray = rm[0].XPath("/m:TimeZoneDefinitions/t:TimeZoneDefinition");
+		this.logInfo("$$$ timeZoneDefinitionArray.length:"+timeZoneDefinitionArray.length);
+		for (var index in timeZoneDefinitionArray) {
+			timeZoneDefinitions[timeZoneDefinitionArray[index]["@Id"]] = timeZoneDefinitionArray[index];
 		}
 
 		return timeZoneDefinitions;
@@ -7838,18 +7832,19 @@ this.logInfo("getTaskItemsOK 4");
 			for each(var timeZoneDefinition in this.EWSTimeZones) {
 				//this.logInfo("timeZoneDefinition.@Name="+timeZoneDefinition.@Name);
 				var placeNameMatch = false;
-				if ((tmpPlaceName) && (timeZoneDefinition.@Name.indexOf(tmpPlaceName) > -1)) {
+				if ((tmpPlaceName) && (timeZoneDefinition["@Name"].indexOf(tmpPlaceName) > -1)) {
 					// We found our placename in the name of the timezonedefinition
 					placeNameMatch = true;
 				}
 
 				var standardMatch = null;
-				var periods = timeZoneDefinition.nsTypes::Periods..nsTypes::Period.(@Name == "Standard");
-				if (periods) {
-					for each (var period in periods) {
+//				var periods = timeZoneDefinition.nsTypes::Periods..nsTypes::Period.(@Name == "Standard");
+				var periods = timeZoneDefinition.XPath("/t:Periods/t:Period[@Name = 'Standard']");
+				if (periods.length > 0) {
+					for (var index in periods) {
 						//this.logInfo("xx period.@Bias="+period.@Bias.toString());
-						if (this.convertDurationToSeconds(period.@Bias.toString()) == this.convertDurationToSeconds(tmpBiasValues.standard)) {
-							standardMatch = period.@Bias.toString();
+						if (this.convertDurationToSeconds(periods[index]["@Bias"].toString()) == this.convertDurationToSeconds(tmpBiasValues.standard)) {
+							standardMatch = periods[index]["@Bias"].toString();
 							break;
 						}
 					}
@@ -7858,12 +7853,13 @@ this.logInfo("getTaskItemsOK 4");
 				if (standardMatch) {
 					var daylightMatch = null;
 					if (tmpBiasValues.daylight) {
-						var periods = timeZoneDefinition.nsTypes::Periods..nsTypes::Period.(@Name == "Daylight");
-						if (periods) {
-							for each (var period in periods) {
+//						var periods = timeZoneDefinition.nsTypes::Periods..nsTypes::Period.(@Name == "Daylight");
+						var periods = timeZoneDefinition.XPath("/t:Periods/t:Period[@Name = 'Daylight']");
+						if (periods.length > 0) {
+							for (var index in periods) {
 								//this.logInfo("yy period.@Bias="+period.@Bias.toString());
-								if (this.convertDurationToSeconds(period.@Bias.toString()) == this.convertDurationToSeconds(tmpBiasValues.daylight)) {
-									daylightMatch = period.@Bias.toString();
+								if (this.convertDurationToSeconds(periods[index]["@Bias"].toString()) == this.convertDurationToSeconds(tmpBiasValues.daylight)) {
+									daylightMatch = periods[index]["@Bias"].toString();
 									break;
 								}
 							}
@@ -7871,11 +7867,11 @@ this.logInfo("getTaskItemsOK 4");
 					}
 	
 					if ((standardMatch) && ((!tmpBiasValues.daylight) || (daylightMatch))) {
-						this.logInfo("WE HAVE A TIMEZONE MATCH BETWEEN LIGHTNING AND exchWebService.commonFunctions. Cal:"+aCalTimeZone.tzid+", EWS:"+timeZoneDefinition.@Name);
+						this.logInfo("WE HAVE A TIMEZONE MATCH BETWEEN LIGHTNING AND exchWebService.commonFunctions. Cal:"+aCalTimeZone.tzid+", EWS:"+timeZoneDefinition["@Name"]);
 	
 						// If we also found the place name this will overrule everything else.
 						if ((placeNameMatch) || (!weHaveAMatch)) {
-							weHaveAMatch = timeZoneDefinition.@Id;
+							weHaveAMatch = timeZoneDefinition["@Id"];
 	
 							if (placeNameMatch) {
 								this.logInfo("We have a timzonematch on place name");

@@ -617,6 +617,65 @@ exchWebService.commonFunctions = {
 		return result;
 	},
 
+	splitOnCharacter: function _splitOnCharacter(aString, aStartPos, aSplitCharacter)
+	{
+//		exchWebService.commonFunctions.LOG("splitOnCharacter: aString:"+aString+", aSplitCharacter:"+aSplitCharacter);
+		var tmpPos = aStartPos;
+		var result = "";
+		var notClosed = true;
+		var notQuoteOpen = true;
+		var quotesUsed = "";
+		while ((tmpPos < aString.length) && (notClosed)) {
+			if ((aString.substr(tmpPos,1) == "'") || (aString.substr(tmpPos,1) == '"')) {
+				// We found quotes. Do they belong to our string.
+				if (notQuoteOpen) {
+					quotesUsed = aString.substr(tmpPos,1);
+					notQuoteOpen = false;
+				}
+				else {
+					if (aString.substr(tmpPos,1) == quotesUsed) {
+						quotesUsed = "";
+						notQuoteOpen = true;
+					}
+				}
+			}
+
+			var hitSplitCharacter = false;
+			if (notQuoteOpen) {
+				if (Array.isArray(aSplitCharacter)) {
+//					exchWebService.commonFunctions.LOG("splitOnCharacter: isArray");
+					for (var index in aSplitCharacter) {
+						if (aString.substr(tmpPos,aSplitCharacter[index].length) == aSplitCharacter[index]) {
+							hitSplitCharacter = true;
+//							exchWebService.commonFunctions.LOG("splitOnCharacter: hitSplitCharacter: index="+result);
+							break;
+						}
+					}
+				}
+				else {
+					if (aString.substr(tmpPos,aSplitCharacter.length) == aSplitCharacter) {
+						hitSplitCharacter = true;
+					}
+				}
+			}
+
+			if (hitSplitCharacter) {
+				notClosed = false;
+			}
+			else {
+				result += aString.substr(tmpPos,1);
+			}
+			tmpPos++;
+		}
+
+		if (!notClosed) {
+			return result;
+		}
+		else {
+			return null;
+		}
+	},
+
 }
 
 

@@ -55,7 +55,6 @@ var xml2jxonGUID = "d7165a60-7d64-42b2-ac48-6ccfc0962abb";
 
 const tagSeparator = ":";
 
-
 mivIxml2jxon.prototype = {
 
 	// methods from nsISupport
@@ -221,6 +220,11 @@ mivIxml2jxon.prototype = {
 	setAttribute: function _setAttribute(aAttribute, aValue)
 	{
 		this["@"+aAttribute] = aValue;
+	},
+
+	getAttribute: function _getAttribute(aAttribute)
+	{
+		return this["@"+aAttribute];
 	},
 
 	addChildTagObject: function _addChildTagObject(aObject)
@@ -398,6 +402,241 @@ mivIxml2jxon.prototype = {
 		return result;
 	},
 
+	convertComparisonPart: function _convertComparisonPart(aPart)
+	{
+		this.logInfo(" == convertComparisonPart:"+aPart,2);
+		var result = new Array();
+		if ((aPart.substr(0,1) == "/") || (aPart.substr(0,1) == ".") || (aPart.substr(0,1) == "@")) {
+			// Left side is a XPath query.
+			this.logInfo("  convertComparisonPart: this is a XPath query 1. aPart:"+aPart,2);
+			result = this.XPath(aPart);
+		}
+		else {
+			// Left side is a number or string.
+			var result = new Array();
+			if ( (aPart.substr(0,1) == "'") || (aPart.substr(0,1) == '"')) {
+				result.push(new String(aPart.substr(1,aPart.length-2)));
+			}
+			else {
+				if (isNaN(aPart)) {
+					this.logInfo("  convertComparisonPart: this is a XPath query 2. aPart:"+aPart,2);
+					result = this.XPath(aPart);
+				}
+				else {
+					result.push(Number(aPart));
+				}
+			}
+		}
+		return result;
+	},
+
+	if: function _if(aCondition)
+	{
+		var level = 2;
+
+		this.logInfo("if: aCondition:"+aCondition, level);
+
+		var tmpCondition = this.trim(aCondition);
+
+		var compareList = new Array();
+		while (tmpCondition != "") {
+			var startPos = 0;
+			var weHaveSubCondition = false;
+
+			if (tmpCondition.substr(0,1) == "(") {
+				this.logInfo("if: found opening round bracker.", level);
+				var subCondition = exchWebService.commonFunctions.splitOnCharacter(tmpCondition.substr(1), 0, ")");
+				this.logInfo("if: subCondition:"+subCondition, level);
+				if (subCondition) {
+					startPos = subCondition.length;
+					weHaveSubCondition = true;
+				}
+				else {
+					throw "XPath error: Did not find closing round bracket '"+this.tagName+"' for condition:"+aCondition;
+				}
+			}
+
+			var splitPart = exchWebService.commonFunctions.splitOnCharacter(tmpCondition.toLowerCase(), startPos, [" and ", " or "]);
+
+			var operator = null;
+			var comparison = null;
+			if (splitPart) {
+				splitPart = tmpCondition.substr(0, splitPart.length);
+				tmpCondition = tmpCondition.substr(splitPart.length + 1);
+
+				// Findout which operator was specified.
+			
+				if (tmpCondition.substr(0,1) == "a") {
+					this.logInfo("if: found 'and' operator.", level);
+					var operator = "and";
+					tmpCondition = tmpCondition.substr(4);
+				}
+				else {
+					this.logInfo("if: found 'or' operator.", level);
+					var operator = "or";
+					tmpCondition = tmpCondition.substr(3);
+				}
+			}
+			else {
+				splitPart = tmpCondition;
+				tmpCondition = "";
+			}
+			this.logInfo(" == splitPart:"+splitPart+", subCondition:"+subCondition+", tmpCondition="+tmpCondition, level);
+
+			// Findout which comparison is requested.
+			if (weHaveSubCondition) {
+				this.logInfo("--Add compare: left:'"+subCondition+"', right:'', operator:"+operator+", comparison:"+comparison, level);
+				compareList.push( { left: subCondition, right: "", operator: operator, comparison: comparison, subCondition: subCondition} );
+			}
+			else {
+				var splitPart2 = exchWebService.commonFunctions.splitOnCharacter(splitPart, 0, ["!=", "<=", ">=", "<", "=", ">"]);
+				if (splitPart2) {
+					// Get comparison type
+					var smallerThen = false;
+					var equalTo = false;
+					var biggerThen = false;
+					var splitPos2 = splitPart2.length;
+					switch (splitPart.substr(splitPos2, 1)) {
+						case "!" : 
+							comparison = "!=";
+							break;
+						case "<" : 
+							comparison = "<";
+							if (splitPart.substr(splitPos2+1, 1) == "=") comparison = "<="; 
+							break;
+						case "=" : 
+							comparison = "="; 
+							break;
+						case ">" : 
+							comparison = ">";
+							if (splitPart.substr(splitPos2+1, 1) == "=") comparison = ">="; 
+							break;
+					}
+					this.logInfo("--Add compare: left:'"+this.trim(splitPart2)+"', right:'"+this.trim(splitPart.substr(splitPart2.length+comparison.length))+"', operator:"+operator+", comparison:"+comparison, level);
+					compareList.push( { left: this.trim(splitPart2), right: this.trim(splitPart.substr(splitPart2.length+comparison.length)), operator: operator, comparison: comparison, subCondition: subCondition} );
+				}
+				else {
+					this.logInfo("--Add compare: left:'"+this.trim(splitPart)+"', right:'', operatoroperatorcomparison:"+comparison, level);
+					compareList.push( { left: this.trim(splitPart), right: "", operator: operator, comparison: comparison, subCondition: subCondition} );
+				}
+			}
+		}
+
+		var totalResult = true;
+		var lastOperator = null;
+		for (var index in compareList) {
+			
+			var tmpResult = false;
+
+			if (compareList[index].subCondition) {
+				this.logInfo(" ------------------------------------1",level);
+				tmpResult = this.if(compareList[index].left);
+			}
+			else {
+				this.logInfo(" ------------------------------------2: compareList[index].left:"+compareList[index].left+", compareList[index].right:"+compareList[index].right, level);
+				var tmpLeft = this.convertComparisonPart(compareList[index].left);
+				var tmpRight = this.convertComparisonPart(compareList[index].right);
+
+				if (tmpLeft.length > 0) {
+					this.logInfo("tmpLeft.length:"+tmpLeft.length,level);
+					if (compareList[index].comparison) {
+						// Filter out ony the valid ones.
+						if (tmpRight.length > 0) {
+							this.logInfo("tmpRight.length:"+tmpRight.length,level);
+							this.logInfo("Going to match found results to compare function",level);
+							var x = 0;
+							tmpResult = false;
+							while ((x < tmpLeft.length) && (!tmpResult)) {
+
+								if ((typeof tmpLeft[x] === "string") || (tmpLeft[x] instanceof String) || (typeof tmpLeft[x] === "number")) {
+									this.logInfo("  ** a", level);
+									var evalConditionLeft = tmpLeft[x].toString();
+								}
+								else {
+									this.logInfo("  ** b", level);
+									var evalConditionLeft = tmpLeft[x].value.toString();
+								}
+
+								var y = 0;
+								while ((y < tmpRight.length) && (!tmpResult)) {
+
+									if ((typeof tmpRight[y] === "string") || (tmpRight[y] instanceof String) || (typeof tmpRight[y] === "number")) {
+										this.logInfo("  ** c", level);
+										var evalConditionRight = tmpRight[y].toString();
+									}
+									else {
+										this.logInfo("  ** d", level);
+										var evalConditionRight = tmpRight[y].value.toString();
+									}
+
+									this.logInfo(" +++ Going to compare:'"+evalConditionLeft+compareList[index].comparison+evalConditionRight+"'",level);
+									this.logInfo("   + typeof evalConditionLeft:"+typeof evalConditionLeft, level);
+									this.logInfo("   + typeof evalConditionRight:"+typeof evalConditionRight, level);
+									switch (compareList[index].comparison) {
+									case "!=":
+										tmpResult = (evalConditionLeft != evalConditionRight);
+										break;
+									case "<=":
+										tmpResult = (evalConditionLeft <= evalConditionRight);
+										break;
+									case ">=":
+										tmpResult = (evalConditionLeft >= evalConditionRight);
+										break;
+									case "<":
+										tmpResult = (evalConditionLeft < evalConditionRight);
+										break;
+									case "=":
+										tmpResult = (evalConditionLeft==evalConditionRight);
+										break;
+									case ">":
+										tmpResult = (evalConditionLeft > evalConditionRight);
+										break;
+									}
+
+									y++;
+								}
+								x++;
+							}
+						}
+					}
+					else {
+						// Return all results.
+						tmpResult = true;
+					}
+				}
+				else {
+					tmpResult = false;
+				}
+			}
+
+			this.logInfo(" @@@@@@@@@@@@ -------- MATCHFOUND["+index+"]:"+tmpResult+" ---------- @@@@@@@@@@@@@", level);
+			switch (lastOperator) {
+			case "and":
+				totalResult = (totalResult && tmpResult);
+				break;
+			case "or":
+				totalResult = (totalResult || tmpResult);
+				break;
+			case null:
+				totalResult = tmpResult;
+				break;
+			}
+			if (compareList[index].operator) {
+				if ((compareList[index].operator == "and") && (!totalResult)) { // We are done false is the endresult.
+					return false;
+				}
+				if ((compareList[index].operator == "or") && (totalResult)) {// We are done true is the endresult.
+					return true;
+				}
+			}
+
+			lastOperator = compareList[index].operator;
+			this.logInfo(" @@@@@@@@@@@@ -------- totalResult["+index+"]:"+totalResult+" ---------- @@@@@@@@@@@@@", level);
+		}
+
+		return totalResult;
+	},
+
 	XPath: function XPath(aPath)
 	{
 		//this.logInfo("XPath:"+aPath,1);
@@ -410,21 +649,12 @@ mivIxml2jxon.prototype = {
 
 		switch (tmpPath.substr(0,1)) {
 		case "/" : // Find all elements by specified element name
-			var allTag = tmpPath.substr(1);
-			var nextForwardSlashSplit = allTag.indexOf("/");
-			var nextSquareBracketSplit = allTag.indexOf("[");
-
-			var nextSplit = 99999;
-			if ((nextForwardSlashSplit < nextSplit) && (nextForwardSlashSplit > -1)) {
-				nextSplit = nextForwardSlashSplit;
-			}
-			if ((nextSquareBracketSplit < nextSplit) && (nextSquareBracketSplit > -1)) {
-				nextSplit = nextSquareBracketSplit;
+			var allTag = exchWebService.commonFunctions.splitOnCharacter(tmpPath.substr(1), 0, ["/", "["]);
+			if (!allTag) {
+				allTag = tmpPath.substr(1);
 			}
 
-			if (nextSplit < 99999) {
-				allTag = allTag.substr(0, nextSplit);
-			}
+			this.logInfo(" @@ allTag="+allTag, 2);
 
 			for (var index in this) {
 				if ((index.indexOf(":") > -1) && (this[index].tagName != this.tagName)) {
@@ -455,166 +685,27 @@ mivIxml2jxon.prototype = {
 
 		case "[" : // Compare/match function
 			this.logInfo("Requested XPath contains an index, attribute or compare request.", 2);
-			var tmpPos = 1;
-			var index = "";
-			var notClosed = true;
-			var notQuoteOpen = true;
-			var quotesUsed = "";
-			while ((tmpPos < tmpPath.length) && (notClosed)) {
-				if ((tmpPath.substr(tmpPos,1) == "'") || (tmpPath.substr(tmpPos,1) == '"')) {
-					// We found quotes. Do they belong to our string.
-					if (notQuoteOpen) {
-						quotesUsed = tmpPath.substr(tmpPos,1);
-						notQuoteOpen = false;
-					}
-					else {
-						if (tmpPath.substr(tmpPos,1) == quotesUsed) {
-							quotesUsed = "";
-							notQuoteOpen = true;
-						}
-					}
-				}
 
-				if ((tmpPath.substr(tmpPos,1) == "]") && (notQuoteOpen)) {
-					notClosed = false;
-				}
-				else {
-					index += tmpPath.substr(tmpPos,1);
-				}
-				tmpPos++;
+			var index = exchWebService.commonFunctions.splitOnCharacter(tmpPath.substr(1), 0, "]");
+			if (!index) {
+				throw "XPath error: Did not find closing square bracket"+this.tagName;
 			}
 
-			if (!notClosed) {
-				tmpPath = tmpPath.substr(tmpPos);
-			}
+			tmpPath = tmpPath.substr(index.length+2);
+			this.logInfo("Condition: ["+index+"], tmpPath:"+tmpPath,2);
 
-			this.logInfo("["+index+"], tmpPath:"+tmpPath,2);
+			index = this.trim(index); 
 
-//			var pathPart = tmpPath.substr(1);
-//			var index = tmpPath.substr(1, tmpPath2.indexOf("]"));
-			index = this.trim(index); // We expect it is normally closed.. TODO: Checkfor this.
-
-			// No square brackets or the content is an attribute or compare request
 			if (index != "") {
-				// We have a compare request. The index could be a number, string or XPath.
 
-				// See if we have to compare something? <=>
-				var smallerThen = index.indexOf("<");
-				var equalTo = index.indexOf("=");
-				var biggerThen = index.indexOf(">");
-
-				if ((smallerThen > -1) || (equalTo > -1) || (biggerThen > -1)) {
-
-					var minValue = smallerThen;
-					if (minValue == -1) minValue = 999;
-					if ((equalTo < minValue) && (equalTo > -1)) {
-						minValue = equalTo;
-					}
-					if ((biggerThen < minValue) && (biggerThen > -1)) {
-						minValue = biggerThen;
-					}
-					var value1 = this.trim(index.substr(0,minValue));
-					var value2 = this.trim(index.substr(Math.max(smallerThen, equalTo, biggerThen)+1));
-				}
-				else {
-					var value1 = index;
-					var value2 = "";
+				if (this.if(index)) {
+					this.logInfo(" %%%%%%%%%%%%%% -------- MATCHFOUND ---------- %%%%%%%%%%%%%%", 2);
+					result.push(this);
 				}
 
-				// Find left side results.
-				if (value1 != "") {
-					if ((value1.substr(0,1) == "/") || (value1.substr(0,1) == ".") || (value1.substr(0,1) == "@")) {
-						// Left side is a XPath query.
-						this.logInfo("1 Left side is a XPath query. value1:"+value1,2);
-						var tmpResult1 = this.XPath(value1);
-					}
-					else {
-						// Left side is a number or string.
-						var tmpResult1 = new Array();
-						if (isNaN(value1)) {
-							tmpResult1.push(new String(value1.substr(1,value1.length-2)));
-						}
-						else {
-							tmpResult1.push(value1);
-						}
-					}
-				}
-
-				// Find right side results
-				this.logInfo("-- value2:"+value2,2);
-				if (value2 != "") {
-					if ((value2.substr(0,1) == "/") || (value2.substr(0,1) == ".") || (value2.substr(0,1) == "@")) {
-						// Right side is a XPath query
-						var tmpResult2 = this.XPath(value2);
-					}
-					else {
-						// Right side is a number or string.
-						var tmpResult2 = new Array();
-						if (isNaN(value1)) {
-							this.logInfo(" Right side is a String. value2:"+value2.substr(1,value2.length-2),2);
-							tmpResult2.push(new String(value2.substr(1,value2.length-2)));
-						}
-						else {
-							this.logInfo(" Right side is a number. value2:"+value2,2);
-							tmpResult2.push(value2);
-						}
-					}
-				}
-
-				if (tmpResult1.length > 0) {
-					this.logInfo("tmpResult1.length:"+tmpResult1.length,2);
-					if ((smallerThen > -1) || (equalTo > -1) || (biggerThen > -1)) {
-						// Filter out ony the valid ones.
-						if (tmpResult2.length > 0) {
-							this.logInfo("tmpResult2.length:"+tmpResult2.length,2);
-							this.logInfo("Going to match found results to compare function",2);
-							var x = 0;
-							var matchFound = false;
-							while ((x < tmpResult1.length) && (!matchFound)) {
-
-								if ((typeof tmpResult1[x] === "string") || (tmpResult1[x] instanceof String)) {
-									var left = tmpResult1[x];
-								}
-								else {
-									var left = tmpResult1[x].value;
-								}
-
-								var y = 0;
-								while ((y < tmpResult2.length) && (!matchFound)) {
-
-									if ((typeof tmpResult2[y] === "string") || (tmpResult2[y] instanceof String)) {
-										var right = tmpResult2[y];
-									}
-									else {
-										var right = tmpResult2[y].value;
-									}
-
-									matchFound = ( ((smallerThen > -1) && (left < right)) ||
-											((equalTo > -1) && (left == right)) ||
-											((biggerThen > -1) && (left > right)) );
-									y++;
-								}
-								x++;
-							}
-							if (matchFound) {
-								this.logInfo(" @@@@@@@@@@@@ -------- MATCHFOUND ---------- @@@@@@@@@@@@@", 2);
-								result.push(this);
-							}
-						}
-						else {
-							// Error... We have nothing to compare against...!
-							this.logInfo("XPath compare error:"+this.tagName+"["+index+"]");
-							throw "XPath compare error:"+this.tagName+"["+index+"]";
-						}
-					}
-					else {
-						// Return all results.
-						result.push(this);
-					}
-				}
 			}
 			else {
-				this.logInfo("Nothing specified between the square brackets!!??");
+				this.logInfo("Nothing specified between the square brackets!!??",1);
 				throw "XPath compare error:No Value between square brackets:"+this.tagName+"["+index+"]";
 			}
 			break;
