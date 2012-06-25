@@ -353,6 +353,7 @@ mivIxml2jxon.prototype = {
 
 	convertSpecialCharatersFromXML: function _convertSpecialCharatersFromXML(aString)
 	{
+		this.logInfo(aString+" !! ");
 		var result = aString;
 		// Convert special characters
 		result = result.replace(/&(quot|apos|lt|gt|amp|#x[0123456789ancdefABCDEF][0123456789ancdefABCDEF]?[0123456789ancdefABCDEF]?[0123456789ancdefABCDEF]?|#[0123456789][0123456789]?[0123456789]?[0123456789]?);/g, this.replaceFromXML); 
@@ -378,6 +379,7 @@ mivIxml2jxon.prototype = {
 	
 	convertSpecialCharatersToXML: function _convertSpecialCharatersToXML(aString)
 	{
+		this.logInfo(aString+" !! ");
 		var result = aString;
 		// Convert special characters
 		result = result.replace(/([&|\x22|\x27|<|>])/g, this.replaceToXML);  
