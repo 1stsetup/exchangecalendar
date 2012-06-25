@@ -326,34 +326,62 @@ mivIxml2jxon.prototype = {
 		}
 	},
 
+	replaceFromXML: function _replaceFromXML(str, r1)
+	{
+		var result = str;
+		if (r1.substr(0,1) == "#") {
+			if (r1.substr(1,1) == "x") {
+				// hexadecimal
+				result = String.fromCharCode(parseInt(r1.substr(2),16))
+			}
+			else {
+				// Decimal
+				result = String.fromCharCode(parseInt(r1.substr(1),10))
+			}
+		}
+		else {
+			switch (r3) {
+			case "amp": result = "&"; break;
+			case "quot": result = '"'; break;
+			case "apos": result = "'"; break;
+			case "lt": result = "<"; break;
+			case "gt": result = ">"; break;
+			}
+		}
+		return result;
+	},
+
 	convertSpecialCharatersFromXML: function _convertSpecialCharatersFromXML(aString)
 	{
 		var result = aString;
 		// Convert special characters
-		// First &#xhhhh;
-		result = result.replace(/&#x([0123456789ABCDEF][0123456789ABCDEF]?[0123456789ABCDEF]?[0123456789ABCDEF]?);/g, function(str, ent) { return String.fromCharCode(parseInt(ent,16)); }); 
-		// Second &#nnnn;
-		result = result.replace(/&#([0123456789][0123456789]?[0123456789]?[0123456789]?);/g, function(str, ent) { return String.fromCharCode(parseInt(ent,10)); }); 
-		// Third &name;
-		result = result.replace(/&quot;/g, '"');
-		result = result.replace(/&apos;/g, "'");
-		result = result.replace(/&lt;/g, "<");
-		result = result.replace(/&gt;/g, ">");
-		result = result.replace(/&amp;/g, "&");  // Make sure this one is last or we get that from the next conversions the & is replaced before conversion.
+		result = result.replace(/&(quot|apos|lt|gt|amp|#x[0123456789ancdefABCDEF][0123456789ancdefABCDEF]?[0123456789ancdefABCDEF]?[0123456789ancdefABCDEF]?|#[0123456789][0123456789]?[0123456789]?[0123456789]?);/g, this.replaceFromXML); 
+
+		this.logInfo(aString+" > "+result);
 
 		return result;
 	},
 
+	replaceToXML: function _replaceToXML(str, r1)
+	{
+		var result = str;
+		switch (r1) {
+		case "&": result = "&amp;"; break;
+		case '"': result = "&quot;"; break;
+		case "'": result = "&apos;"; break;
+		case "<": result = "&lt;"; break;
+		case ">": result = "&gt;"; break;
+		}
+
+		return result;
+	},
+	
 	convertSpecialCharatersToXML: function _convertSpecialCharatersToXML(aString)
 	{
 		var result = aString;
 		// Convert special characters
-		// First &name;
-		result = result.replace(/&/g, "&amp;");  // Make sure this one is first or we get that from the next conversions the & is replaced.
-		result = result.replace(/\x22/g, '&quot;');
-		result = result.replace(/\x27/g, "&apos;");
-		result = result.replace(/</g, "&lt;");
-		result = result.replace(/>/g, "&gt;");
+		result = result.replace(/([&|\x22|\x27|<|>])/g, this.replaceToXML);  
+		this.logInfo(aString+" > "+result);
 
 		return result;
 	},
