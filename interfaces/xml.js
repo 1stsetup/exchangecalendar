@@ -219,12 +219,12 @@ mivIxml2jxon.prototype = {
 
 	setAttribute: function _setAttribute(aAttribute, aValue)
 	{
-		this["@"+aAttribute] = aValue;
+		this["@"+aAttribute] = this.convertSpecialCharatersToXML(aValue);
 	},
 
 	getAttribute: function _getAttribute(aAttribute)
 	{
-		return this["@"+aAttribute];
+		return this.convertSpecialCharatersFromXML(this["@"+aAttribute]);
 	},
 
 	addChildTagObject: function _addChildTagObject(aObject)
@@ -326,23 +326,44 @@ mivIxml2jxon.prototype = {
 		}
 	},
 
-	get value()
+	convertSpecialCharatersFromXML: function _convertSpecialCharatersFromXML(aString)
 	{
-		var result = this.contentStr().toString();
-
+		var result = aString;
 		// Convert special characters
 		// First &#xhhhh;
 		result = result.replace(/&#x([0123456789ABCDEF][0123456789ABCDEF]?[0123456789ABCDEF]?[0123456789ABCDEF]?);/g, function(str, ent) { return String.fromCharCode(parseInt(ent,16)); }); 
 		// Second &#nnnn;
 		result = result.replace(/&#([0123456789][0123456789]?[0123456789]?[0123456789]?);/g, function(str, ent) { return String.fromCharCode(parseInt(ent,10)); }); 
-		// Second &name;
+		// Third &name;
 		result = result.replace(/&quot;/g, '"');
-		result = result.replace(/&amp;/g, "&");
 		result = result.replace(/&apos;/g, "'");
 		result = result.replace(/&lt;/g, "<");
 		result = result.replace(/&gt;/g, ">");
+		result = result.replace(/&amp;/g, "&");  // Make sure this one is last or we get that from the next conversions the & is replaced before conversion.
 
-		return this.contentStr().toString();
+		return result;
+	},
+
+	convertSpecialCharatersToXML: function _convertSpecialCharatersToXML(aString)
+	{
+		var result = aString;
+		// Convert special characters
+		// First &name;
+		result = result.replace(/&/g, "&amp;");  // Make sure this one is first or we get that from the next conversions the & is replaced.
+		result = result.replace(/\x22/g, '&quot;');
+		result = result.replace(/\x27/g, "&apos;");
+		result = result.replace(/</g, "&lt;");
+		result = result.replace(/>/g, "&gt;");
+
+		return result;
+	},
+
+	get value()
+	{
+		var result = this.convertSpecialCharatersFromXML(this.contentStr().toString());
+
+
+		return result;
 	},
 
 	attributesToString: function _attributesToString()
