@@ -328,6 +328,20 @@ mivIxml2jxon.prototype = {
 
 	get value()
 	{
+		var result = this.contentStr().toString();
+
+		// Convert special characters
+		// First &#xhhhh;
+		result = result.replace(/&#x([0123456789ABCDEF][0123456789ABCDEF]?[0123456789ABCDEF]?[0123456789ABCDEF]?);/g, function(str, ent) { return String.fromCharCode(parseInt(ent,16)); }); 
+		// Second &#nnnn;
+		result = result.replace(/&#([0123456789][0123456789]?[0123456789]?[0123456789]?);/g, function(str, ent) { return String.fromCharCode(parseInt(ent,10)); }); 
+		// Second &name;
+		result = result.replace(/&quot;/g, '"');
+		result = result.replace(/&amp;/g, "&");
+		result = result.replace(/&apos;/g, "'");
+		result = result.replace(/&lt;/g, "<");
+		result = result.replace(/&gt;/g, ">");
+
 		return this.contentStr().toString();
 	},
 
