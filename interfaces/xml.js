@@ -219,12 +219,12 @@ mivIxml2jxon.prototype = {
 
 	setAttribute: function _setAttribute(aAttribute, aValue)
 	{
-		this["@"+aAttribute] = aValue;
+		this["@"+aAttribute] = this.convertSpecialCharatersToXML(aValue);
 	},
 
 	getAttribute: function _getAttribute(aAttribute)
 	{
-		return this["@"+aAttribute];
+		return this.convertSpecialCharatersFromXML(this["@"+aAttribute]);
 	},
 
 	addChildTagObject: function _addChildTagObject(aObject)
@@ -326,9 +326,74 @@ mivIxml2jxon.prototype = {
 		}
 	},
 
+	replaceFromXML: function _replaceFromXML(str, r1)
+	{
+		var result = str;
+		if (r1.substr(0,1) == "#") {
+			if (r1.substr(1,1) == "x") {
+				// hexadecimal
+				result = String.fromCharCode(parseInt(r1.substr(2),16))
+			}
+			else {
+				// Decimal
+				result = String.fromCharCode(parseInt(r1.substr(1),10))
+			}
+		}
+		else {
+			switch (r3) {
+			case "amp": result = "&"; break;
+			case "quot": result = '"'; break;
+			case "apos": result = "'"; break;
+			case "lt": result = "<"; break;
+			case "gt": result = ">"; break;
+			}
+		}
+		return result;
+	},
+
+	convertSpecialCharatersFromXML: function _convertSpecialCharatersFromXML(aString)
+	{
+		this.logInfo(aString+" !! ");
+		var result = aString;
+		// Convert special characters
+		result = result.replace(/&(quot|apos|lt|gt|amp|#x[0123456789ancdefABCDEF][0123456789ancdefABCDEF]?[0123456789ancdefABCDEF]?[0123456789ancdefABCDEF]?|#[0123456789][0123456789]?[0123456789]?[0123456789]?);/g, this.replaceFromXML); 
+
+		this.logInfo(aString+" > "+result);
+
+		return result;
+	},
+
+	replaceToXML: function _replaceToXML(str, r1)
+	{
+		var result = str;
+		switch (r1) {
+		case "&": result = "&amp;"; break;
+		case '"': result = "&quot;"; break;
+		case "'": result = "&apos;"; break;
+		case "<": result = "&lt;"; break;
+		case ">": result = "&gt;"; break;
+		}
+
+		return result;
+	},
+	
+	convertSpecialCharatersToXML: function _convertSpecialCharatersToXML(aString)
+	{
+		this.logInfo(aString+" !! ");
+		var result = aString;
+		// Convert special characters
+		result = result.replace(/([&|\x22|\x27|<|>])/g, this.replaceToXML);  
+		this.logInfo(aString+" > "+result);
+
+		return result;
+	},
+
 	get value()
 	{
-		return this.contentStr().toString();
+		var result = this.convertSpecialCharatersFromXML(this.contentStr().toString());
+
+
+		return result;
 	},
 
 	attributesToString: function _attributesToString()
