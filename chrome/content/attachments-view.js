@@ -483,7 +483,7 @@ exchWebService.attachments = {
 
 				var stream = Cc["@mozilla.org/network/safe-file-output-stream;1"].  
 						createInstance(Ci.nsIFileOutputStream);  
-				stream.init(file, 0x04 | 0x08 | 0x20, 0600, 0); // readwrite, create, truncate  
+				stream.init(file, 0x04 | 0x08 | 0x20, 384, 0); // readwrite, create, truncate  
               
 				exchWebService.commonFunctions.LOG(" == writing file:"+file.path);  
 				exchWebService.commonFunctions.LOG(" == writing:"+fileData.length+" bytes");  
@@ -495,7 +495,7 @@ exchWebService.attachments = {
 				}
 
 				// Dispose of the converted data in memory;
-				delete fileData;
+				//delete fileData;
 
 				exchWebService.commonFunctions.LOG(" == written file:"+file.path);  
 				exchWebService.commonFunctions.LOG(" == written:"+fileData.length+" bytes");  
