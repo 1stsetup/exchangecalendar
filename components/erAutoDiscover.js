@@ -91,12 +91,14 @@ erAutoDiscoverRequest.prototype = {
 			"http://autodiscover." + domain + "/autodiscover/autodiscover.xml"
 		];
 
-		var req = <Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/requestschema/2006"/>;
-		req.Request.EMailAddress = email;
-		req.Request.AcceptableResponseSchema = "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a";
+		var req = exchWebService.commonFunctions.xmlToJxon('<Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/requestschema/2006"/>');
+		var request = req.addChildTag("Request", null, null);
+		request.addChildTag("EMailAddress", null, email);
+		request.addChildTag("AcceptableResponseSchema", null, "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a");
 
-		exchWebService.commonFunctions.LOG("sendAutodiscover.execute:"+String(req)+"\n");
-                this.parent.sendRequest(xml_tag + String(req));
+		exchWebService.commonFunctions.LOG("sendAutodiscover.execute:"+req.toString()+"\n");
+ 		this.parent.xml2jxon = true;
+		this.parent.sendRequest(xml_tag + req.toString());
 
 	},
 
@@ -111,36 +113,30 @@ erAutoDiscoverRequest.prototype = {
 		var aMsg = String(aResp);
 
 		// Try to get the Displayname if it is available
-		default xml namespace = "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a";
-		try {
-			DisplayName = aResp.Response.User.DisplayName.toString();
+		var tag = aResp.XPath("/_default_:Autodiscover/_default_:Response/_default_:User/_default_:DisplayName");
+		if (tag.length > 0) {
+			DisplayName = tag[0].value;
 		}
-		catch(err) {
-			exchWebService.commonFunctions.LOG("autodiscoverOk but Displayname is not available.\n");
+		else {
+			exchWebService.commonFunctions.LOG("autodiscoverOk but Displayname is not available.");
 		}
 
 		// Try to get the SMTP address if it is available
-		try {
-			SMTPaddress = aResp.Response.User.AutoDiscoverSMTPAddress.toString();
+		var tag = aResp.XPath("/_default_:Autodiscover/_default_:Response/_default_:User/_default_:AutoDiscoverSMTPAddress");
+		if (tag.length > 0) {
+			SMTPaddress = tag[0].value;
 		}
-		catch(err) {
-			exchWebService.commonFunctions.LOG("autodiscoverOk but AutoDiscoverSMTPAddress is not available.\n");
+		else {
+			exchWebService.commonFunctions.LOG("autodiscoverOk but AutoDiscoverSMTPAddress is not available.");
 		}
-	
+
 		// Try to get the EWS urls if they are available
-		try {
-			ewsUrls = aResp.Response..EwsUrl;
+		ewsUrls = aResp.XPath("/_default_:Autodiscover/_default_:Response/_default_:Account/_default_:Protocol[/_default_:Type='WEB']//_default_:ASUrl");
+		if (ewsUrls.length > 0) {
 			exchWebService.commonFunctions.LOG(" cc:"+ewsUrls+".");
-			if (String(ewsUrls) != "") {
-				aError = false;
-			}
-			else {
-				aMsg = "autodiscoverOk error getting ewsUrls from:"+this.parent.currentUrl;
-				aCode = this.parent.ER_ERROR_AUTODISCOVER_GET_EWSULR;
-				aError = true;
-			}
+			aError = false;
 		}
-		catch(err) {
+		else {
 			aMsg = "autodiscoverOk error getting ewsUrls from:"+this.parent.currentUrl;
 			aCode = this.parent.ER_ERROR_AUTODISCOVER_GET_EWSULR;
 			aError = true;

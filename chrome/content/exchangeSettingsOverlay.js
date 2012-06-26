@@ -546,8 +546,8 @@ function exchWebServicesAutodiscoveryOK(ewsUrls, DisplayName, SMTPAddress)
 	var userCancel = false;
 
 	if (ewsUrls) {
-		if (ewsUrls.length() > 1) {
-			// We have got multiple ews urls returned. Let the use choose.
+		if (ewsUrls.length > 1) {
+			// We have got multiple ews urls returned. Let the user choose.
 
 			window.openDialog("chrome://exchangecalendar/content/selectEWSUrl.xul",
 				"selectfrommultipleews",
@@ -561,7 +561,8 @@ function exchWebServicesAutodiscoveryOK(ewsUrls, DisplayName, SMTPAddress)
 		}
 		else {
 			// We only have one url. Use it.
-			selectedEWSUrl.value = ewsUrls.text();
+//			selectedEWSUrl.value = ewsUrls.text();
+			selectedEWSUrl.value = ewsUrls[0].value;
 		}
 
 	}

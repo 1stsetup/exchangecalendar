@@ -264,8 +264,8 @@ mivIxml2jxon.prototype = {
 			var nameSpace = aNameSpace;
 		}
 		else {
-			if (aParent.nameSpace) {
-				var nameSpace = aParent.nameSpace;
+			if (this.nameSpace) {
+				var nameSpace = this.nameSpace;
 			}
 			else {
 				var nameSpace = "_default_";

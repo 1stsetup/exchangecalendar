@@ -54,10 +54,19 @@ exchWebService.selectEWSurl = {
 		var firstItem = false;		
 		var results = new Array();
 
-		for (var i = 0; i < ((ewsUrls.length()) - 1); i++) {
-		    if (ewsUrls[i + 1] == ewsUrls[i]) {
-			results.push(ewsUrls[i].toString());
-		    }
+		for (var index in ewsUrls) {
+			// Check if this one is not in the list.
+			exchWebService.commonFunctions.LOG("onLoad: index:"+index+", ewsUrls="+ewsUrls[index].value);
+			var inList = false;
+			for (var index2 in results) {
+				if (ewsUrls[index].value == results[index2]) {
+					inList = true;
+					break;
+				}
+			}
+			if (!inList) {
+				results.push(ewsUrls[index].value);
+			}
 		}
 		
 
