@@ -77,31 +77,38 @@ erPrimarySMTPCheckRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("sendPrimarySmtpCheck\n");
 		// We are going to do a dummy FindItem. It will return the real primarySMTP
-		var req = <nsMessages:FindItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
-		req.@Traversal = "Shallow";
+//		var req = <nsMessages:FindItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+//		req.@Traversal = "Shallow";
 
-		req.nsMessages::ItemShape.nsTypes::BaseShape = "IdOnly";
+//		req.nsMessages::ItemShape.nsTypes::BaseShape = "IdOnly";
 
-		var view = <nsMessages:CalendarView xmlns:nsMessages={nsMessages}/>;
+//		var view = <nsMessages:CalendarView xmlns:nsMessages={nsMessages}/>;
 		// Dummy date range to limit result
-		view.@StartDate = "2011-01-30T11:34:00Z";
-		view.@EndDate = "2011-01-30T11:35:00Z";
-		view.@MaxEntriesReturned = 1;
+//		view.@StartDate = "2011-01-30T11:34:00Z";
+//		view.@EndDate = "2011-01-30T11:35:00Z";
+//		view.@MaxEntriesReturned = 1;
 
-		req.appendChild(view);
+//		req.appendChild(view);
 
-		/*var ParentFolderIds = <nsMessages:ParentFolderIds xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+//		req.nsMessages::ParentFolderIds = makeParentFolderIds("ParentFolderIds", this.argument);
+//
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:FindItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		req.setAttribute("Traversal", "Shallow");
 
-		var DistinguishedFolderId = <nsTypes:DistinguishedFolderId xmlns:nsTypes={nsTypes}/>;
-		DistinguishedFolderId.@Id = "calendar";
-		DistinguishedFolderId.nsTypes::Mailbox.nsTypes::EmailAddress = this.mailbox; 
+		req.addChildTag("ItemShape", "nsMessages", null).addChildTag("BaseShape", "nsTypes", "IdOnly");
 
-		ParentFolderIds.appendChild(DistinguishedFolderId);
-		req.nsMessages::ParentFolderIds = ParentFolderIds;	*/	
+		var view = exchWebService.commonFunctions.xmlToJxon('<nsMessages:CalendarView xmlns:nsMessages="'+nsMessagesStr+'"/>');
+		// Dummy date range to limit result
+		view.setAttribute("StartDate", "2011-01-30T11:34:00Z");
+		view.setAttribute("EndDate", "2011-01-30T11:35:00Z");
+		view.setAttribute("MaxEntriesReturned", "1");
+		req.addChildTagObject(view);
 
-		req.nsMessages::ParentFolderIds = makeParentFolderIds("ParentFolderIds", this.argument);
+		var parentFolderIds = makeParentFolderIds2("ParentFolderIds", this.argument);
+		req.addChildTagObject(parentFolderIds);
 
 		//exchWebService.commonFunctions.LOG("erPrimarySMTPCheckRequest.execute: "+String(this.parent.makeSoapMessage(req)));
+		this.parent.xml2jxon = true;
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
@@ -109,57 +116,35 @@ erPrimarySMTPCheckRequest.prototype = {
 	{
 		//exchWebService.commonFunctions.LOG("erPrimarySMTPCheckRequest.onSendOk: "+String(aResp));
 
-		var aContinue = true;
 		var aError = false;
 		var aCode = 0;
 		var aMsg = "";
-		var aResult = undefined;
+		var aResult = this.mailbox;
 
-		try {
-			var responseCode = aResp.nsSoap::Body..nsMessages::ResponseCode;
-		}
-		catch(err) {
-			aMsg = err;
-			aCode = this.parent.ER_ERROR_SOAP_RESPONSECODE_NOTFOUND;
-			aContinue = false;
-			aError = true;
-		}
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage[@ResponseClass='Error']");
 
-		if (aContinue) {
-			if (responseCode == "NoError") {
-				aContinue = false;
-				//gecDetailsChecked = true;
-			}
-		}
-
-		if (aContinue) {
-			if (responseCode == "ErrorNonPrimarySmtpAddress") {
-	
-				try {
-					aResult = aResp.nsSoap::Body..nsMessages::MessageXml.nsTypes::Value.(@Name == "Primary");
+		if (rm.length > 0) {
+			aMsg = rm[0]["m:MessageText"].value+"("+rm[0]["m:ResponseCode"].value+")";
+			switch (rm[0]["m:ResponseCode"].value) {
+			case "ErrorNonPrimarySmtpAddress": 
+				aResult = rm[0]["m:MessageXml"].XPath("/t:Value[@Name='Primary']");
+				if (aResult.length > 0) {
+					aResult = aResult[0].value;
+					aError = false;
 				}
-				catch(err) {
-					aMsg = "Warning: Could not find Primary value. Err="+err;
+				else {
 					aCode = this.parent.ER_ERROR_PRIMARY_SMTP_NOTFOUND;
 					aError = true;
-					aContinue = false;
 				}
-	
-				if (aContinue) {
-					aContinue = false;
-					//gecDetailsChecked = true;
-				}
-			}
-		}
-
-		if (aContinue) {
-			aError = true;
-			aCode = this.parent.ER_ERROR_PRIMARY_SMTP_UNKNOWN;
-			try {
-				aMsg = "Warning during servercheck: responseCode: " + responseCode + "\nmsg: " + aResp.nsSoap::Body..nsMessages::MessageText;
-			}
-			catch(err) {
-				aMsg = "Warning during servercheck: responseCode: " + responseCode + "\nmsg: Could not retreive MessageText!!";
+				break;
+			case "ErrorNonExistentMailbox": 
+				aCode = this.parent.ER_ERROR_SPECIFIED_SMTP_NOTFOUND; 
+				aError = true;
+				break;
+			default: 
+				aCode = this.parent.ER_ERROR_PRIMARY_SMTP_UNKNOWN; 
+				aError = true;
+				break;
 			}
 		}
 
