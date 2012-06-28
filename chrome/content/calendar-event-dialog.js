@@ -62,7 +62,8 @@ exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 2");
 				tmpDatePicker.setAttribute("type","popup");
 				tmpDatePicker.setAttribute("id","todo-entrydate");
 				tmpDatePicker.setAttribute("value",document.getElementById("todo-entrydate").value);
-				tmpDatePicker.setAttribute("onchange","dateTimeControls2State(true);exchWebService.eventDialog.updateTime();");
+				//tmpDatePicker.setAttribute("onchange","dateTimeControls2State(true);exchWebService.eventDialog.updateTime();");
+				tmpDatePicker.addEventListener("change", exchWebService.eventDialog.updateTime, false);
 				if (!document.getElementById("todo-has-entrydate").checked) {
 					tmpDatePicker.setAttribute("disabled","true");
 				}
@@ -73,7 +74,8 @@ exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 3");
 				tmpDatePicker.setAttribute("type","popup");
 				tmpDatePicker.setAttribute("id","todo-duedate");
 				tmpDatePicker.setAttribute("value",document.getElementById("todo-duedate").value);
-				tmpDatePicker.setAttribute("onchange","dateTimeControls2State(false);exchWebService.eventDialog.updateTime();");
+				//tmpDatePicker.setAttribute("onchange","dateTimeControls2State(false);exchWebService.eventDialog.updateTime();");
+				tmpDatePicker.addEventListener("change", exchWebService.eventDialog.updateTime, false);
 				if (!document.getElementById("todo-has-duedate").checked) {
 					tmpDatePicker.setAttribute("disabled","true");
 				}
@@ -98,6 +100,7 @@ exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 5");
 
 	updateTime: function _updateTime()
 	{
+		exchWebService.commonFunctions.LOG(" ===++ calendar-event-dialog.js");
 		if (document.getElementById("todo-entrydate").dateValue) {
 			document.getElementById("todo-entrydate").dateValue.setHours(12);
 		}
