@@ -127,9 +127,17 @@ erGetFolderRequest.prototype = {
 			}
 		}
 		else {
-			aCode = this.parent.ER_ERROR_FINDFOLDER_FOLDERID_DETAILS;
-			aError = true;
-			aMsg = "Wrong response received.";
+			var rm = aResp.XPath("/s:Envelope/s:Body/m:GetFolderResponse/m:ResponseMessages/m:GetFolderResponseMessage[@ResponseClass='Error']");
+			if (rm.length > 0) {
+				aCode = this.parent.ER_ERROR_FINDFOLDER_FOLDERID_DETAILS;
+				aError = true;
+				aMsg = rm[0]["m:MessageText"].value+"("+rm[0]["m:ResponseCode"].value+")";
+			}
+			else {
+				aCode = this.parent.ER_ERROR_SOAP_RESPONSECODE_NOTFOUND;
+				aError = true;
+				aMsg = "Wrong response received.";
+			}
 		}
 
 		if (aError) {

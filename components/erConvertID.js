@@ -73,14 +73,20 @@ erConvertIDRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erConvertIDRequest.Execute");
 		// We are going to do a dummy FindItem. It will return the real primarySMTP
-		var req = <nsMessages:ConvertId xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
-		req.@DestinationFormat = "EwsId";
 
-		req.nsMessages::SourceIds.nsTypes::AlternateId.@Format = "HexEntryId";
-		req.nsMessages::SourceIds.nsTypes::AlternateId.@Id = this.folderId;
-		req.nsMessages::SourceIds.nsTypes::AlternateId.@Mailbox = this.mailbox;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ConvertId xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		req.setAttribute("DestinationFormat", "EwsId");
 
-		exchWebService.commonFunctions.LOG("erConvertIDRequest.execute: "+String(this.parent.makeSoapMessage(req)));
+		var alternateId = req.addChildTag("SourceIds", "nsMessages", null).addChildTag("AlternateId", "nsTypes", null);
+		alternateId.setAttribute("Format", "HexEntryId");
+		alternateId.setAttribute("Id", this.folderId);
+		alternateId.setAttribute("Mailbox", this.mailbox);
+
+		//exchWebService.commonFunctions.LOG(" ++ xml2jxon ++:"+this.parent.makeSoapMessage(req));
+
+		exchWebService.commonFunctions.LOG("erConvertIDRequest.execute:"+String(this.parent.makeSoapMessage(req)));
+		this.parent.xml2jxon = true;
+
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
@@ -94,36 +100,26 @@ erConvertIDRequest.prototype = {
 		var aMsg = "";
 		var aResult = undefined;
 
-		try {
-			var responseCode = aResp.nsSoap::Body..nsMessages::ResponseCode;
-		}
-		catch(err) {
-			aMsg = err;
-			aCode = this.parent.ER_ERROR_SOAP_RESPONSECODE_NOTFOUND;
-			aContinue = false;
-			aError = true;
-		}
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:ConvertIdResponse/m:ResponseMessages/m:ConvertIdResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
-		if (aContinue) {
-			if (responseCode == "NoError") {
-				aContinue = false;
+		if (rm.length > 0) {
 
 //          <m:AlternateId xsi:type="t:AlternateIdType" Format="EwsId" Id="AAMkADNjZmIwYzQyLTdjYmEtNGFlMi05ZGE5LTBlYzRkNzYzODRhOAAuAAAAAAC8WradQ3BFT7SAoV2yp+k8AQDcsp8GsIe7Q5tUJHDnpdbjAAAtr+rqAAA=" Mailbox="jane@example.com"/>
 
-				var alternateId = aResp.nsSoap::Body..nsMessages::AlternateId.@Id.toString();
-				var realMailbox = aResp.nsSoap::Body..nsMessages::AlternateId.@Mailbox.toString();
-				//gecDetailsChecked = true;
-			}
+			var alternateId = rm[0]["m:AlternateId"]["@Id"].toString();
+			var realMailbox = rm[0]["m:AlternateId"]["@Mailbox"].toString();
 		}
-
-		if (aContinue) {
-			aError = true;
-			aCode = this.parent.ER_ERROR_PRIMARY_SMTP_UNKNOWN;
-			try {
-				aMsg = "Warning during convertid: responseCode: " + responseCode + "\nmsg: " + aResp.nsSoap::Body..nsMessages::MessageText;
+		else {
+			var rm = aResp.XPath("/s:Envelope/s:Body/m:ConvertIdResponse/m:ResponseMessages/m:ConvertIdResponseMessage[@ResponseClass='Error']");
+			if (rm.length > 0) {
+				aCode = this.parent.ER_ERROR_CONVERTID;
+				aError = true;
+				aMsg = rm[0]["m:MessageText"].value+"("+rm[0]["m:ResponseCode"].value+")";
 			}
-			catch(err) {
-				aMsg = "Warning during convertid: responseCode: " + responseCode + "\nmsg: Could not retreive MessageText!!";
+			else {
+				aCode = this.parent.ER_ERROR_SOAP_RESPONSECODE_NOTFOUND;
+				aError = true;
+				aMsg = "Wrong response received.";
 			}
 		}
 
