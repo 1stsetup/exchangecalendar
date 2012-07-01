@@ -39,12 +39,7 @@ var Cu = Components.utils;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
-Cu.import("resource://1st-setup/ecFunctions.js");
-
-/*Cu.import("resource://calendar/modules/calUtils.jsm");
-Cu.import("resource://calendar/modules/calAlarmUtils.jsm");
-Cu.import("resource://calendar/modules/calProviderUtils.jsm");
-Cu.import("resource://calendar/modules/calAuthUtils.jsm");*/
+Cu.import("resource://exchangecalendar/ecFunctions.js");
 
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 

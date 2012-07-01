@@ -44,7 +44,7 @@ Cu.import("resource://calendar/modules/calAlarmUtils.jsm");
 Cu.import("resource://calendar/modules/calProviderUtils.jsm");
 Cu.import("resource://calendar/modules/calAuthUtils.jsm");
 
-Cu.import("resource://1st-setup/ecFunctions.js");
+Cu.import("resource://exchangecalendar/ecFunctions.js");
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/soapFunctions.js");
 

@@ -1,7 +1,6 @@
 content exchangecalendar chrome/content/
 skin exchangecalendar fugue chrome/skins/fugue/
 resource exchangecalendar components/
-resource 1st-setup components/
 resource interfaces interfaces/
 
 overlay chrome://calendar/content/calendarCreation.xul chrome://exchangecalendar/content/ecCalendarCreation.xul
