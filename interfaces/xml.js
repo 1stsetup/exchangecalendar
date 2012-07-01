@@ -328,7 +328,9 @@ mivIxml2jxon.prototype = {
 
 	replaceFromXML: function _replaceFromXML(str, r1)
 	{
+		exchWebService.commonFunctions.LOG("replaceFromXML: str:"+str+"|r1:"+r1);
 		var result = str;
+//try{
 		if (r1.substr(0,1) == "#") {
 			if (r1.substr(1,1) == "x") {
 				// hexadecimal
@@ -340,7 +342,7 @@ mivIxml2jxon.prototype = {
 			}
 		}
 		else {
-			switch (r3) {
+			switch (r1) {
 			case "amp": result = "&"; break;
 			case "quot": result = '"'; break;
 			case "apos": result = "'"; break;
@@ -348,6 +350,8 @@ mivIxml2jxon.prototype = {
 			case "gt": result = ">"; break;
 			}
 		}
+//}
+//catch(exc){ exchWebService.commonFunctions.LOG("replaceFromXML: Error:"+exc);}
 		return result;
 	},
 
@@ -356,8 +360,10 @@ mivIxml2jxon.prototype = {
 		this.logInfo(aString+" !! ");
 		var result = aString;
 		// Convert special characters
+//try{
 		result = result.replace(/&(quot|apos|lt|gt|amp|#x[0123456789ancdefABCDEF][0123456789ancdefABCDEF]?[0123456789ancdefABCDEF]?[0123456789ancdefABCDEF]?|#[0123456789][0123456789]?[0123456789]?[0123456789]?);/g, this.replaceFromXML); 
-
+//} 
+//catch(exc) { exchWebService.commonFunctions.LOG("[xml2jxon] Error:"+exc + " ("+exchWebService.commonFunctions.STACKshort()+")");}
 		this.logInfo(aString+" > "+result);
 
 		return result;
