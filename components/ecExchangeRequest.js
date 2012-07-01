@@ -846,6 +846,17 @@ ExchangeRequest.prototype = {
 		}
 	},
 
+	getSoapErrorMsg: function _getSoapErrorMsg(aResp)
+	{
+		var rm = aResp.XPath("/s:Envelope/s:Body/*/m:ResponseMessages/*[@ResponseClass='Error']");
+		if (rm.length > 0) {
+			return rm[0]["m:MessageText"].value+"("+rm[0]["m:ResponseCode"].value+")";
+		}
+		else {
+			return null;
+		}
+	},
+
 	passwordError: function erPasswordError(aMsg)
 	{
 		this.fail(this.ERR_PASSWORD_ERROR, aMsg);

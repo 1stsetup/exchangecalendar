@@ -110,11 +110,10 @@ erConvertIDRequest.prototype = {
 			var realMailbox = rm[0]["m:AlternateId"]["@Mailbox"].toString();
 		}
 		else {
-			var rm = aResp.XPath("/s:Envelope/s:Body/m:ConvertIdResponse/m:ResponseMessages/m:ConvertIdResponseMessage[@ResponseClass='Error']");
-			if (rm.length > 0) {
+			aMsg = this.parent.getSoapErrorMsg(aResp);
+			if (aMsg) {
 				aCode = this.parent.ER_ERROR_CONVERTID;
 				aError = true;
-				aMsg = rm[0]["m:MessageText"].value+"("+rm[0]["m:ResponseCode"].value+")";
 			}
 			else {
 				aCode = this.parent.ER_ERROR_SOAP_RESPONSECODE_NOTFOUND;
