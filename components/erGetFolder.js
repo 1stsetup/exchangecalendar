@@ -114,6 +114,9 @@ erGetFolderRequest.prototype = {
 
 		if (rm.length > 0) {
 			var calendarFolder = rm[0].XPath("/m:Folders/t:CalendarFolder");
+			if (calendarFolder.length == 0) {
+				var calendarFolder = rm[0].XPath("/m:Folders/t:TasksFolder");
+			}
 			if (calendarFolder.length > 0) {
 				var folderID = calendarFolder[0]["t:FolderId"]["@Id"];
 				var changeKey = calendarFolder[0]["t:FolderId"]["@ChangeKey"];

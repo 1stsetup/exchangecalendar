@@ -2210,11 +2210,16 @@ this.logInfo("singleModified doNotify");
 			if (aRangeEnd) { this.logInfo("getItems 5b: aRangeEnd:"+aRangeEnd.toString()); }
 
 			this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
+
 		if (!dateChanged) {
+			this.logInfo("No dateChanged. Not going to request items from server.");
 			return;
 		}
 
-		if (this.isOffline) return;
+		if (this.isOffline) {
+			this.logInfo("We are offline. Not going to request items from server.");
+			return;
+		}
 
        		var self = this;
 
@@ -7383,6 +7388,7 @@ this.logInfo("getTaskItemsOK 4");
 				//this.logInfo("Restore folderProperties from prefs.js:"+tmpFolderProperties);
 				//var tmpXML = new XML(tmpFolderProperties);
 				var tmpXML = exchWebService.commonFunctions.xmlToJxon(tmpFolderProperties);
+				this.folderProperties = tmpXML;
 				this.setFolderProperties(tmpXML, tmpFolderClass);
 			}
 		}
@@ -7516,7 +7522,8 @@ this.logInfo("getTaskItemsOK 4");
 		// properties we should activate OnlyShowAvailability variable.
 		// Problem is when is this condition true
 		// For now we will set OnlyShowAvailability = true when EffectiveRights.Read == false
-		var rm = aFolderProperties.XPath("/s:Envelope/s:Body/m:GetFolderResponse/m:ResponseMessages/m:GetFolderResponseMessage/m:Folders/t:CalendarFolder/t:EffectiveRights[t:Read='true']");
+		this.logInfo(" >>>>>>>>>>>>>>MIV>:"+aFolderClass.toString());
+		var rm = aFolderProperties.XPath("/s:Envelope/s:Body/m:GetFolderResponse/m:ResponseMessages/m:GetFolderResponseMessage/m:Folders/*/t:EffectiveRights[t:Read='true']");
 
 		if (rm.length == 0) {
 			this.logInfo("getFolderOk: but EffectiveRights.Read == false. Only getting Free/Busy information.");
