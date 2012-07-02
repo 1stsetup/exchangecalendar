@@ -84,7 +84,7 @@ erConvertIDRequest.prototype = {
 
 		//exchWebService.commonFunctions.LOG(" ++ xml2jxon ++:"+this.parent.makeSoapMessage(req));
 
-		exchWebService.commonFunctions.LOG("erConvertIDRequest.execute:"+String(this.parent.makeSoapMessage(req)));
+//		exchWebService.commonFunctions.LOG("erConvertIDRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 		this.parent.xml2jxon = true;
 
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);

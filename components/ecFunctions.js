@@ -611,7 +611,13 @@ exchWebService.commonFunctions = {
 		var result = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
 				.createInstance(Ci.mivIxml2jxon);
 		if ((result) && (aXMLString) && (aXMLString != ""))	{
-			result.processXMLString(aXMLString, 0, null);
+			try {
+				result.processXMLString(aXMLString, 0, null);
+			}
+			catch(exc) {
+				exchWebService.commonFunctions.LOG("xmlToJxon: Error processXMLString:"+exc+".("+aXMLString+")");
+				result = null;
+			}
 		}
 
 		return result;

@@ -5680,7 +5680,7 @@ this.logInfo("!!CHANGED:"+String(e));
 
 	findCalendarItemsOK: function _findCalendarItemsOK(erFindCalendarItemsRequest, aIds, aOccurrences)
 	{
-		//this.logInfo("findCalendarItemsOK: aIds.length="+aIds.length+", aOccurrences.length="+aOccurrences.length);
+		this.logInfo("findCalendarItemsOK: aIds.length="+aIds.length+", aOccurrences.length="+aOccurrences.length);
 
 		this.saveCredentials(erFindCalendarItemsRequest.argument);
 		this.notConnected = false;
