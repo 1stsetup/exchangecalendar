@@ -164,13 +164,12 @@ erFindCalendarItemsRequest.prototype = {
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
 		if (rm.length > 0) {
-			var rootFolder = rm[0]["m:RootFolder"];
+			var rootFolder = rm[0].getTag("m:RootFolder");
 			if (rootFolder) {
 				if (rootFolder.getAttribute("IncludesLastItemInRange") == "true") {
 					// Process results.
 					var calendarItems = rootFolder.XPath("/t:Items/t:CalendarItem");
 					for (var index in calendarItems) {
-						exchWebService.commonFunctions.LOG("1: index:"+index);
 						var uid = calendarItems[index].getTagValue("t:UID", "");
 						switch (calendarItems[index].getTagValue("t:CalendarItemType")) {
 							case "Occurrence" :
@@ -196,7 +195,6 @@ erFindCalendarItemsRequest.prototype = {
 								exchWebService.commonFunctions.LOG("UNKNOWN CalendarItemType:"+calendarItems[index].getTagValue("t:CalendarItemType")+"\n");
 								break;
 						}
-						exchWebService.commonFunctions.LOG("2: index:"+index);
 					}
 				}
 				else {
@@ -223,85 +221,20 @@ erFindCalendarItemsRequest.prototype = {
 			}
 		}
 
-		exchWebService.commonFunctions.LOG("3: aError:"+aError);
 		if (aError) {
 			this.onSendError(aExchangeRequest, aCode, aMsg);
 		}
 		else {
 			if (this.mCbOk) {
-		exchWebService.commonFunctions.LOG("4: aError:"+aError);
 				var occurrenceList = [];
 				for (var index in this.occurrences) {
 					occurrenceList.push(this.occurrences[index]);
 				}
-
-		exchWebService.commonFunctions.LOG("5: aError:"+aError);
-try{
-				this.mCbOk(this, this.ids, occurrenceList);
-}catch(exc){exchWebService.commonFunctions.LOG("ERROR:"+exc);}
-		exchWebService.commonFunctions.LOG("6: aError:"+aError);
-			}
-			this.isRunning = false;
-		}
-		
-/*		var rm = aResp..nsMessages::ResponseMessages.nsMessages::FindItemResponseMessage;
-		var ResponseCode = rm.nsMessages::ResponseCode.toString();
-		if (ResponseCode == "NoError") {
-
-			for each (var e in aResp..nsTypes::CalendarItem) {
-				switch (e.nsTypes::CalendarItemType.toString()) {
-					case "RecurringMaster" :
-						this.ids.push({Id: e.nsTypes::ItemId.@Id.toString(),
-							  ChangeKey: e.nsTypes::ItemId.@ChangeKey.toString(),
-							  type: e.nsTypes::CalendarItemType.toString(),
-							  uid: e.nsTypes::UID.toString(),
-							  start: e.nsTypes::Start.toString(),
-							  end: e.nsTypes::End.toString()});
-						break; // BUG 13.n
-					case "Occurrence" :
-					case "Exception" :
-						this.occurrences[e.nsTypes::UID.toString()] = {Id: e.nsTypes::ItemId.@Id.toString(),
-							  ChangeKey: e.nsTypes::ItemId.@ChangeKey.toString(),
-							  type: e.nsTypes::CalendarItemType.toString(),
-							  uid: e.nsTypes::UID.toString(),
-							  start: e.nsTypes::Start.toString(),
-							  end: e.nsTypes::End.toString()};
-						// BUG 13.sn
-						this.ids.push({Id: e.nsTypes::ItemId.@Id.toString(),
-							  ChangeKey: e.nsTypes::ItemId.@ChangeKey.toString(),
-							  type: e.nsTypes::CalendarItemType.toString(),
-							  uid: e.nsTypes::UID.toString(),
-							  start: e.nsTypes::Start.toString(),
-							  end: e.nsTypes::End.toString()});
-						// BUG 13.en
-						break;
-					case "Single" :
-						this.ids.push({Id: e.nsTypes::ItemId.@Id.toString(),
-							  ChangeKey: e.nsTypes::ItemId.@ChangeKey.toString(),
-							  type: e.nsTypes::CalendarItemType.toString(),
-							  uid: e.nsTypes::UID.toString(),
-							  start: e.nsTypes::Start.toString(),
-							  end: e.nsTypes::End.toString()});
-						break;
-					default:
-						exchWebService.commonFunctions.LOG("UNKNOWN CalendarItemType:"+e.nsTypes::CalendarItemType.toString()+"\n");
-						break;
-				}
-			}
-		
-			if (this.mCbOk) {
-				var occurrenceList = [];
-				for (var index in this.occurrences) {
-					occurrenceList.push(this.occurrences[index]);
-				}
-
 				this.mCbOk(this, this.ids, occurrenceList);
 			}
 			this.isRunning = false;
 		}
-		else {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, ResponseCode);
-		} */
+		
 	},
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)
