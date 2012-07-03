@@ -106,8 +106,8 @@ erConvertIDRequest.prototype = {
 
 //          <m:AlternateId xsi:type="t:AlternateIdType" Format="EwsId" Id="AAMkADNjZmIwYzQyLTdjYmEtNGFlMi05ZGE5LTBlYzRkNzYzODRhOAAuAAAAAAC8WradQ3BFT7SAoV2yp+k8AQDcsp8GsIe7Q5tUJHDnpdbjAAAtr+rqAAA=" Mailbox="jane@example.com"/>
 
-			var alternateId = rm[0]["m:AlternateId"]["@Id"].toString();
-			var realMailbox = rm[0]["m:AlternateId"]["@Mailbox"].toString();
+			var alternateId = rm[0].getAttributeByTag("m:AlternateId","Id");
+			var realMailbox = rm[0].getAttributeByTag("m:AlternateId","Mailbox");
 		}
 		else {
 			aMsg = this.parent.getSoapErrorMsg(aResp);
