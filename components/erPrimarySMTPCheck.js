@@ -72,21 +72,6 @@ erPrimarySMTPCheckRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("sendPrimarySmtpCheck\n");
 		// We are going to do a dummy FindItem. It will return the real primarySMTP
-//		var req = <nsMessages:FindItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
-//		req.@Traversal = "Shallow";
-
-//		req.nsMessages::ItemShape.nsTypes::BaseShape = "IdOnly";
-
-//		var view = <nsMessages:CalendarView xmlns:nsMessages={nsMessages}/>;
-		// Dummy date range to limit result
-//		view.@StartDate = "2011-01-30T11:34:00Z";
-//		view.@EndDate = "2011-01-30T11:35:00Z";
-//		view.@MaxEntriesReturned = 1;
-
-//		req.appendChild(view);
-
-//		req.nsMessages::ParentFolderIds = makeParentFolderIds("ParentFolderIds", this.argument);
-//
 		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:FindItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 		req.setAttribute("Traversal", "Shallow");
 
