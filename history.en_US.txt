@@ -1,3 +1,6 @@
+Version 2.2.1:
+- Fixed bug when closing TB the offline cache would be emptyed.
+
 Version 2.2.0:
 - Fixed complaint of ad-on checker.
 - Fixed bug of cloning a calendar showed empty fields.
