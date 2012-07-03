@@ -75,12 +75,17 @@ erBrowseFolderRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erBrowseFolderRequest.execute\n");
 
-		var req = <nsMessages:FindFolder xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
-		req.@Traversal = "Shallow";
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:FindFolder xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		req.setAttribute("Traversal", "Shallow");
 
-		req.nsMessages::FolderShape.nsTypes::BaseShape = "AllProperties";
+		req.addChildTag("FolderShape", "nsMessages", null).addChildTag("BaseShape", "nsTypes", "AllProperties"); 
 
-		req.nsMessages::ParentFolderIds = makeParentFolderIds("ParentFolderIds", this.argument);
+		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
+		req.addChildTagObject(parentFolder);
+
+		this.parent.xml2jxon = true;
+
+		exchWebService.commonFunctions.LOG("erBrowseFolderRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 
 		//exchWebService.commonFunctions.LOG("erBrowseFolderRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
@@ -98,42 +103,54 @@ erBrowseFolderRequest.prototype = {
 		var aResult = undefined;
 		var childFolders = [];
 
-		try {
-			var totalItemsInView = aResp.nsSoap::Body.nsMessages::FindFolderResponse..nsMessages::RootFolder.@TotalItemsInView;
-		}
-		catch(err) {
-			aMsg = err;
-			aCode = this.parent.ER_ERROR_FINDFOLDER_NO_TOTALITEMSVIEW;
-			aContinue = false;
-			aError = true;
-		}
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:FindFolderResponse/m:ResponseMessages/m:FindFolderResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
-		if (aContinue) {
-			//exchWebService.commonFunctions.LOG("totalItemsInView="+totalItemsInView+"\n");
-			if (totalItemsInView > 0) {
-				// Collect child folders.
-//				var folders = aResp.nsSoap::Body..nsTypes::Folders;
-				for each(var folder in aResp.nsSoap::Body..nsTypes::Folders.*) {
-					exchWebService.commonFunctions.LOG("Adding folder:"+folder.nsTypes::DisplayName.toString());
-					var tmpFolderClass = "";
-					try {
-						tmpFolderClass = folder.nsTypes::FolderClass.toString();
-					} catch(err) {
+		if (rm.length > 0) {
+			var rootFolder = rm[0].getTag("m:RootFolder");
+			if (rootFolder) {
+				if (rootFolder.getAttribute("IncludesLastItemInRange") == "true") {
+					// Process results.
+					var folders = rootFolder.XPath("/t:Folders/*");
+					exchWebService.commonFunctions.LOG("Found '"+folders.length+"' folders.");
+					for (var index in folders) {
+						exchWebService.commonFunctions.LOG("Adding folder:"+folders[index].getTagValue("t:DisplayName"));
+						var tmpFolderClass = folders[index].getTagValue("t:FolderClass", "");
+						childFolders.push({ user: this.argument.user, 
+									mailbox: this.argument.mailbox,
+									folderBase: this.argument.folderBase,
+									serverUrl: this.argument.serverUrl,
+									folderID: folders[index].getAttributeByTag("t:FolderId", "Id"),
+									changeKey: folders[index].getAttributeByTag("t:FolderId", "ChangeKey"),
+									foldername: folders[index].getTagValue("t:DisplayName", ""), 
+									isContainer: (folders[index].getTagValue("t:ChildFolderCount", 0) > 0),
+									isContainerOpen : false,
+									isContainerEmpty: (folders[index].getTagValue("t:ChildFolderCount", 0) == 0),
+									level: this.argument.level+1,
+									children: [],
+									folderClass: tmpFolderClass });
 					}
-					childFolders.push({ user: this.argument.user, 
-								mailbox: this.argument.mailbox,
-								folderBase: this.argument.folderBase,
-								serverUrl: this.argument.serverUrl,
-								folderID: folder.nsTypes::FolderId.@Id.toString(),
-								changeKey: folder.nsTypes::FolderId.@ChangeKey.toString(),
-								foldername: folder.nsTypes::DisplayName.toString(),
-								isContainer: (folder.nsTypes::ChildFolderCount > 0),
-								isContainerOpen : false,
-								isContainerEmpty: (folder.nsTypes::ChildFolderCount == 0),
-								level: this.argument.level+1,
-								children: [],
-								folderClass: tmpFolderClass });
 				}
+				else {
+					// We do not know how to handle this yet. Do not know if it ever happens. We did not restrict MaxEntriesReturned.
+					exchWebService.commonFunctions.LOG("PLEASE MAIL THIS LINE TO exchangecalendar@extensions.1st-setup.nl: IncludesLastItemInRange == false in FindFolderResponse.");
+				}
+			}
+			else {
+				aCode = this.parent.ER_ERROR_SOAP_RESPONSECODE_NOTFOUND;
+				aError = true;
+				aMsg = "No RootFolder found in FindFolderResponse.";
+			}
+		}
+		else {
+			aMsg = this.parent.getSoapErrorMsg(aResp);
+			if (aMsg) {
+				aCode = this.parent.ER_ERROR_CONVERTID;
+				aError = true;
+			}
+			else {
+				aCode = this.parent.ER_ERROR_SOAP_RESPONSECODE_NOTFOUND;
+				aError = true;
+				aMsg = "Wrong response received.";
 			}
 		}
 
