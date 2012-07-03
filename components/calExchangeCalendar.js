@@ -7930,11 +7930,11 @@ this.logInfo("getTaskItemsOK 4");
 		this.weAreSyncing = false;
 		
 		// Remove all items in cache from calendar.
-		for (var index in this.itemCache) {
+/*		for (var index in this.itemCache) {
 			if (this.itemCache[index]) {
 				this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
 			}
-		}  // This is removed to speed up shutdown
+		}  */// This is removed to speed up shutdown
 
 		// Reset caches.
 		this.itemCache = [];
