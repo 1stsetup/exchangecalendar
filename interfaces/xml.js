@@ -222,10 +222,40 @@ mivIxml2jxon.prototype = {
 		this["@"+aAttribute] = this.convertSpecialCharatersToXML(aValue);
 	},
 
-	getAttribute: function _getAttribute(aAttribute)
+	getAttribute: function _getAttribute(aAttribute, aDefaultValue)
 	{
-		this.logInfo("@"+aAttribute+"="+this["@"+aAttribute]);
-		return this.convertSpecialCharatersFromXML(this["@"+aAttribute]);
+		if (this["@"+aAttribute]) {
+			this.logInfo("@"+aAttribute+"="+this["@"+aAttribute]);
+			return this.convertSpecialCharatersFromXML(this["@"+aAttribute]);
+		}
+		else {
+			return aDefaultValue;
+		}
+	},
+
+	getAttributeByTag: function _getAttributeByTag(aTagName, aAttribute, aDefaultValue)
+	{
+		if (this[aTagName]) {
+			return this[aTagName].getAttribute(aAttribute, aDefaultValue);
+		}
+		else {
+			return aDefaultValue;
+		}
+	},
+
+	getTag: function _getTag(aTagName)
+	{
+		return this[aTagName];
+	},
+
+	getTagValue: function _getTagValue(aTagName, aDefaultValue)
+	{
+		if (this[aTagName]) {
+			return this[aTagName].value;
+		}
+		else {
+			return aDefaultValue;
+		}
 	},
 
 	addChildTagObject: function _addChildTagObject(aObject)

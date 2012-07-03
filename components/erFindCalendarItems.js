@@ -171,32 +171,29 @@ erFindCalendarItemsRequest.prototype = {
 					var calendarItems = rootFolder.XPath("/t:Items/t:CalendarItem");
 					for (var index in calendarItems) {
 						exchWebService.commonFunctions.LOG("1: index:"+index);
-						var uid = "";
-						if (calendarItems[index]["t:UID"]) {
-							uid = calendarItems[index]["t:UID"].value;
-						}
-						switch (calendarItems[index]["t:CalendarItemType"].value) {
+						var uid = calendarItems[index].getTagValue("t:UID", "");
+						switch (calendarItems[index].getTagValue("t:CalendarItemType")) {
 							case "Occurrence" :
 							case "Exception" :
 								if (uid != "") {
-									this.occurrences[uid] = {Id: calendarItems[index]["t:ItemId"].getAttribute("Id"),
-										  ChangeKey: calendarItems[index]["t:ItemId"].getAttribute("ChangeKey"),
-										  type: calendarItems[index]["t:CalendarItemType"].value,
+									this.occurrences[uid] = {Id: calendarItems[index].getAttributeByTag("t:ItemId","Id"),
+										  ChangeKey: calendarItems[index].getAttributeByTag("t:ItemId", "ChangeKey"),
+										  type: calendarItems[index].getTagValue("t:CalendarItemType"),
 										  uid: uid,
-										  start: calendarItems[index]["t:Start"].value,
-										  end: calendarItems[index]["t:End"].valu};
+										  start: calendarItems[index].getTagValue("t:Start"),
+										  end: calendarItems[index].getTagValue("t:End")};
 								}
 							case "RecurringMaster" :
 							case "Single" :
-								this.ids.push({Id: calendarItems[index]["t:ItemId"].getAttribute("Id"),
-									  ChangeKey: calendarItems[index]["t:ItemId"].getAttribute("ChangeKey"),
-									  type: calendarItems[index]["t:CalendarItemType"].value,
-									  uid: uid,
-									  start: calendarItems[index]["t:Start"].value,
-									  end: calendarItems[index]["t:End"].value});
+								this.ids.push({Id: calendarItems[index].getAttributeByTag("t:ItemId","Id"),
+										  ChangeKey: calendarItems[index].getAttributeByTag("t:ItemId", "ChangeKey"),
+										  type: calendarItems[index].getTagValue("t:CalendarItemType"),
+										  uid: uid,
+										  start: calendarItems[index].getTagValue("t:Start"),
+										  end: calendarItems[index].getTagValue("t:End")});
 								break;
 							default:
-								exchWebService.commonFunctions.LOG("UNKNOWN CalendarItemType:"+calendarItems[index]["t:CalendarItemType"].value+"\n");
+								exchWebService.commonFunctions.LOG("UNKNOWN CalendarItemType:"+calendarItems[index].getTagValue("t:CalendarItemType")+"\n");
 								break;
 						}
 						exchWebService.commonFunctions.LOG("2: index:"+index);
