@@ -779,8 +779,15 @@ mivIxml2jxon.prototype = {
 			tmpPath = tmpPath.substr(1);
 			for (var index in this) {
 				if ((index.indexOf(":") > -1) && (this[index].tagName != this.tagName)) {
-					this.logInfo(" -- tag:"+index, 2);
-					result.push(this[index]);
+					this.logInfo(" -- tag:"+index, 1);
+					if (Array.isArray(this[index])) {
+						for (var index2 in this[index]) {
+							result.push(this[index][index2]);
+						}
+					}
+					else {
+						result.push(this[index]);
+					}
 				}
 			}
 			break;
