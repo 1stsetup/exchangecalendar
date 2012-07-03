@@ -171,21 +171,27 @@ erFindCalendarItemsRequest.prototype = {
 					var calendarItems = rootFolder.XPath("/t:Items/t:CalendarItem");
 					for (var index in calendarItems) {
 						exchWebService.commonFunctions.LOG("1: index:"+index);
+						var uid = "";
+						if (calendarItems[index]["t:UID"]) {
+							uid = calendarItems[index]["t:UID"].value;
+						}
 						switch (calendarItems[index]["t:CalendarItemType"].value) {
 							case "Occurrence" :
 							case "Exception" :
-								this.occurrences[calendarItems[index]["t:UID"].value] = {Id: calendarItems[index]["t:ItemId"].getAttribute("Id"),
-									  ChangeKey: calendarItems[index]["t:ItemId"].getAttribute("ChangeKey"),
-									  type: calendarItems[index]["t:CalendarItemType"].value,
-									  uid: calendarItems[index]["t:UID"].value,
-									  start: calendarItems[index]["t:Start"].value,
-									  end: calendarItems[index]["t:End"].valu};
+								if (uid != "") {
+									this.occurrences[uid] = {Id: calendarItems[index]["t:ItemId"].getAttribute("Id"),
+										  ChangeKey: calendarItems[index]["t:ItemId"].getAttribute("ChangeKey"),
+										  type: calendarItems[index]["t:CalendarItemType"].value,
+										  uid: uid,
+										  start: calendarItems[index]["t:Start"].value,
+										  end: calendarItems[index]["t:End"].valu};
+								}
 							case "RecurringMaster" :
 							case "Single" :
 								this.ids.push({Id: calendarItems[index]["t:ItemId"].getAttribute("Id"),
 									  ChangeKey: calendarItems[index]["t:ItemId"].getAttribute("ChangeKey"),
 									  type: calendarItems[index]["t:CalendarItemType"].value,
-									  uid: calendarItems[index]["t:UID"].value,
+									  uid: uid,
 									  start: calendarItems[index]["t:Start"].value,
 									  end: calendarItems[index]["t:End"].value});
 								break;
