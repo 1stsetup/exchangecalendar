@@ -129,7 +129,7 @@ erAutoDiscoverRequest.prototype = {
 	
 		// Try to get the EWS urls if they are available
 		try {
-			ewsUrls = aResp.Response..EwsUrl;
+			ewsUrls = aResp.Response..ASUrl;
 			exchWebService.commonFunctions.LOG(" cc:"+ewsUrls+".");
 			if (String(ewsUrls) != "") {
 				aError = false;

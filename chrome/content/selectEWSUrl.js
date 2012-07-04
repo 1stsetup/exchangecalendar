@@ -54,13 +54,20 @@ exchWebService.selectEWSurl = {
 		var firstItem = false;		
 		var results = new Array();
 
-		for (var i = 0; i < ((ewsUrls.length()) - 1); i++) {
-		    if (ewsUrls[i + 1] == ewsUrls[i]) {
-			results.push(ewsUrls[i].toString());
-		    }
+		for (var index in ewsUrls) {
+			exchWebService.commonFunctions.LOG("ewsUrl["+index+"]:"+ewsUrls[index].toString());
+			var exists = false;
+			for (var index2 in results) {
+				if (results[index2] == ewsUrls[index].toString()) {
+					exists = true;
+					break;
+				}
+			}
+			if (!exists) {
+				results.push(ewsUrls[index].toString());
+			}
 		}
 		
-
 		for (var i= 0; i < results.length; i++) {
 			var newItem = document.getElementById("exchWebService_selectEWSurl_urllist").appendItem( results[i].toString(), results[i].toString(), results[i].toString() );
 
