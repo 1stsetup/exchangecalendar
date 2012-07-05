@@ -7847,9 +7847,13 @@ this.logInfo("getTaskItemsOK 4");
 
 			var weHaveAMatch = null;
 			var tmpPlaceName = null;
+			var tmpId = null;
 			if (tmpZone.tzid.indexOf("/") > -1) {
 				// Get City/Place name from tzid.
 				tmpPlaceName = tmpZone.tzid.substr(tmpZone.tzid.indexOf("/")+1);
+			}
+			else {
+				tmpId = tmpZone.tzid.toString();
 			}
 
 
@@ -7864,7 +7868,13 @@ this.logInfo("getTaskItemsOK 4");
 			//}
 			this.logInfo("tmpBiasValues.standard="+tmpBiasValues.standard);
 			if (tmpBiasValues.daylight) {
-				this.logInfo("tmpBiasValues.daylight="+tmpBiasValues.daylight);
+				if (tmpBiasValues.daylight == tmpBiasValues.standard) {
+					this.logInfo("tmpBiasValues.daylight == tmpBiasValues.standard Not going to use daylight value.");
+					tmpBiasValues.daylight = null;
+				}
+				else {
+					this.logInfo("tmpBiasValues.daylight="+tmpBiasValues.daylight);
+				}
 			}
 
 			for each(var timeZoneDefinition in this.EWSTimeZones) {
@@ -7873,6 +7883,12 @@ this.logInfo("getTaskItemsOK 4");
 				if ((tmpPlaceName) && (timeZoneDefinition["@Name"].indexOf(tmpPlaceName) > -1)) {
 					// We found our placename in the name of the timezonedefinition
 					placeNameMatch = true;
+				}
+
+				var idMatch = false;
+				if ((tmpId) && (timeZoneDefinition["@Id"].toString() == tmpId)) {
+					// We found our tmpId in the id of the timezonedefinition
+					idMatch = true;
 				}
 
 				var standardMatch = null;
@@ -7908,11 +7924,15 @@ this.logInfo("getTaskItemsOK 4");
 						this.logInfo("WE HAVE A TIMEZONE MATCH BETWEEN LIGHTNING AND exchWebService.commonFunctions. Cal:"+aCalTimeZone.tzid+", EWS:"+timeZoneDefinition["@Name"]);
 	
 						// If we also found the place name this will overrule everything else.
-						if ((placeNameMatch) || (!weHaveAMatch)) {
+						if ((placeNameMatch) || (idMatch) || (!weHaveAMatch)) {
 							weHaveAMatch = timeZoneDefinition["@Id"];
 	
 							if (placeNameMatch) {
 								this.logInfo("We have a timzonematch on place name");
+								break;
+							}
+							if (idMatch) {
+								this.logInfo("We have a timzonematch on id");
 								break;
 							}
 						}
