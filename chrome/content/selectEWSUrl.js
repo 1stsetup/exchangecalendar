@@ -69,7 +69,6 @@ exchWebService.selectEWSurl = {
 			}
 		}
 		
-
 		for (var i= 0; i < results.length; i++) {
 			var newItem = document.getElementById("exchWebService_selectEWSurl_urllist").appendItem( results[i].toString(), results[i].toString(), results[i].toString() );
 
