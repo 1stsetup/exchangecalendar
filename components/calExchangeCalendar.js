@@ -7784,6 +7784,8 @@ this.logInfo("getTaskItemsOK 4");
 
 	convertDurationToSeconds: function _convertDurationToSeconds(aDuration)
 	{
+		if (!aDuration) return null;
+
 		var tmpStr = aDuration;
 		var multiplier = 1;
 		if (tmpStr.substr(0,1) == "-") {
@@ -7880,13 +7882,13 @@ this.logInfo("getTaskItemsOK 4");
 			for each(var timeZoneDefinition in this.EWSTimeZones) {
 				//this.logInfo("timeZoneDefinition.@Name="+timeZoneDefinition.@Name);
 				var placeNameMatch = false;
-				if ((tmpPlaceName) && (timeZoneDefinition["@Name"].indexOf(tmpPlaceName) > -1)) {
+				if ((tmpPlaceName) && (timeZoneDefinition.getAttribute("Name", "").indexOf(tmpPlaceName) > -1)) {
 					// We found our placename in the name of the timezonedefinition
 					placeNameMatch = true;
 				}
 
 				var idMatch = false;
-				if ((tmpId) && (timeZoneDefinition["@Id"].toString() == tmpId)) {
+				if ((tmpId) && (timeZoneDefinition.getAttribute("Id", "") == tmpId)) {
 					// We found our tmpId in the id of the timezonedefinition
 					idMatch = true;
 				}
@@ -7897,8 +7899,8 @@ this.logInfo("getTaskItemsOK 4");
 				if (periods.length > 0) {
 					for (var index in periods) {
 						//this.logInfo("xx period.@Bias="+period.@Bias.toString());
-						if (this.convertDurationToSeconds(periods[index]["@Bias"].toString()) == this.convertDurationToSeconds(tmpBiasValues.standard)) {
-							standardMatch = periods[index]["@Bias"].toString();
+						if (this.convertDurationToSeconds(periods[index].getAttribute("Bias")) == this.convertDurationToSeconds(tmpBiasValues.standard)) {
+							standardMatch = periods[index].getAttribute("Bias", null);
 							break;
 						}
 					}
@@ -7912,8 +7914,8 @@ this.logInfo("getTaskItemsOK 4");
 						if (periods.length > 0) {
 							for (var index in periods) {
 								//this.logInfo("yy period.@Bias="+period.@Bias.toString());
-								if (this.convertDurationToSeconds(periods[index]["@Bias"].toString()) == this.convertDurationToSeconds(tmpBiasValues.daylight)) {
-									daylightMatch = periods[index]["@Bias"].toString();
+								if (this.convertDurationToSeconds(periods[index].getAttribute("Bias")) == this.convertDurationToSeconds(tmpBiasValues.daylight)) {
+									daylightMatch = periods[index].getAttribute("Bias", null);
 									break;
 								}
 							}
@@ -7921,11 +7923,11 @@ this.logInfo("getTaskItemsOK 4");
 					}
 	
 					if ((standardMatch) && ((!tmpBiasValues.daylight) || (daylightMatch))) {
-						this.logInfo("WE HAVE A TIMEZONE MATCH BETWEEN LIGHTNING AND exchWebService.commonFunctions. Cal:"+aCalTimeZone.tzid+", EWS:"+timeZoneDefinition["@Name"]);
+						this.logInfo("WE HAVE A TIMEZONE MATCH BETWEEN LIGHTNING AND exchWebService.commonFunctions. Cal:"+aCalTimeZone.tzid+", EWS:"+timeZoneDefinition.getAttribute("Name"));
 	
 						// If we also found the place name this will overrule everything else.
 						if ((placeNameMatch) || (idMatch) || (!weHaveAMatch)) {
-							weHaveAMatch = timeZoneDefinition["@Id"];
+							weHaveAMatch = timeZoneDefinition.getAttribute("Id");
 	
 							if (placeNameMatch) {
 								this.logInfo("We have a timzonematch on place name");
