@@ -7807,6 +7807,16 @@ this.logInfo("getTaskItemsOK 4");
 			}
 
 
+
+/*
+1st-setup: [Exchange] getEWSTimeZoneId:India Standard Time (_getEWSTimeZoneId in calExchangeCalendar.js:7792)
+1st-setup: [Exchange] tmpBiasValues.standard=-PT5H30M (_getEWSTimeZoneId in calExchangeCalendar.js:7819)
+1st-setup: [Exchange] tmpBiasValues.daylight=-PT5H30M (_getEWSTimeZoneId in calExchangeCalendar.js:7821)
+ // This problem needs to be fixed. It does not return a valid timezone when it is available.
+ Current problem is that we have a daylight value but the timezone does not..
+
+  the given tzid matches also the id it shuld return we do not have a match/check on this.
+*/
 			var tmpBiasValues = this.calculateBiasOffsets(tmpZone);
 			if (!tmpBiasValues.standard) {
 				return "UTC";
