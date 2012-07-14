@@ -7101,6 +7101,13 @@ this.logInfo("getTaskItemsOK 4");
 		//this.logInfo("updateCalendar");
 		var items = [];
 		var convertedItems = [];
+		var useOfflineCache = true;
+		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+			useOfflineCache = false;
+		}
+		if(useOfflineCache){
+			this.offlineCacheDB.beginTransaction();
+		}
 		for (var index in aItems) {
 
 			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify);
@@ -7127,7 +7134,9 @@ this.logInfo("getTaskItemsOK 4");
 			}
 
 		}
-
+		if(useOfflineCache){
+			this.offlineCacheDB.commitTransaction();
+		}
 		return convertedItems;
 
 	},
@@ -8278,6 +8287,20 @@ this.logInfo("getTaskItemsOK 4");
 		}
 	},
 
+	executeQueryAsync: function _executeQuery(aQuery)
+	{
+		this.logInfo("sql-query:"+aQuery, 2);
+		try {
+			var sqlStatement = this.offlineCacheDB.createStatement(aQuery);
+			sqlStatement.executeAsync();
+			sqlStatement.reset();
+		}
+		catch(exc) {
+			this.logInfo("Error on createStatement. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString+", Exception:"+exc+". ("+aQuery+")");
+			return false;
+		}
+	},
+
 	executeQueryWithResults: function _executeQueryWithResults(aQuery, aFieldArray)
 	{
 		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
@@ -8330,6 +8353,15 @@ this.logInfo("getTaskItemsOK 4");
 		}			
 	},
 
+	addAttachmentsToOfflineCacheAsync: function _addAttachmentsToOfflineCacheAsync(aCalItem)
+	{
+		var attachments = aCalItem.getAttachments({});
+		this.removeAttachmentsFromOfflineCacheAsync(aCalItem);
+		for (var index in attachments) {
+			this.addAttachmentToOfflineCacheAsync(aCalItem, attachments[index]);
+		}			
+	},
+
 	addAttachmentToOfflineCache: function _addAttachmentToOfflineCache(aCalItem, aCalAttachment)
 	{
 		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
@@ -8370,7 +8402,35 @@ this.logInfo("getTaskItemsOK 4");
 
 		}
 	},
+	
+	addAttachmentToOfflineCacheAsync: function _addAttachmentToOfflineCacheAsync(aCalItem, aCalAttachment)
+	{
+		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+			return;
+		}
 
+		var attParams = exchWebService.commonFunctions.splitUriGetParams(aCalAttachment.uri);
+
+		if (attParams) {
+
+			var sqlStr = "SELECT COUNT() as attcount from attachments WHERE id='"+attParams.id+"'";
+			this.logInfo("sql-query:"+sqlStr, 2);
+			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
+			sqlStatement.executeStep();
+			if (sqlStatement.row.attcount > 0) {
+				this.logInfo("Going to update the attachment because it all ready exist.");
+				this.updateAttachmentInOfflineCacheAsync(aCalItem, aCalAttachment);
+				sqlStatement.reset();
+				return;
+			}
+
+			var sqlStr = "INSERT INTO attachments VALUES ('"+attParams.id+"', '"+attParams.name.replace(/\x27/g, "''")+"', '"+attParams.size+"', '')";
+			this.executeQueryAsync(sqlStr);
+
+			var sqlStr = "INSERT INTO attachments_per_item VALUES ('"+aCalItem.id+"','"+attParams.id+"')";
+			this.executeQueryAsync(sqlStr);
+		}
+	},
 	updateAttachmentInOfflineCache: function _updateAttachmentInOfflineCache(aCalItem, aCalAttachment)
 	{
 		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
@@ -8388,6 +8448,21 @@ this.logInfo("getTaskItemsOK 4");
 			else {
 				this.logInfo("Updated attachment into offlineCacheDB. Name:"+attParams.name+", Title:"+aCalItem.title);
 			}
+		}
+	},
+
+	updateAttachmentInOfflineCacheAsync: function _updateAttachmentInOfflineCacheAsync(aCalItem, aCalAttachment)
+	{
+		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+			return;
+		}
+
+		var attParams = exchWebService.commonFunctions.splitUriGetParams(aCalAttachment.uri);
+
+		if (attParams) {
+
+			var sqlStr = "UPDATE attachments SET id='"+attParams.id+"', name='"+attParams.name.replace(/\x27/g, "''")+"', size='"+attParams.size+"', cachePath='' WHERE id='"+attParams.id+"'";
+			this.executeQueryAsync(sqlStr);
 		}
 	},
 
@@ -8443,6 +8518,41 @@ this.logInfo("getTaskItemsOK 4");
 
 		return true;
 	},
+	
+	removeAttachmentsFromOfflineCacheAsync: function _removeAttachmentsFromOfflineCacheAsync(aCalItem)
+	{
+		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+			return;
+		}
+
+		var sqlStr = "SELECT attId FROM attachments_per_item WHERE itemId='"+aCalItem.id+"'";
+
+		this.logInfo("sql-query:"+sqlStr, 2);
+		try {
+			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
+		}
+		catch(exc) {
+			this.logInfo("Error on createStatement. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString+", Exception:"+exc+". ("+sqlStr+")");
+			return false;
+		}
+		var doContinue = true;
+		try {
+			while (doContinue) {
+				doContinue = sqlStatement.executeStep();
+				if (doContinue) {
+					var sqlStr2 = "DELETE FROM attachments WHERE id='"+sqlStatement.row.attId+"'";
+					this.executeQueryAsync(sqlStr2);
+				}
+			}
+		}
+		finally {  
+			sqlStatement.reset();
+		}
+		var sqlStr2 = "DELETE FROM attachments_per_item WHERE itemId='"+aCalItem.id+"'";
+		this.executeQueryAsync(sqlStr2);
+		return true;
+	},
+
 
 	removeAttachmentFromOfflineCache: function _removeAttachmentFromOfflineCache(aCalItem, aCalAttachment)
 	{
@@ -8537,15 +8647,11 @@ this.logInfo("getTaskItemsOK 4");
 		}
 		
 		var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+aCalItem.id+"', '"+aCalItem.getProperty("X-ChangeKey")+"', '"+startDate+"', '"+endDate+"', '"+aCalItem.getProperty("X-UID")+"', '"+this.getItemType(aCalItem)+"', '"+aCalItem.parentItem.id+"', '"+aExchangeItem.toString().replace(/\x27/g, "''")+"')";
-		if (!this.executeQuery(sqlStr)) {
-			this.logInfo("Error inserting item into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
-		}
-		else {
-			this.logInfo("Inserted item into offlineCacheDB. Title:"+aCalItem.title+", startDate:"+startDate);
-		}
-		this.addAttachmentsToOfflineCache(aCalItem);
+		this.executeQuery(sqlStr);
+		this.addAttachmentsToOfflineCacheAsync(aCalItem);
 	},
-
+	
+	
 	updateInOfflineCache: function _updateInOfflineCache(aCalItem, aExchangeItem)
 	{
 		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
@@ -8556,13 +8662,7 @@ this.logInfo("getTaskItemsOK 4");
 			var sqlStr = "SELECT COUNT() as itemcount from items WHERE id='"+aCalItem.id+"' AND changeKey='"+aCalItem.getProperty("X-ChangeKey")+"'";
 			this.logInfo("sql-query:"+sqlStr, 2);
 			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
-			sqlStatement.executeStep();
-			if (sqlStatement.row.itemcount > 0) {
-				this.logInfo("This item is allready in offlineCache database. id and changeKey are the same. Not going to update it.");
-				sqlStatement.reset();
-				return;
-			}
-			sqlStatement.reset();
+			sqlStatement.execute();
 		}
 		
 		if (isEvent(aCalItem)) {
@@ -8631,13 +8731,8 @@ this.logInfo("getTaskItemsOK 4");
 		}
 		
 		var sqlStr = "UPDATE items SET event='"+eventField+"', id='"+aCalItem.id+"', changeKey='"+aCalItem.getProperty("X-ChangeKey")+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+aCalItem.getProperty("X-UID")+"', type='"+this.getItemType(aCalItem)+"', parentItem='"+aCalItem.parentItem.id+"', item='"+aExchangeItem.toString().replace(/\x27/g, "''")+"' WHERE id='"+aCalItem.id+"'";
-		if (!this.executeQuery(sqlStr)) {
-			this.logInfo("Error updating item in offlineCacheDB. Error:"+this.offlineCacheDB.lastErrorString);
-		}
-		else {
-			this.logInfo("Updated item in offlineCacheDB. Title:"+aCalItem.title+", startDate:"+startDate);
-		}
-		this.addAttachmentsToOfflineCache(aCalItem);
+		this.executeQueryAsync(sqlStr);
+		this.addAttachmentsToOfflineCacheAsync(aCalItem);
 	},
 
 	updateMasterInOfflineCache: function _updateParentInOfflineCache(aCalItem)
@@ -8688,6 +8783,17 @@ this.logInfo("getTaskItemsOK 4");
 			this.logInfo("Removed item from offlineCacheDB. Title:"+aCalItem.title);
 		}
 		this.removeAttachmentsFromOfflineCache(aCalItem);
+	},
+
+	removeFromOfflineCacheAsync: function _removeFromOfflineCacheAsync(aCalItem)
+	{
+		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
+			return;
+		}
+
+		var sqlStr = "DELETE FROM items WHERE id='"+aCalItem.id+"'";
+		this.executeQueryAsync(sqlStr);
+		this.removeAttachmentsFromOfflineCacheAsync(aCalItem);
 	},
 
 	syncExchangeToOfflineCache: function _syncExchangeToOfflineCache()
