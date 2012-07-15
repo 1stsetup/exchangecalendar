@@ -87,8 +87,17 @@
 			disable-on-readonly="true"
 			removable="true"
 			command="exchWebService_addAttachmentDialog"
+			oncommand="exchWebService.attachments.addAttachmentDialog();" />
+		<toolbarbutton id="button-url" 
+			mode="dialog"
+			class="cal-event-toolbarbutton toolbarbutton-1"
+			label="&exchWebServie.add.attachment.button.label;"
+			disable-on-readonly="true"
+			removable="true"
+			command="exchWebService_addAttachmentDialog"
 			oncommand="exchWebService.attachments.addAttachmentDialog();" 
 			hidden="true"/>
+
 	</toolbarpalette>
      <toolbar id="event-toolbar" defaultset="button-save,button-attendees,button-privacy,button-url,exchWebService-add-attachment-button,button-delete"> 
      </toolbar> 

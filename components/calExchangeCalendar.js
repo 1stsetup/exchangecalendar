@@ -4888,7 +4888,7 @@ this.logInfo("!!CHANGED:"+String(e));
 
 		// See if we need to update the item when it is an invitation to others
 		// This to get the invitation uncluding the attachments send out.
-		this.addAttachmentsToOfflineCache(erDeleteAttachmentRequest.argument.item);
+		this.addAttachmentsToOfflineCacheAsync(erDeleteAttachmentRequest.argument.item);
 
 		if ((erDeleteAttachmentRequest.argument.sendto) && ((erDeleteAttachmentRequest.argument.sendto != "sendtonone"))) {
 			// The item we processed was a meeting of which I'm the organiser.
@@ -7101,18 +7101,12 @@ this.logInfo("getTaskItemsOK 4");
 		//this.logInfo("updateCalendar");
 		var items = [];
 		var convertedItems = [];
-		var useOfflineCache = true;
-		if ((!this.getProperty("exchWebService.useOfflineCache")) || (!this.offlineCacheDB) ) {
-			useOfflineCache = false;
-		}
-		if(useOfflineCache){
-			this.offlineCacheDB.beginTransaction();
-		}
+		var originalItems = [];
 		for (var index in aItems) {
-
 			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify);
 			if (item) {
 				convertedItems.push(item);
+				originalItems.push(aItems[index]);
 				if (!this.itemCache[item.id]) {
 					// This is a new unknown item
 					this.itemCache[item.id] = item;
@@ -7121,21 +7115,26 @@ this.logInfo("getTaskItemsOK 4");
 					if (doNotify) {
 						this.notifyTheObservers("onAddItem", [item]);
 					}
-					this.addToOfflineCache(item, aItems[index]);
-
 				}
 				else {
 					// I Allready known this one.
 					//this.logInfo("updateCalendar: onModifyItem:"+ item.title);
 
 					this.singleModified(item, doNotify);
-					this.addToOfflineCache(item, aItems[index]);
 				}
 			}
 
 		}
-		if(useOfflineCache){
+		// Enable Transaction Mgmt for Updated Items. may not be right approach bcoz if one fails than all of these item will fail.
+		// Though it not a likely scenerio bcoz we are dealing with already converted calItems.
+		if (this.getProperty("exchWebService.useOfflineCache") && this.offlineCacheDB && convertedItems.length>0) {
+			this.logInfo("Starting Transaction for "+convertedItems.length);
+			this.offlineCacheDB.beginTransaction();
+			for (var index in convertedItems) {
+				this.addToOfflineCache(convertedItems[index], originalItems[index]);
+			}
 			this.offlineCacheDB.commitTransaction();
+			this.logInfo("Completed Transaction for "+convertedItems.length);
 		}
 		return convertedItems;
 
@@ -7932,9 +7931,10 @@ this.logInfo("getTaskItemsOK 4");
 				timer.cancel();
 			}
 		}
-
-		this.offlineTimer.cancel();
-
+		
+		if(this.offlineTimer){
+			this.offlineTimer.cancel();
+		}
 		if (this.calendarPoller) {
 			this.calendarPoller.cancel();
 		}
@@ -8344,14 +8344,6 @@ this.logInfo("getTaskItemsOK 4");
 		}
 	},
 
-	addAttachmentsToOfflineCache: function _addAttachmentsToOfflineCache(aCalItem)
-	{
-		var attachments = aCalItem.getAttachments({});
-		this.removeAttachmentsFromOfflineCache(aCalItem);
-		for (var index in attachments) {
-			this.addAttachmentToOfflineCache(aCalItem, attachments[index]);
-		}			
-	},
 
 	addAttachmentsToOfflineCacheAsync: function _addAttachmentsToOfflineCacheAsync(aCalItem)
 	{
