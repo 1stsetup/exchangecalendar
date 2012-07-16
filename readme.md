@@ -1,4 +1,4 @@
-# Exchnage 2007/2010 Calendar and task provider:: What it can do#
+# Exchnage 2007/2010 Calendar and task provider#
 
 * Sync Calendar en Task/Todo items from an EWS (Exchange) server.  Syncing is done on a user settable poll interval. It will track changes on the server and update the local memory cache.
 * Create, modify and delete calendar events and task/todo items. They will get synced immediately with the EWS server.
