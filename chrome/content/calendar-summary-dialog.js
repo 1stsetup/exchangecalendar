@@ -49,29 +49,36 @@ if (! exchWebService) var exchWebService = {};
 
 
 exchWebService.forewardEvent2 = {
-	onForward : function _onForward()
+	onForward : function _onForward(calendarEvent, handler)
 	{	
 		var args = window.arguments[0];
-		var item = args.calendarEvent;
+		var item = calendarEvent;
+		if(args){
+			item = args.calendarEvent;
+		}
 		item =item.clone();
 		var calendar = item.calendar;
 		var args = new Object();
+		var onOkcallback = handler;
 		args.startTime = item.startDate;
 		args.endTime = item.endDate;
 		args.organizer = item.organizer;
 		args.item = item;
 		args.attendees =item.organizer;
 		args.calendar =calendar;
-		args.onOk = exchWebService.forewardEvent2.callOnOk;
+		if(!onOkcallback){
+			onOkcallback = exchWebService.forewardEvent2.callOnOk;
+		}
+		args.onOk = onOkcallback;
 		args.opener="exchWebService-onForward";
 		window.openDialog("chrome://calendar/content/calendar-event-dialog-attendees.xul","_blank", "chrome,titlebar,modal,resizable",args);
 		
 	},	
 	
-	callOnOk : function(attendee,organizer,startTime,endTime){
-		
-		var args = window.arguments[0];
-		var item = args.calendarEvent;
+	callOnOk : function(attendee,organizer,startTime,endTime,item){
+		if(!item) {
+			item = window.arguments[0].calendarEvent;
+		}
 		var calendar = item.calendar;
 		var calId = calendar.id;
 		var calPrefs = Cc["@mozilla.org/preferences-service;1"]
