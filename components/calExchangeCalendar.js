@@ -376,7 +376,12 @@ function calExchangeCalendar() {
 
 	this.cacheLoader = Cc["@mozilla.org/timer;1"]
 			.createInstance(Ci.nsITimer);
+	this.offlinesynchronizer = Cc["@mozilla.org/timer;1"]
+			.createInstance(Ci.nsITimer);
+	
 	this.loadingFromCache = false;
+
+	this.offlineCacheLoaded = false;
 
 	this.observerService = Cc["@mozilla.org/observer-service;1"]  
 	                          .getService(Ci.nsIObserverService);  
@@ -574,11 +579,11 @@ calExchangeCalendar.prototype = {
 
 			let self = this;
 			this.cacheLoader.cancel();
-			this.cacheLoader.initWithCallback({ notify: function setTimeout_notify() {self.startupLoadFromOfflineCache();	}}, 0, this.cacheLoader.TYPE_ONE_SHOT);
+			this.cacheLoader.initWithCallback({ notify: function setTimeout_notify() {self.startupLoadFromOfflineCache();	}}, 5000, this.cacheLoader.TYPE_ONE_SHOT);
 
 		}
 
-		if (!this.isOffline) {
+		/*if (!this.isOffline) {
 			// Start online processes.
 			// 1. Check folder.
 			// 2. Get timezone settings.
@@ -586,9 +591,15 @@ calExchangeCalendar.prototype = {
 			this.logInfo("Initialized:"+this.isInitialized);
 
 			if (this.useOfflineCache) {
-				this.syncExchangeToOfflineCache();
+				let self = this;
+				this.offlinesynchronizer.cancel();
+				this.offlinesynchronizer.initWithCallback({ 
+					notify: function setTimeout_notify() {
+						self.syncExchangeToOfflineCache();	
+					}
+				}, 20000, this.offlinesynchronizer.TYPE_ONE_SHOT);
 			}
-		}
+		}*/
 
 	},
 
@@ -2222,6 +2233,10 @@ this.logInfo("singleModified doNotify");
 
 		if ((wantEvents) && (this.supportsEvents)) {
 			this.logInfo("Requesting events from exchange server.");
+			if(this.useofflineCache && !this.offlineCacheLoaded){
+				this.logInfo("offlineCache is not yet loaded so ignoring getItems as of now.");
+				return;
+			}
 			if ((startChanged) || (endChanged)) {
 
 //				this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
@@ -8379,7 +8394,7 @@ this.logInfo("getTaskItemsOK 4");
 			sqlStatement.executeAsync({
       				handleResult: function(aResultSet) {
 					var row = aResultSet.getNextRow();
-					if(row){
+					if(row && row.getResultByName('attcount') > 0){
 						self.logInfo("Going to update the attachment because it all ready exist.");
 						self.updateAttachmentInOfflineCacheAsync(aCalItem, aCalAttachment);
 					}
@@ -8500,8 +8515,8 @@ this.logInfo("getTaskItemsOK 4");
 		sqlStatement.executeAsync({
       				handleResult: function(aResultSet) {
 					var row = aResultSet.getNextRow();
-					if(row){
-						self.logInfo("Going to update the item because it all ready exist.");
+					if(row && row.getResultByName('itemcount') > 0){
+						self.logInfo("Going to update the item because it all ready exist. Query Results = "+ row.getResultByName('itemcount'));
 						self.updateInOfflineCacheAsync(aCalItem, aExchangeItem);
 					}
       				 },
@@ -8765,7 +8780,11 @@ this.logInfo("getTaskItemsOK 4");
 						 	self.updateCalendar(null, result, false,true);
 						}
 					}
-      				       self.logInfo("Stmt execution completed successfully." + sqlStr);
+      				       self.logInfo("items retrevied from offline cache successfully." + sqlStr);
+				       self.offlineCacheLoaded = true;
+				       if (!self.isOffline && self.useOfflineCache) {
+				       		self.syncExchangeToOfflineCache();
+					}
       				   } else {
       				     self.logInfo("Error executing Query. Error:"+
 						self.offlineCacheDB.lastError+",Msg:"+self.offlineCacheDB.lastErrorString);
