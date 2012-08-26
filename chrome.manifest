@@ -8,7 +8,6 @@ overlay chrome://calendar/content/calendar-calendars-list.xul chrome://exchangec
 overlay chrome://messenger/content/messenger.xul chrome://exchangecalendar/content/progress_panel.xul
 overlay chrome://calendar/content/calendar-task-view.xul chrome://exchangecalendar/content/messenger_task_delegation.xul
 overlay chrome://lightning/content/lightning-standalone.xul chrome://exchangecalendar/content/progress_panel.xul
-overlay chrome://lightning/content/imip-bar-overlay.xul chrome://exchangecalendar/content/imip-bar-overlay.xul
 overlay chrome://calendar/content/calendar-event-dialog.xul chrome://exchangecalendar/content/calendar-event-dialog.xul
 overlay chrome://calendar/content/calendar-summary-dialog.xul chrome://exchangecalendar/content/calendar-summary-dialog.xul
 overlay chrome://calendar/content/calendar-properties-dialog.xul chrome://exchangecalendar/content/calendar-properties-dialog.xul
