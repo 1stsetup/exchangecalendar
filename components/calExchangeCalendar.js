@@ -6133,7 +6133,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	readRecurrence: function _readRecurrence(aItem, aElement)
 	{
-		var recrule = this.readRecurrenceRule(aElement.XPath("/t::Recurrence/*"));
+		var recrule = this.readRecurrenceRule(aElement.XPath("/t:Recurrence/*"));
 	
 		if (recrule === null) {
 			return null;
