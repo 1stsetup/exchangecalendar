@@ -3505,7 +3505,7 @@ this.logInfo("singleModified doNotify");
 
 				item.setProperty("LOCATION", aEvents[index].nsTypes::CalendarEventDetails.nsTypes::Location.toString());
 
-		//		item.setProperty("DESCRIPTION", aCalendarItem.nsTypes::Body.toString());
+		//		item.setProperty("DESCRIPTION", aCalendarItem.getTagValue("t:Body"));
 
 				item.startDate = this.tryToSetDateValue(aEvents[index].nsTypes::StartTime, null);
 				if (! item.startDate) {
@@ -5987,25 +5987,25 @@ this.logInfo("getTaskItemsOK 4");
 
 	createAttendee: function _createAttendee(aElement, aType, aMyResponseType) 
 	{
-		let mbox = aElement.nsTypes::Mailbox;
+		let mbox = aElement["t:Mailbox"];
 		let attendee = createAttendee();
 
 		if (!aType) {
 			aType = "REQ-PARTICIPANT";
 		}
 
-		attendee.id = 'mailto:' + mbox.nsTypes::EmailAddress.toString();
-		attendee.commonName = mbox.nsTypes::Name.toString();
+		attendee.id = 'mailto:' + mbox.getTagValue("t:EmailAddress");
+		attendee.commonName = mbox.getTagValue("t:Name");
 		attendee.rsvp = "FALSE";
 		attendee.userType = "INDIVIDUAL";
 		attendee.role = aType;
 
-		if (aElement.nsTypes::ResponseType.length() > 0) {
-			attendee.participationStatus = participationMap[aElement.nsTypes::ResponseType.toString()];
+		if (aElement.getTagValue("t:ResponseType", "") != "") {
+			attendee.participationStatus = participationMap[aElement.getTagValue("t:ResponseType")];
 
 			// check if we specified a myResponseType for the complete item and the specified mailbox is equal to the mailbox for the calendar.
 			//this.logInfo("aMyResponseType:"+aMyResponseType+", EmailAddress:"+mbox.nsTypes::EmailAddress.toString().toLowerCase()+", mailbox:"+this.mailbox.toLowerCase());
-			if ((aMyResponseType) && (mbox.nsTypes::EmailAddress.toString().toLowerCase() == this.mailbox.toLowerCase())) {
+			if ((aMyResponseType) && (mbox.getTagValue("t:EmailAddress").toLowerCase() == this.mailbox.toLowerCase())) {
 				attendee.participationStatus = participationMap[aMyResponseType];
 				//this.logInfo("Setting my response type from the global myresponsetype for the item.");
 			}
@@ -6041,7 +6041,7 @@ this.logInfo("getTaskItemsOK 4");
 		var comps = {};
 	
 		for each (var rec in aElement) {
-			switch (rec.localName()) {
+			switch (rec.tagName) {
 			case "RelativeYearlyRecurrence":
 			case "AbsoluteYearlyRecurrence":
 				comps['FREQ'] = "YEARLY";
@@ -6061,42 +6061,43 @@ this.logInfo("getTaskItemsOK 4");
 			case "NumberedRecurrence":
 				break;
 			default:
-				this.logInfo("skipping " + rec.localName());
+				this.logInfo("skipping " + rec.tagName);
 				continue;
 			}
 	
 			var weekdays = [];
 			var week = [];
-			for each (var comp in rec) {
-				switch (comp.localName()) {
+			var comps = rec.XPath("/*");
+			for each (var comp in comps) {
+				switch (comp.tagName) {
 				case 'DaysOfWeek':
-					for each (let day in comp.toString().split(" ")) {
+					for each (let day in comp.value.split(" ")) {
 						weekdays = weekdays.concat(dayMap[day]);
 					}
 					break;
 				case 'DayOfWeekIndex':
-					week = weekMap[comp.toString()];
+					week = weekMap[comp.value];
 					break;
 				case 'Month':
-					comps['BYMONTH'] = monthMap[comp.toString()];
+					comps['BYMONTH'] = monthMap[comp.value];
 					break;
 				case 'DayOfMonth':
-					comps['BYMONTHDAY'] = comp.toString();
+					comps['BYMONTHDAY'] = comp.value;
 					break;
 				case 'FirstDayOfWeek':
-					comps['WKST'] = dayMap[comp.toString()];
+					comps['WKST'] = dayMap[comp.value];
 					break;
 				case 'Interval':
-					comps['INTERVAL'] = comp.toString();
+					comps['INTERVAL'] = comp.value;
 					break;
 				case 'StartDate':
 					/* Dunno what to do with this; no place to set */
 					break;
 				case 'EndDate':
-					comps['UNTIL'] = comp.toString().replace(/Z$/, '');
+					comps['UNTIL'] = comp.value.replace(/Z$/, '');
 					break;
 				case 'NumberOfOccurrences':
-					comps['COUNT'] = comp.toString();
+					comps['COUNT'] = comp.value;
 					break;
 				}
 			}
@@ -6132,7 +6133,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	readRecurrence: function _readRecurrence(aItem, aElement)
 	{
-		var recrule = this.readRecurrenceRule(aElement.nsTypes::Recurrence.children());
+		var recrule = this.readRecurrenceRule(aElement.XPath("/t::Recurrence/*"));
 	
 		if (recrule === null) {
 			return null;
@@ -6200,7 +6201,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	setCommonValues: function _setCommonValues(aItem, aExchangeItem)
 	{
-		switch(aExchangeItem.nsTypes::Importance.toString()) {
+		switch(aExchangeItem.getTagValue("Importance")) {
 			case "Low" : 
 				aItem.priority = 9;
 				break;
@@ -6212,7 +6213,7 @@ this.logInfo("getTaskItemsOK 4");
 				break;
 		}
 
-		switch (aExchangeItem.nsTypes::Sensitivity.toString()) {
+		switch (aExchangeItem.getTagValue("Sensitivity")) {
 			case "Normal" : 
 				aItem.privacy = "PUBLIC";
 				break;
@@ -6229,7 +6230,7 @@ this.logInfo("getTaskItemsOK 4");
 				aItem.privacy = "PUBLIC";
 		}
 
-		switch (aExchangeItem.nsTypes::LegacyFreeBusyStatus.toString()) {
+		switch (aExchangeItem.getTagValue("LegacyFreeBusyStatus")) {
 			case "Free" : 
 				aItem.setProperty("TRANSP", "TRANSPARENT");
 				break;
@@ -6244,11 +6245,11 @@ this.logInfo("getTaskItemsOK 4");
 				break;
 		}
 
-		if (aExchangeItem.nsTypes::IsCancelled.toString() == "true") {
+		if (aExchangeItem.getTagValue("IsCancelled") == "true") {
 			this.setStatus(aItem, "Decline");
 		}
 		else {
-			this.setStatus(aItem, aExchangeItem.nsTypes::MyResponseType.toString());
+			this.setStatus(aItem, aExchangeItem.getTagValue("MyResponseType"));
 		}
 	},
 
@@ -6308,8 +6309,8 @@ this.logInfo("getTaskItemsOK 4");
 
 	addExchangeAttachmentToCal: function _addExchangeAttachmentToCal(aExchangeItem, aItem)
 	{
-		if (aExchangeItem.nsTypes::HasAttachments.toString() == "true") {
-//			this.logInfo("Title:"+aItem.title+"Attachments:"+aExchangeItem.nsTypes::Attachments.toString());
+		if (aExchangeItem.getTagValue("HasAttachments") == "true") {
+//			this.logInfo("Title:"+aItem.title+"Attachments:"+aExchangeItem.getTagValue("Attachments"));
 			for each(var fileAttachment in aExchangeItem.nsTypes::Attachments.nsTypes::FileAttachment) {
 //				this.logInfo(" -- Attachment: name="+fileAttachment.nsTypes::Name.toString());
 
@@ -6472,7 +6473,7 @@ this.logInfo("getTaskItemsOK 4");
 			alarm.offset = alarmOffset;
 
 			this.logInfo("Alarm set with an offset of "+alarmOffset.minutes+" minutes from the start");
-			aItem.setProperty("X-ReminderDueBy", aCalendarItem.nsTypes::ReminderDueBy.toString());
+			aItem.setProperty("X-ReminderDueBy", aCalendarItem.getTagValue("t:ReminderDueBy"));
 
 			aItem.addAlarm(alarm);
 		}
@@ -6488,45 +6489,47 @@ this.logInfo("getTaskItemsOK 4");
 			doNotify = false;
 		}
 
-		item.id = this.tryToSetValue(aCalendarItem.nsTypes::ItemId.@Id.toString(), item.id);
+		item.id = this.tryToSetValue(aCalendarItem.getAttributeByTag("t:ItemId", "Id"), item.id);
 		if (! item.id) {
 			this.logInfo("Item.id is missing. this is a required field.");
 			return null;
 		}
 
-		item.setProperty("X-ChangeKey", aCalendarItem.nsTypes::ItemId.@ChangeKey.toString());
+		item.setProperty("X-ChangeKey", aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey"));
 		if ((erGetItemsRequest) && (erGetItemsRequest.argument.occurrenceIndexes) && (erGetItemsRequest.argument.occurrenceIndexes[item.id])) {
-			this.logInfo(" Muriel:"+erGetItemsRequest.argument.occurrenceIndexes[item.id]+", title:"+this.tryToSetValue(aCalendarItem.nsTypes::Subject.toString()));
+			this.logInfo(" Muriel:"+erGetItemsRequest.argument.occurrenceIndexes[item.id]+", title:"+this.tryToSetValue(aCalendarItem.getTagValue("t:Subject")));
 			item.setProperty("X-OccurrenceIndex", erGetItemsRequest.argument.occurrenceIndexes[item.id]+"");
 		}
+		
+		var uid = aCalendarItem.getTagValue("t:UID");
 
 		if (this.itemCache[item.id]) {
-			if (this.itemCache[item.id].getProperty("X-ChangeKey") == aCalendarItem.nsTypes::ItemId.@ChangeKey.toString()) {
+			if (this.itemCache[item.id].getProperty("X-ChangeKey") == aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey")) {
 				//this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
 				return null;
 			}
 		}
 		else {
-			if (this.recurringMasterCache[aCalendarItem.nsTypes::UID.toString()]) {
-				if ( (this.recurringMasterCache[aCalendarItem.nsTypes::UID.toString()].getProperty("X-ChangeKey") == aCalendarItem.nsTypes::ItemId.@ChangeKey.toString()) && (this.recurringMasterCache[aCalendarItem.nsTypes::UID.toString()].id == item.id)) {
+			if (this.recurringMasterCache[uid]) {
+				if ( (this.recurringMasterCache[uid].getProperty("X-ChangeKey") == aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey")) && (this.recurringMasterCache[uid].id == item.id)) {
 					//this.logInfo("Master item is allready in cache and the id and changeKey are the same. Skipping it.");
 					return null;
 				}
 			}
 		}
 
-		item.setProperty("X-CalendarItemType", aCalendarItem.nsTypes::CalendarItemType.toString());
-		item.setProperty("X-ItemClass", aCalendarItem.nsTypes::ItemClass.toString());
+		item.setProperty("X-CalendarItemType", aCalendarItem.getTagValue("t:CalendarItemType"));
+		item.setProperty("X-ItemClass", aCalendarItem.getTagValue("t:ItemClass"));
 
-		item.setProperty("X-UID", aCalendarItem.nsTypes::UID.toString());
+		item.setProperty("X-UID", uid);
 
-		item.title = this.tryToSetValue(aCalendarItem.nsTypes::Subject.toString(), "");
+		item.title = this.tryToSetValue(aCalendarItem.getTagValue("t:Subject"), "");
 		if (! item.title) {
 			item.title = "";
 		}
 		//this.logInfo("convertExchangeAppointmentToCalAppointment: item.title:"+item.title);
 
-		item.setProperty("X-LastModifiedTime", aCalendarItem.nsTypes::LastModifiedTime.toString());
+		item.setProperty("X-LastModifiedTime", aCalendarItem.getTagValue("t:LastModifiedTime"));
 		// Check if we allready have this item and if this one is newer.
 		if (!isMeetingRequest) {
 			if (this.itemCache[item.id]) {
@@ -6540,9 +6543,9 @@ this.logInfo("getTaskItemsOK 4");
 			}
 			else {
 				// Check if we have a master.
-				if ((aCalendarItem.nsTypes::CalendarItemType.toString() == "RecurringMaster") && (this.recurringMasterCache[aCalendarItem.nsTypes::UID.toString()])) {
+				if ((aCalendarItem.getTagValue("t:CalendarItemType") == "RecurringMaster") && (this.recurringMasterCache[uid])) {
 					// We allready have this master item.
-					var oldItem = this.recurringMasterCache[aCalendarItem.nsTypes::UID.toString()];
+					var oldItem = this.recurringMasterCache[uid];
 					if ((oldItem.getProperty("X-LastModifiedTime")) && (item.getProperty("X-LastModifiedTime") <= oldItem.getProperty("X-LastModifiedTime"))) {
 						this.logInfo("We received an older or not modified master item. We are going to skip it. OldLastModified:"+oldItem.getProperty("X-LastModifiedTime")+", currentLastModified:"+item.getProperty("X-LastModifiedTime"));
 						//return null;
@@ -6552,28 +6555,28 @@ this.logInfo("getTaskItemsOK 4");
 		}
 		
 
-		if (aCalendarItem.nsTypes::IsCancelled.toString() == "true") {
+		if (aCalendarItem.getTagValue("t:IsCancelled") == "true") {
 			item.setProperty("X-IsCancelled", true);
 		}
 		else {
 			item.setProperty("X-IsCancelled", false);
 		}
 
-		if (aCalendarItem.nsTypes::IsMeeting.toString() == "true") {
+		if (aCalendarItem.getTagValue("t:IsMeeting") == "true") {
 			item.setProperty("X-IsMeeting", true);
 		}
 		else {
 			item.setProperty("X-IsMeeting", false);
 		}
 
-		item.setProperty("DESCRIPTION", aCalendarItem.nsTypes::Body.toString());
+		item.setProperty("DESCRIPTION", aCalendarItem.getTagValue("t:Body"));
 
 		this.setCommonValues(item, aCalendarItem);
 
 		item.setProperty("X-IsInvitation", "false");
 		// Check what kind of item this is.
-		for each (var prop in aCalendarItem.nsTypes::ResponseObjects.*) {
-			switch (prop.localName()) {
+		for each (var prop in aCalendarItem.XPath("/t:ResponseObjects/*")) {
+			switch (prop.tagName) {
 				case "AcceptItem":
 				case "TentativelyAcceptItem":
 				case "DeclineItem":
@@ -6597,18 +6600,19 @@ this.logInfo("getTaskItemsOK 4");
 */
 
 		var cats = [];
-		for each (var cat in aCalendarItem.nsTypes::Categories.nsTypes::String) {
-			cats.push(cat.toString());
+//		for each (var cat in aCalendarItem.nsTypes::Categories.nsTypes::String) {
+		for each (var cat in aCalendarItem.XPath("/t:Categories/t:String")) {
+			cats.push(cat.value());
 		}
 		item.setCategories(cats.length, cats);
 
-		item.startDate = this.tryToSetDateValue(aCalendarItem.nsTypes::Start, item.startDate);
+		item.startDate = this.tryToSetDateValue(aCalendarItem.getTagValue("t:Start"), item.startDate);
 		if (! item.startDate) {
 			this.logInfo("We have an empty startdate. Skipping this item.");
 			return null;
 		}
 
-		item.endDate = this.tryToSetDateValue(aCalendarItem.nsTypes::End, item.endDate);
+		item.endDate = this.tryToSetDateValue(aCalendarItem.getTagValue("t:End"), item.endDate);
 		if (! item.endDate) {
 			this.logInfo("We have an empty enddate. Skipping this item.");
 			return null;
@@ -6618,13 +6622,13 @@ this.logInfo("getTaskItemsOK 4");
 		this.addExchangeAttachmentToCal(aCalendarItem, item);
 
 		// Check if our custom fields are set
-		var extendedProperties = aCalendarItem.nsTypes::ExtendedProperty;
+		var extendedProperties = aCalendarItem.XPath("/t:ExtendedProperty");
 		var doNotHandleOldAddon = false;
 		var pidLidReminderSet = false;
 		var pidLidReminderSignalTime = null;
 		for each(var extendedProperty in extendedProperties) {
 
-			var propertyName = extendedProperty.nsTypes::ExtendedFieldURI.@PropertyName.toString();
+			var propertyName = extendedProperty.getAttributeByTag("t:ExtendedFieldURI", "PropertyName", "");
 			switch (propertyName) {
 /*				case "alarmLastAck" :
 					//this.logInfo("  alarmLastAck:"+extendedProperty.nsTypes::Value.toString());
@@ -6632,8 +6636,8 @@ this.logInfo("getTaskItemsOK 4");
 					doNotHandleOldAddon = true;
 					break; */
 				case "lastLightningModified":
-					var lastLightningModified = this.tryToSetDateValue(extendedProperty.nsTypes::Value, null);
-					var lastModifiedTime = this.tryToSetDateValue(aCalendarItem.nsTypes::LastModifiedTime, null);
+					var lastLightningModified = this.tryToSetDateValue(extendedProperty.getTagValue("t:Value"), null);
+					var lastModifiedTime = this.tryToSetDateValue(aCalendarItem.getTagValue("t:LastModifiedTime"), null);
 
 					if ((lastLightningModified) && (lastModifiedTime)) {
 						if (lastModifiedTime.compare(lastLightningModified) == 1) {
@@ -6647,41 +6651,41 @@ this.logInfo("getTaskItemsOK 4");
 					if (propertyName != "") this.logInfo("ODD propertyName:"+propertyName);
 			}
 
-			var propertyId = extendedProperty.nsTypes::ExtendedFieldURI.@PropertyId.toString();
+			var propertyId = extendedProperty.getAttributeByTag("t:ExtendedFieldURI", "PropertyId", "");
 			switch (propertyId) {
 				case MAPI_PidLidReminderSignalTime: // This is the next alarm time. Could be set by a snooze command.
-					pidLidReminderSignalTime = extendedProperty.nsTypes::Value.toString();
+					pidLidReminderSignalTime = extendedProperty.getTagValue("t:Value");
 					item.setProperty("X-PidLidReminderSignalTime", pidLidReminderSignalTime);
 					break;
 				case MAPI_PidLidReminderSet: // A snooze time is active/set.
-					pidLidReminderSet = (extendedProperty.nsTypes::Value.toString() == "true");
+					pidLidReminderSet = (extendedProperty.getTagValue("t:Value") == "true");
 					item.setProperty("X-PidLidReminderSet", pidLidReminderSet);
 					break;
 				default:
 					if (propertyId != "") {
-						if (item.title == "Nieuwe gebeurtenis2") this.logInfo("@1:ODD propertyId:"+propertyId+"|"+extendedProperty.nsTypes::Value.toString());
+						if (item.title == "Nieuwe gebeurtenis2") this.logInfo("@1:ODD propertyId:"+propertyId+"|"+extendedProperty.getTagValue("t:Value"));
 					}
 			}
 
 		}
 
-		if (aCalendarItem.nsTypes::IsAllDayEvent == "true") {
+		if (aCalendarItem.getTagValue("t:IsAllDayEvent") == "true") {
 			// Check if the time is 00:00:00
 			item.startDate.isDate = true;
 			item.endDate.isDate = true;
 		}
 
-		item.setProperty("DTSTAMP", this.tryToSetDateValue(aCalendarItem.nsTypes::DateTimeReceived));
-		item.setProperty("LOCATION", aCalendarItem.nsTypes::Location.toString());
+		item.setProperty("DTSTAMP", this.tryToSetDateValue(aCalendarItem.getTagValue("t:DateTimeReceived")));
+		item.setProperty("LOCATION", aCalendarItem.getTagValue("t:Location"));
 
 		var myResponseType = null;
-		if (aCalendarItem.nsTypes::MyResponseType.length() > 0) {
-			myResponseType = aCalendarItem.nsTypes::MyResponseType.toString();
+		if (aCalendarItem.getTagValue("t:MyResponseType", "") != "") {
+			myResponseType = aCalendarItem.getTagValue("t:MyResponseType");
 		}
 
-		if (aCalendarItem.nsTypes::Organizer.length() > 0) {
-			//this.logInfo(" ==A ORGANIZER== title:"+item.title+", org:"+String(aCalendarItem.nsTypes::Organizer));
-			var org = this.createAttendee(aCalendarItem.nsTypes::Organizer, "CHAIR");
+		if (aCalendarItem.getTagValue("t:Organizer", "") != "") {
+			//this.logInfo(" ==A ORGANIZER== title:"+item.title+", org:"+String(aCalendarItem.getTagValue("t:Organizer")));
+			var org = this.createAttendee(aCalendarItem.getTagValue("t:Organizer"), "CHAIR");
 
 /*			if (org.id.replace(/^mailto:/, '').toLowerCase() != this.mailbox.toLowerCase()) {
 				item.setProperty("X-IsInvitation", "true");
@@ -6695,7 +6699,7 @@ this.logInfo("getTaskItemsOK 4");
 //			this.logInfo("There is no organiser.");
 		}
 
-		if (aCalendarItem.localName() == "MeetingRequest") {
+		if (aCalendarItem.tagName == "MeetingRequest") {
 			//this.logInfo(" X-IsInvitation : MeetingRequest title="+item.title);
 			item.setProperty("X-IsInvitation", "true");
 			item.setProperty("X-MOZ-SEND-INVITATIONS", true);
@@ -6705,14 +6709,16 @@ this.logInfo("getTaskItemsOK 4");
 			var iAmInTheList = false;
 			var tmpAttendee;
 
-			for each (var at in aCalendarItem.nsTypes::RequiredAttendees.nsTypes::Attendee) {
+			var attendees = aCalendarItem.XPath("/t:RequiredAttendees/t:Attendee")
+			for each (var at in attendees) {
 				tmpAttendee = this.createAttendee(at, "REQ-PARTICIPANT", myResponseType);
 				item.addAttendee(tmpAttendee);
 				if ((! iAmInTheList) && (tmpAttendee.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase())) {
 					iAmInTheList = true;
 				}
 			}
-			for each (var at in aCalendarItem.nsTypes::OptionalAttendees.nsTypes::Attendee) {
+			attendees = aCalendarItem.XPath("/t:OptionalAttendees/t:Attendee")
+			for each (var at in attendees) {
 				tmpAttendee = this.createAttendee(at, "OPT-PARTICIPANT", myResponseType);
 				item.addAttendee(tmpAttendee);
 				if ((! iAmInTheList) && (tmpAttendee.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase())) {
@@ -6727,15 +6733,15 @@ this.logInfo("getTaskItemsOK 4");
 		
 		item.recurrenceId = null;
 		if (!isMeetingRequest) {
-			//this.logInfo(" == item.title:"+item.title+", calendarItemType:"+aCalendarItem.nsTypes::CalendarItemType.toString());
-			switch (aCalendarItem.nsTypes::CalendarItemType.toString()) {
+			//this.logInfo(" == item.title:"+item.title+", calendarItemType:"+aCalendarItem.getTagValue("t:CalendarItemType"));
+			switch (aCalendarItem.getTagValue("t:CalendarItemType")) {
 				case "Exception" :
 					this.logInfo("@1:"+item.startDate.toString()+":IsException");
 					item.setProperty("X-RecurringType", "RE");
 					this.setAlarm(item, aCalendarItem);  
 					// Try to find master. If found add Exception and link recurrenceinfo.
-					item.recurrenceId = this.tryToSetDateValue(aCalendarItem.nsTypes::RecurrenceId, item.startDate);
-					var master = this.recurringMasterCache[aCalendarItem.nsTypes::UID.toString()];
+					item.recurrenceId = this.tryToSetDateValue(aCalendarItem.getTagValue("t::RecurrenceId"), item.startDate);
+					var master = this.recurringMasterCache[uid];
 					if (master) {
 						// We allready have a master in Cache.
 						this.logInfo("Found master for exception:"+master.title+", date:"+master.startDate.toString());
@@ -6753,8 +6759,8 @@ this.logInfo("getTaskItemsOK 4");
 					item.setProperty("X-RecurringType", "RO");
 					this.setAlarm(item, aCalendarItem);  
 					// This is a occurrence. Try to find the master and link recurrenceinfo.
-					item.recurrenceId = this.tryToSetDateValue(aCalendarItem.nsTypes::RecurrenceId, item.startDate);
-					var master = this.recurringMasterCache[aCalendarItem.nsTypes::UID.toString()];
+					item.recurrenceId = this.tryToSetDateValue(aCalendarItem.getTagValue("t:RecurrenceId"), item.startDate);
+					var master = this.recurringMasterCache[uid];
 					if (master) {
 						// We allready have a master in Cache.
 						this.logInfo("Found master for occurrence:"+master.title+", date:"+master.startDate.toString());
@@ -6822,26 +6828,26 @@ this.logInfo("getTaskItemsOK 4");
 
 					this.addToOfflineCache(item, aCalendarItem);
 
-					this.recurringMasterCache[aCalendarItem.nsTypes::UID.toString()] = item;
+					this.recurringMasterCache[uid] = item;
 	
 					// Removed because it probably does not need to be set. We found this out when working on the offline cache (16-05-2012)
 					//item.recurrenceId = this.tryToSetDateValue(aCalendarItem.nsTypes::RecurrenceId, item.startDate);
 					//this.setSnoozeTime(null, item);
 	
-					if ((loadChildren) || (this.newMasters[aCalendarItem.nsTypes::UID.toString()])) {
+					if ((loadChildren) || (this.newMasters[uid])) {
 
 						this.logInfo("We have a master and it was set as new. So we download it's children.title:"+item.title);
-						delete this.newMasters[aCalendarItem.nsTypes::UID.toString()];
+						delete this.newMasters[uid];
 
 						if (doNotify) {
 							var self = this;
 							// Request children from EWS server.
-							var childRequestItem = {Id: aCalendarItem.nsTypes::ItemId.@Id.toString(),
-								  ChangeKey: aCalendarItem.nsTypes::ItemId.@ChangeKey.toString(),
-								  type: aCalendarItem.nsTypes::CalendarItemType.toString(),
-								  uid: aCalendarItem.nsTypes::UID.toString(),
-								  start: aCalendarItem.nsTypes::Start.toString(),
-								  end: aCalendarItem.nsTypes::End.toString()};
+							var childRequestItem = {Id: aCalendarItem.getAttributeByTag("t:ItemId", "Id"),
+								  ChangeKey: aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey"),
+								  type: aCalendarItem.getTagValue("t:CalendarItemType"),
+								  uid: aCalendarItem.getTagValue("t:UID"),
+								  start: aCalendarItem.getTagValue("t:Start"),
+								  end: aCalendarItem.getTagValue("t:End")};
 					
 							this.addToQueue( erFindOccurrencesRequest, 
 							{user: this.user, 
@@ -7078,10 +7084,11 @@ this.logInfo("getTaskItemsOK 4");
 
 	convertExchangeToCal: function _convertExchangeToCal(aExchangeItem, erGetItemsRequest, doNotify)
 	{
-		//this.logInfo("convertExchangeToCal");
+		this.logInfo("convertExchangeToCal:"+aExchangeItem);
 		if (!aExchangeItem) { return; }
 
-		var switchValue = aExchangeItem.nsTypes::ItemClass.toString();
+		var switchValue = aExchangeItem.getTagValue("t:ItemClass");
+		//var switchValue = aExchangeItem["t:CalendarItem"].getTagValue("ItemClass");
 		if (switchValue.indexOf(".{") > -1) {
 			switchValue = switchValue.substr(0,switchValue.indexOf(".{"));
 		}
