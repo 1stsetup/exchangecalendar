@@ -302,6 +302,12 @@ erGetItemsRequest.prototype = {
 				items.push(item[0]);
 			}
 		}
+		
+		if (this.mCbOk) {
+			this.mCbOk(this, items);
+		}
+
+		this.isRunning = false;
 	},
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)
