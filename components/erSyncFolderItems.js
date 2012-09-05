@@ -24,6 +24,8 @@
  * Website: http://www.1st-setup.nl/wordpress/?page_id=133
  * email: exchangecalendar@extensions.1st-setup.nl
  *
+ * Contributor: Krzysztof Nowicki (krissn@op.pl)
+ * 
  *
  * This code uses parts of the Microsoft Exchange Calendar Provider code on which the
  * "Exchange Data Provider for Lightning" was based.
