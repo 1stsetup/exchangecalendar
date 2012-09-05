@@ -117,23 +117,23 @@ erGetItemsRequest.prototype = {
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ReminderDueBy");
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ReminderIsSet");
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ReminderMinutesBeforeStart");
-			    
+
 		var extFieldURI;
 		extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-	    extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
+		extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
 		extFieldURI.setAttribute("PropertyId", MAPI_PidLidReminderSignalTime);
 		extFieldURI.setAttribute("PropertyType", "SystemTime");
-
+		
 		extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-	    extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
+		extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
 		extFieldURI.setAttribute("PropertyId", MAPI_PidLidReminderSet);
 		extFieldURI.setAttribute("PropertyType", "Boolean");
-
+		
 		extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-	    extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
+		extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
 		extFieldURI.setAttribute("PropertyId", MAPI_PidLidReminderDelta);
 		extFieldURI.setAttribute("PropertyType", "Integer");
-		    
+
 			// Calendar fields
 		switch (this.folderClass) {
 		case "IPF.Appointment":
@@ -199,40 +199,40 @@ erGetItemsRequest.prototype = {
 			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:StatusDescription");
 			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:TotalWork");
 
-	    	extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-	    	extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
-	    	extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskAccepted);
-	    	extFieldURI.setAttribute("PropertyType", "Boolean");
-	    	
-	    	extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-	    	extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
-	    	extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskLastUpdate);
-	    	extFieldURI.setAttribute("PropertyType", "SystemTime");
-	    	
-	    	extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-	    	extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
-	    	extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskAcceptanceState);
-	    	extFieldURI.setAttribute("PropertyType", "Integer");
-	    	
-	    	extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-	    	extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
-	    	extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskMode);
-	    	extFieldURI.setAttribute("PropertyType", "Integer");
-	    	
-	    	extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-	    	extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
-	    	extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskGlobalId);
-	    	extFieldURI.setAttribute("PropertyType", "Binary");
-	    	
-	    	extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-	    	extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
-	    	extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskHistory);
-	    	extFieldURI.setAttribute("PropertyType", "Integer");
-	    	
-	    	extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-	    	extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
-	    	extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskOwnership);
-	    	extFieldURI.setAttribute("PropertyType", "Integer");
+			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
+			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskAccepted);
+			extFieldURI.setAttribute("PropertyType", "Boolean");
+
+			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
+			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskLastUpdate);
+			extFieldURI.setAttribute("PropertyType", "SystemTime");
+
+			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
+			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskAcceptanceState);
+			extFieldURI.setAttribute("PropertyType", "Integer");
+
+			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
+			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskMode);
+			extFieldURI.setAttribute("PropertyType", "Integer");
+
+			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
+			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskGlobalId);
+			extFieldURI.setAttribute("PropertyType", "Binary");
+
+			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
+			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskHistory);
+			extFieldURI.setAttribute("PropertyType", "Integer");
+
+			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
+			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskOwnership);
+			extFieldURI.setAttribute("PropertyType", "Integer");
 		}
 /*
 			//meeting fields
@@ -304,7 +304,7 @@ erGetItemsRequest.prototype = {
 				items.push(item[0]);
 			}
 		}
-		
+
 		if (this.mCbOk) {
 			this.mCbOk(this, items);
 		}

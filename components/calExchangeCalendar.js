@@ -5989,7 +5989,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	createAttendee: function _createAttendee(aElement, aType, aMyResponseType) 
 	{
-		let mbox = aElement["t:Mailbox"];
+		let mbox = aElement.getTag("t:Mailbox");
 		let attendee = createAttendee();
 
 		if (!aType) {
@@ -6203,7 +6203,7 @@ this.logInfo("getTaskItemsOK 4");
 
 	setCommonValues: function _setCommonValues(aItem, aExchangeItem)
 	{
-		switch(aExchangeItem.getTagValue("Importance")) {
+		switch(aExchangeItem.getTagValue("t:Importance")) {
 			case "Low" : 
 				aItem.priority = 9;
 				break;
@@ -6215,7 +6215,7 @@ this.logInfo("getTaskItemsOK 4");
 				break;
 		}
 
-		switch (aExchangeItem.getTagValue("Sensitivity")) {
+		switch (aExchangeItem.getTagValue("t:Sensitivity")) {
 			case "Normal" : 
 				aItem.privacy = "PUBLIC";
 				break;
@@ -6232,7 +6232,7 @@ this.logInfo("getTaskItemsOK 4");
 				aItem.privacy = "PUBLIC";
 		}
 
-		switch (aExchangeItem.getTagValue("LegacyFreeBusyStatus")) {
+		switch (aExchangeItem.getTagValue("t:LegacyFreeBusyStatus")) {
 			case "Free" : 
 				aItem.setProperty("TRANSP", "TRANSPARENT");
 				break;
@@ -6247,11 +6247,11 @@ this.logInfo("getTaskItemsOK 4");
 				break;
 		}
 
-		if (aExchangeItem.getTagValue("IsCancelled") == "true") {
+		if (aExchangeItem.getTagValue("t:IsCancelled") == "true") {
 			this.setStatus(aItem, "Decline");
 		}
 		else {
-			this.setStatus(aItem, aExchangeItem.getTagValue("MyResponseType"));
+			this.setStatus(aItem, aExchangeItem.getTagValue("t:MyResponseType"));
 		}
 	},
 
@@ -6604,7 +6604,7 @@ this.logInfo("getTaskItemsOK 4");
 		var cats = [];
 //		for each (var cat in aCalendarItem.nsTypes::Categories.nsTypes::String) {
 		for each (var cat in aCalendarItem.XPath("/t:Categories/t:String")) {
-			cats.push(cat.value());
+			cats.push(cat.value);
 		}
 		item.setCategories(cats.length, cats);
 
@@ -6742,7 +6742,7 @@ this.logInfo("getTaskItemsOK 4");
 					item.setProperty("X-RecurringType", "RE");
 					this.setAlarm(item, aCalendarItem);  
 					// Try to find master. If found add Exception and link recurrenceinfo.
-					item.recurrenceId = this.tryToSetDateValue(aCalendarItem.getTagValue("t::RecurrenceId"), item.startDate);
+					item.recurrenceId = this.tryToSetDateValue(aCalendarItem.getTagValue("t:RecurrenceId"), item.startDate);
 					var master = this.recurringMasterCache[uid];
 					if (master) {
 						// We allready have a master in Cache.
