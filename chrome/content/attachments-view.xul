@@ -21,6 +21,8 @@
  * Website: http://www.1st-setup.nl/wordpress/?page_id=133
  * email: exchangecalendar@extensions.1st-setup.nl
  *
+ * @contributer(s) 
+ *	Ashok Kumar (ashokkumarprajapati@gmail.com)
  *
  * This code uses parts of the Microsoft Exchange Calendar Provider code on which the
  * "Exchange Data Provider for Lightning" was based.
@@ -87,8 +89,17 @@
 			disable-on-readonly="true"
 			removable="true"
 			command="exchWebService_addAttachmentDialog"
+			oncommand="exchWebService.attachments.addAttachmentDialog();" />
+		<toolbarbutton id="button-url" 
+			mode="dialog"
+			class="cal-event-toolbarbutton toolbarbutton-1"
+			label="&exchWebServie.add.attachment.button.label;"
+			disable-on-readonly="true"
+			removable="true"
+			command="exchWebService_addAttachmentDialog"
 			oncommand="exchWebService.attachments.addAttachmentDialog();" 
 			hidden="true"/>
+
 	</toolbarpalette>
      <toolbar id="event-toolbar" defaultset="button-save,button-attendees,button-privacy,button-url,exchWebService-add-attachment-button,button-delete"> 
      </toolbar> 
