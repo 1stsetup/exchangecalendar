@@ -24,6 +24,8 @@
  * Website: http://www.1st-setup.nl/wordpress/?page_id=133
  * email: exchangecalendar@extensions.1st-setup.nl
  *
+ * Contributor: Krzysztof Nowicki (krissn@op.pl)
+ * 
  *
  * This code uses parts of the Microsoft Exchange Calendar Provider code on which the
  * "Exchange Data Provider for Lightning" was based.
@@ -88,128 +90,159 @@ erFindMasterOccurrencesRequest.prototype = {
 
 	execute: function _execute()
 	{
-//		exchWebService.commonFunctions.LOG("erFindMasterOccurrencesRequest.execute\n");
+		exchWebService.commonFunctions.LOG("erFindMasterOccurrencesRequest.execute\n");
 
-		var req = <nsMessages:GetItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		
+		var itemShape = req.addChildTag("ItemShape", "nsMessages", null);
+		itemShape.addChildTag("BaseShape", "nsTypes", "IdOnly");
+		
+		itemShape.addChildTag("BodyType", "nsTypes", "Text");
 
-//		req.nsMessages::ItemShape.nsTypes::BaseShape = "AllProperties";
-		req.nsMessages::ItemShape.nsTypes::BaseShape = "IdOnly";
-		req.nsMessages::ItemShape.nsTypes::BodyType = 'Text';
+		var additionalProperties = itemShape.addChildTag("AdditionalProperties", "nsTypes", null);
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemId");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ParentFolderId");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemClass");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Attachments");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Subject");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:DateTimeReceived");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Size");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Categories");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:HasAttachments");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Importance");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:IsDraft");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:IsFromMe");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:IsResend");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:IsSubmitted");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:IsUnmodified");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:DateTimeSent");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:DateTimeCreated");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Body");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ResponseObjects");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Sensitivity");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ReminderDueBy");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ReminderIsSet");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ReminderMinutesBeforeStart");
 
-		req.nsMessages::ItemShape.nsTypes::AdditionalProperties.content = <>
-				<nsTypes:FieldURI FieldURI="item:ItemId" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:ParentFolderId" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:ItemClass" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:Attachments" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:Subject" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:DateTimeReceived" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:Size" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:Categories" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:HasAttachments" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:Importance" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:IsDraft" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:IsFromMe" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:IsResend" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:IsSubmitted" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:IsUnmodified" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:DateTimeSent" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:DateTimeCreated" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:Body" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:ResponseObjects" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:Sensitivity" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:ReminderDueBy" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:ReminderIsSet" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="item:ReminderMinutesBeforeStart" xmlns:nsTypes={nsTypes}/>
-			    </>;
+		var extFieldURI;
+		extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+		extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
+		extFieldURI.setAttribute("PropertyId", MAPI_PidLidReminderSignalTime);
+		extFieldURI.setAttribute("PropertyType", "SystemTime");
 
-		req.nsMessages::ItemShape.nsTypes::AdditionalProperties.content += <>
-		    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Common" PropertyId={MAPI_PidLidReminderSignalTime} PropertyType="SystemTime" xmlns:nsTypes={nsTypes}/>
-		    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Common" PropertyId={MAPI_PidLidReminderSet} PropertyType="Boolean" xmlns:nsTypes={nsTypes}/>
-		    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Common" PropertyId={MAPI_PidLidReminderDelta} PropertyType="Integer" xmlns:nsTypes={nsTypes}/>
-		    </>;
+		extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+		extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
+		extFieldURI.setAttribute("PropertyId", MAPI_PidLidReminderSet);
+		extFieldURI.setAttribute("PropertyType", "Boolean");
 
-			// Calendar fields
+		extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+		extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
+		extFieldURI.setAttribute("PropertyId", MAPI_PidLidReminderDelta);
+		extFieldURI.setAttribute("PropertyType", "Integer");
+
+		// Calendar fields
 		switch (this.folderClass) {
 		case "IPF.Appointment":
-			req.nsMessages::ItemShape.nsTypes::AdditionalProperties.content += <>
-				<nsTypes:FieldURI FieldURI="calendar:Start" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:End" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:OriginalStart" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:IsAllDayEvent" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:LegacyFreeBusyStatus" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:Location" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:When" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:IsMeeting" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:IsCancelled" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:IsRecurring" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:MeetingRequestWasSent" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:IsResponseRequested" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:CalendarItemType" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:MyResponseType" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:Organizer" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:RequiredAttendees" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:OptionalAttendees" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:Resources" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:Duration" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:TimeZone" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:Recurrence" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:ConferenceType" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:AllowNewTimeProposal" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:IsOnlineMeeting" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:MeetingWorkspaceUrl" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:UID" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="calendar:RecurrenceId" xmlns:nsTypes={nsTypes}/>
-				</>;
-				if (this.argument.ServerVersion.indexOf("Exchange2010") == 0) {
+				
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:Start");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:End");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:OriginalStart");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:IsAllDayEvent");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:LegacyFreeBusyStatus");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:Location");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:When");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:IsMeeting");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:IsCancelled");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:IsRecurring");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:MeetingRequestWasSent");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:IsResponseRequested");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:CalendarItemType");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:MyResponseType");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:Organizer");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:RequiredAttendees");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:OptionalAttendees");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:Resources");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:Duration");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:TimeZone");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:Recurrence");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:ConferenceType");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:AllowNewTimeProposal");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:IsOnlineMeeting");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:MeetingWorkspaceUrl");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:UID");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:RecurrenceId");
+			
+			if (this.argument.ServerVersion.indexOf("Exchange2010") == 0) {
 //				if ((this.argument.ServerVersion == "Exchange2010_SP1") || (this.argument.ServerVersion == "Exchange2010_SP2")) {
-					req.nsMessages::ItemShape.nsTypes::AdditionalProperties.content += <>
-						<nsTypes:FieldURI FieldURI="calendar:StartTimeZone" xmlns:nsTypes={nsTypes}/>
-						<nsTypes:FieldURI FieldURI="calendar:EndTimeZone" xmlns:nsTypes={nsTypes}/>
-						</>;
-				}
-				else { // Exchange2007
-					req.nsMessages::ItemShape.nsTypes::AdditionalProperties.content += <>
-						<nsTypes:FieldURI FieldURI="calendar:MeetingTimeZone" xmlns:nsTypes={nsTypes}/>
-						</>;
-				}
+				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:StartTimeZone");
+				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:EndTimeZone");
+				
+			}
+			else { // Exchange2007
+				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:MeetingTimeZone");
+			}
 			break;	
 
 		case "IPF.Task":
 			//Task fields
-			req.nsMessages::ItemShape.nsTypes::AdditionalProperties.content += <>
-				<nsTypes:FieldURI FieldURI="task:ActualWork" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:AssignedTime" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:BillingInformation" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:ChangeCount" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:Companies" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:CompleteDate" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:Contacts" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:DelegationState" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:Delegator" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:DueDate" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:IsAssignmentEditable" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:IsComplete" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:IsRecurring" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:IsTeamTask" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:Mileage" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:Owner" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:PercentComplete" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:Recurrence" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:StartDate" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:Status" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:StatusDescription" xmlns:nsTypes={nsTypes}/>
-				<nsTypes:FieldURI FieldURI="task:TotalWork" xmlns:nsTypes={nsTypes}/>
-				</>;
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:ActualWork");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:AssignedTime");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:BillingInformation");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:ChangeCount");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:Companies");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:CompleteDate");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:Contacts");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:DelegationState");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:Delegator");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:DueDate");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:IsAssignmentEditable");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:IsComplete");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:IsRecurring");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:IsTeamTask");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:Mileage");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:Owner");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:PercentComplete");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:Recurrence");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:StartDate");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:Status");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:StatusDescription");
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:TotalWork");
 
-			req.nsMessages::ItemShape.nsTypes::AdditionalProperties.content += <>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Task" PropertyId={MAPI_PidLidTaskAccepted} PropertyType="Boolean" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Task" PropertyId={MAPI_PidLidTaskLastUpdate} PropertyType="SystemTime" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Task" PropertyId={MAPI_PidLidTaskAcceptanceState} PropertyType="Integer" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Task" PropertyId={MAPI_PidLidTaskMode} PropertyType="Integer" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Task" PropertyId={MAPI_PidLidTaskGlobalId} PropertyType="Binary" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Task" PropertyId={MAPI_PidLidTaskHistory} PropertyType="Integer" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Task" PropertyId={MAPI_PidLidTaskOwnership} PropertyType="Integer" xmlns:nsTypes={nsTypes}/>
-			    </>;
+			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
+			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskAccepted);
+			extFieldURI.setAttribute("PropertyType", "Boolean");
+
+			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
+			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskLastUpdate);
+			extFieldURI.setAttribute("PropertyType", "SystemTime");
+
+			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
+			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskAcceptanceState);
+			extFieldURI.setAttribute("PropertyType", "Integer");
+
+			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
+			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskMode);
+			extFieldURI.setAttribute("PropertyType", "Integer");
+
+			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
+			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskGlobalId);
+			extFieldURI.setAttribute("PropertyType", "Binary");
+
+			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
+			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskHistory);
+			extFieldURI.setAttribute("PropertyType", "Integer");
+
+			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
+			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskOwnership);
+			extFieldURI.setAttribute("PropertyType", "Integer");
+
 		}
 /*
 			//meeting fields
@@ -243,30 +276,35 @@ erFindMasterOccurrencesRequest.prototype = {
 		}
 */
 
-		var itemids = <nsMessages:ItemIds xmlns:nsMessages={nsMessages}/>;
+		itemids = req.addChildTag("ItemIds", "nsMessages", null);
 
 		for each (var master in this.occurrences) {
-			itemids.nsTypes::RecurringMasterItemId += <nsTypes:RecurringMasterItemId OccurrenceId={master.Id} ChangeKey={master.ChangeKey} xmlns:nsTypes={nsTypes} />;
+			var reccMasterItemId = itemids.addChildTag("RecurringMasterItemId", "nsTypes", null);
+			reccMasterItemId.setAttribute("OccurrenceId", master.Id);
+			reccMasterItemId.setAttribute("ChangeKey", master.ChangeKey);
 		}
 
-		req.appendChild(itemids);
+		this.parent.xml2jxon = true;
+		
+		exchWebService.commonFunctions.LOG("erFindMasterOccurrencesRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 
-                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-//		exchWebService.commonFunctions.LOG("erFindMasterOccurrencesRequest.onSendOk>"+String(aResp)+"\n");
+		exchWebService.commonFunctions.LOG("erFindMasterOccurrencesRequest.onSendOk>"+String(aResp)+"\n");
+
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
 		var items = [];
-		for each (var e in aResp..nsMessages::GetItemResponseMessage) {
-			var responseCode = e.nsMessages::ResponseCode.toString();
-
-			if (responseCode == "NoError") {
-				var calendarItem = e.nsMessages::Items.nsTypes::CalendarItem; 
-				items.push(calendarItem);
+		
+		for each (var e in rm) {
+			var calendarItem = e.XPath("/m:Items/t:CalendarItem");
+			if (calendarItem.length > 0)
+			{
+				items.push(calendarItem[0]);
 			}
-
 		}
 		
 		if (this.mCbOk) {

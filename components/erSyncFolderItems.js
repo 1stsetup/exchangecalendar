@@ -24,6 +24,8 @@
  * Website: http://www.1st-setup.nl/wordpress/?page_id=133
  * email: exchangecalendar@extensions.1st-setup.nl
  *
+ * Contributor: Krzysztof Nowicki (krissn@op.pl)
+ * 
  *
  * This code uses parts of the Microsoft Exchange Calendar Provider code on which the
  * "Exchange Data Provider for Lightning" was based.
@@ -92,24 +94,30 @@ erSyncFolderItemsRequest.prototype = {
 
 	execute: function _execute(aSyncState)
 	{
-//		exchWebService.commonFunctions.LOG("erSyncFolderItemsRequest.execute\n");
+		exchWebService.commonFunctions.LOG("erSyncFolderItemsRequest.execute\n");
 
-		var req = <nsMessages:SyncFolderItems xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:SyncFolderItems xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		req.nsMessages::ItemShape.nsTypes::BaseShape = "IdOnly";
+		var itemShape = req.addChildTag("ItemShape", "nsMessages", null);
+		itemShape.addChildTag("BaseShape", "nsTypes", "IdOnly");
 
-		req.nsMessages::SyncFolderId = makeParentFolderIds("SyncFolderId", this.argument);
+		var parentFolder = makeParentFolderIds2("SyncFolderId", this.argument);
+		req.addChildTagObject(parentFolder);
 	
 		if ((aSyncState) && (aSyncState != "")) {
-			req.nsMessages::SyncState = aSyncState;
+			req.addChildTag("SyncState", "nsMessages", aSyncState);
 		}
 
 		if (this.getSyncState) {
-			req.nsMessages::MaxChangesReturned = 512;  // We only want a synstate to ask it fast.
+			req.addChildTag("MaxChangesReturned", "nsMessages", "512");
 		}
 		else {
-			req.nsMessages::MaxChangesReturned = 15;  // We will ask 15 items at a time.
+			req.addChildTag("MaxChangesReturned", "nsMessages", "15");
 		}
+		
+		this.parent.xml2jxon = true;
+		
+		exchWebService.commonFunctions.LOG("erSyncFolderItemsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 		
 		//exchWebService.commonFunctions.LOG(String(this.parent.makeSoapMessage(req)));
 		this.attempts++;
@@ -118,43 +126,48 @@ erSyncFolderItemsRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erSyncFolderItemsRequest.onSendOk:"+String(aResp));
+		exchWebService.commonFunctions.LOG("erSyncFolderItemsRequest.onSendOk:"+String(aResp));
 
-		var rm = aResp..nsMessages::SyncFolderItemsResponseMessage;
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
-		var ResponseCode = rm.nsMessages::ResponseCode.toString();
+		if (rm.length > 0) {
+			var syncState = rm[0]["m:SyncState"].value;
 
-		if (ResponseCode == "NoError") {
-			var syncState = rm.nsMessages::SyncState.toString();
-
-			var lastItemInRange = rm.nsMessages::IncludesLastItemInRange.toString();
+			var lastItemInRange = rm[0]["m:IncludesLastItemInRange"].value;
 
 			if (!this.getSyncState) {
-				for each (var creation in rm.nsMessages::Changes.nsTypes::Create) {
-					for each (var calendarItem in creation.nsTypes::CalendarItem) {
-						this.creations.push({Id: calendarItem.nsTypes::ItemId.@Id.toString(),
-							  ChangeKey: calendarItem.nsTypes::ItemId.@ChangeKey.toString()});
+				var createItems = rm[0].XPath("/m:Changes/t:Create");
+				for each (var creation in createItems) {
+					var calendarItems = creation.XPath("/t:CalendarItem/t:ItemId");
+					for each (var calendarItem in calendarItems) {
+						this.creations.push({Id: calendarItem.getAttribute("Id").toString(),
+							  ChangeKey: calendarItem.getAttribute("ChangeKey").toString()});
 					}
-					for each (var task in creation.nsTypes::Task) {
-						this.creations.push({Id: task.nsTypes::ItemId.@Id.toString(),
-							  ChangeKey: task.nsTypes::ItemId.@ChangeKey.toString()});
+					var tasks = creation.XPath("/t:Task/t:ItemId");
+					for each (var task in tasks) {
+						this.creations.push({Id: task.getAttribute("Id").toString(),
+							  ChangeKey: task.getAttribute("ChangeKey").toString()});
 					}
 				}
 	
-				for each (var update in rm.nsMessages::Changes.nsTypes::Update) {
-					for each (var calendarItem in update.nsTypes::CalendarItem) {
-						this.updates.push({Id: calendarItem.nsTypes::ItemId.@Id.toString(),
-					  ChangeKey: calendarItem.nsTypes::ItemId.@ChangeKey.toString()});
+				var updateItems = rm[0].XPath("/m:Changes/t:Update");
+				for each (var update in updateItems) {
+					var calendarItems = update.XPath("/t:CalendarItem/t:ItemId");
+					for each (var calendarItem in calendarItems) {
+						this.updates.push({Id: calendarItem.getAttribute("Id").toString(),
+					  ChangeKey: calendarItem.getAttribute("ChangeKey").toString()});
 					}
-					for each (var task in update.nsTypes::Task) {
-						this.updates.push({Id: task.nsTypes::ItemId.@Id.toString(),
-					  ChangeKey: task.nsTypes::ItemId.@ChangeKey.toString()});
+					var tasks = update.XPath("/m:Task/t:ItemId");
+					for each (var task in tasks) {
+						this.updates.push({Id: task.getAttribute("Id").toString(),
+					  ChangeKey: task.getAttribute("ChangeKey").toString()});
 					}
 				}
 
-				for each (var deleted in rm.nsMessages::Changes.nsTypes::Delete) {
-					this.deletions.push({Id: deleted.nsTypes::ItemId.@Id.toString(),
-					  ChangeKey: deleted.nsTypes::ItemId.@ChangeKey.toString()});
+				var deleteItems = rm[0].XPath("/m:Changes/t:Delete/t:ItemId");
+				for each (var deleted in deleteItems) {
+					this.deletions.push({Id: deleted.getAttribute("Id").toString(),
+					  ChangeKey: deleted.getAttribute("ChangeKey").toString()});
 				}
 			}
 
