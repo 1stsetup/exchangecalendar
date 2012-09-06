@@ -189,6 +189,13 @@ erSyncFolderItemsRequest.prototype = {
 				this.execute(null);
 			}
 			else {
+				var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage");
+				if (rm.length > 0) {
+					var ResponseCode = rm[0].getTagValue("m:ResponseCode");
+				}
+				else {
+					var ResponseCode = "Unknown error from Exchange server.";
+				}
 				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SYNCFOLDERITEMS_UNKNOWN, "Error during SyncFolderItems:"+ResponseCode);
 				return;
 			}
