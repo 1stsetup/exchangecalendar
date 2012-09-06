@@ -286,7 +286,7 @@ erGetItemsRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.onSendOk: "+String(aResp)+"\n");
+		//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.onSendOk: "+String(aResp)+"\n");
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
 		var items = [];
