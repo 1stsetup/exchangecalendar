@@ -106,26 +106,29 @@ erFindOccurrencesRequest.prototype = {
 
 	execute: function _execute()
 	{
-		var req = <nsMessages:GetItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		req.nsMessages::ItemShape.nsTypes::BaseShape = "IdOnly";
+		var itemShape = req.addChildTag("ItemShape", "nsMessages", null);
+		itemShape.addChildTag("BaseShape", "nsTypes", "IdOnly"); 
 
-		req.nsMessages::ItemShape.nsTypes::AdditionalProperties.content = <>
-		    	<nsTypes:FieldURI FieldURI="calendar:UID" xmlns:nsTypes={nsTypes}/>
-		    	<nsTypes:FieldURI FieldURI="calendar:CalendarItemType" xmlns:nsTypes={nsTypes}/>
-		    	<nsTypes:FieldURI FieldURI="calendar:Start" xmlns:nsTypes={nsTypes}/>
-		    	<nsTypes:FieldURI FieldURI="calendar:End" xmlns:nsTypes={nsTypes}/>
-		    	<nsTypes:FieldURI FieldURI="item:ItemClass" xmlns:nsTypes={nsTypes}/>
-		    </>;
+		var additionalProperties = itemShape.addChildTag("AdditionalProperties", "nsTypes", null);
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:UID");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:CalendarItemType");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:Start");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:End");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemClass");
 
-		var itemids = <nsMessages:ItemIds xmlns:nsMessages={nsMessages}/>;
+		var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ItemIds xmlns:nsMessages="'+nsMessagesStr+'"/>');
 		for (var x = 0; x < this.idGroupSize; x++) {
-			itemids.nsTypes::OccurrenceItemId += <nsTypes:OccurrenceItemId RecurringMasterId={this.masterID} ChangeKey={this.masterChangeKey} InstanceIndex={this.currentSearchIndex++} xmlns:nsTypes={nsTypes} />;
+			var occurrenceItemID = itemids.addChildTag("OccurrenceItemId", "nsTypes", null);
+			occurrenceItemID.setAttribute("RecurringMasterId", this.masterID);
+			occurrenceItemID.setAttribute("ChangeKey", this.masterChangeKey);
+			occurrenceItemID.setAttribute("InstanceIndex", this.currentSearchIndex++);
 		}
 
-		req.appendChild(itemids);
+		req.addChildTagObject(itemids);
 
-//		exchWebService.commonFunctions.LOG("erFindOccurrencesRequest.execute>"+String(this.parent.makeSoapMessage(req))+"\n");
+		exchWebService.commonFunctions.LOG("erFindOccurrencesRequest.execute>"+String(this.parent.makeSoapMessage(req))+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
