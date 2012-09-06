@@ -31,6 +31,22 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 
+function typeString(o) {
+  if (typeof o != 'object')
+    return typeof o;
+
+  if (o === null)
+      return "null";
+  //object, array, function, date, regexp, string, number, boolean, error
+  var internalClass = Object.prototype.toString.call(o)
+                                               .match(/\[object\s(\w+)\]/)[1];
+  return internalClass.toLowerCase();
+}
+
+var isArray = function(obj) {
+        return typeString(obj) == "array";
+    }
+
 function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 
 	this.content = {};
@@ -270,17 +286,24 @@ mivIxml2jxon.prototype = {
 			this.logInfo("First childTag: "+this.tagName+"."+aNameSpace+tagSeparator+aTagName+"="+aObject,2);
 			this[aNameSpace+tagSeparator+aTagName] = aObject;
 			this.addToContent(aObject);
-			this.isNotAnArray = true;
+//			this["isNotAnArray_:"+aNameSpace+tagSeparator+aTagName] = true;
 		}
 		else {
-			if (this.isNotAnArray) {
+			if (!isArray(this[aNameSpace+tagSeparator+aTagName])) {
 				var firstObject = this[aNameSpace+tagSeparator+aTagName];
+				//this.logInfo("creating array:'"+aNameSpace+tagSeparator+aTagName+"'",1);
 				this[aNameSpace+tagSeparator+aTagName] = new Array();
 				this[aNameSpace+tagSeparator+aTagName].push(firstObject);
-				this.isNotAnArray = false;
+//				this["isNotAnArray_:"+aNameSpace+tagSeparator+aTagName] = false;
 			}
 			this.logInfo("childTag : "+this.tagName+"."+aNameSpace+tagSeparator+aTagName+"["+(this[aNameSpace+tagSeparator+aTagName].length+1)+"]",2);
+			//this.logInfo("adding item to array:'"+aNameSpace+tagSeparator+aTagName+"'",1);
+			try {
 			this[aNameSpace+tagSeparator+aTagName].push(aObject);
+			}
+			catch(err) {
+				this.logInfo(" --- ERROR ---");
+			}
 			this.addToContent(aObject);
 		}
 		if (aObject.uuid != this.uuid) {
@@ -417,7 +440,7 @@ mivIxml2jxon.prototype = {
 	convertSpecialCharatersToXML: function _convertSpecialCharatersToXML(aString)
 	{
 		this.logInfo(aString+" !! ");
-		var result = aString;
+		var result = aString.toString();
 		// Convert special characters
 		result = result.replace(/([&|\x22|\x27|<|>])/g, this.replaceToXML);  
 		this.logInfo(aString+" > "+result);
