@@ -6149,11 +6149,11 @@ this.logInfo("getTaskItemsOK 4");
 
 	readDeletedOccurrences: function _readDeletedOccurrences(aItem, aElement)
 	{
-		for each (var mit in aElement.nsTypes::DeletedOccurrences.children()) {
+		for each (var mit in aElement.XPath("/t:DeletedOccurrences/*")) {
 			for (var index in this.itemCache) {
 				if ( (this.itemCache[index]) &&
 				     (this.itemCache[index].parentItem.id == aItem.id) &&
-				     (this.itemCache[index].startDate.compare(this.tryToSetDateValue(mit.nsTypes::Start)) == 0) ) {
+				     (this.itemCache[index].startDate.compare(this.tryToSetDateValue(mit.getTagValue("t:Start"))) == 0) ) {
 					this.logInfo("readDeletedOccurrences 2a");
 					aItem.recurrenceInfo.removeOccurrenceAt(this.itemCache[index].startDate);
 					this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
@@ -6291,36 +6291,18 @@ this.logInfo("getTaskItemsOK 4");
 		return newItem;
 	},
 
-	// Taken from soapin.js from Exchange Provider add-on
-	// This as part of the conversion from Exchange Provider add-on to Exchange Calendar add-on.
-	readEP_DismissSnoozeState: function _readEP_DismissSnoozeState(aItem, it)
-	{
-		let nextRem = it.nsTypes::ExtendedProperty.(nsTypes::ExtendedFieldURI.@PropertyId == MAPI_PidLidReminderSignalTime).nsTypes::Value[0];
-	
-		if (!nextRem) {
-			return;
-		}
-	
-		nextRem = cal.fromRFC3339(nextRem.toString(), cal.UTC());
-		let lastAck = nextRem.clone();
-		lastAck.addDuration(cal.createDuration('-PT1S'));
-	
-		aItem.alarmLastAck = lastAck;
-	
-	},
-
 	addExchangeAttachmentToCal: function _addExchangeAttachmentToCal(aExchangeItem, aItem)
 	{
-		if (aExchangeItem.getTagValue("HasAttachments") == "true") {
+		if (aExchangeItem.getTagValue("t:HasAttachments") == "true") {
 //			this.logInfo("Title:"+aItem.title+"Attachments:"+aExchangeItem.getTagValue("Attachments"));
-			for each(var fileAttachment in aExchangeItem.nsTypes::Attachments.nsTypes::FileAttachment) {
-//				this.logInfo(" -- Attachment: name="+fileAttachment.nsTypes::Name.toString());
+			for each(var fileAttachment in aExchangeItem.getTagValue("t:Attachments").getTagValue("t:FileAttachment")) {
+//				this.logInfo(" -- Attachment: name="+fileAttachment.getTagValue("t:Name"));
 
 				var newAttachment = createAttachment();
-				newAttachment.setParameter("X-AttachmentId",fileAttachment.nsTypes::AttachmentId.@Id.toString()); 
-				newAttachment.uri = makeURL(this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.nsTypes::AttachmentId.@Id.toString())+"&name="+encodeURIComponent(fileAttachment.nsTypes::Name.toString())+"&size="+encodeURIComponent(fileAttachment.nsTypes::Size.toString())+"&user="+encodeURIComponent(this.user));
+				newAttachment.setParameter("X-AttachmentId",fileAttachment.getAttributeByTag("t:AttachmentId"."Id")); 
+				newAttachment.uri = makeURL(this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId"."Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size"))+"&user="+encodeURIComponent(this.user));
 
-				this.logInfo("New attachment URI:"+this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.nsTypes::AttachmentId.@Id.toString())+"&name="+encodeURIComponent(fileAttachment.nsTypes::Name.toString())+"&size="+encodeURIComponent(fileAttachment.nsTypes::Size.toString())+"&user="+encodeURIComponent(this.user));
+				this.logInfo("New attachment URI:"+this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId"."Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size"))+"&user="+encodeURIComponent(this.user));
 
 				aItem.addAttachment(newAttachment);
 			}
@@ -6457,13 +6439,13 @@ this.logInfo("getTaskItemsOK 4");
 
 	setAlarm: function _setAlarm(aItem, aCalendarItem)
 	{
-		if ((aCalendarItem.nsTypes::ReminderIsSet == "true")) {
+		if ((aCalendarItem.getTagValue("t:ReminderIsSet") == "true")) {
 			var alarm = cal.createAlarm();
 			alarm.action = "DISPLAY";
 			alarm.repeat = 0;
 
 			var alarmOffset = cal.createDuration();
-			alarmOffset.minutes = -1 * aCalendarItem.nsTypes::ReminderMinutesBeforeStart;
+			alarmOffset.minutes = -1 * aCalendarItem.getTagValue("t:ReminderMinutesBeforeStart");
 
 			// This is a bug fix for when the offset is more than a year)
 			if (alarmOffset.minutes < (-60*24*365)) {
@@ -6868,11 +6850,6 @@ this.logInfo("getTaskItemsOK 4");
 						}
 					}
 
-/*					// Microsoft remindernexttime
-					if (!doNotHandleOldAddon) {
-						this.readEP_DismissSnoozeState(item, aCalendarItem);
-					}*/
-
 					this.logInfo("This is a master it will not be put into the normal items cache list.");
 					return null;  // The master will not be visible
 
@@ -6882,11 +6859,6 @@ this.logInfo("getTaskItemsOK 4");
 					this.setSnoozeTime(item, null);
 			}
 		}
-
-/*		// Microsoft remindernexttime
-		if (!doNotHandleOldAddon) {
-			this.readEP_DismissSnoozeState(item, aCalendarItem);
-		}*/
 
 		item.setProperty("X-fromExchange", true);
 		return item;
@@ -6898,21 +6870,21 @@ this.logInfo("getTaskItemsOK 4");
 		this.logInfo("convertExchangeTaskToCalTask:"+String(aTask), 2);
 		var item = createTodo();
 
-		item.entryDate = this.tryToSetDateValue(aTask.nsTypes::StartDate, null);
+		item.entryDate = this.tryToSetDateValue(aTask.getTagValue("t:StartDate"), null);
 /*		if (!item.entryDate) {
 			item.entryDate = this.tryToSetDateValue(aTask.nsTypes::Recurrence.nsTypes::EndDateRecurrence.nsTypes::StartDate, null);
 		}*/
 
-		item.dueDate = this.tryToSetDateValue(aTask.nsTypes::DueDate, item.dueDate);
-		item.completedDate = this.tryToSetDateValue(aTask.nsTypes::CompleteDate, item.completedDate);
-		item.percentComplete = this.tryToSetValue(aTask.nsTypes::PercentComplete.toString(), item.percentComplete);
+		item.dueDate = this.tryToSetDateValue(aTask.getTagValue("t:DueDate"), item.dueDate);
+		item.completedDate = this.tryToSetDateValue(aTask.getTagValue("t:CompleteDate"), item.completedDate);
+		item.percentComplete = this.tryToSetValue(aTask.getTagValue("t:PercentComplete"), item.percentComplete);
 		item.calendar = this.superCalendar;
 
-		item.id = this.tryToSetValue(aTask.nsTypes::ItemId.@Id.toString(), item.id);
-		item.setProperty("X-ChangeKey", aTask.nsTypes::ItemId.@ChangeKey.toString());
+		item.id = this.tryToSetValue(aTask.getAttributeByTag("t:ItemId", "Id"), item.id);
+		item.setProperty("X-ChangeKey", aTask.getAttributeByTag("t:ItemId", "ChangeKey"));
 
 		if (this.itemCache[item.id]) {
-			if (this.itemCache[item.id].getProperty("X-ChangeKey") == aTask.nsTypes::ItemId.@ChangeKey.toString()) {
+			if (this.itemCache[item.id].getProperty("X-ChangeKey") == aTask.getAttributeByTag("t:ItemId", "ChangeKey")) {
 				//this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
 				return null;
 			}
@@ -6921,17 +6893,17 @@ this.logInfo("getTaskItemsOK 4");
 
 		item.setProperty("X-UID", "dummy");
 
-		item.title = this.tryToSetValue(aTask.nsTypes::Subject.toString(), item.title);
+		item.title = this.tryToSetValue(aTask.getTagValue("t:Subject"), item.title);
 
 		this.setCommonValues(item, aTask);
 
 		var cats = [];
-		for each (var cat in aTask.nsTypes::Categories.nsTypes::String) {
-			cats.push(cat.toString());
+		for each (var cat in aTask.XPath("/t:Categories/t:String")) {
+			cats.push(cat.value);
 		}
 		item.setCategories(cats.length, cats);
 
-		switch(aTask.nsTypes::Status.toString()) {
+		switch(aTask.getTagValue("t:Status")) {
 			case "NotStarted" : 
 				item.status = "NONE";
 				break;
@@ -6950,13 +6922,13 @@ this.logInfo("getTaskItemsOK 4");
 		}
 
 		// Check if our custom fields are set
-		var extendedProperties = aTask.nsTypes::ExtendedProperty;
+		var extendedProperties = aTask.getTagValue("t:ExtendedProperty");
 		var doNotHandleOldAddon = false; 
 		var pidLidReminderSet = false;
 		var pidLidReminderSignalTime = "";
 		for each(var extendedProperty in extendedProperties) {
 
-			var propertyName = extendedProperty.nsTypes::ExtendedFieldURI.@PropertyName.toString();
+			var propertyName = extendedProperty.getAttributeByTag("t:ExtendedFieldURI","PropertyName");
 			switch (propertyName) {
 /*				case "alarmLastAck" :
 					//this.logInfo("  alarmLastAck:"+extendedProperty.nsTypes::Value.toString());
@@ -6964,8 +6936,8 @@ this.logInfo("getTaskItemsOK 4");
 					doNotHandleOldAddon = true;
 					break; */
 				case "lastLightningModified":
-					var lastLightningModified = this.tryToSetDateValue(extendedProperty.nsTypes::Value, null);
-					var lastModifiedTime = this.tryToSetDateValue(aCalendarItem.nsTypes::LastModifiedTime, null);
+					var lastLightningModified = this.tryToSetDateValue(extendedProperty.getTagValue("t:Value"), null);
+					var lastModifiedTime = this.tryToSetDateValue(aCalendarItem.getTagValue("t:LastModifiedTime"), null);
 
 					if ((lastLightningModified) && (lastModifiedTime)) {
 						if (lastModifiedTime.compare(lastLightningModified) == 1) {
@@ -6979,20 +6951,20 @@ this.logInfo("getTaskItemsOK 4");
 					if (propertyName != "") this.logInfo("ODD propertyName:"+propertyName);
 			}
 
-			var propertyId = extendedProperty.nsTypes::ExtendedFieldURI.@PropertyId.toString();
+			var propertyId = extendedProperty.getAttributeByTag("t:ExtendedFieldURI","PropertyId");
 			switch (propertyId) {
 				case MAPI_PidLidReminderSignalTime: // This is the next alarm time. Could be set by a snooze command.
-					pidLidReminderSignalTime = extendedProperty.nsTypes::Value.toString();
+					pidLidReminderSignalTime = extendedProperty.getTagValue("t:Value");
 					item.setProperty("X-PidLidReminderSignalTime", pidLidReminderSignalTime);
 					if (item.title == "Nieuwe gebeurtenis2") this.logInfo("@1:ODD propertyId:"+propertyId+"|"+pidLidReminderSignalTime);
 					break;
 				case MAPI_PidLidReminderSet: // A snooze time is active/set.
-					pidLidReminderSet = (extendedProperty.nsTypes::Value.toString() == "true");
+					pidLidReminderSet = (extendedProperty.getTagValue("t:Value") == "true");
 					item.setProperty("X-PidLidReminderSet", pidLidReminderSet);
 					break;
 				default:
 					if (propertyId != "") {
-						if (item.title == "Nieuwe gebeurtenis2") this.logInfo("@1:ODD propertyId:"+propertyId+"|"+extendedProperty.nsTypes::Value.toString());
+						if (item.title == "Nieuwe gebeurtenis2") this.logInfo("@1:ODD propertyId:"+propertyId+"|"+extendedProperty.getTagValue("t:Value"));
 					}
 			}
 
@@ -7001,9 +6973,9 @@ this.logInfo("getTaskItemsOK 4");
 		// Check for Attachments
 		this.addExchangeAttachmentToCal(aTask, item);
 
-		item.setProperty("X-IsRecurring", aTask.nsTypes::IsRecurring.toString());
+		item.setProperty("X-IsRecurring", aTask.getTagValue("t:IsRecurring"));
 
-		if (aTask.nsTypes::IsRecurring.toString() == "true") {
+		if (aTask.getTagValue("t:IsRecurring") == "true") {
 			item.parentItem = item;
 			// This is a master so create recurrenceInfo.
 			item.recurrenceInfo = this.readRecurrence(item, aTask);
@@ -7014,17 +6986,17 @@ this.logInfo("getTaskItemsOK 4");
 
 		var tmpDate;
 
-		tmpDate = this.tryToSetDateValue(aTask.nsTypes::DateTimeCreated);
+		tmpDate = this.tryToSetDateValue(aTask.getTagValue("t:DateTimeCreated"));
 		if (tmpDate) {
             		item.setProperty("CREATED", tmpDate);
 		}
 
-		tmpDate = this.tryToSetDateValue(aTask.nsTypes::LastModifiedTime);
+		tmpDate = this.tryToSetDateValue(aTask.getTagValue("t:LastModifiedTime"));
 		if (tmpDate) {
 //			item.setProperty("LAST-MODIFIED", tmpDate);
 		}
 
-		item.setProperty("DESCRIPTION", aTask.nsTypes::Body.toString());
+		item.setProperty("DESCRIPTION", aTask.getTagValue("t:Body"));
 
 		//item.parentItem = item;
 
@@ -7033,28 +7005,28 @@ this.logInfo("getTaskItemsOK 4");
 		// See if this is a delegated task.
 		var isNotAccepted = 0;
 
-		for each (var extendedProperty in aTask.nsTypes::ExtendedProperty) {
+		for each (var extendedProperty in aTask.getTagValue("t:ExtendedProperty")) {
 
-			if (extendedProperty.nsTypes::ExtendedFieldURI.@PropertyId == "33032") {
-				item.setProperty("X-exchWebService-PidLidTaskAccepted",extendedProperty.nsTypes::Value.toString());
+			if (extendedProperty.getAttributeByTag("t:ExtendedFieldURI","PropertyId") == "33032") {
+				item.setProperty("X-exchWebService-PidLidTaskAccepted",extendedProperty.getTagValue("t:Value"));
 				// TRUE means accepted or rejected.
-				if (extendedProperty.nsTypes::Value.toString() == "false") isNotAccepted++;
+				if (extendedProperty.getTagValue("t:Value") == "false") isNotAccepted++;
 			}
-			if (extendedProperty.nsTypes::ExtendedFieldURI.@PropertyId == "33045") {
-				item.setProperty("X-exchWebService-PidLidTaskLastUpdate",extendedProperty.nsTypes::Value.toString());
+			if (extendedProperty.getAttributeByTag("t:ExtendedFieldURI","PropertyId") == "33045") {
+				item.setProperty("X-exchWebService-PidLidTaskLastUpdate",extendedProperty.getTagValue("t:Value"));
 				// Date of last update. 
 			}
-			if (extendedProperty.nsTypes::ExtendedFieldURI.@PropertyId == "33066") {
-				item.setProperty("X-exchWebService-PidLidTaskAcceptanceState",extendedProperty.nsTypes::Value.toString());
+			if (extendedProperty.getAttributeByTag("t:ExtendedFieldURI","PropertyId") == "33066") {
+				item.setProperty("X-exchWebService-PidLidTaskAcceptanceState",extendedProperty.getTagValue("t:Value"));
 				// Only visible on the Owner task item. Otherwise value == NoMatch
 				//0x00000000 The task is not assigned.
 				//0x00000001 The task’s acceptance status is unknown.
 				//0x00000002 The task assignee accepted the task. This value is set when the client processes a task acceptance.
 				//0x00000003 The task assignee rejected the task. This value is set when the client processes a task rejection.
-				if (extendedProperty.nsTypes::Value.toString() == "NoMatch") isNotAccepted++;
+				if (extendedProperty.getTagValue("t:Value") == "NoMatch") isNotAccepted++;
 			}
-			if (extendedProperty.nsTypes::ExtendedFieldURI.@PropertyId == "33050") {
-				item.setProperty("X-exchWebService-PidLidTaskHistory",extendedProperty.nsTypes::Value.toString());
+			if (extendedProperty.getAttributeByTag("t:ExtendedFieldURI","PropertyId") == "33050") {
+				item.setProperty("X-exchWebService-PidLidTaskHistory",extendedProperty.getTagValue("t:Value"));
 				// Specifies last change to record. PidLidTaskLastUpdate shows date of this change.
 				//0x00000004 The dispidTaskDueDate (PidLidTaskDueDate) property changed.
 				//0x00000003 Another property was changed.
@@ -7062,16 +7034,16 @@ this.logInfo("getTaskItemsOK 4");
 				//0x00000002 The task assignee rejected this task.
 				//0x00000005 The task was assigned to a task assignee.
 				//0x00000000 No changes were made.
-				if (extendedProperty.nsTypes::Value.toString() == "5") isNotAccepted++;
+				if (extendedProperty.getTagValue("t:Value") == "5") isNotAccepted++;
 			}
-			if (extendedProperty.nsTypes::ExtendedFieldURI.@PropertyId == "33065") {
-				item.setProperty("X-exchWebService-PidLidTaskOwnership",extendedProperty.nsTypes::Value.toString());
+			if (extendedProperty.getAttributeByTag("t:ExtendedFieldURI","PropertyId") == "33065") {
+				item.setProperty("X-exchWebService-PidLidTaskOwnership",extendedProperty.getTagValue("t:Value"));
 			}
 		}
-		if (aTask.nsTypes::Delegator.toString() != "") {
-			item.setProperty("X-exchWebService-Delegator",aTask.nsTypes::Delegator.toString());
-			item.setProperty("X-exchWebService-Owner",aTask.nsTypes::Owner.toString());
-			item.setProperty("X-exchWebService-IsTeamTask",aTask.nsTypes::IsTeamTask.toString());
+		if (aTask.getTagValue("t:Delegator") != "") {
+			item.setProperty("X-exchWebService-Delegator",aTask.getTagValue("t:Delegator"));
+			item.setProperty("X-exchWebService-Owner",aTask.getTagValue("t:Owner"));
+			item.setProperty("X-exchWebService-IsTeamTask",aTask.getTagValue("t:IsTeamTask"));
 		}
 		
 		this.setAlarm(item, aTask);  
@@ -7090,7 +7062,6 @@ this.logInfo("getTaskItemsOK 4");
 		if (!aExchangeItem) { return; }
 
 		var switchValue = aExchangeItem.getTagValue("t:ItemClass");
-		//var switchValue = aExchangeItem["t:CalendarItem"].getTagValue("ItemClass");
 		if (switchValue.indexOf(".{") > -1) {
 			switchValue = switchValue.substr(0,switchValue.indexOf(".{"));
 		}
