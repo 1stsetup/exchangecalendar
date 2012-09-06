@@ -85,7 +85,7 @@ erGetItemsRequest.prototype = {
 
 	execute: function _execute()
 	{
-		exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute\n");
+		//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute\n");
 
 		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
@@ -165,7 +165,6 @@ erGetItemsRequest.prototype = {
 			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:UID");
 			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:RecurrenceId");
 			if (this.argument.ServerVersion.indexOf("Exchange2010") == 0) {
-//			if ((this.argument.ServerVersion == "Exchange2010_SP1") || (this.argument.ServerVersion == "Exchange2010_SP2")) {
 				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:StartTimeZone");
 				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:EndTimeZone");
 			}
@@ -267,8 +266,6 @@ erGetItemsRequest.prototype = {
 */
 		
 
-		//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute 22\n");
-
 		var itemids = req.addChildTag("ItemIds", "nsMessages", null);
 		for each (var item in this.ids) {
 			var itemId = itemids.addChildTag("ItemId", "nsTypes", null);
@@ -280,18 +277,16 @@ erGetItemsRequest.prototype = {
 			}
 		}
 
-			//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute 11:"+String(req));
-			//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute 33:"+this.serverUrl);
 		this.parent.xml2jxon = true;
 		
-		exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
+		//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 
 		this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.onSendOk: "+String(aResp)+"\n");
+		//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.onSendOk: "+String(aResp)+"\n");
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
 		var items = [];
@@ -300,7 +295,7 @@ erGetItemsRequest.prototype = {
 			var item = e.XPath("/m:Items/t:CalendarItem");
 			if (item.length > 0)
 			{
-				exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.item: "+item[0]+"\n");
+				//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.item: "+item[0]+"\n");
 				items.push(item[0]);
 			}
 		}

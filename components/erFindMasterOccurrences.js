@@ -90,7 +90,7 @@ erFindMasterOccurrencesRequest.prototype = {
 
 	execute: function _execute()
 	{
-		exchWebService.commonFunctions.LOG("erFindMasterOccurrencesRequest.execute\n");
+		//exchWebService.commonFunctions.LOG("erFindMasterOccurrencesRequest.execute\n");
 
 		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 		
@@ -173,7 +173,6 @@ erFindMasterOccurrencesRequest.prototype = {
 			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:RecurrenceId");
 			
 			if (this.argument.ServerVersion.indexOf("Exchange2010") == 0) {
-//				if ((this.argument.ServerVersion == "Exchange2010_SP1") || (this.argument.ServerVersion == "Exchange2010_SP2")) {
 				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:StartTimeZone");
 				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:EndTimeZone");
 				
@@ -286,14 +285,14 @@ erFindMasterOccurrencesRequest.prototype = {
 
 		this.parent.xml2jxon = true;
 		
-		exchWebService.commonFunctions.LOG("erFindMasterOccurrencesRequest.execute:"+String(this.parent.makeSoapMessage(req)));
+		//exchWebService.commonFunctions.LOG("erFindMasterOccurrencesRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 
 		this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erFindMasterOccurrencesRequest.onSendOk>"+String(aResp)+"\n");
+		//exchWebService.commonFunctions.LOG("erFindMasterOccurrencesRequest.onSendOk>"+String(aResp)+"\n");
 
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 

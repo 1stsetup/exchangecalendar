@@ -94,7 +94,7 @@ erSyncFolderItemsRequest.prototype = {
 
 	execute: function _execute(aSyncState)
 	{
-		exchWebService.commonFunctions.LOG("erSyncFolderItemsRequest.execute\n");
+		//exchWebService.commonFunctions.LOG("erSyncFolderItemsRequest.execute\n");
 
 		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:SyncFolderItems xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
@@ -117,7 +117,7 @@ erSyncFolderItemsRequest.prototype = {
 		
 		this.parent.xml2jxon = true;
 		
-		exchWebService.commonFunctions.LOG("erSyncFolderItemsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
+		//exchWebService.commonFunctions.LOG("erSyncFolderItemsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 		
 		//exchWebService.commonFunctions.LOG(String(this.parent.makeSoapMessage(req)));
 		this.attempts++;
@@ -126,7 +126,7 @@ erSyncFolderItemsRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erSyncFolderItemsRequest.onSendOk:"+String(aResp));
+		//exchWebService.commonFunctions.LOG("erSyncFolderItemsRequest.onSendOk:"+String(aResp));
 
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
