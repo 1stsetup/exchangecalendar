@@ -264,6 +264,17 @@ mivIxml2jxon.prototype = {
 		return this[aTagName];
 	},
 
+	getTags: function _getTags(aTagName)
+	{
+		if (isArray(this[aTagName])) {
+			return this[aTagName];
+		}
+
+		var result = new Array;
+		result.push(this[aTagName]);
+		return result;
+	},
+
 	getTagValue: function _getTagValue(aTagName, aDefaultValue)
 	{
 		if (this[aTagName]) {
