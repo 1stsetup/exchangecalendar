@@ -6295,7 +6295,7 @@ this.logInfo("getTaskItemsOK 4");
 	{
 		if (aExchangeItem.getTagValue("t:HasAttachments") == "true") {
 //			this.logInfo("Title:"+aItem.title+"Attachments:"+aExchangeItem.getTagValue("Attachments"));
-			for each(var fileAttachment in aExchangeItem.getTagValue("t:Attachments").getTagValue("t:FileAttachment")) {
+			for each(var fileAttachment in aExchangeItem.XPath("/t:Attachments/t:FileAttachment")) {
 //				this.logInfo(" -- Attachment: name="+fileAttachment.getTagValue("t:Name"));
 
 				var newAttachment = createAttachment();
@@ -6669,7 +6669,7 @@ this.logInfo("getTaskItemsOK 4");
 
 		if (aCalendarItem.getTagValue("t:Organizer", "") != "") {
 			//this.logInfo(" ==A ORGANIZER== title:"+item.title+", org:"+String(aCalendarItem.getTagValue("t:Organizer")));
-			var org = this.createAttendee(aCalendarItem.getTagValue("t:Organizer"), "CHAIR");
+			var org = this.createAttendee(aCalendarItem.getTag("t:Organizer"), "CHAIR");
 
 /*			if (org.id.replace(/^mailto:/, '').toLowerCase() != this.mailbox.toLowerCase()) {
 				item.setProperty("X-IsInvitation", "true");
@@ -8799,7 +8799,9 @@ this.logInfo("getTaskItemsOK 4");
 
 				if (doContinue) {
 					this.logInfo("Found item in offline Cache.");
-					var cachedItem = new XML(sqlStatement.row.item);
+					//var cachedItem = new XML(sqlStatement.row.item);
+					var cachedItem = exchWebService.commonFunctions.xmlToJxon(sqlStatement.row.item);
+
 					//cachedItem.content = ;
 					//this.logInfo(" --:"+cachedItem.toString());
 					result.push(cachedItem);
