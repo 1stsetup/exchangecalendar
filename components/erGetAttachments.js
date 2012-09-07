@@ -91,7 +91,7 @@ erGetAttachmentsRequest.prototype = {
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetAttachmentResponse/m:ResponseMessages/m:GetAttachmentResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']/m:Attachments/*");
 
 		if (rm.length == 0) {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getting Attachment:"+responseCode);
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getting Attachment.");
 			return;
 		}
 
