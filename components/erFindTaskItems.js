@@ -81,11 +81,11 @@ erFindTaskItemsRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute\n");
 
-		var req = <nsMessages:FindItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
-		req.@Traversal = "Shallow";
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:FindItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		req.setAttribute("Traversal", "Shallow");
 
-//		req.nsMessages::ItemShape.nsTypes::BaseShape = "IdOnly";
-		req.nsMessages::ItemShape.nsTypes::BaseShape = "AllProperties";
+		var itemShape = req.addChildTag("ItemShape", "nsMessages", null); 
+		itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");
 
 /*		req.nsMessages::Restriction.nsTypes::IsEqualTo.content = <>
 		    	<nsTypes:FieldURI FieldURI="item:ItemClass" xmlns:nsTypes={nsTypes}/>
@@ -96,30 +96,26 @@ erFindTaskItemsRequest.prototype = {
 		    </>;*/
 
 
+		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
+		req.addChildTagObject(parentFolder);
 
-		req.nsMessages::ParentFolderIds = makeParentFolderIds("ParentFolderIds", this.argument);
+		this.parent.xml2jxon = true;
 
+		//exchWebService.commonFunctions.LOG("erFindTaskItemsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		/*
-		 * We want to include all Single items, all Exception items, but also
-		 * at least one Occurrence or Exception item for each master.
-		 * If we include too many Occurrences, we will query for the master
-		 * too often, but if we don't include any, we might not query for the
-		 * master at all.
-		 *
-		 * We first collect all non-Occurrences, and after that we fill in
-		 * Occurrence for those masters that did not yet see any Exception.
-		 */
+		//exchWebService.commonFunctions.LOG("erFindTaskItemsRequest.onSendOk:"+String(aResp)+"\n");
 
-		var uids = {};
 		var ids = [];
-		for each (var e in aResp..nsTypes::Task) {
-			ids.push({Id: e.nsTypes::ItemId.@Id.toString(),
-				  ChangeKey: e.nsTypes::ItemId.@ChangeKey.toString()});
+
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']/m:RootFolder/t:Items/t:Task");
+
+		for each (var e in rm) {
+			ids.push({Id: e.getAttributeByTag("t:ItemId","Id"),
+				  ChangeKey: e.getAttributeByTag("t:ItemId","ChangeKey")});
 		}
 	
 		if (this.mCbOk) {
