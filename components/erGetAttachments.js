@@ -69,16 +69,18 @@ erGetAttachmentsRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erGetAttachmentsRequest.execute");
 
-		var req = <nsMessages:GetAttachment xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetAttachment xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		var itemids = <nsMessages:AttachmentIds xmlns:nsMessages={nsMessages}/>;
+		var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:AttachmentIds xmlns:nsMessages="'+nsMessagesStr+'"/>');
 		for (var index in this.attachmentIds) {
-			itemids.nsTypes::AttachmentId += <nsTypes:AttachmentId Id={this.attachmentIds[index]} xmlns:nsTypes={nsTypes} />;
+			itemids.addChildTag("AttachmentId", "nsTypes", null).setAttribute("Id", this.attachmentIds[index]);
 		}
 
-		req.appendChild(itemids);
+		req.addChildTagObject(itemids);
 
-		exchWebService.commonFunctions.LOG("erGetAttachmentsRequest.execute:"+this.parent.makeSoapMessage(req));
+		this.parent.xml2jxon = true;
+
+		//exchWebService.commonFunctions.LOG("erGetAttachmentsRequest.execute:"+this.parent.makeSoapMessage(req));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
@@ -86,24 +88,18 @@ erGetAttachmentsRequest.prototype = {
 	{
 		//exchWebService.commonFunctions.LOG("erGetAttachmentsRequest.onSendOk: "+String(aResp));
 
-		try {
-			var responseCode = aResp.nsSoap::Body..nsMessages::ResponseCode.toString();
-		}
-		catch(err) {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
-			return;
-		}
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetAttachmentResponse/m:ResponseMessages/m:GetAttachmentResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']/m:Attachments/*");
 
-		if (responseCode != "NoError") {
+		if (rm.length == 0) {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getting Attachment:"+responseCode);
 			return;
 		}
 
 		var attachments = [];
-		for each (var e in aResp..nsMessages::Attachments.*) {
-			attachments.push( { id: e.nsTypes::AttachmentId.@Id.toString(),
-				      name: e.nsTypes::Name.toString(),
-				      content: e.nsTypes::Content.toString()}
+		for each (var e in rm) {
+			attachments.push( { id: e.getAttributeByTag("t:AttachmentId","Id"),
+				      name: e.getTagValue("t:Name"),
+				      content: e.getTagValue("t:Content")}
 				);
 		} 
 	
