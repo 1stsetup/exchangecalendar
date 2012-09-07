@@ -128,41 +128,49 @@ erFindOccurrencesRequest.prototype = {
 
 		req.addChildTagObject(itemids);
 
-		exchWebService.commonFunctions.LOG("erFindOccurrencesRequest.execute>"+String(this.parent.makeSoapMessage(req))+"\n");
+		this.parent.xml2jxon = true;
+
+		//exchWebService.commonFunctions.LOG("erFindOccurrencesRequest.execute>"+String(this.parent.makeSoapMessage(req))+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-//		exchWebService.commonFunctions.LOG("erFindOccurrencesRequest.onSendOk>"+String(aResp)+"\n");
+		//exchWebService.commonFunctions.LOG("erFindOccurrencesRequest.onSendOk>"+String(aResp)+"\n");
 		var finished = false;
 		var found = false;
-		for each (var e in aResp..nsMessages::GetItemResponseMessage) {
 
-			var responseCode = e.nsMessages::ResponseCode.toString();
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage");
+
+		for each (var e in rm) {
+			var responseCode = e.getTagValue("m:ResponseCode");
 			switch (responseCode) {
 				case "ErrorCalendarOccurrenceIsDeletedFromRecurrence" :
 					this.currentRealIndex++;
 					break;
 				case "NoError":
-					this.currentRealIndex++;
-					var startDate = cal.fromRFC3339(e..nsTypes::Start, cal.UTC()).getInTimezone(cal.UTC()); 
-					var endDate = cal.fromRFC3339(e..nsTypes::End, cal.UTC()).getInTimezone(cal.UTC()); 
-					if ((this.startDate.compare(endDate) < 1) &&
-					    (this.endDate.compare(startDate) > -1) ) {
-						// We found our occurrence
-						this.items.push({Id: e..nsTypes::ItemId.@Id.toString(),
-					  ChangeKey: e..nsTypes::ItemId.@ChangeKey.toString(),
-					  type: e..nsTypes::CalendarItemType.toString(),
-					  uid: e..nsTypes::UID.toString(),
-					  start: e..nsTypes::Start.toString(),
-					  end: e..nsTypes::End.toString(),
-					  index: this.currentRealIndex});
-					}
+					var tmpItems = e.XPath("/m:Items/*");
+					for each (var tmpItem in tmpItems) {
+						this.currentRealIndex++;
+						var startDate = cal.fromRFC3339(tmpItem.getTagValue("t:Start"), cal.UTC()).getInTimezone(cal.UTC()); 
+						var endDate = cal.fromRFC3339(tmpItem.getTagValue("t:End"), cal.UTC()).getInTimezone(cal.UTC()); 
+						if ((this.startDate.compare(endDate) < 1) &&
+						    (this.endDate.compare(startDate) > -1) ) {
+							// We found our occurrence
+							this.items.push({Id: tmpItem.getAttributeByTag("t:ItemId","Id"),
+						  ChangeKey: tmpItem.getAttributeByTag("t:ItemId", "ChangeKey"),
+						  type: tmpItem.getTagValue("t:CalendarItemType"),
+						  uid: tmpItem.getTagValue("t:UID"),
+						  start: tmpItem.getTagValue("t:Start"),
+						  end: tmpItem.getTagValue("t:End"),
+						  index: this.currentRealIndex});
+						}
 
-					// When we see occurrences past our endDate range stop.
-					if (startDate.compare(this.endDate) == 1) {	
-						finished = true;
+						// When we see occurrences past our endDate range stop.
+/*						if (startDate.compare(this.endDate) == 1) {	
+							finished = true;
+							break;
+						}*/
 					}
 					break;
 				case "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange" :
