@@ -36,6 +36,19 @@ if (! exchWebService) var exchWebService = {};
 
 exchWebService.commonFunctions = {
 
+	encodeFolderSpecialChars: function _encodeFolderSpecialChars(aStr)
+	{
+		// characters like "/" (forward slash) is converted to %2F
+		// Character "%" (percentage) is converted to %25
+
+		
+	},
+
+	decodeFolderSpecialChars: function _decodeFolderSpecialChars(aStr)
+	{
+		// Does the oposit of encodeFolderSpecialChars
+	},
+
 	ecTZService: function _ecTZService()
 	{
 		if (Cc["@mozilla.org/calendar/timezone-service;1"]) {
