@@ -36,12 +36,35 @@ if (! exchWebService) var exchWebService = {};
 
 exchWebService.commonFunctions = {
 
+	doEncodeFolderSpecialChars: function _doEncodeFolderSpecialChars(str, r1)
+	{
+		var result = str;
+		switch (r1) {
+		case "/": result = "%2F"; break;
+		case "%": result = "%25"; break;
+		}
+
+		return result;
+	},
+
 	encodeFolderSpecialChars: function _encodeFolderSpecialChars(aStr)
 	{
 		// characters like "/" (forward slash) is converted to %2F
 		// Character "%" (percentage) is converted to %25
+		var result = aStr.toString();
+		result = result.replace(/([\x2F|\x25])/g, exchWebService.commonFunctions.doEncodeFolderSpecialChars);
+		return result;		
+	},
 
-		
+	doDecodeFolderSpecialChars: function _doDecodeFolderSpecialChars(str, r1)
+	{
+		var result = str;
+		switch (r1) {
+		case "%2F": result = "/"; break;
+		case "%25": result = "%"; break;
+		}
+
+		return result;
 	},
 
 	decodeFolderSpecialChars: function _decodeFolderSpecialChars(aStr)
