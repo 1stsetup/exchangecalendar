@@ -87,37 +87,37 @@ erGetMasterOccurrenceIdRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erGetMasterOccurrenceIdRequest.execute\n");
 
-		var req = <nsMessages:GetItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		req.nsMessages::ItemShape.nsTypes::BaseShape = "IdOnly";
+		var itemShape = req.addChildTag("ItemShape", "nsMessages", null); 
+		itemShape.addChildTag("BaseShape", "nsTypes", "IdOnly");
 
-		var itemids = <nsMessages:ItemIds xmlns:nsMessages={nsMessages}/>;
-		itemids.nsTypes::RecurringMasterItemId += <nsTypes:RecurringMasterItemId OccurrenceId={this.id} ChangeKey={this.changeKey} xmlns:nsTypes={nsTypes} />;
+		var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ItemIds xmlns:nsMessages="'+nsMessagesStr+'"/>');
+		var recurringMasterItemId = itemids.addChildTag("RecurringMasterItemId", "nsTypes", null);
+		recurringMasterItemId.setAttribute("OccurrenceId", this.id);
+		recurringMasterItemId.setAttribute("ChangeKey", this.changeKey);
 
-		req.appendChild(itemids);
+		req.addChildTagObject(itemids);
 
+		this.parent.xml2jxon = true;
+
+		//exchWebService.commonFunctions.LOG("erGetMasterOccurrenceIdRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-//		exchWebService.commonFunctions.LOG("erGetMasterOccurrenceIdRequest.onSendOk>"+String(aResp));
+		//exchWebService.commonFunctions.LOG("erGetMasterOccurrenceIdRequest.onSendOk>"+String(aResp));
 
-		try {
-			var responseCode = aResp..nsMessages::ResponseCode.toString();
-		}
-		catch(err) {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']/m:Items/*");
+
+		if (rm.length == 0) {
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getting OccurrenceMasterId.");
 			return;
 		}
 
-		if (responseCode != "NoError") {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getting OccurrenceMasterId:"+responseCode);
-			return;
-		}
-
-		var aId = aResp..nsTypes::ItemId.@Id.toString();
-		var aChangeKey = aResp..nsTypes::ItemId.@ChangeKey.toString();
+		var aId = rm[0].getAttributeByTag("t:ItemId","Id");
+		var aChangeKey = rm[0].getAttributeByTag("t:ItemId","ChangeKey");
 		
 		if (this.mCbOk) {
 			this.mCbOk(this, aId, aChangeKey);
