@@ -98,20 +98,26 @@ erGetOccurrenceIndexRequest.prototype = {
 	{
 		exchWebService.commonFunctions.LOG("erGetOccurrenceIndexRequest.execute\n");
 
-		var req = <nsMessages:GetItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		req.nsMessages::ItemShape.nsTypes::BaseShape = "IdOnly";
+		var itemShape = req.addChildTag("ItemShape", "nsMessages", null); 
+		itemShape.addChildTag("BaseShape", "nsTypes", "IdOnly");
 
-		req.nsMessages::ItemShape.nsTypes::AdditionalProperties.content = <>
-		    	<nsTypes:FieldURI FieldURI="calendar:Start" xmlns:nsTypes={nsTypes}/>
-		    </>;
+		itemShape.addChildTag("AdditionalProperties", "nsTypes", null).addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI","calendar:Start");		
 
-		var itemids = <nsMessages:ItemIds xmlns:nsMessages={nsMessages}/>;
+		var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ItemIds xmlns:nsMessages="'+nsMessagesStr+'"/>');
 		for (var x = 0; x < this.idGroupSize; x++) {
-			itemids.nsTypes::OccurrenceItemId += <nsTypes:OccurrenceItemId RecurringMasterId={this.masterID} ChangeKey={this.masterChangeKey} InstanceIndex={this.currentSearchIndex++} xmlns:nsTypes={nsTypes} />;
+			var occurrenceItemId = itemids.addChildTag("OccurrenceItemId", "nsTypes", null);
+			occurrenceItemId.setAttribute("RecurringMasterId", this.masterID);
+			occurrenceItemId.setAttribute("ChangeKey", this.masterChangeKey);
+			occurrenceItemId.setAttribute("InstanceIndex", this.currentSearchIndex++);
 		}
 
-		req.appendChild(itemids);
+		req.addChildTagObject(itemids);
+
+		this.parent.xml2jxon = true;
+
+//		exchWebService.commonFunctions.LOG("erGetOccurrenceIndexRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
@@ -119,22 +125,28 @@ erGetOccurrenceIndexRequest.prototype = {
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
 //		exchWebService.commonFunctions.LOG("erGetOccurrenceIndexRequest.onSendOk>"+String(aResp));
-		var items = [];
 		var finished = false;
 		var found = false;
-		for each (var e in aResp..nsMessages::GetItemResponseMessage) {
 
-			var responseCode = e.nsMessages::ResponseCode.toString();
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage");
+
+		for each (var e in rm) {
+
+			var responseCode = e.getTagValue("m:ResponseCode");
 			switch (responseCode) {
 				case "ErrorCalendarOccurrenceIsDeletedFromRecurrence" :
 					this.currentRealIndex++;
 					break;
 				case "NoError":
-					this.currentRealIndex++;
-					if (this.argument.masterItem.id == e.nsMessages::Items.nsTypes::CalendarItem.nsTypes::ItemId.@Id.toString()) {
-						// We found our occurrence
-						finished = true;
-						found = true;
+					var items = e.XPath("/m:Items/*");
+					for each(var item in items) {
+						this.currentRealIndex++;
+						if (this.argument.masterItem.id == item.getAttributeByTag("t:ItemId","Id")) {
+							// We found our occurrence
+							finished = true;
+							found = true;
+							break;
+						}
 					}
 					break;
 				case "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange" :
