@@ -1,3 +1,6 @@
+Version 2.2.2:
+- Fixed: bug 160 - Meeting invitation received does not get added after accepting
+
 Version 2.2.1:
 - Fixed bug when closing TB the offline cache would be emptyed.
 - Fixed: Bug 161 - pb accessing calendars
