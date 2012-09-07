@@ -1114,7 +1114,7 @@ mivIxml2jxon.prototype = {
 										}
 									}
 
-									if ((tmpStart < strLength) && ((aString.substr(tmpStart,1) == "/") || (aString.substr(tmpStart,1) == ">"))) {
+									if ((tmpStart < strLength) && ((aString.substr(tmpStart,1) == "/") || (aString.substr(tmpStart,1) == ">")) && (attribute.length > 0)) {
 										this.logInfo("b. Found attribute '"+attribute+"' for tag '"+this.tagName+"'",2);
 										attributes.push(attribute);
 										this.explodeAttribute(attribute);
