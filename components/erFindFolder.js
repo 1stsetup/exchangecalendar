@@ -39,7 +39,7 @@ var Cu = Components.utils;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
-Cu.import("resource://1st-setup/ecFunctions.js");
+Cu.import("resource://exchangecalendar/ecFunctions.js");
 
 /*Cu.import("resource://calendar/modules/calUtils.jsm");
 Cu.import("resource://calendar/modules/calAlarmUtils.jsm");
@@ -79,6 +79,12 @@ function erFindFolderRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.isRunning = true;
 	if (this.folderPath.length > 0) {
+		var counter = 0;
+		while (counter < this.folderPath.length) {
+			this.folderPath[counter] = exchWebService.commonFunctions.decodeFolderSpecialChars(this.folderPath[counter]);
+			counter++
+		}
+
 		this.folderCount = 0;
 		this.execute();
 	}

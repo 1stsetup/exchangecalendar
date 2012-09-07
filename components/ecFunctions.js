@@ -53,7 +53,7 @@ exchWebService.commonFunctions = {
 		// Character "%" (percentage) is converted to %25
 		var result = aStr.toString();
 		result = result.replace(/([\x2F|\x25])/g, exchWebService.commonFunctions.doEncodeFolderSpecialChars);
-		return result;		
+		return result;
 	},
 
 	doDecodeFolderSpecialChars: function _doDecodeFolderSpecialChars(str, r1)
@@ -63,13 +63,15 @@ exchWebService.commonFunctions = {
 		case "%2F": result = "/"; break;
 		case "%25": result = "%"; break;
 		}
-
 		return result;
 	},
 
 	decodeFolderSpecialChars: function _decodeFolderSpecialChars(aStr)
 	{
 		// Does the oposit of encodeFolderSpecialChars
+		var result = aStr.toString();
+		result = result.replace(/(\x252F|\x2525)/g, exchWebService.commonFunctions.doDecodeFolderSpecialChars);
+		return result;
 	},
 
 	ecTZService: function _ecTZService()
