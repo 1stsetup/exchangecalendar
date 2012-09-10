@@ -1,3 +1,6 @@
+Version 2.2.3:
+- Fixed: bug 176 - Calendars whose names contains a slash can't be opened
+
 Version 2.2.2:
 - Fixed: bug 160 - Meeting invitation received does not get added after accepting
 
