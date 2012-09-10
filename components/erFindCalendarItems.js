@@ -138,7 +138,7 @@ erFindCalendarItemsRequest.prototype = {
 
 		this.parent.xml2jxon = true;
 
-		exchWebService.commonFunctions.LOG("erFindCalendarItemsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
+		//exchWebService.commonFunctions.LOG("erFindCalendarItemsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
@@ -155,7 +155,7 @@ erFindCalendarItemsRequest.prototype = {
 		 * We first collect all non-Occurrences, and after that we fill in
 		 * Occurrence for those masters that did not yet see any Exception.
 		 */
-		exchWebService.commonFunctions.LOG("erFindCalendarItemsRequest.onSendOk:"+String(aResp)+"\n");
+		//exchWebService.commonFunctions.LOG("erFindCalendarItemsRequest.onSendOk:"+String(aResp)+"\n");
 
 		var aError = false;
 		var aCode = 0;
