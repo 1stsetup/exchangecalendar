@@ -47,6 +47,18 @@ var isArray = function(obj) {
         return typeString(obj) == "array";
     }
 
+function isInArray(inArray, inStr)
+{
+	for (var index in inArray) {
+		if (inArray[index] == inStr) {
+			return true;
+		}
+	}
+	return false;
+}
+
+var specialChars1 = [" ", "\n", "\r", "\t"];
+
 function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 
 	this.content = {};
@@ -192,6 +204,12 @@ mivIxml2jxon.prototype = {
 
 	explodeAttribute: function _explodeAttribute(aValue)
 	{
+		// Remove any of the special characters
+		aValue = aValue.replace(/\n/g, "");
+		aValue = aValue.replace(/\r/g, "");
+		aValue = aValue.replace(/\t/g, "");
+
+
 		var splitPos = aValue.indexOf("=");
 		if (splitPos == -1) {
 			throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_ATTRIBUTE_SEPARATOR);
@@ -393,7 +411,7 @@ mivIxml2jxon.prototype = {
 
 	replaceFromXML: function _replaceFromXML(str, r1)
 	{
-		exchWebService.commonFunctions.LOG("replaceFromXML: str:"+str+"|r1:"+r1);
+		//exchWebService.commonFunctions.LOG("replaceFromXML: str:"+str+"|r1:"+r1);
 		var result = str;
 //try{
 		if (r1.substr(0,1) == "#") {
@@ -1048,7 +1066,7 @@ mivIxml2jxon.prototype = {
 							var tmpStart = this.startPos + 1;
 							this.tagName = "";
 							while ((tmpStart < strLength) && (aString.substr(tmpStart,1) != ">") && 
-								(aString.substr(tmpStart,1) != "/") && (aString.substr(tmpStart,1) != " ")) {
+								(aString.substr(tmpStart,1) != "/") && (!(isInArray(specialChars1,aString.substr(tmpStart,1))))) {
 								this.tagName = this.tagName + aString.substr(tmpStart,1);
 								tmpStart++;
 							}
@@ -1077,8 +1095,8 @@ mivIxml2jxon.prototype = {
 								return;
 							}
 							else {
-								if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == " ")) {
-									this.logInfo("Found space character ' '. There are attributes.",2); 
+								if ((tmpStart < strLength) && (isInArray(specialChars1,aString.substr(tmpStart,1)))) {
+									this.logInfo("Found special character. There are attributes.",2); 
 
 									// get attributes &
 									// get namespaces
@@ -1086,38 +1104,58 @@ mivIxml2jxon.prototype = {
 									var attributes = [];
 									tmpStart++;
 									var quoteOpen = false;
+									var seenAttributeSeparator = false;
 									var quoteChar = "";
 									while ((tmpStart < strLength) && 
 										(((aString.substr(tmpStart,1) != ">") && (aString.substr(tmpStart,1) != "/")) || (quoteOpen)) ) {
+
 										attribute = attribute + aString.substr(tmpStart,1);
-										if ((aString.substr(tmpStart,1) == '"') || (aString.substr(tmpStart,1) == "'")) {
-											if ((!quoteOpen) || ((quoteOpen) && (quoteChar == aString.substr(tmpStart,1)))) {
-												quoteOpen = !quoteOpen;
-												if (quoteOpen) {
-													this.logInfo("Found opening quote:"+tmpStart,2);
-													quoteChar = aString.substr(tmpStart,1);
-												}
-												else {
-													this.logInfo("Found closing quote:"+tmpStart,2);
+
+										if ((!seenAttributeSeparator) && (aString.substr(tmpStart,1) == "=") && (!quoteOpen)) {
+											this.logInfo("seenAttributeSeparator: pos:"+tmpStart+", attribute:"+attribute,2);
+											seenAttributeSeparator = true;
+										}
+										else {
+											if (seenAttributeSeparator) {
+												if (((aString.substr(tmpStart,1) == '"') || (aString.substr(tmpStart,1) == "'")) && (seenAttributeSeparator)) {
+													if ((!quoteOpen) || ((quoteOpen) && (quoteChar == aString.substr(tmpStart,1)))) {
+														quoteOpen = !quoteOpen;
+														if (quoteOpen) {
+															this.logInfo("Found opening quote:"+tmpStart,2);
+															quoteChar = aString.substr(tmpStart,1);
+														}
+														else {
+															this.logInfo("Found closing quote:"+tmpStart,2);
+														}
+													}
 												}
 											}
 										}
 
 										tmpStart++;
 
-										if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == " ") && (!quoteOpen)) {
+										if ((seenAttributeSeparator) && (tmpStart < strLength) && (isInArray(specialChars1,aString.substr(tmpStart,1))) && (!quoteOpen)) {
 											this.logInfo("a. Found attribute '"+attribute+"' for tag '"+this.tagName+"'",2);
 											attributes.push(attribute);
 											this.explodeAttribute(attribute);
 											attribute = "";
+											seenAttributeSeparator = false;
 											tmpStart++;
 										}
 									}
 
-									if ((tmpStart < strLength) && ((aString.substr(tmpStart,1) == "/") || (aString.substr(tmpStart,1) == ">"))) {
+									if ((seenAttributeSeparator) && (!quoteOpen) && (tmpStart < strLength) && (attribute.length > 0)) {
 										this.logInfo("b. Found attribute '"+attribute+"' for tag '"+this.tagName+"'",2);
 										attributes.push(attribute);
 										this.explodeAttribute(attribute);
+										seenAttributeSeparator = false;
+										attribute = "";
+									}
+									else {
+										if ((!seenAttributeSeparator) && (tmpStart < strLength) && (attribute.length > 0)) {
+											// We might have hit some blank space.
+											// For now do nothing with it.
+										}
 									}
 
 									if ((tmpStart < strLength) && (aString.substr(tmpStart,1) == "/")) {
@@ -1243,7 +1281,7 @@ mivIxml2jxon.prototype = {
 
 		var prefB = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
 		var storedDebugLevel = exchWebService.commonFunctions.safeGetIntPref(prefB, "extensions.1st-setup.xml2jxon", 1, true);
-		var storedDebugLevel = 1;
+		var storedDebugLevel = 0;
 
 		if (debugLevel <= storedDebugLevel) {
 			exchWebService.commonFunctions.LOG("[xml2jxon] "+message + " ("+exchWebService.commonFunctions.STACKshort()+")");
