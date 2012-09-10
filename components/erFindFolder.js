@@ -74,6 +74,12 @@ function erFindFolderRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.isRunning = true;
 	if (this.folderPath.length > 0) {
+		var counter = 0;
+		while (counter < this.folderPath.length) {
+			this.folderPath[counter] = exchWebService.commonFunctions.decodeFolderSpecialChars(this.folderPath[counter]);
+			counter++
+		}
+
 		this.folderCount = 0;
 		this.execute();
 	}

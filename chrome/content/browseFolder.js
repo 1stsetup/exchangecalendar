@@ -300,7 +300,7 @@ exchWebService_browseTreeView.prototype = {
 		while (currentNode) {
 			if (result != "") {
 				if (currentNode.foldername != "/") {
-					result = currentNode.foldername + "/" + result;
+					result = exchWebService.commonFunctions.encodeFolderSpecialChars(currentNode.foldername) + "/" + result;
 				}
 				else {
 					// We reached the top root.
@@ -308,7 +308,12 @@ exchWebService_browseTreeView.prototype = {
 				}
 			}
 			else {
-				result = currentNode.foldername;
+				if (currentNode.foldername != "/") {
+					result = exchWebService.commonFunctions.encodeFolderSpecialChars(currentNode.foldername);
+				}
+				else {
+					result = currentNode.foldername;
+				}
 			}
 			currentNode = currentNode.parent;
 		}
