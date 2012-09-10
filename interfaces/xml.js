@@ -849,7 +849,7 @@ mivIxml2jxon.prototype = {
 
 			var index = exchWebService.commonFunctions.splitOnCharacter(tmpPath.substr(1), 0, "]");
 			if (!index) {
-				throw "XPath error: Did not find closing square bracket"+this.tagName;
+				throw "XPath error: Did not find closing square bracket. tagName:"+this.tagName+", tmpPath:"+tmpPath;
 			}
 
 			tmpPath = tmpPath.substr(index.length+2);

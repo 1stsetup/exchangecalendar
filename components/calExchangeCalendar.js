@@ -3465,9 +3465,9 @@ this.logInfo("singleModified doNotify");
 			"NoData"	: x.UNKNOWN
 		};
 
-		var start = this.tryToSetDateValue(aCi.nsTypes::StartTime);
-		var end   = this.tryToSetDateValue(aCi.nsTypes::EndTime);
-		var type  = types[aCi.nsTypes::BusyType];
+		var start = this.tryToSetDateValue(aCi.getTagValue("_default_:StartTime"));
+		var end   = this.tryToSetDateValue(aCi.getTagValue("_default_:EndTime"));
+		var type  = types[aCi.getTagValue("_default_:BusyType")];
 
 		return new cal.FreeBusyInterval(aCalId, type,
 					       	  start, end);
@@ -3492,30 +3492,30 @@ this.logInfo("singleModified doNotify");
 
 		
 		for (var index in aEvents) {
-			if (aEvents[index].nsTypes::BusyType.toString() != "Free") {
+			if (aEvents[index].getTagValue("_default_:BusyType") != "Free") {
 				var item = createEvent();
 				item.calendar = this.superCalendar;
 
 				item.id = exchWebService.commonFunctions.getUUID();
 
-				item.title = this.tryToSetValue(aEvents[index].nsTypes::BusyType.toString(), "");
+				item.title = this.tryToSetValue(aEvents[index].getTagValue("_default_:BusyType"), "");
 				if (! item.title) {
 					item.title = "";
 				}
 
-				item.title = this.tryToSetValue(aEvents[index].nsTypes::CalendarEventDetails.nsTypes::Subject.toString(), "")+" ("+item.title+")";
+				item.title = this.tryToSetValue(aEvents[index].getTag("_default_:CalendarEventDetails").getTagValue("_default_:Subject"), "")+" ("+item.title+")";
 
-				item.setProperty("LOCATION", aEvents[index].nsTypes::CalendarEventDetails.nsTypes::Location.toString());
+				item.setProperty("LOCATION", aEvents[index].getTag("_default_:CalendarEventDetails").getTagValue("_default_:Location"));
 
 		//		item.setProperty("DESCRIPTION", aCalendarItem.getTagValue("t:Body"));
 
-				item.startDate = this.tryToSetDateValue(aEvents[index].nsTypes::StartTime, null);
+				item.startDate = this.tryToSetDateValue(aEvents[index].getTagValue("_default_:StartTime"), null);
 				if (! item.startDate) {
 					this.logInfo("We have an empty startdate. Skipping this item.");
 					return null;
 				}
 
-				item.endDate = this.tryToSetDateValue(aEvents[index].nsTypes::EndTime, null);
+				item.endDate = this.tryToSetDateValue(aEvents[index].getTagValue("_default_:EndTime"), null);
 				if (! item.endDate) {
 					this.logInfo("We have an empty enddate. Skipping this item.");
 					return null;

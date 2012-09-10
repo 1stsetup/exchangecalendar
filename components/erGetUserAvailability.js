@@ -80,26 +80,39 @@ erGetUserAvailabilityRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.execute\n");
 
-		var req = <nsMessages:GetUserAvailabilityRequest xmlns:nsMessages={nsMessages}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetUserAvailabilityRequest xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
 		/* WTF really?  Just give me UTC. */
-		req.nsTypes::TimeZone.nsTypes::Bias = 0;
-		req.nsTypes::TimeZone.nsTypes::StandardTime.nsTypes::Bias = 0;
-		req.nsTypes::TimeZone.nsTypes::StandardTime.nsTypes::Time = '00:00:00';
-		req.nsTypes::TimeZone.nsTypes::StandardTime.nsTypes::DayOrder = 1;
-		req.nsTypes::TimeZone.nsTypes::StandardTime.nsTypes::Month = 0;
-		req.nsTypes::TimeZone.nsTypes::StandardTime.nsTypes::DayOfWeek = "Sunday";
-		req.nsTypes::TimeZone.nsTypes::DaylightTime.content = req.nsTypes::TimeZone.nsTypes::StandardTime.children();
-	
-		req.nsMessages::MailboxDataArray.nsTypes::MailboxData.nsTypes::Email.nsTypes::Address = this.email
-		req.nsMessages::MailboxDataArray.nsTypes::MailboxData.nsTypes::AttendeeType = this.attendeeType;
-	
-		req.nsTypes::FreeBusyViewOptions.nsTypes::TimeWindow.nsTypes::StartTime = this.start;
-		req.nsTypes::FreeBusyViewOptions.nsTypes::TimeWindow.nsTypes::EndTime = this.end;
+		var timeZone = req.addChildTag("TimeZone", "nsTypes", null);
+		timeZone.addChildTag("Bias", "nsTypes", "0");
+		var standardTime = timeZone.addChildTag("StandardTime", "nsTypes", null);
+		standardTime.addChildTag("Bias", "nsTypes", "0");
+		standardTime.addChildTag("Time", "nsTypes", "00:00:00");
+		standardTime.addChildTag("DayOrder", "nsTypes", "1");
+		standardTime.addChildTag("Month", "nsTypes", "0");
+		standardTime.addChildTag("DayOfWeek", "nsTypes", "Sunday");
 
-		req.nsTypes::FreeBusyViewOptions.nsTypes::MergedFreeBusyIntervalInMinutes = 15;
+		var daylightTime = timeZone.addChildTag("DaylightTime", "nsTypes", null);
+		daylightTime.addChildTag("Bias", "nsTypes", "0");
+		daylightTime.addChildTag("Time", "nsTypes", "00:00:00");
+		daylightTime.addChildTag("DayOrder", "nsTypes", "1");
+		daylightTime.addChildTag("Month", "nsTypes", "0");
+		daylightTime.addChildTag("DayOfWeek", "nsTypes", "Sunday");
 
-		req.nsTypes::FreeBusyViewOptions.nsTypes::RequestedView = "DetailedMerged";
+		var mailboxData = req.addChildTag("MailboxDataArray", "nsMessages", null).addChildTag("MailboxData", "nsTypes", null);
+		mailboxData.addChildTag("Email", "nsTypes", null).addChildTag("Address", "nsTypes", this.email);
+		mailboxData.addChildTag("AttendeeType", "nsTypes", this.attendeeType);
+	
+		var freeBusyViewOptions = req.addChildTag("FreeBusyViewOptions", "nsTypes", null);
+		var timeWindow = freeBusyViewOptions.addChildTag("TimeWindow", "nsTypes", null);
+		timeWindow.addChildTag("StartTime", "nsTypes", this.start);
+		timeWindow.addChildTag("EndTime", "nsTypes", this.end);
+
+		freeBusyViewOptions.addChildTag("MergedFreeBusyIntervalInMinutes", "nsTypes", "15");
+
+		freeBusyViewOptions.addChildTag("RequestedView", "nsTypes", "DetailedMerged");
+
+		this.parent.xml2jxon = true;
 
 		//exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.execute: "+String(this.parent.makeSoapMessage(req))+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
@@ -108,21 +121,21 @@ erGetUserAvailabilityRequest.prototype = {
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
 		//exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: "+String(aResp)+"\n");
-		try {
-			var responseCode = aResp.nsSoap::Body..nsMessages::ResponseCode.toString();
-		}
-		catch(err) {
-			onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
+
+		var rm = aResp.XPath("/s:Envelope/s:Body/_default_:GetUserAvailabilityResponse/_default_:FreeBusyResponseArray/_default_:FreeBusyResponse/_default_:ResponseMessage[@ResponseClass='Success' and _default_:ResponseCode='NoError']");
+
+
+		if (rm.length == 0) {
+			exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: Respons does not contain expected field");
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
 			return;
 		}
 
-		if (responseCode != "NoError") {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getting user availability:"+responseCode);
-			return;
-		}
-		
+		var calendarEvents = aResp.XPath("/s:Envelope/s:Body/_default_:GetUserAvailabilityResponse/_default_:FreeBusyResponseArray/_default_:FreeBusyResponse/_default_:FreeBusyView/_default_:CalendarEventArray/_default_:CalendarEvent");
+
+		//exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: We have '"+calendarEvents.length+"' items.");
 		var items = [];
-		for each (var e in aResp..nsTypes::CalendarEvent) {
+		for each (var e in calendarEvents) {
 			items.push(e);
 		} 
 		// We also need to get the working hour period. But lightning cannot handle this.
