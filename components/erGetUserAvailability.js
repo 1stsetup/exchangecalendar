@@ -122,7 +122,7 @@ erGetUserAvailabilityRequest.prototype = {
 	{
 		//exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: "+String(aResp)+"\n");
 
-		var rm = aResp.XPath("/s:Envelope/s:Body/_default_:GetUserAvailabilityResponse/_default_:FreeBusyResponseArray/_default_:FreeBusyResponse/_default_:ResponseMessage[@ResponseClass='Success' and _default_:ResponseCode='NoError']");
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetUserAvailabilityResponse/m:FreeBusyResponseArray/m:FreeBusyResponse/m:ResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
 
 		if (rm.length == 0) {
@@ -131,14 +131,10 @@ erGetUserAvailabilityRequest.prototype = {
 			return;
 		}
 
-		var calendarEvents = aResp.XPath("/s:Envelope/s:Body/_default_:GetUserAvailabilityResponse/_default_:FreeBusyResponseArray/_default_:FreeBusyResponse/_default_:FreeBusyView/_default_:CalendarEventArray/_default_:CalendarEvent");
+		var items = aResp.XPath("/s:Envelope/s:Body/m:GetUserAvailabilityResponse/m:FreeBusyResponseArray/m:FreeBusyResponse/m:FreeBusyView/t:CalendarEventArray/t:CalendarEvent");
 
-		//exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: We have '"+calendarEvents.length+"' items.");
-		var items = [];
-		for each (var e in calendarEvents) {
-			items.push(e);
-		} 
 		// We also need to get the working hour period. But lightning cannot handle this.
+		//exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk 2: We have '"+items.length+"' items.");
 	
 		if (this.mCbOk) {
 			this.mCbOk(this, items);

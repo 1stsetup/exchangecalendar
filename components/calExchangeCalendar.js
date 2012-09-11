@@ -3465,10 +3465,9 @@ this.logInfo("singleModified doNotify");
 			"NoData"	: x.UNKNOWN
 		};
 
-		var start = this.tryToSetDateValue(aCi.getTagValue("_default_:StartTime"));
-		var end   = this.tryToSetDateValue(aCi.getTagValue("_default_:EndTime"));
-		var type  = types[aCi.getTagValue("_default_:BusyType")];
-
+		var start = this.tryToSetDateValue(aCi.getTagValue("t:StartTime"));
+		var end   = this.tryToSetDateValue(aCi.getTagValue("t:EndTime"));
+		var type  = types[aCi.getTagValue("t:BusyType")];
 		return new cal.FreeBusyInterval(aCalId, type,
 					       	  start, end);
 	},
@@ -3482,7 +3481,7 @@ this.logInfo("singleModified doNotify");
 
 		this.showUserAvailabilityBusy = true;
 
-		this.logInfo("showUserAvailability 1");
+		//this.logInfo("showUserAvailability 1");
 
 		// Clear current list.
 		for (var index in this.itemCache) {
@@ -3492,30 +3491,30 @@ this.logInfo("singleModified doNotify");
 
 		
 		for (var index in aEvents) {
-			if (aEvents[index].getTagValue("_default_:BusyType") != "Free") {
+			if (aEvents[index].getTagValue("t:BusyType") != "Free") {
 				var item = createEvent();
 				item.calendar = this.superCalendar;
 
 				item.id = exchWebService.commonFunctions.getUUID();
 
-				item.title = this.tryToSetValue(aEvents[index].getTagValue("_default_:BusyType"), "");
+				item.title = this.tryToSetValue(aEvents[index].getTagValue("t:BusyType"), "");
 				if (! item.title) {
 					item.title = "";
 				}
 
-				item.title = this.tryToSetValue(aEvents[index].getTag("_default_:CalendarEventDetails").getTagValue("_default_:Subject"), "")+" ("+item.title+")";
+				item.title = this.tryToSetValue(aEvents[index].getTag("t:CalendarEventDetails").getTagValue("t:Subject"), "")+" ("+item.title+")";
 
-				item.setProperty("LOCATION", aEvents[index].getTag("_default_:CalendarEventDetails").getTagValue("_default_:Location"));
+				item.setProperty("LOCATION", aEvents[index].getTag("t:CalendarEventDetails").getTagValue("t:Location"));
 
 		//		item.setProperty("DESCRIPTION", aCalendarItem.getTagValue("t:Body"));
 
-				item.startDate = this.tryToSetDateValue(aEvents[index].getTagValue("_default_:StartTime"), null);
+				item.startDate = this.tryToSetDateValue(aEvents[index].getTagValue("t:StartTime"), null);
 				if (! item.startDate) {
 					this.logInfo("We have an empty startdate. Skipping this item.");
 					return null;
 				}
 
-				item.endDate = this.tryToSetDateValue(aEvents[index].getTagValue("_default_:EndTime"), null);
+				item.endDate = this.tryToSetDateValue(aEvents[index].getTagValue("t:EndTime"), null);
 				if (! item.endDate) {
 					this.logInfo("We have an empty enddate. Skipping this item.");
 					return null;
@@ -3533,7 +3532,7 @@ this.logInfo("singleModified doNotify");
 	getUserAvailabilityRequestOK: function _getUserAvailabilityRequestOK(erGetUserAvailabilityRequest, aEvents)
 	{
 		this.notConnected = false;
-		this.logInfo("getUserAvailabilityRequestOK");
+		//this.logInfo("getUserAvailabilityRequestOK");
 		this.saveCredentials(erGetUserAvailabilityRequest.argument);
 
 		if (this.OnlyShowAvailability) {
@@ -9160,9 +9159,16 @@ function NSGetFactory(cid) {
 	return NSGetFactory.mainEC(cid);
 } 
 
-//var tmpStr = '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'+"\r\n"+'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'+"\r\n"+'xmlns:xsd="http://www.w3.org/2001/XMLSchema">'+"\r\n"+'<soap:Header><t:ServerVersionInfo'+"\r\n"+'MajorVersion="8" MinorVersion="3" MajorBuildNumber="279" MinorBuildNumber="1"'+"\r\n"+'Version="Exchange2007_SP1"'+"\r\n"+'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"'+"\r\n"+'/></soap:Header><soap:Body><m:SyncFolderItemsResponse'+"\r\n"+'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"'+"\r\n"+'xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"><m:ResponseMessages><m:SyncFolderItemsResponseMessage'+"\r\n"+'ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode><m:SyncState>.'+"\r\n"+'..</m:SyncState><m:IncludesLastItemInRange>true</m:IncludesLastItemInRange><m:Changes'+"\r\n"+'/></m:SyncFolderItemsResponseMessage></m:ResponseMessages></m:SyncFolderItemsResponse></soap:Body></soap:Envelope>';
+var tmpStr = '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'+"\r\n"+'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'+"\r\n"+'xmlns:xsd="http://www.w3.org/2001/XMLSchema">'+"\r\n"+'<soap:Header><t:ServerVersionInfo'+"\r\n"+'MajorVersion="8" MinorVersion="3" MajorBuildNumber="279" MinorBuildNumber="1"'+"\r\n"+'Version="Exchange2007_SP1"'+"\r\n"+'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"'+"\r\n"+'/></soap:Header><soap:Body><m:SyncFolderItemsResponse'+"\r\n"+'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"'+"\r\n"+'xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"><m:ResponseMessages><m:SyncFolderItemsResponseMessage'+"\r\n"+'ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode><m:SyncState>.'+"\r\n"+'..</m:SyncState><m:IncludesLastItemInRange>true</m:IncludesLastItemInRange><m:Changes'+"\r\n"+'/></m:SyncFolderItemsResponseMessage></m:ResponseMessages></m:SyncFolderItemsResponse></soap:Body></soap:Envelope>';
 
-//var tmpXML = exchWebService.commonFunctions.xmlToJxon(tmpStr);
-//exchWebService.commonFunctions.LOG(">>>>>>>>>>> -----:"+tmpXML.toString());
+var tmpXML = exchWebService.commonFunctions.xmlToJxon(tmpStr);
+				tmpXML.addNameSpace("s", nsSoapStr);
+				tmpXML.addNameSpace("m", nsMessagesStr);
+				tmpXML.addNameSpace("t", nsTypesStr);
+				tmpXML.addNameSpace("michel", nsTypesStr);
+exchWebService.commonFunctions.LOG(">>>>>>>>>>> -----:Going to do XPath");
+var tmpobject = tmpXML.XPath("/s:Envelope/s:Header/michel:ServerVersionInfo");
+exchWebService.commonFunctions.LOG(">>>>>>>>>>> -----: MinorVersion:"+tmpobject[0].getAttribute("MinorVersion"));
+exchWebService.commonFunctions.LOG(">>>>>>>>>>> -----:"+tmpXML.toString());
 
 
