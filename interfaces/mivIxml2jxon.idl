@@ -40,8 +40,11 @@ interface mivIxml2jxon : nsISupports
   attribute AUTF8String uuid;
   attribute AUTF8String tagName;
   attribute AUTF8String nameSpace;
+  attribute jsval nameSpaces;
 
 //  void addToContent(in jsval aValue);
+  void setParentTag(in jsval aNewParent);
+  void correctNameSpace();
   void processXMLString(in AUTF8String aString, in long aStartPos, in mivIxml2jxon aParent);
   jsval XPath(in AUTF8String aString);
   AUTF8String contentStr();
@@ -56,6 +59,9 @@ interface mivIxml2jxon : nsISupports
   jsval getTag(in AUTF8String aTagName);
   jsval getTags(in AUTF8String aTagName);
   AUTF8String getTagValue(in AUTF8String aTagName, [optional] in AUTF8String aDefaultValue);
+  AUTF8String getNameSpace(in AUTF8String aAlias);
+  AUTF8String addNameSpace(in AUTF8String aAlias, in AUTF8String aValue);
+  AUTF8String deleteNameSpace(in AUTF8String aAlias);
 
   jsval addChildTagObject(in jsval aObject);
   jsval addChildTag(in AUTF8String aTagName, in AUTF8String aNameSpace, in AUTF8String aValue);

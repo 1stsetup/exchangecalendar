@@ -479,6 +479,9 @@ ExchangeRequest.prototype = {
 			catch(exc) { this.logInfo("createInstance error:"+exc);}
 
 			try {
+				newXML.addNameSpace("s", nsSoapStr);
+				newXML.addNameSpace("m", nsMessagesStr);
+				newXML.addNameSpace("t", nsTypesStr);
 				newXML.processXMLString(xml, 0, null);
 			}
 			catch(exc) { this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 

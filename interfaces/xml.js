@@ -65,6 +65,7 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 	this.itemCount = 0;
 	this.messageLength = 0;
 	this.closed = false;
+	this.parentTag = null;
 
 	this.uuid = exchWebService.commonFunctions.getUUID();
 
@@ -234,20 +235,76 @@ mivIxml2jxon.prototype = {
 			if (!this.nameSpaces) {
 				this.nameSpaces = {};
 			}
-			var xmlnsPos = attributeName.indexOf(":");
+			var xmlnsPos = attributeName.indexOf(tagSeparator);
 			if (xmlnsPos > -1) {
 				this.logInfo("Found xml namespace:"+attributeName.substr(xmlnsPos+1)+"="+attributeValue, 2);
-				this.nameSpaces[attributeName.substr(xmlnsPos+1)] = attributeValue;
+				this.addNameSpace(attributeName.substr(xmlnsPos+1), attributeValue);
+				//this.nameSpaces[attributeName.substr(xmlnsPos+1)] = attributeValue;
 			}
 			else {
 				this.logInfo("Found xml namespace:_default_="+attributeValue, 2);
-				this.nameSpaces["_default_"] = attributeValue;
+				this.addNameSpace("" , attributeValue);
+				//this.nameSpaces["_default_"] = attributeValue;
 			}
 		}
 		else {
 			this.logInfo("Added attribute to tag '"+this.tagName+"'. "+attributeName+"="+attributeValue,2);
 
 			this["@"+attributeName] = attributeValue;
+		}
+	},
+
+	getNameSpace: function _getNameSpace(aAlias)
+	{
+		// Check if we have this nameSpace alias our selfs.
+		this.logInfo("getNameSpace: aAlias:'"+aAlias+"'.(tagName:"+this.tagName+")", 2);
+		if (aAlias === undefined) {
+			return null;
+		}
+
+		if (aAlias == "") {
+			aAlias = "_default_";
+		}
+
+		if ((this.nameSpaces) && (this.nameSpaces[aAlias])) {
+			this.logInfo("getNameSpace: found namespace '"+this.nameSpaces[aAlias]+"' for aAlias '"+aAlias+"' in tag:"+this.tagName+".", 2);
+			return this.nameSpaces[aAlias];
+		}
+
+		// Request our parent.
+		if (this.parentTag) {
+			return this.parentTag.getNameSpace(aAlias);
+		}
+		else {
+			// We reached the top  and no match.
+			return null;
+		}
+	},
+
+	addNameSpace: function _addNameSpace(aAlias, aValue)
+	{
+		if (!this.nameSpaces) {
+			this.nameSpaces = {};
+		}
+
+		if ((aAlias == "") || (aAlias === undefined)) {
+			this.logInfo("addNameSpace: aAlias:_default_, aValue:"+aValue+" to tag:"+this.tagName, 1);
+			this.nameSpaces["_default_"] = aValue;
+		}
+		else {
+			this.logInfo("addNameSpace: aAlias:"+aAlias+", aValue:"+aValue+" to tag:"+this.tagName, 1);
+			this.nameSpaces[aAlias] = aValue;
+		}
+	},
+
+	deleteNameSpace: function _deleteNameSpace(aAlias)
+	{
+		if ((aAlias == "") || (aAlias === undefined)) {
+			aAlias = "_default_";
+		}
+
+		if (this.nameSpaces[aAlias]) {
+			delete this.nameSpaces[aAlias];
 		}
 	},
 
@@ -269,8 +326,9 @@ mivIxml2jxon.prototype = {
 
 	getAttributeByTag: function _getAttributeByTag(aTagName, aAttribute, aDefaultValue)
 	{
-		if (this[aTagName]) {
-			return this[aTagName].getAttribute(aAttribute, aDefaultValue);
+		var tmpObject = this.getTag(aTagName);
+		if (tmpObject) {
+			return tmpObject.getAttribute(aAttribute, aDefaultValue);
 		}
 		else {
 			return aDefaultValue;
@@ -279,34 +337,84 @@ mivIxml2jxon.prototype = {
 
 	getTag: function _getTag(aTagName)
 	{
-		return this[aTagName];
+		if (this[aTagName]) {
+			return this[aTagName];
+		}
+
+		var realIndex;
+		for (var index in this) {
+			if (index.indexOf(tagSeparator) > -1) {
+				if ((this[index] instanceof Ci.mivIxml2jxon) || (this[index] instanceof mivIxml2jxon)) {
+					// this[index] is an xml2jxon object.
+					realIndex = this[index].realTagName(index);
+					realATagName = this[index].realTagName(aTagName);
+					if (realIndex == realATagName) {
+						return this[index];
+					}
+				}
+				else {
+					if (isArray(this[index])) {
+						// this[index] is an array of xml2jxon objects. We pick the first
+						var arrayIndex = 0;
+						var continueArray = true;
+						while ((arrayIndex < this[index].length) && (continueArray)) {
+							if ((this[index][arrayIndex] instanceof Ci.mivIxml2jxon) || (this[index][arrayIndex] instanceof mivIxml2jxon)) {
+								realIndex = this[index][arrayIndex].realTagName(index);
+								realATagName = this[index][arrayIndex].realTagName(aTagName);
+								if (realIndex == realATagName) {
+									return this[index];
+								}
+							}
+							arrayIndex++;
+						}
+					}
+				}
+			}
+		}
+
+		return null;
 	},
 
 	getTags: function _getTags(aTagName)
 	{
-		if (isArray(this[aTagName])) {
-			return this[aTagName];
+		var tmpObject = this.getTag(aTagName);
+		if (!tmpObject) {
+			return null;
+		}
+
+		if (isArray(tmpObject)) {
+			return tmpObject;
 		}
 
 		var result = new Array;
-		result.push(this[aTagName]);
+		result.push(tmpObject);
 		return result;
 	},
 
 	getTagValue: function _getTagValue(aTagName, aDefaultValue)
 	{
-		if (this[aTagName]) {
-			return this[aTagName].value;
+		var tmpObject = this.getTag(aTagName);
+		if (tmpObject) {
+			return tmpObject.value;
 		}
 		else {
 			return aDefaultValue;
 		}
 	},
 
+	setParentTag: function _setParentTag(aNewParent)
+	{
+		this.parentTag = aNewParent;
+	},
+
 	addChildTagObject: function _addChildTagObject(aObject)
 	{
 		if (!aObject) {
 			return;
+		}
+
+		if (aObject.uuid != this.uuid) {
+			aObject.setParentTag(this);
 		}
 
 		var aNameSpace = aObject.nameSpace;
@@ -356,10 +464,10 @@ mivIxml2jxon.prototype = {
 		}
 
 		if ((aValue) && (aValue != "")) {
-			var result = new mivIxml2jxon("<"+nameSpace+":"+aTagName+">"+aValue+"</"+nameSpace+":"+aTagName+">", 0, this);
+			var result = new mivIxml2jxon("<"+nameSpace+tagSeparator+aTagName+">"+aValue+"</"+nameSpace+tagSeparator+aTagName+">", 0, this);
 		}
 		else {
-			var result = new mivIxml2jxon("<"+nameSpace+":"+aTagName+"/>", 0, this);
+			var result = new mivIxml2jxon("<"+nameSpace+tagSeparator+aTagName+"/>", 0, this);
 		}
 
 //		this.addChildTagObject(result);
@@ -382,7 +490,7 @@ mivIxml2jxon.prototype = {
 			}
 		}
 
-		var result = new mivIxml2jxon("<"+nameSpace+":"+aTagName+"/>", 0, this);
+		var result = new mivIxml2jxon("<"+nameSpace+tagSeparator+aTagName+"/>", 0, this);
 		result.addToContent(aValue);
 		aParent.addToContent(result);
 		return result;
@@ -543,7 +651,7 @@ mivIxml2jxon.prototype = {
 			nameSpace = "";
 		}
 		else {
-			nameSpace += ":";
+			nameSpace += tagSeparator;
 		}
 
 		if (contentCount == 0) {
@@ -791,9 +899,30 @@ mivIxml2jxon.prototype = {
 		return totalResult;
 	},
 
+	realTagName: function _realTagName(aCurrentTagName)
+	{
+		var result = aCurrentTagName;
+		var tmpAlias = "_default_";
+		var tmpTagName = "";
+		var aliasPos = aCurrentTagName.indexOf(tagSeparator);
+		if (aliasPos > -1) {
+			tmpAlias = aCurrentTagName.substr(0,aliasPos);
+			tmpTagName = aCurrentTagName.substr(aliasPos+1);
+		}
+		else {
+			tmpTagName = aCurrentTagName;
+		}
+		var newNameSpace = this.getNameSpace(tmpAlias);
+		if (newNameSpace) {
+			result = newNameSpace + tagSeparator + tmpTagName;
+		}
+
+		return result;
+	},
+
 	XPath: function XPath(aPath)
 	{
-		//this.logInfo("XPath:"+aPath,1);
+		this.logInfo("XPath:"+aPath,1);
 		var tmpPath = aPath;
 		var result = new Array();
 
@@ -811,7 +940,7 @@ mivIxml2jxon.prototype = {
 			this.logInfo(" @@ allTag="+allTag, 2);
 
 			for (var index in this) {
-				if ((index.indexOf(":") > -1) && (this[index].tagName != this.tagName)) {
+				if ((index.indexOf(tagSeparator) > -1) && (this[index].tagName != this.tagName)) {
 					result.push(this[index]);
 				}
 			}
@@ -830,7 +959,7 @@ mivIxml2jxon.prototype = {
 		case "*" : // Wildcard. Will parse all children.
 			tmpPath = tmpPath.substr(1);
 			for (var index in this) {
-				if ((index.indexOf(":") > -1) && (this[index].tagName != this.tagName)) {
+				if ((index.indexOf(tagSeparator) > -1) && (this[index].tagName != this.tagName)) {
 					this.logInfo(" -- tag:"+index, 1);
 					if (Array.isArray(this[index])) {
 						for (var index2 in this[index]) {
@@ -860,7 +989,7 @@ mivIxml2jxon.prototype = {
 			if (index != "") {
 
 				if (this.if(index)) {
-					this.logInfo(" %%%%%%%%%%%%%% -------- MATCHFOUND ---------- %%%%%%%%%%%%%%", 2);
+					this.logInfo(" %%%%%%%%%%%%%% -------- MATCHFOUND ---------- %%%%%%%%%%%%%%", 1);
 					result.push(this);
 				}
 
@@ -887,11 +1016,36 @@ mivIxml2jxon.prototype = {
 
 			if (tmpPath2 != "") {
 
+				tmpPath2 = this.realTagName(tmpPath2);
+
 				this.logInfo("We will check if specified element '"+tmpPath2+"' exists as child in '"+this.tagName+"'", 2);
 				for (var index in this) {
-					if (index.indexOf(":") > -1) {
+					if (index.indexOf(tagSeparator) > -1) {
 						this.logInfo(" %%:"+index, 2);
-						if (index == tmpPath2) {
+
+						var realIndex = index;
+						if (realIndex != tmpPath2) {
+							if ((this[index] instanceof Ci.mivIxml2jxon) || (this[index] instanceof mivIxml2jxon)) {
+								// this[index] is an xml2jxon object.
+								realIndex = this[index].realTagName(index);
+							}
+							else {
+								if (isArray(this[index])) {
+									// this[index] is an array of xml2jxon objects. We pick the first
+									var arrayIndex = 0;
+									var continueArray = true;
+									while ((arrayIndex < this[index].length) && (continueArray)) {
+										if ((this[index][arrayIndex] instanceof Ci.mivIxml2jxon) || (this[index][arrayIndex] instanceof mivIxml2jxon)) {
+											realIndex = this[index][arrayIndex].realTagName(index);
+											continueArray = false;
+										}
+										arrayIndex++;
+									}
+								}
+							}
+						}
+
+						if (realIndex == tmpPath2) {
 							if (Array.isArray(this[index])) {
 								this.logInfo(" ^^ found tag:"+index+" and is an array with "+this[index].length+" elements.", 2);
 								for (var index2 in this[index]) {
@@ -1024,7 +1178,7 @@ mivIxml2jxon.prototype = {
 							// We found a closing character.
 							// Disassemble the tag. And see if it is the same tag as our parent. If so return else Error.
 							var closingTag = aString.substr(tmpStartPos, tmpPos-tmpStartPos);
-							var xmlnsPos = closingTag.indexOf(":");
+							var xmlnsPos = closingTag.indexOf(tagSeparator);
 							if (xmlnsPos > -1) {
 								var nameSpace = closingTag.substr(0, xmlnsPos);
 								closingTag = closingTag.substr(xmlnsPos+1);
@@ -1071,7 +1225,7 @@ mivIxml2jxon.prototype = {
 								tmpStart++;
 							}
 
-							var xmlnsPos = this.tagName.indexOf(":");
+							var xmlnsPos = this.tagName.indexOf(tagSeparator);
 							if (xmlnsPos > -1) {
 								this.nameSpace = this.tagName.substr(0, xmlnsPos);
 								this.tagName = this.tagName.substr(xmlnsPos+1);
@@ -1236,6 +1390,7 @@ mivIxml2jxon.prototype = {
 			this.lastPos = aString.length - 1;
 			return;
 		}
+
 	},
 
 	findCharacter: function _findCharacter(aString, aStartPos, aChar)
