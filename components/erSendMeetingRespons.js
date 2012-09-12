@@ -81,26 +81,20 @@ erSendMeetingResponsRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erSendMeetingResponsRequest.execute\n");
 
-		//var req = <nsMessages:CreateItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
 		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:CreateItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
 		var SendMeetingInvitations = "SendToAllAndSaveCopy";
 
 		if ((cal.isEvent(this.argument.item)) && (!this.messageDisposition)) {
-			//req.@SendMeetingInvitations = SendMeetingInvitations;
 			req.setAttribute('SendMeetingInvitations', SendMeetingInvitations);
 		}	
 
 		if (this.messageDisposition) {
-			//req.@MessageDisposition = this.messageDisposition;
 			req.setAttribute('MessageDisposition', this.messageDisposition);
 		}
 		else {
-			//req.@MessageDisposition="SendAndSaveCopy";
 			req.setAttribute('MessageDisposition', "SendAndSaveCopy");
 		}
-
-	//	req.nsMessages::SavedItemFolderId = makeParentFolderIds("SavedItemFolderId", this.argument);
 
 		const responseMap = {
 			"NEEDS-ACTION"	: exchWebService.commonFunctions.xmlToJxon('<nsTypes:TentativelyAcceptItem xmlns:nsTypes="'+nsTypesStr+'"/>'),
@@ -117,20 +111,15 @@ erSendMeetingResponsRequest.prototype = {
 
 		if (this.bodyText) {
 			r.addChildTag("Body", "nsTypes", this.bodyText).setAttribute("BodyType", "Text");
-			//r.nsTypes::Body.@BodyType = "Text";
-			//r.nsTypes::Body = this.bodyText;
 		}
 
 		if (this.senderMailbox) {
 			r.addChildTag("Sender", "nsTypes", null).addChildTag("Mailbox", "nsTypes", null).addChildTag("EmailAddress", "nsTypes", this.senderMailbox);
-			//r.nsTypes::Sender.nsTypes::Mailbox.nsTypes::EmailAddress = this.senderMailbox;
 		}
 
 		var referenceItemId = r.addChildTag("ReferenceItemId", "nsTypes", null);
 		referenceItemId.setAttribute("Id", this.item.id);
 		referenceItemId.setAttribute("ChangeKey", this.item.getProperty("X-ChangeKey"));
-		//r.nsTypes::ReferenceItemId.@Id = this.item.id;
-		//r.nsTypes::ReferenceItemId.@ChangeKey = this.item.getProperty("X-ChangeKey");
 
 		req.addChildTag("Items", "nsMessages", null).addChildTagObject(r);
 
