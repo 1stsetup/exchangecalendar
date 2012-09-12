@@ -77,9 +77,11 @@ erGetUserOofSettingsRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erGetUserOofSettingsRequest.execute\n");
 
-		var req = <nsMessages:GetUserOofSettingsRequest xmlns:nsMessages={nsMessages}/>;
+		//var req = <nsMessages:GetUserOofSettingsRequest xmlns:nsMessages={nsMessages}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetUserOofSettingsRequest xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		req.nsTypes::Mailbox.nsTypes::Address = this.mailbox;
+		//req.nsTypes::Mailbox.nsTypes::Address = this.mailbox;
+		req.addChildTag("Mailbox", "nsTypes", null).addChildTag("Address", "nsTypes", this.mailbox);
 
 		exchWebService.commonFunctions.LOG("erGetUserOofSettingsRequest.execute: "+String(this.parent.makeSoapMessage(req))+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
@@ -89,20 +91,14 @@ erGetUserOofSettingsRequest.prototype = {
 	{
 		exchWebService.commonFunctions.LOG("erGetUserOofSettingsRequest.onSendOk: "+String(aResp)+"\n");
 
-		try {
-			var responseCode = aResp.nsSoap::Body..nsMessages::ResponseCode.toString();
-		}
-		catch(err) {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
-			return;
-		}
-
-		if (responseCode != "NoError") {
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetUserOofSettingsResponse/m:ResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
+		if (rm.length == 0) {
+			var responseCode = rm[0].getTagValue("m:ResponseCode");
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getting user Oof Settings:"+responseCode);
 			return;
 		}
-		
-		var oofSettingsResponse = aResp.nsSoap::Body.nsMessages::GetUserOofSettingsResponse;
+
+		var oofSettingsXML = aResp.XPath("/s:Envelope/s:Body/m:GetUserOofSettingsResponse/t:OofSettings");
 
 		var oofSettings = { oofState: "Disabled",
 				    startTime: null,
@@ -112,22 +108,25 @@ erGetUserOofSettingsRequest.prototype = {
 				    externalReply: "",
 				    allowExternalOof: "All"};
 
-		if (oofSettingsResponse.nsTypes::OofSettings) {
-			if (oofSettingsResponse.nsTypes::OofSettings.nsTypes::OofState) {
-				oofSettings.oofState = oofSettingsResponse.nsTypes::OofSettings.nsTypes::OofState.toString();
+		if (oofSettingsXML.length == 0) {
+
+			oofSettingsXML = oofSettingsXML[0];
+
+			if (oofSettingsXML.nsTypes::OofState) {
+				oofSettings.oofState = oofSettingsXML.nsTypes::OofState.toString();
 			}
-			if (oofSettingsResponse.nsTypes::OofSettings.nsTypes::ExternalAudience) {
-				oofSettings.externalAudience = oofSettingsResponse.nsTypes::OofSettings.nsTypes::ExternalAudience.toString();
+			if (oofSettingsXML.nsTypes::ExternalAudience) {
+				oofSettings.externalAudience = oofSettingsXML.nsTypes::ExternalAudience.toString();
 			}
-			if (oofSettingsResponse.nsTypes::OofSettings.nsTypes::Duration) {
-				oofSettings.startTime = cal.fromRFC3339(oofSettingsResponse.nsTypes::OofSettings.nsTypes::Duration.nsTypes::StartTime.toString(), exchWebService.commonFunctions.ecTZService().UTC).getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
-				oofSettings.endTime = cal.fromRFC3339(oofSettingsResponse.nsTypes::OofSettings.nsTypes::Duration.nsTypes::EndTime.toString(), exchWebService.commonFunctions.ecTZService().UTC).getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
+			if (oofSettingsXML.nsTypes::Duration) {
+				oofSettings.startTime = cal.fromRFC3339(oofSettingsXML.nsTypes::Duration.nsTypes::StartTime.toString(), exchWebService.commonFunctions.ecTZService().UTC).getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
+				oofSettings.endTime = cal.fromRFC3339(oofSettingsXML.nsTypes::Duration.nsTypes::EndTime.toString(), exchWebService.commonFunctions.ecTZService().UTC).getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
 			}
-			if (oofSettingsResponse.nsTypes::OofSettings.nsTypes::InternalReply) {
-				oofSettings.internalReply = oofSettingsResponse.nsTypes::OofSettings.nsTypes::InternalReply.nsTypes::Message.toString();
+			if (oofSettingsXML.nsTypes::InternalReply) {
+				oofSettings.internalReply = oofSettingsXML.nsTypes::InternalReply.nsTypes::Message.toString();
 			}
-			if (oofSettingsResponse.nsTypes::OofSettings.nsTypes::ExternalReply) {
-				oofSettings.externalReply = oofSettingsResponse.nsTypes::OofSettings.nsTypes::ExternalReply.nsTypes::Message.toString();
+			if (oofSettingsXML.nsTypes::ExternalReply) {
+				oofSettings.externalReply = oofSettingsXML.nsTypes::ExternalReply.nsTypes::Message.toString();
 			}
 		}
 		if (oofSettingsResponse.nsTypes::AllowExternalOof) {
