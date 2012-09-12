@@ -84,28 +84,22 @@ erSetUserOofSettingsRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erSetUserOofSettingsRequest.execute\n");
 
-		//var req = <nsMessages:SetUserOofSettingsRequest xmlns:nsMessages={nsMessages}/>;
 		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:SetUserOofSettingsRequest xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		//req.nsTypes::Mailbox.nsTypes::Address = this.mailbox;
 		req.addChildTag("Mailbox", "nsTypes", null).addChildTag("Address", "nsTypes", this.mailbox)
 
 		var userOofSettings = req.addChildTag("UserOofSettings", "nsTypes", null);
 		userOofSettings.addChildTag("OofState", "nsTypes", this.oofState);
 		userOofSettings.addChildTag("ExternalAudience", "nsTypes", this.externalAudience);
-		//req.nsTypes::UserOofSettings.nsTypes::OofState = this.oofState;
-		//req.nsTypes::UserOofSettings.nsTypes::ExternalAudience = this.externalAudience;
 
 		var duration = userOofSettings.addChildTag("Duration", "nsTypes", null);
 		duration.addChildTag("StartTime", "nsTypes", cal.toRFC3339(this.startTime));
 		duration.addChildTag("EndTime", "nsTypes", cal.toRFC3339(this.endTime));
-		//req.nsTypes::UserOofSettings.nsTypes::Duration.nsTypes::StartTime = cal.toRFC3339(this.startTime);
-		//req.nsTypes::UserOofSettings.nsTypes::Duration.nsTypes::EndTime = cal.toRFC3339(this.endTime);
 
 		userOofSettings.addChildTag("InternalReply", "nsTypes", null).addChildTag("Message", "nsTypes", this.internalReply);
 		userOofSettings.addChildTag("ExternalReply", "nsTypes", null).addChildTag("Message", "nsTypes", this.externalReply);
-		//req.nsTypes::UserOofSettings.nsTypes::InternalReply.nsTypes::Message = this.internalReply;
-		//req.nsTypes::UserOofSettings.nsTypes::ExternalReply.nsTypes::Message = this.externalReply;
+
+		this.parent.xml2jxon = true;
 
 		exchWebService.commonFunctions.LOG("erSetUserOofSettingsRequest.execute: "+String(this.parent.makeSoapMessage(req))+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
@@ -114,19 +108,19 @@ erSetUserOofSettingsRequest.prototype = {
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
 		exchWebService.commonFunctions.LOG("erSetUserOofSettingsRequest.onSendOk: "+String(aResp)+"\n");
-		try {
-			var responseCode = aResp.nsSoap::Body..nsMessages::ResponseCode.toString();
-		}
-		catch(err) {
-			onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
+
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:SetUserOofSettingsResponse/m:ResponseMessage[@ResponseClass='Success']");
+		if (rm.length == 0) {
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on sending user Oof Settings.");
 			return;
 		}
 
+		var responseCode = rm[0].getTagValue("m:ResponseCode");
 		if (responseCode != "NoError") {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on setting user Oof Settings:"+responseCode);
 			return;
 		}
-		
+
 		if (this.mCbOk) {
 			this.mCbOk(this);
 		}
