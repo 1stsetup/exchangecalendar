@@ -81,28 +81,32 @@ erSendMeetingResponsRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erSendMeetingResponsRequest.execute\n");
 
-		var req = <nsMessages:CreateItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+		//var req = <nsMessages:CreateItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:CreateItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
 		var SendMeetingInvitations = "SendToAllAndSaveCopy";
 
 		if ((cal.isEvent(this.argument.item)) && (!this.messageDisposition)) {
-			req.@SendMeetingInvitations = SendMeetingInvitations;
+			//req.@SendMeetingInvitations = SendMeetingInvitations;
+			req.setAttribute('SendMeetingInvitations', SendMeetingInvitations);
 		}	
 
 		if (this.messageDisposition) {
-			req.@MessageDisposition = this.messageDisposition;
+			//req.@MessageDisposition = this.messageDisposition;
+			req.setAttribute('MessageDisposition', this.messageDisposition);
 		}
 		else {
-			req.@MessageDisposition="SendAndSaveCopy";
+			//req.@MessageDisposition="SendAndSaveCopy";
+			req.setAttribute('MessageDisposition', "SendAndSaveCopy");
 		}
 
 	//	req.nsMessages::SavedItemFolderId = makeParentFolderIds("SavedItemFolderId", this.argument);
 
 		const responseMap = {
-			"NEEDS-ACTION"	: <nsTypes:TentativelyAcceptItem xmlns:nsTypes={nsTypes}/>,
-			"TENTATIVE"	: <nsTypes:TentativelyAcceptItem xmlns:nsTypes={nsTypes}/>,
-			"ACCEPTED"	: <nsTypes:AcceptItem xmlns:nsTypes={nsTypes}/>,
-			"DECLINED"	: <nsTypes:DeclineItem xmlns:nsTypes={nsTypes}/>
+			"NEEDS-ACTION"	: exchWebService.commonFunctions.xmlToJxon('<nsTypes:TentativelyAcceptItem xmlns:nsTypes="'+nsTypesStr+'"/>'),
+			"TENTATIVE"	: exchWebService.commonFunctions.xmlToJxon('<nsTypes:TentativelyAcceptItem xmlns:nsTypes="'+nsTypesStr+'"/>'),
+			"ACCEPTED"	: exchWebService.commonFunctions.xmlToJxon('<nsTypes:AcceptItem xmlns:nsTypes="'+nsTypesStr+'"/>'),
+			"DECLINED"	: exchWebService.commonFunctions.xmlToJxon('<nsTypes:DeclineItem xmlns:nsTypes="'+nsTypesStr+'"/>')
 		}; 
 
 		var r = responseMap[this.response];
@@ -112,34 +116,41 @@ erSendMeetingResponsRequest.prototype = {
 		}
 
 		if (this.bodyText) {
-			r.nsTypes::Body.@BodyType = "Text";
-			r.nsTypes::Body = this.bodyText;
+			r.addChildTag("Body", "nsTypes", this.bodyText).setAttribute("BodyType", "Text");
+			//r.nsTypes::Body.@BodyType = "Text";
+			//r.nsTypes::Body = this.bodyText;
 		}
 
 		if (this.senderMailbox) {
-			r.nsTypes::Sender.nsTypes::Mailbox.nsTypes::EmailAddress = this.senderMailbox;
+			r.addChildTag("Sender", "nsTypes", null).addChildTag("Mailbox", "nsTypes", null).addChildTag("EmailAddress", "nsTypes", this.senderMailbox);
+			//r.nsTypes::Sender.nsTypes::Mailbox.nsTypes::EmailAddress = this.senderMailbox;
 		}
 
-		r.nsTypes::ReferenceItemId.@Id = this.item.id;
-		r.nsTypes::ReferenceItemId.@ChangeKey = this.item.getProperty("X-ChangeKey");
+		var referenceItemId = r.addChildTag("ReferenceItemId", "nsTypes", null);
+		referenceItemId.setAttribute("Id", this.item.id);
+		referenceItemId.setAttribute("ChangeKey", this.item.getProperty("X-ChangeKey"));
+		//r.nsTypes::ReferenceItemId.@Id = this.item.id;
+		//r.nsTypes::ReferenceItemId.@ChangeKey = this.item.getProperty("X-ChangeKey");
 
-		req.nsMessages::Items.content = r;
+		req.addChildTag("Items", "nsMessages", null).addChildTagObject(r);
 
-		exchWebService.commonFunctions.LOG("erSendMeetingResponsRequest.execute>"+String(this.parent.makeSoapMessage(req)));
+		this.parent.xml2jxon = true;
+
+		//exchWebService.commonFunctions.LOG("erSendMeetingResponsRequest.execute>"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erSendMeetingResponsRequest.onSendOk: "+String(aResp)+"\n");
-		try {
-			var responseCode = aResp..nsMessages::ResponseCode.toString();
-		}
-		catch(err) {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
+		//exchWebService.commonFunctions.LOG("erSendMeetingResponsRequest.onSendOk: "+String(aResp)+"\n");
+
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:CreateItemResponse/m:ResponseMessages/m:CreateItemResponseMessage[@ResponseClass='Success']");
+		if (rm.length == 0) {
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on sending meeting respons.");
 			return;
 		}
 
+		var responseCode = rm[0].getTagValue("m:ResponseCode");
 		if (responseCode != "NoError") {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on sending meeting respons:"+responseCode);
 			return;
@@ -153,7 +164,7 @@ erSendMeetingResponsRequest.prototype = {
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)
 	{
-		exchWebService.commonFunctions.LOG("erSendMeetingResponsRequest.onSendError: "+aMsg+"\n");
+		//exchWebService.commonFunctions.LOG("erSendMeetingResponsRequest.onSendError: "+aMsg+"\n");
 		this.isRunning = false;
 		if (this.mCbError) {
 			this.mCbError(this, aCode, aMsg);
