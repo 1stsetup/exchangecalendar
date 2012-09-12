@@ -83,22 +83,25 @@ erGetUserOofSettingsRequest.prototype = {
 		//req.nsTypes::Mailbox.nsTypes::Address = this.mailbox;
 		req.addChildTag("Mailbox", "nsTypes", null).addChildTag("Address", "nsTypes", this.mailbox);
 
-		exchWebService.commonFunctions.LOG("erGetUserOofSettingsRequest.execute: "+String(this.parent.makeSoapMessage(req))+"\n");
+		this.parent.xml2jxon = true;
+
+		//exchWebService.commonFunctions.LOG("erGetUserOofSettingsRequest.execute: "+String(this.parent.makeSoapMessage(req))+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erGetUserOofSettingsRequest.onSendOk: "+String(aResp)+"\n");
+		//exchWebService.commonFunctions.LOG("erGetUserOofSettingsRequest.onSendOk: "+String(aResp)+"\n");
 
-		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetUserOofSettingsResponse/m:ResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
+		var oofSettingsResponse = aResp.XPath("/s:Envelope/s:Body/m:GetUserOofSettingsResponse");
+		var rm = oofSettingsResponse[0].XPath("/m:ResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 		if (rm.length == 0) {
 			var responseCode = rm[0].getTagValue("m:ResponseCode");
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getting user Oof Settings:"+responseCode);
 			return;
 		}
 
-		var oofSettingsXML = aResp.XPath("/s:Envelope/s:Body/m:GetUserOofSettingsResponse/t:OofSettings");
+		var oofSettingsXML = oofSettingsResponse[0].getTag("t:OofSettings");
 
 		var oofSettings = { oofState: "Disabled",
 				    startTime: null,
@@ -108,30 +111,22 @@ erGetUserOofSettingsRequest.prototype = {
 				    externalReply: "",
 				    allowExternalOof: "All"};
 
-		if (oofSettingsXML.length == 0) {
 
-			oofSettingsXML = oofSettingsXML[0];
+		oofSettings.oofState = oofSettingsXML.getTagValue("t:OofState", "Disabled");
+		oofSettings.externalAudience = oofSettingsXML.getTagValue("t:ExternalAudience", "All");
 
-			if (oofSettingsXML.nsTypes::OofState) {
-				oofSettings.oofState = oofSettingsXML.nsTypes::OofState.toString();
-			}
-			if (oofSettingsXML.nsTypes::ExternalAudience) {
-				oofSettings.externalAudience = oofSettingsXML.nsTypes::ExternalAudience.toString();
-			}
-			if (oofSettingsXML.nsTypes::Duration) {
-				oofSettings.startTime = cal.fromRFC3339(oofSettingsXML.nsTypes::Duration.nsTypes::StartTime.toString(), exchWebService.commonFunctions.ecTZService().UTC).getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
-				oofSettings.endTime = cal.fromRFC3339(oofSettingsXML.nsTypes::Duration.nsTypes::EndTime.toString(), exchWebService.commonFunctions.ecTZService().UTC).getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
-			}
-			if (oofSettingsXML.nsTypes::InternalReply) {
-				oofSettings.internalReply = oofSettingsXML.nsTypes::InternalReply.nsTypes::Message.toString();
-			}
-			if (oofSettingsXML.nsTypes::ExternalReply) {
-				oofSettings.externalReply = oofSettingsXML.nsTypes::ExternalReply.nsTypes::Message.toString();
-			}
+		var duration = oofSettingsXML.getTag("t:Duration");
+
+		if (duration) {
+			oofSettings.startTime = cal.fromRFC3339(duration.getTagValue("t:StartTime"), exchWebService.commonFunctions.ecTZService().UTC).getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
+			oofSettings.endTime = cal.fromRFC3339(duration.getTagValue("t:EndTime"), exchWebService.commonFunctions.ecTZService().UTC).getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
 		}
-		if (oofSettingsResponse.nsTypes::AllowExternalOof) {
-			oofSettings.allowExternalOof = oofSettingsResponse.nsTypes::AllowExternalOof.toString();
-		}
+
+		oofSettings.internalReply = oofSettingsXML.getTag("t:InternalReply").getTagValue("t:Message", null);
+
+		oofSettings.externalReply = oofSettingsXML.getTag("t:ExternalReply").getTagValue("t:Message", null);
+
+		oofSettings.allowExternalOof = oofSettingsResponse[0].getTagValue("t:AllowExternalOof", "All");
 
 		if (this.mCbOk) {
 			this.mCbOk(this, oofSettings);
