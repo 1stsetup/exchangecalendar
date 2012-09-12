@@ -92,7 +92,7 @@ erGetMasterOccurrenceIdRequest.prototype = {
 		var itemShape = req.addChildTag("ItemShape", "nsMessages", null); 
 		itemShape.addChildTag("BaseShape", "nsTypes", "IdOnly");
 
-		var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ItemIds xmlns:nsMessages="'+nsMessagesStr+'"/>');
+		var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ItemIds xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 		var recurringMasterItemId = itemids.addChildTag("RecurringMasterItemId", "nsTypes", null);
 		recurringMasterItemId.setAttribute("OccurrenceId", this.id);
 		recurringMasterItemId.setAttribute("ChangeKey", this.changeKey);

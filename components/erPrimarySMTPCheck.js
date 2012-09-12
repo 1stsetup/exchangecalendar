@@ -77,7 +77,7 @@ erPrimarySMTPCheckRequest.prototype = {
 
 		req.addChildTag("ItemShape", "nsMessages", null).addChildTag("BaseShape", "nsTypes", "IdOnly");
 
-		var view = exchWebService.commonFunctions.xmlToJxon('<nsMessages:CalendarView xmlns:nsMessages="'+nsMessagesStr+'"/>');
+		var view = exchWebService.commonFunctions.xmlToJxon('<nsMessages:CalendarView xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 		// Dummy date range to limit result
 		view.setAttribute("StartDate", "2011-01-30T11:34:00Z");
 		view.setAttribute("EndDate", "2011-01-30T11:35:00Z");

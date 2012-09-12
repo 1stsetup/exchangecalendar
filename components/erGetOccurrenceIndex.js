@@ -105,7 +105,7 @@ erGetOccurrenceIndexRequest.prototype = {
 
 		itemShape.addChildTag("AdditionalProperties", "nsTypes", null).addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI","calendar:Start");		
 
-		var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ItemIds xmlns:nsMessages="'+nsMessagesStr+'"/>');
+		var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ItemIds xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 		for (var x = 0; x < this.idGroupSize; x++) {
 			var occurrenceItemId = itemids.addChildTag("OccurrenceItemId", "nsTypes", null);
 			occurrenceItemId.setAttribute("RecurringMasterId", this.masterID);

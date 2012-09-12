@@ -71,7 +71,7 @@ erGetAttachmentsRequest.prototype = {
 
 		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetAttachment xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:AttachmentIds xmlns:nsMessages="'+nsMessagesStr+'"/>');
+		var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:AttachmentIds xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 		for (var index in this.attachmentIds) {
 			itemids.addChildTag("AttachmentId", "nsTypes", null).setAttribute("Id", this.attachmentIds[index]);
 		}

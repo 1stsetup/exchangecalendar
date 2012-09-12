@@ -118,7 +118,7 @@ erFindOccurrencesRequest.prototype = {
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:End");
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemClass");
 
-		var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ItemIds xmlns:nsMessages="'+nsMessagesStr+'"/>');
+		var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ItemIds xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 		for (var x = 0; x < this.idGroupSize; x++) {
 			var occurrenceItemID = itemids.addChildTag("OccurrenceItemId", "nsTypes", null);
 			occurrenceItemID.setAttribute("RecurringMasterId", this.masterID);
