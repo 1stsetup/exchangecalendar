@@ -84,18 +84,28 @@ erSetUserOofSettingsRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erSetUserOofSettingsRequest.execute\n");
 
-		var req = <nsMessages:SetUserOofSettingsRequest xmlns:nsMessages={nsMessages}/>;
+		//var req = <nsMessages:SetUserOofSettingsRequest xmlns:nsMessages={nsMessages}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:SetUserOofSettingsRequest xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		req.nsTypes::Mailbox.nsTypes::Address = this.mailbox;
+		//req.nsTypes::Mailbox.nsTypes::Address = this.mailbox;
+		req.addChildTag("Mailbox", "nsTypes", null).addChildTag("Address", "nsTypes", this.mailbox)
 
-		req.nsTypes::UserOofSettings.nsTypes::OofState = this.oofState;
-		req.nsTypes::UserOofSettings.nsTypes::ExternalAudience = this.externalAudience;
+		var userOofSettings = req.addChildTag("UserOofSettings", "nsTypes", null);
+		userOofSettings.addChildTag("OofState", "nsTypes", this.oofState);
+		userOofSettings.addChildTag("ExternalAudience", "nsTypes", this.externalAudience);
+		//req.nsTypes::UserOofSettings.nsTypes::OofState = this.oofState;
+		//req.nsTypes::UserOofSettings.nsTypes::ExternalAudience = this.externalAudience;
 
-		req.nsTypes::UserOofSettings.nsTypes::Duration.nsTypes::StartTime = cal.toRFC3339(this.startTime);
-		req.nsTypes::UserOofSettings.nsTypes::Duration.nsTypes::EndTime = cal.toRFC3339(this.endTime);
+		var duration = userOofSettings.addChildTag("Duration", "nsTypes", null);
+		duration.addChildTag("StartTime", "nsTypes", cal.toRFC3339(this.startTime));
+		duration.addChildTag("EndTime", "nsTypes", cal.toRFC3339(this.endTime));
+		//req.nsTypes::UserOofSettings.nsTypes::Duration.nsTypes::StartTime = cal.toRFC3339(this.startTime);
+		//req.nsTypes::UserOofSettings.nsTypes::Duration.nsTypes::EndTime = cal.toRFC3339(this.endTime);
 
-		req.nsTypes::UserOofSettings.nsTypes::InternalReply.nsTypes::Message = this.internalReply;
-		req.nsTypes::UserOofSettings.nsTypes::ExternalReply.nsTypes::Message = this.externalReply;
+		userOofSettings.addChildTag("InternalReply", "nsTypes", null).addChildTag("Message", "nsTypes", this.internalReply);
+		userOofSettings.addChildTag("ExternalReply", "nsTypes", null).addChildTag("Message", "nsTypes", this.externalReply);
+		//req.nsTypes::UserOofSettings.nsTypes::InternalReply.nsTypes::Message = this.internalReply;
+		//req.nsTypes::UserOofSettings.nsTypes::ExternalReply.nsTypes::Message = this.externalReply;
 
 		exchWebService.commonFunctions.LOG("erSetUserOofSettingsRequest.execute: "+String(this.parent.makeSoapMessage(req))+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
