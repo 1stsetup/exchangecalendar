@@ -151,32 +151,32 @@ mivIxml2jxon.prototype = {
 	{
 		switch (aErrorID) {
 			case Ci.mivIxml2jxon.ERR_MISSING_SPECIAL_TAG: 
-				this.logInfo(this.tagName+":Error:ERR_MISSING_SPECIAL_TAG. ("+exchWebService.commonFunctions.STACKshort()+")",-1);
+				this.logInfo(this.tagName+":Error:ERR_MISSING_SPECIAL_TAG. ("+exchWebService.commonFunctions.STACKshort()+")");
 				return { name: "ERR_MISSING_SPECIAL_TAG",
 					 message: "A special tag like '?' is missing",
 				         code: aErrorID};
 			case Ci.mivIxml2jxon.ERR_INVALID_TAG: 
-				this.logInfo(this.tagName+":Error:ERR_INVALID_SPECIAL_TAG. ("+exchWebService.commonFunctions.STACKshort()+")",-1);
+				this.logInfo(this.tagName+":Error:ERR_INVALID_SPECIAL_TAG. ("+exchWebService.commonFunctions.STACKshort()+")");
 				return { name: "ERR_INVALID_SPECIAL_TAG",
 					 message: "Tag is invalid",
 				         code: aErrorID};
 			case Ci.mivIxml2jxon.ERR_INVALID_SPECIAL_TAG: 
-				this.logInfo(this.tagName+":Error:ERR_INVALID_SPECIAL_TAG. ("+exchWebService.commonFunctions.STACKshort()+")",-1);
+				this.logInfo(this.tagName+":Error:ERR_INVALID_SPECIAL_TAG. ("+exchWebService.commonFunctions.STACKshort()+")");
 				return { name: "ERR_INVALID_SPECIAL_TAG",
 					 message: "Special Tag is invalid",
 				         code: aErrorID};
 			case Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG: 
-				this.logInfo(this.tagName+":Error:ERR_WRONG_CLOSING_TAG. ("+exchWebService.commonFunctions.STACKshort()+")",-1);
+				this.logInfo(this.tagName+":Error:ERR_WRONG_CLOSING_TAG. ("+exchWebService.commonFunctions.STACKshort()+")");
 				return { name: "ERR_WRONG_CLOSING_TAG",
 					 message: "Found wrong closing tag. Expected another.",
 				         code: aErrorID};
 			case Ci.mivIxml2jxon.ERR_WRONG_ATTRIBUTE_SEPARATOR: 
-				this.logInfo(this.tagName+":Error:ERR_WRONG_ATTRIBUTE_SEPARATOR. ("+exchWebService.commonFunctions.STACKshort()+")",-1);
+				this.logInfo(this.tagName+":Error:ERR_WRONG_ATTRIBUTE_SEPARATOR. ("+exchWebService.commonFunctions.STACKshort()+")");
 				return { name: "ERR_WRONG_ATTRIBUTE_SEPARATOR",
 					 message: "Found wrong attribute separator. Expected '=' character.",
 				         code: aErrorID};
 			case Ci.mivIxml2jxon.ERR_ATTRIBUTE_VALUE_QUOTES: 
-				this.logInfo(this.tagName+":Error:ERR_ATTRIBUTE_VALUE_QUOTES. ("+exchWebService.commonFunctions.STACKshort()+")",-1);
+				this.logInfo(this.tagName+":Error:ERR_ATTRIBUTE_VALUE_QUOTES. ("+exchWebService.commonFunctions.STACKshort()+")");
 				return { name: "ERR_ATTRIBUTE_VALUE_QUOTES",
 					 message: "Found error in attribute value quotes.",
 				         code: aErrorID};
@@ -580,7 +580,7 @@ mivIxml2jxon.prototype = {
 		var result = aString.toString();
 		// Convert special characters
 		result = result.replace(/(&|\x22|\x27|<|>)/g, this.replaceToXML);  
-		this.logInfo(aString+" > "+result,-1);
+		this.logInfo(aString+" > "+result);
 
 		return result;
 	},
