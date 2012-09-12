@@ -65,12 +65,12 @@ exchWebService.oofSettings = {
 			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+calId+".");
 
 		document.getElementById("exchWebService-oofSettings-title").value = exchWebService.commonFunctions.safeGetCharPref(this.calPrefs, "ecMailbox", "null");
-		this.getOofSettings();
+		exchWebService.oofSettings.getOofSettings();
 	},
 
 	onSave: function _onSave()
 	{
-		this.setOofSettings();
+		exchWebService.oofSettings.setOofSettings();
 
 		Cc["@mozilla.org/preferences-service;1"]
 		                    .getService(Ci.nsIPrefService).savePrefFile(null);
@@ -207,7 +207,7 @@ exchWebService.oofSettings = {
 		document.getElementById("exchWebService-load-error-message").value = exchWebService.commonFunctions.getString("calExchangeCalendar", "ecSavedOofSettings", [], "exchangecalendar");
 		alert("Settings saved.");
 
-		this.getOofSettings();
+		exchWebService.oofSettings.getOofSettings();
 
 	},
 
@@ -216,7 +216,7 @@ exchWebService.oofSettings = {
 		document.getElementById("exchWebService-load-error-message").value = exchWebService.commonFunctions.getString("calExchangeCalendar", "ecErrorSavingOofSettings", [aMsg, aCode], "exchangecalendar");
 		alert("Error saving settings. Msg:"+aMsg+", Code:"+aCode);
 
-		this.getOofSettings();
+		exchWebService.oofSettings.getOofSettings();
 
 	},
 
