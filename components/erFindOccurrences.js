@@ -167,10 +167,10 @@ erFindOccurrencesRequest.prototype = {
 						}
 
 						// When we see occurrences past our endDate range stop.
-/*						if (startDate.compare(this.endDate) == 1) {	
+						if (startDate.compare(this.endDate) == 1) {	
 							finished = true;
 							break;
-						}*/
+						}
 					}
 					break;
 				case "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange" :
