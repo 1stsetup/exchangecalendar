@@ -82,9 +82,10 @@ erUpdateItemRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erUpdateItemRequest.execute\n");
 
-		var req = <nsMessages:UpdateItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
-		req.@MessageDisposition = "SaveOnly";
-		req.@ConflictResolution = aConflictResolution;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:UpdateItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+
+		req.setAttribute("MessageDisposition", "SaveOnly");
+		req.setAttribute("ConflictResolution", aConflictResolution);
 
 		var weHaveAttachmentUpdates = false;
 		if (this.argument.attachmentsUpdates) {
@@ -100,28 +101,31 @@ erUpdateItemRequest.prototype = {
 		else {
 			switch (this.sendto) {
 				case "sendtonone":
-					req.@MessageDisposition = "SendAndSaveCopy";
+					req.setAttribute("MessageDisposition", "SendAndSaveCopy");
 					var sendMeetingCancellations = "SendToNone";//"SendToChangedAndSaveCopy";
 					break;
 				case "sendtoall":
-					req.@MessageDisposition = "SendAndSaveCopy";
+					req.setAttribute("MessageDisposition", "SendAndSaveCopy");
 					var sendMeetingCancellations = "SendToAllAndSaveCopy";//"SendToChangedAndSaveCopy";
 					break;
 				case "sendtochanged":
-					req.@MessageDisposition = "SendAndSaveCopy";
+					req.setAttribute("MessageDisposition", "SendAndSaveCopy");
 					var sendMeetingCancellations = "SendToChangedAndSaveCopy";//"SendToChangedAndSaveCopy";
 					break;
 			}
 		}
 
 		if (cal.isEvent(this.argument.item)) {
-			req.@SendMeetingInvitationsOrCancellations = sendMeetingCancellations;
+			req.setAttribute("SendMeetingInvitationsOrCancellations", sendMeetingCancellations);
 		}
 		else {
-			req.@MessageDisposition = "SaveOnly";
+			req.setAttribute("MessageDisposition", "SaveOnly");
 		}	
 
-		req.nsMessages::ItemChanges.content = this.updateReq;
+		var itemChanges = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ItemChanges xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'">'+String(this.updateReq)+'</nsMessages:ItemChanges>');
+		req.addChildTagObject(itemChanges);
+
+		this.parent.xml2jxon = true;
 
 		//exchWebService.commonFunctions.LOG("erUpdateItemRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
@@ -130,32 +134,27 @@ erUpdateItemRequest.prototype = {
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
 		//exchWebService.commonFunctions.LOG("erUpdateItemRequest.onSendOk: "+String(aResp)+"\n");
-		try {
-			var responseCode = aResp..nsMessages::ResponseCode.toString();
-		}
-		catch(err) {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
+
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:UpdateItemResponse/m:ResponseMessages/m:UpdateItemResponseMessage[@ResponseClass='Success']");
+		if (rm.length == 0) {
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on sending update respons.");
 			return;
 		}
 
+		var responseCode = rm[0].getTagValue("m:ResponseCode");
 		if (responseCode != "NoError") {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on updating item:"+responseCode);
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on sending update respons:"+responseCode);
 			return;
+		}
+
+		var aItem = rm[0].XPath("/m:Items/*");
+		if (aItem.length > 0) {
+			var itemId = aItem[0].getAttributeByTag("t:ItemId","Id");
+			var changeKey = aItem[0].getAttributeByTag("t:ItemId","ChangeKey");
 		}
 		else {
-			var aItem = aResp..nsTypes::CalendarItem;
-			if (!aItem[0]) {
-				var aItem = aResp..nsTypes::Task;
-			}
-
-			if (aItem[0]) {
-				var itemId = aItem[0].nsTypes::ItemId.@Id.toString();
-				var changeKey = aItem[0].nsTypes::ItemId.@ChangeKey.toString();
-			}
-			else {
-				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_ITEM_UPDATE_UNKNOWN, "Error. Unknown item update:"+String(aResp));
-				return;
-			}
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_ITEM_UPDATE_UNKNOWN, "Update request was ok but we did not receive any updated item details:"+String(aResp));
+			return;
 		}
 
 		if (this.mCbOk) {

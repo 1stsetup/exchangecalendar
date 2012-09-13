@@ -5436,7 +5436,7 @@ this.logInfo("!!CHANGED:"+String(e));
 
 	updateItemOk: function _updateItemOk(erUpdateItemRequest, aId, aChangeKey)
 	{
-		this.logInfo("updateItemOk");
+		this.logInfo("updateItemOk: aId"+aId);
 
 		this.saveCredentials(erUpdateItemRequest.argument);
 		this.notConnected = false;
