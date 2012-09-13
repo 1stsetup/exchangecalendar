@@ -77,7 +77,7 @@ erCreateItemRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erCreateItemRequest.execute\n");
 
-		var req = <nsMessages:CreateItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:CreateItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
 		if (publicFoldersMap[this.argument.folderBase]) {
 			var SendMeetingInvitations = "SendToNone";
@@ -87,50 +87,42 @@ erCreateItemRequest.prototype = {
 		}
 
 		if (cal.isEvent(this.argument.item)) {
-			req.@SendMeetingInvitations = SendMeetingInvitations;
+			req.setAttribute("SendMeetingInvitations", SendMeetingInvitations);
 		}	
 
-//		req.@MessageDisposition="SendAndSaveCopy";
-		req.@MessageDisposition="SaveOnly";
+		req.setAttribute("MessageDisposition", "SaveOnly");
 
-		req.nsMessages::SavedItemFolderId = makeParentFolderIds("SavedItemFolderId", this.argument);
+		var savedItemFolderId = makeParentFolderIds2("SavedItemFolderId", this.argument);
+		req.addChildTagObject(savedItemFolderId);
 
-		req.nsMessages::Items.content = this.createReq;
+		var Items = exchWebService.commonFunctions.xmlToJxon('<nsMessages:Items xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'">'+String(this.createReq)+'</nsMessages:Items>');
+		req.addChildTagObject(Items);
 
+		this.parent.xml2jxon = true;
 
-		exchWebService.commonFunctions.LOG("erCreateItemRequest.execute>"+String(this.parent.makeSoapMessage(req)));
+		//exchWebService.commonFunctions.LOG("erCreateItemRequest.execute>"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-//		exchWebService.commonFunctions.LOG("erCreateItemRequest.onSendOk: "+String(aResp)+"\n");
-		try {
-			var responseCode = aResp..nsMessages::ResponseCode.toString();
-		}
-		catch(err) {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
+		//exchWebService.commonFunctions.LOG("erCreateItemRequest.onSendOk: "+String(aResp)+"\n");
+
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:CreateItemResponse/m:ResponseMessages/m:CreateItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
+		if (rm.length == 0) {
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Respons does not contain expected field.");
 			return;
 		}
 
-		if (responseCode != "NoError") {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on creating item:("+responseCode+") "+String(aResp));
-			return;
+		var aItem = aResp.XPath("/s:Envelope/s:Body/m:CreateItemResponse/m:ResponseMessages/m:CreateItemResponseMessage/m:Items/*");
+
+		if (aItem.length > 0) {
+			var itemId = aItem[0].getAttributeByTag("t:ItemId","Id");
+			var changeKey = aItem[0].getAttributeByTag("t:ItemId","ChangeKey");
 		}
 		else {
-			var aItem = aResp..nsTypes::CalendarItem;
-			if (!aItem[0]) {
-				var aItem = aResp..nsTypes::Task;
-			}
-
-			if (aItem[0]) {
-				var itemId = aItem[0].nsTypes::ItemId.@Id.toString();
-				var changeKey = aItem[0].nsTypes::ItemId.@ChangeKey.toString();
-			}
-			else {
-				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_CREATING_ITEM_UNKNOWN, "Error. Unknown item creation:"+String(aResp));
-				return;
-			}
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_CREATING_ITEM_UNKNOWN, "Error. Valid createitem request but received no update details:"+String(aResp));
+			return;
 		}
 
 		if (this.mCbOk) {
