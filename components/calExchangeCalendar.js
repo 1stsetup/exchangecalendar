@@ -2225,7 +2225,7 @@ this.logInfo("singleModified doNotify");
 
        		var self = this;
 
-		if ((!this.syncInboxState) && (!this.weAreInboxSyncing)) {
+		if ((this.syncInboxState) && (!this.weAreInboxSyncing)) {
 			if ((this.folderBase == "calendar") && (!this.folderID)) {
 
 				// Start the inbox poller to check for meetinginvitations or cancelations.
@@ -2961,7 +2961,7 @@ this.logInfo("singleModified doNotify");
 
 	checkInbox: function _checkInbox()
 	{
-//		this.logInfo("checkInbox.");
+		//this.logInfo("checkInbox 1.");
 
 		if (this.isOffline) return;
 
@@ -2972,6 +2972,7 @@ this.logInfo("singleModified doNotify");
 		this.weAreInboxSyncing = true;
 		var self = this;
 
+		//this.logInfo("checkInbox 2.");
 		this.addToQueue( erSyncInboxRequest,
 			{user: this.user, 
 			 mailbox: this.mailbox,
@@ -2988,7 +2989,7 @@ this.logInfo("singleModified doNotify");
 
 	syncInbox: function _syncInbox()
 	{
-//		this.logInfo("syncInbox.");
+		//this.logInfo("syncInbox 1.");
 
 		if (this.isOffline) return;
 
@@ -3001,6 +3002,7 @@ this.logInfo("singleModified doNotify");
 		var self = this;
 		this.weAreInboxSyncing = true;
 
+		//this.logInfo("syncInbox 2.");
 		this.addToQueue( erSyncInboxRequest,
 			{user: this.user, 
 			 mailbox: this.mailbox,
@@ -3074,7 +3076,7 @@ this.logInfo("singleModified doNotify");
 
 	syncInboxOK: function _syncInboxOK(erSyncInboxRequest, creations, updates, deletions, syncState)
 	{
-//		this.logInfo("syncInboxOk.");
+		//this.logInfo("syncInboxOk.");
 		this.notConnected = false;
 		this.saveCredentials(erSyncFolderItemsRequest.argument);
 
@@ -3111,10 +3113,10 @@ this.logInfo("singleModified doNotify");
 		for each (var request in creations.meetingrequests) {
 			var meetingItem = this.convertExchangeAppointmentToCalAppointment(request, true);
 			if (meetingItem) {
-				this.logInfo(" -- MeetingRequest creation:"+ meetingItem.title+", UID:"+request.nsTypes::UID.toString()+",id:"+meetingItem.id+",changeKey:"+meetingItem.getProperty("X-ChangeKey"));
+				this.logInfo(" -- MeetingRequest creation:"+ meetingItem.title+", UID:"+request.getTagValue("t:UID")+",id:"+meetingItem.id+",changeKey:"+meetingItem.getProperty("X-ChangeKey"));
 				meetingItem.setProperty("X-MEETINGREQUEST", true);
 				meetingItem.setProperty("STATUS", "NONE")
-				//this.meetingRequestsCache[request.nsTypes::UID.toString()] = meetingItem;
+				//this.meetingRequestsCache[request.getTagValue("t:UID")] = meetingItem;
 				this.meetingRequestsCache[meetingItem.id] = meetingItem;
 			}
 		}
@@ -3122,12 +3124,12 @@ this.logInfo("singleModified doNotify");
 		for each (var update in updates.meetingrequests) {
 			var meetingItem = this.convertExchangeAppointmentToCalAppointment(update, true);
 			if (meetingItem) {
-				this.logInfo(" -- MeetingRequest update:"+ meetingItem.title+", UID:"+update.nsTypes::UID.toString()+",id:"+meetingItem.id+",changeKey:"+meetingItem.getProperty("X-ChangeKey"));
+				this.logInfo(" -- MeetingRequest update:"+ meetingItem.title+", UID:"+update.getTagValue("t:UID")+",id:"+meetingItem.id+",changeKey:"+meetingItem.getProperty("X-ChangeKey"));
 				meetingItem.setProperty("X-MEETINGREQUEST", true);
 				
 				if ((this.meetingRequestsCache[update.id]) && (this.meetingRequestsCache[update.id].getProperty("X-UID") == meetingItem.getProperty("X-UID"))) {
 					this.logInfo("2 modifing  meeting request:"+update.id);
-//					this.meetingRequestsCache[update.nsTypes::UID.toString()] = meetingItem;
+//					this.meetingRequestsCache[update.getTagValue("t:UID")] = meetingItem;
 					this.meetingRequestsCache[meetingItem.id] = meetingItem;
 				}
 				else {
@@ -3139,7 +3141,7 @@ this.logInfo("singleModified doNotify");
 		for each (var deletion in deletions.meetingrequests) {
 			var meetingItem = this.convertExchangeAppointmentToCalAppointment(deletion, true);
 			if (meetingItem) {
-				this.logInfo(" -- MeetingRequest deletion:"+ meetingItem.title+", UID:"+deletion.nsTypes::UID.toString()+",id:"+meetingItem.id+",changeKey:"+meetingItem.getProperty("X-ChangeKey"));
+				this.logInfo(" -- MeetingRequest deletion:"+ meetingItem.title+", UID:"+deletion.getTagValue("t:UID")+",id:"+meetingItem.id+",changeKey:"+meetingItem.getProperty("X-ChangeKey"));
 				meetingItem.setProperty("X-MEETINGREQUEST", true);
 				this.removeFromMeetingRequestCache(deletion.id);			
 				this.meetingrequestAnswered[deletion.id] = false;
@@ -3217,7 +3219,7 @@ this.logInfo("singleModified doNotify");
 				else {
 					// Keep this request
 					requestCount++;
-					//this.logInfo("meetingRequest:"+index.nsTypes::Subject.toString());
+					//this.logInfo("meetingRequest:"+index.getTagValue("t:Subject"));
 
 					// This is a new request. Check if we should autorespond.
 					if (!this.meetingrequestAnswered[tmpID]) {
@@ -3371,12 +3373,12 @@ this.logInfo("singleModified doNotify");
 		// Process Meetingresponses
 		// Save responses into cache and remove request for which we received a cancelation.
 		for each (var response in creations.meetingResponses) {
-			this.meetingResponsesCache[response.nsTypes::ItemId.@Id.toString()] = response;
+			this.meetingResponsesCache[response.getAttributeByTag("t:ItemId","Id")] = response;
 		}
 
 		for each (var response in updates.meetingResponses) {
-			if (this.meetingResponsesCache[response.nsTypes::ItemId.@Id.toString()]) {
-				this.meetingResponsesCache[response.nsTypes::ItemId.@Id.toString()] = response;
+			if (this.meetingResponsesCache[response.getAttributeByTag("t:ItemId","Id")]) {
+				this.meetingResponsesCache[response.getAttributeByTag("t:ItemId","Id")] = response;
 			}
 			else {
 				this.logInfo("WE DO NOT HAVE AN RESPONSE IN CACHE FOR THIS UPDATE!!!!. PLEASE REPORT");
@@ -3384,8 +3386,8 @@ this.logInfo("singleModified doNotify");
 		}
 
 		for each (var response in deletions.meetingResponses) {
-			if (this.meetingResponsesCache[response.nsTypes::ItemId.@Id.toString()]) {
-				delete this.meetingResponsesCache[response.nsTypes::ItemId.@Id.toString()];
+			if (this.meetingResponsesCache[response.getAttributeByTag("t:ItemId","Id")]) {
+				delete this.meetingResponsesCache[response.getAttributeByTag("t:ItemId","Id")];
 			}
 		}
 
@@ -3393,7 +3395,7 @@ this.logInfo("singleModified doNotify");
 		if (this.doAutoRemoveInvitationResponse1) {
 			for each(var response in this.meetingResponsesCache) {
 				// Check if we have this meeting 
-				var tmpUID = response.nsTypes::UID.toString();
+				var tmpUID = response.getTagValue("t:UID");
 				var inCalendar = false;
 
 				// First check recurring Masters
@@ -3417,7 +3419,7 @@ this.logInfo("singleModified doNotify");
 					if (!iAmOrganizer) {
 						// Remove the response in the inbox. Do not update calendar.
 						this.removeResponseItem(response);
-						delete this.meetingResponsesCache[response.nsTypes::ItemId.@Id.toString()];
+						delete this.meetingResponsesCache[response.getAttributeByTag("t:ItemId","Id")];
 					}
 				}				
 			}
@@ -3443,7 +3445,7 @@ this.logInfo("singleModified doNotify");
 		this.inboxPoller.initWithCallback({ notify: function setTimeout_notify() {self.syncInbox();	}}, this.pollInboxInterval * 1000, this.inboxPoller.TYPE_REPEATING_SLACK);
 	},
 
-	syncInboxError: function _syncFolderItemsError(erSyncFolderItemsRequest, aCode, aMsg)
+	syncInboxError: function _syncInboxError(erSyncFolderItemsRequest, aCode, aMsg)
 	{
 		this.saveCredentials(erSyncFolderItemsRequest.argument);
 		this.notConnected = true;
@@ -3593,6 +3595,7 @@ this.logInfo("singleModified doNotify");
 		this.inboxPoller.cancel();
 		for (var index in this.timers) {
 			if (this.timers[index]) {
+				this.logInfo("cancel timer queue:"+index);
 				this.timers[index].cancel();
 				delete this.timers[index];
 			}
@@ -5620,6 +5623,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	{
 		if (this.tmpJobs[aQueueNumber]) {
 			if (this.tmpJobs[aQueueNumber].isRunning) {
+				//this.logInfo("job still running. queue:"+aQueueNumber);
 				return;
 			}
 		}
@@ -5628,7 +5632,7 @@ this.logInfo("!!CHANGED:"+String(e));
 			var queueItem = this.queue[aQueueNumber][0];
 			this.queue[aQueueNumber].shift();
 
-			//exchWebService.commonFunctions.LOG("["+this.name+"] processQueue:"+aQueueNumber+" ("+exchWebService.commonFunctions.STACKshort()+")");
+			//exchWebService.commonFunctions.LOG("["+this.name+"] processQueue:"+aQueueNumber+": job:"+queueItem.ecRequest+" ("+exchWebService.commonFunctions.STACKshort()+")");
 			this.observerService.notifyObservers(this, "onExchangeProgressChange", "-1");  
 
 			queueItem.arguments["ServerVersion"] = getEWSServerVersion(this.serverUrl);
@@ -5803,7 +5807,7 @@ this.logInfo("!!CHANGED:"+String(e));
 
 	findOccurrencesOK: function _findOccurrencesOK(erFindOccurrencesRequest, aIds)
 	{
-//		this.logInfo("findOccurrencesOK: aIds.length="+aIds.length);
+		this.logInfo("findOccurrencesOK: aIds.length="+aIds.length);
 		// Get full details of occurrences and exceptions and cache them.
 		this.notConnected = false;
 		this.findCalendarItemsOK(erFindOccurrencesRequest, aIds, []);

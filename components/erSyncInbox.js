@@ -90,25 +90,29 @@ erSyncInboxRequest.prototype = {
 
 	execute: function _execute(aSyncState)
 	{
-//		exchWebService.commonFunctions.LOG("erSyncInboxRequest.execute\n");
+		exchWebService.commonFunctions.LOG("erSyncInboxRequest.execute\n");
 
-		var req = <nsMessages:SyncFolderItems xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:SyncFolderItems xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		req.nsMessages::ItemShape.nsTypes::BaseShape = "AllProperties";
+		var itemShape = req.addChildTag("ItemShape", "nsMessages", null);
+		itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");
 
-		req.nsMessages::SyncFolderId = makeParentFolderIds("SyncFolderId", this.argument);
+		var parentFolder = makeParentFolderIds2("SyncFolderId", this.argument);
+		req.addChildTagObject(parentFolder);
 	
 		if ((aSyncState) && (aSyncState != "")) {
-			req.nsMessages::SyncState = aSyncState;
+			req.addChildTag("SyncState", "nsMessages", aSyncState);
 		}
 
 //		if (this.getSyncState) {
-			req.nsMessages::MaxChangesReturned = 512;  // We only want a synstate to ask it fast.
+			req.addChildTag("MaxChangesReturned", "nsMessages", "512");
 //		}
 //		else {
 //			req.nsMessages::MaxChangesReturned = 15;  // We will ask 15 items at a time.
 //		}
 		
+		this.parent.xml2jxon = true;
+
 		//exchWebService.commonFunctions.LOG("erSyncInboxRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
@@ -117,48 +121,46 @@ erSyncInboxRequest.prototype = {
 	{
 		//exchWebService.commonFunctions.LOG("erSyncInboxRequest.onSendOk:"+String(aResp));
 
-		var rm = aResp..nsMessages::SyncFolderItemsResponseMessage;
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
-		var ResponseCode = rm.nsMessages::ResponseCode.toString();
+		if (rm.length > 0) {
+			var syncState = rm[0]["m:SyncState"].value;
 
-		if (ResponseCode == "NoError") {
-			var syncState = rm.nsMessages::SyncState.toString();
-
-			var lastItemInRange = rm.nsMessages::IncludesLastItemInRange.toString();
-
+			var lastItemInRange = rm[0]["m:IncludesLastItemInRange"].value;
+		
 		//	if (!this.getSyncState) {
-				for each (var creation in rm.nsMessages::Changes.nsTypes::Create) {
-					for each (var meetingrequest in creation.nsTypes::MeetingRequest) {
+				for each (var creation in rm[0].XPath("/m:Changes/t:Create")) {
+					for each (var meetingrequest in creation.getTags("t:MeetingRequest")) {
 						this.creations.meetingrequests.push(meetingrequest);
 					}
-					for each (var meetingCancellation in creation.nsTypes::MeetingCancellation) {
+					for each (var meetingCancellation in creation.getTags("t:MeetingCancellation")) {
 						this.creations.meetingCancellations.push(meetingCancellation);
 					}
-					for each (var meetingResponse in creation.nsTypes::MeetingResponse) {
+					for each (var meetingResponse in creation.getTags("t:MeetingResponse")) {
 						this.creations.meetingResponses.push(meetingResponse);
 					}
 				}
 	
-				for each (var update in rm.nsMessages::Changes.nsTypes::Update) {
-					for each (var meetingrequest in update.nsTypes::MeetingRequest) {
+				for each (var update in rm[0].XPath("/m:Changes/t:Update")) {
+					for each (var meetingrequest in update.getTags("t:MeetingRequest")) {
 						this.updates.meetingrequests.push(meetingrequest);
 					}
-					for each (var meetingCancellation in update.nsTypes::MeetingCancellation) {
+					for each (var meetingCancellation in update.getTags("t:MeetingCancellation")) {
 						this.updates.meetingCancellations.push(meetingCancellation);
 					}
-					for each (var meetingResponse in update.nsTypes::MeetingResponse) {
+					for each (var meetingResponse in update.getTags("t:MeetingResponse")) {
 						this.updates.meetingResponses.push(meetingResponse);
 					}
 				}
 
-				for each (var deleted in rm.nsMessages::Changes.nsTypes::Delete) {
-					for each (var meetingrequest in deleted.nsTypes::MeetingRequest) {
+				for each (var deleted in rm[0].XPath("/m:Changes/t:Delete")) {
+					for each (var meetingrequest in deleted.getTags("t:MeetingRequest")) {
 						this.deletions.meetingrequests.push(meetingrequest);
 					}
-					for each (var meetingCancellation in deleted.nsTypes::MeetingCancellation) {
+					for each (var meetingCancellation in deleted.getTags("t:MeetingCancellation")) {
 						this.deletions.meetingCancellations.push(meetingCancellation);
 					}
-					for each (var meetingResponse in deleted.nsTypes::MeetingResponse) {
+					for each (var meetingResponse in deleted.getTags("t:MeetingResponse")) {
 						this.deletions.meetingResponses.push(meetingResponse);
 					}
 				}
@@ -176,6 +178,13 @@ erSyncInboxRequest.prototype = {
 			}
 		}
 		else {
+			var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage");
+			if (rm.length > 0) {
+				var ResponseCode = rm[0].getTagValue("m:ResponseCode");
+			}
+			else {
+				var ResponseCode = "Unknown error from Exchange server.";
+			}
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SYNCFOLDERITEMS_UNKNOWN, "Error during SyncFolderItems:"+ResponseCode);
 			return;
 		}
