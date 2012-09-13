@@ -108,46 +108,47 @@ erCreateAttachmentRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erCreateAttachmentRequest.execute\n");
 
-		var req = <nsMessages:CreateAttachment xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:CreateAttachment xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		req.nsMessages::ParentItemId.@Id = this.parentItemId;
-		req.nsMessages::ParentItemId.@ChangeKey = this.parentItemChangeKey;
+		var parentItemId = req.addChildTag("ParentItemId", "nsMessages", null);
+		parentItemId.setAttribute("Id", this.parentItemId);
+		parentItemId.setAttribute("ChangeKey", this.parentItemChangeKey);
 
-		req.nsMessages::Attachments.content = <>
-							</>;
+		var attachments = req.addChildTag("Attachments", "nsMessages", null);
 
 		for (var index in this.createAttachments) {
 			var fileData = this.readFile(this.createAttachments[index].uri.QueryInterface(Ci.nsIFileURL).file);
-			var attachment = <nsTypes:FileAttachment  xmlns:nsTypes={nsTypes}/>;
-			attachment.nsTypes::Name = this.createAttachments[index].uri.QueryInterface(Ci.nsIFileURL).file.leafName;
 
+			var attachment = exchWebService.commonFunctions.xmlToJxon('<nsTypes:FileAttachment xmlns:nsTypes="'+nsTypesStr+'"/>');
+			attachment.addChildTag("Name", "nsTypes", this.createAttachments[index].uri.QueryInterface(Ci.nsIFileURL).file.leafName);
 			if (this.argument.ServerVersion.indexOf("Exchange2010") == 0) {
-				attachment.nsTypes::Size = fileData.size;
+				attachment.addChildTag("Size", "nsTypes", fileData.size);
 			}
+			attachment.addChildTag("Content", "nsTypes", fileData.content);
 
-			attachment.nsTypes::Content = fileData.content;
-
-			req.nsMessages::Attachments.appendChild(attachment);
+			attachments.addChildTagObject(attachment);
 			
 		}
 
+		this.parent.xml2jxon = true;
+		
 		//exchWebService.commonFunctions.LOG("erCreateAttachmentRequest.execute>"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erCreateAttachmentRequest.onSendOk: "+String(aResp)+"\n");
+		//exchWebService.commonFunctions.LOG("erCreateAttachmentRequest.onSendOk: "+String(aResp)+"\n");
 
 		// The response could contain the result of creating multiple attachments. One could be ok and another not. So check all.
 
 		var weHaveAnError = false;
-		var createAttachmentResponseMessages = aResp..nsMessages::CreateAttachmentResponseMessage;
+		var createAttachmentResponseMessages = aResp.XPath("/s:Envelope/s:Body/m:CreateAttachmentResponse/m:ResponseMessages/m:CreateAttachmentResponseMessage");
 		var errorCount = 0;
 		var okCount = 0;
 
 		for each(var createAttachmentResponseMessage in createAttachmentResponseMessages) {
-			if (createAttachmentResponseMessage.@ResponseClass != "Success") {
+			if (createAttachmentResponseMessage.getAttribute("ResponseClass") != "Success") {
 				weHaveAnError = true;
 				errorCount++;
 			}
@@ -163,15 +164,15 @@ erCreateAttachmentRequest.prototype = {
 			return;
 		}
 		else {
-			var aAttachments = aResp..nsTypes::FileAttachment;
+			var aAttachments = aResp.XPath("/s:Envelope/s:Body/m:CreateAttachmentResponse/m:ResponseMessages/m:CreateAttachmentResponseMessage/m:Attachments/*");
 
-			if (aAttachments[0]) {
-				var attachmentId = aAttachments[0].nsTypes::AttachmentId.@Id.toString();
-				var RootItemId = aAttachments[0].nsTypes::AttachmentId.@RootItemId.toString();
-				var RootItemChangeKey = aAttachments[0].nsTypes::AttachmentId.@RootItemChangeKey.toString();
+			if (aAttachments.length > 0) {
+				var attachmentId = aAttachments[0].getAttributeByTag("t:AttachmentId", "Id");
+				var RootItemId = aAttachments[0].getAttributeByTag("t:AttachmentId", "RootItemId");
+				var RootItemChangeKey = aAttachments[0].getAttributeByTag("t:AttachmentId", "RootItemChangeKey");
 			}
 			else {
-				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_CREATING_ITEM_UNKNOWN, "Error. Unknown item creation:"+String(aResp));
+				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_CREATING_ITEM_UNKNOWN, "Error. Valid createattachment request but receive no update details:"+String(aResp));
 				return;
 			}
 		}
