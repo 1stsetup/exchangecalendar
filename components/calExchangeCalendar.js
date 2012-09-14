@@ -4991,18 +4991,21 @@ this.logInfo("!!CHANGED:"+String(e));
 		var onlySnoozeChanged = true;
 		var ceCount = 0;
 
-		for each (var prop in oe) {
-			if (ne.getTagValue(prop.tagName) || noDelete[prop.tagName]) {
+		var oeprops = oe.XPath("*");
+		var neprops = ne.XPath("*");
+		for each (var prop in oeprops) {
+			var fullTagName = prop.nameSpace+':'+prop.tagName;
+			if (ne.getTag(fullTagName) || noDelete[prop.tagName]) {
 				continue;
 			}
 
-			if ((isInvitation) && (ne.getTagValue(prop.tagName) || noUpdateOnInvitation[prop.tagName])) {
+			if ((isInvitation) && (ne.getTagValue(fullTagName) || noUpdateOnInvitation[prop.tagName])) {
 				continue;
 			}
 	
 			var de = ce.addChildTag("DeleteItemField", "nsTypes", null);
 			if (prop.tagName == "ExtendedProperty") {
-				de.addChildTag("ExtendedFieldURI", "nsTypes", prop.getTagValue("ExtendedFieldURI"));
+				de.addChildTagObject(prop.getTag("nsTypes:ExtendedFieldURI"));
 			} else {
 				if ((fieldPathMap[prop.tagName] == "calendar") && (isEvent(aOldItem))) {
 					de.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", 'calendar:' + prop.tagName);
@@ -5022,7 +5025,8 @@ this.logInfo("!!CHANGED:"+String(e));
 			ceCount++;
 		}
 
-		for each (var prop in ne) {
+		for each (var prop in neprops) {
+			var fullTagName = prop.nameSpace+':'+prop.tagName;
 
 			if ((isInvitation) && (noUpdateOnInvitation[prop.tagName])) {
 				continue;
@@ -5031,14 +5035,15 @@ this.logInfo("!!CHANGED:"+String(e));
 			// Always save lastLightningModified field
 			var doSave = false;
 			if ((prop.tagName == "ExtendedProperty") &&
-				(prop.getAttributeByTag("ExtendedFieldURI", "PropertyName") == "lastLightningModified")) {
+				(prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyName") == "lastLightningModified")) {
 				doSave = true;
 			}
 
 			if (! doSave) {
 				var contains = false;
-				for each (var prop2 in oe) {
-					if (prop2 == prop) {
+				for each (var prop2 in oeprops) {
+					//this.logInfo("ne:" + String(prop) + ':' + String(prop2));
+					if (prop2.toString() == prop.toString()) {
 						contains = true;
 						break;
 					}
@@ -5050,11 +5055,11 @@ this.logInfo("!!CHANGED:"+String(e));
 	
 			var se = ce.addChildTag("SetItemField", "nsTypes", null);
 			if (prop.tagName == "ExtendedProperty") {
-				se.addChildTag("ExtendedFieldURI", "nsTypes", prop.getTagValue("ExtendedFieldURI"));
+				se.addChildTagObject(prop.getTag("nsTypes:ExtendedFieldURI"));
 
-				if ((prop.getAttributeByTag("ExtendedFieldURI", "PropertyId") != MAPI_PidLidReminderSignalTime) && 
-				    (prop.getAttributeByTag("ExtendedFieldURI", "PropertyId") != "34051") &&
-				    (prop.getAttributeByTag("ExtendedFieldURI", "PropertyId") != "34049")) {
+				if ((prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyId") != MAPI_PidLidReminderSignalTime) && 
+				    (prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyId") != "34051") &&
+				    (prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyId") != "34049")) {
 					onlySnoozeChanged = false;
 				}
 			} else {
