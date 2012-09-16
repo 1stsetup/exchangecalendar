@@ -85,67 +85,69 @@ erGetMeetingRequestByUIDRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erGetMeetingRequestByUIDRequest.execute\n");
 
-		var req = <nsMessages:FindItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
-		req.@Traversal = "Shallow";
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:FindItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		req.setAttribute("Traversal", "Shallow");
 
-		req.nsMessages::ItemShape.nsTypes::BaseShape = "AllProperties";
-		req.nsMessages::ItemShape.nsTypes::BodyType = 'Text';
+		var itemShape = req.addChildTag("ItemShape", "nsMessages", null); 
+		itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");
+		itemShape.addChildTag("BodyType", "nsTypes", "Text");
 
-		//req.nsMessages::Restriction.content = <>
-		var restr = 
-			<nsMessages:Restriction xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}>
-				<nsTypes:IsEqualTo>
-				    	<nsTypes:FieldURI FieldURI="item:ItemClass" xmlns:nsTypes={nsTypes}/>
-				    	<nsTypes:FieldURIOrConstant xmlns:nsTypes={nsTypes}>
-					    	<nsTypes:Constant Value="IPM.Schedule.Meeting.Request" xmlns:nsTypes={nsTypes}/>
-				    	</nsTypes:FieldURIOrConstant>
-				</nsTypes:IsEqualTo>
-			</nsMessages:Restriction>;
-/*
-        			<nsTypes:And>
-					<nsTypes:IsEqualTo>
-					    	<nsTypes:FieldURI FieldURI="item:ItemClass" xmlns:nsTypes={nsTypes}/>
-					    	<nsTypes:FieldURIOrConstant xmlns:nsTypes={nsTypes}>
-						    	<nsTypes:Constant Value="IPM.Schedule.Meeting.Request" xmlns:nsTypes={nsTypes}/>
-					    	</nsTypes:FieldURIOrConstant>
-					</nsTypes:IsEqualTo>
-					<nsTypes:IsEqualTo>
-					    	<nsTypes:FieldURI FieldURI="UID" xmlns:nsTypes={nsTypes}/>
-					    	<nsTypes:FieldURIOrConstant xmlns:nsTypes={nsTypes}>
-						    	<nsTypes:Constant Value={this.argument.uid} xmlns:nsTypes={nsTypes}/>
-					    	</nsTypes:FieldURIOrConstant>
-					</nsTypes:IsEqualTo>
-				</nsTypes:And>
-*/
 
-		req.appendChild(restr);
+		var restr = exchWebService.commonFunctions.xmlToJxon('<nsMessages:Restriction xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var isEqualTo = restr.addChildTag("IsEqualTo", "nsTypes", null);
+		isEqualTo.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemClass");
+		isEqualTo.addChildTag("FieldURIOrConstant", "nsTypes", null).addChildTag("Constant", "nsTypes", null).setAttribute("Value", "IPM.Schedule.Meeting.Request");
 
-		req.nsMessages::ParentFolderIds = makeParentFolderIds("ParentFolderIds", this.argument);
+		/*var and = restr.addChildTag("And", "nsTypes", null);
+		var isEqualTo1 = and.addChildTag("IsEqualTo", "nsTypes", null);
+		isEqualTo1.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemClass");
+		isEqualTo1.addChildTag("FieldURIOrConstant", "nsTypes", null).addChildTag("Constant", "nsTypes", null).setAttribute("Value", "IPM.Schedule.Meeting.Request");
 
-		exchWebService.commonFunctions.LOG("erGetMeetingRequestByUIDRequest.onSendOk:"+String(this.parent.makeSoapMessage(req)));
+		var isEqualTo2 = and.addChildTag("IsEqualTo", "nsTypes", null);
+		isEqualTo2.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:UID");
+		isEqualTo2.addChildTag("FieldURIOrConstant", "nsTypes", null).addChildTag("Constant", "nsTypes", null).setAttribute("Value", this.argument.uid);*/
+
+		req.addChildTagObject(restr);
+
+		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
+		req.addChildTagObject(parentFolder);
+
+		this.parent.xml2jxon = true;
+
+		//exchWebService.commonFunctions.LOG("erGetMeetingRequestByUIDRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erGetMeetingRequestByUIDRequest.onSendOk:"+String(aResp));
+		//exchWebService.commonFunctions.LOG("erGetMeetingRequestByUIDRequest.onSendOk:"+String(aResp));
 
-		try {
-			var responseCode = aResp..nsMessages::ResponseCode.toString();
-		}
-		catch(err) {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:ResponseCode");
+
+		if (rm.length == 0) {
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field responsecode");
 			return;
 		}
+
+		var responseCode = rm[0].value;
 
 		if (responseCode != "NoError") {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getting erGetMeetingRequestByUIDRequest:"+responseCode);
 			return;
 		}
 
+		var rootFolder = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:RootFolder");
+		if (rootFolder.length == 0) {
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field rootfolder");
+			return;
+		}
+
+		var totalItemsInView = rootFolder[0].getAttribute("TotalItemsInView", 0);
+		var includesLastItemInRange = rootFolder[0].getAttribute("IncludesLastItemInRange", "true");
+
 		var aMeetingRequests = [];
-		for each(var tmpItem in aResp..nsTypes::MeetingRequest) {
-			if (tmpItem.nsTypes::UID.toString() == this.argument.uid) {
+		for each(var tmpItem in rootFolder[0].XPath("/t:Items/*")) {
+			if (tmpItem.getTagValue("t:UID") == this.argument.uid) {
 				aMeetingRequests.push(tmpItem);
 			}
 		}
