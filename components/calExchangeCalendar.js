@@ -3042,7 +3042,7 @@ this.logInfo("singleModified doNotify");
 	{
 		var self = this;
 
-		this.logInfo("Going to remove responseItem:"+aResponse.nsTypes::Subject.toString()+" from:"+aResponse.nsTypes::Sender.nsTypes::Mailbox.nsTypes::Name.toString()+" ("+aResponse.nsTypes::Sender.nsTypes::Mailbox.nsTypes::EmailAddress.toString()+")");
+		this.logInfo("Going to remove responseItem:"+aResponse.getTagValue("t:Subject")+" from:"+aResponse.getTag("t:Sender").getTag("t:Mailbox").getTagValue("t:Name")+" ("+aResponse.getTag("t:Sender").getTag("t:Mailbox").getTagValue("t:EmailAddress")+")");
 		this.addToQueue( erDeleteItemRequest, 
 			{user: this.user, 
 			 mailbox: this.mailbox,
@@ -3050,8 +3050,8 @@ this.logInfo("singleModified doNotify");
 			 serverUrl: this.serverUrl,
 			 item: null,
 			 folderID: null,
-			 id: aResponse.nsTypes::ItemId.@Id,
-			 changeKey: aResponse.nsTypes::ItemId.@ChangeKey,
+			 id: aResponse.getAttributeByTag("t:ItemId", "Id"),
+			 changeKey: aResponse.getAttributeByTag("t:ItemId", "ChangeKey"),
 			 itemType: "response"}, 
 			function(erDeleteItemRequest) { self.removeMeetingItemOk(erDeleteItemRequest);}, 
 			function(erDeleteItemRequest, aCode, aMsg) { self.removeMeetingItemError(erDeleteItemRequest, aCode, aMsg);},
