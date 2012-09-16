@@ -61,32 +61,29 @@ erFindContactsRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erFindContactsRequest.execute\n");
 
-		var req = <nsMessages:FindItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
-		req.@Traversal = "Shallow";
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:FindItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		req.setAttribute("Traversal", "Shallow");
 
-		req.nsMessages::ItemShape.nsTypes::BaseShape = "IdOnly";
+		var itemShape = req.addChildTag("ItemShape", "nsMessages", null); 
+		itemShape.addChildTag("BaseShape", "nsTypes", "IdOnly");
 
-		var restr = 
-			<nsMessages:Restriction xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}>
-        			<nsTypes:Or>
-					<nsTypes:IsEqualTo>
-						<nsTypes:FieldURI FieldURI="item:ItemClass"/>
-						<nsTypes:FieldURIOrConstant>
-							<nsTypes:Constant Value="IPM.Contact"/>
-						</nsTypes:FieldURIOrConstant>
-					</nsTypes:IsEqualTo>
-					<nsTypes:IsEqualTo>
-						<nsTypes:FieldURI FieldURI="item:ItemClass"/>
-						<nsTypes:FieldURIOrConstant>
-							<nsTypes:Constant Value="IPM.DistList"/>
-						</nsTypes:FieldURIOrConstant>
-					</nsTypes:IsEqualTo>
-        			</nsTypes:Or>
-			</nsMessages:Restriction>;
+		var restr = exchWebService.commonFunctions.xmlToJxon('<nsMessages:Restriction xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var or = restr.addChildTag("Or", "nsTypes", null);
+		var isEqualTo1 = or.addChildTag("IsEqualTo", "nsTypes", null);
+		isEqualTo1.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemClass");
+		isEqualTo1.addChildTag("FieldURIOrConstant", "nsTypes", null).addChildTag("Constant", "nsTypes", null).setAttribute("Value", "IPM.Contact");
 
-		req.appendChild(restr);
+		var isEqualTo2 = or.addChildTag("IsEqualTo", "nsTypes", null);
+		isEqualTo2.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemClass");
+		isEqualTo2.addChildTag("FieldURIOrConstant", "nsTypes", null).addChildTag("Constant", "nsTypes", null).setAttribute("Value", "IPM.DistList");
 
-		req.nsMessages::ParentFolderIds = makeParentFolderIds("ParentFolderIds", this.argument);
+		req.addChildTagObject(restr);
+
+		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
+		req.addChildTagObject(parentFolder);
+
+		this.parent.xml2jxon = true;
+
 		//exchWebService.commonFunctions.LOG("erFindContactsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
@@ -94,23 +91,42 @@ erFindContactsRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erFindContactsRequest.onSendOk:"+String(aResp));
+		//exchWebService.commonFunctions.LOG("erFindContactsRequest.onSendOk:"+String(aResp));
 
-		var rm = aResp..nsMessages::ResponseMessages.nsMessages::FindItemResponseMessage;
-		var ResponseCode = rm.nsMessages::ResponseCode.toString();
-		if (ResponseCode == "NoError") {
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:ResponseCode");
+
+		if (rm.length == 0) {
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
+			return;
+		}
+
+		var responseCode = rm[0].value;
+
+		if (responseCode == "NoError") {
 
 			var contacts = [];
 			var distlists = [];
 
-			for each (var contact in aResp..nsTypes::Contact) {
-				contacts.push({Id: contact.nsTypes::ItemId.@Id.toString(),
-					  ChangeKey: contact.nsTypes::ItemId.@ChangeKey.toString()});
+			var rootFolder = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:RootFolder");
+			if (rootFolder.length == 0) {
+				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Did not find a rootfolder element.");
+				return;
+			}
+
+			// For now we do not do anything with the following two values.
+			var totalItemsInView = rootFolder[0].getAttribute("TotalItemsInView", 0);
+			var includesLastItemInRange = rootFolder[0].getAttribute("IncludesLastItemInRange", "true");
+
+			var contacts = rootFolder[0].XPath("/t:Items/t:Contact");
+			for each (var contact in contacts) {
+				contacts.push({Id: contact.getAttributeByTag("t:ItemId", "Id"),
+					  ChangeKey: contact.getAttributeByTag("t:ItemId", "ChangeKey")});
 			}
 		
-			for each (var distlist in aResp..nsTypes::DistributionList) {
-				distlists.push({Id: distlist.nsTypes::ItemId.@Id.toString(),
-					  ChangeKey: distlist.nsTypes::ItemId.@ChangeKey.toString()});
+			var distributionLists = rootFolder[0].XPath("/t:Items/t:DistributionList");
+			for each (var distlist in distributionLists) {
+				distlists.push({Id: distlist.getAttributeByTag("t:ItemId", "Id"),
+					  ChangeKey: distlist.getAttributeByTag("t:ItemId", "ChangeKey")});
 			}
 		
 			if (this.mCbOk) {
@@ -119,7 +135,7 @@ erFindContactsRequest.prototype = {
 			this.isRunning = false;
 		}
 		else {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, ResponseCode);
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, responseCode);
 		}
 	},
 
