@@ -5437,17 +5437,18 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 	{
 		this.logInfo("doAttachmentUpdatesFinalize: item:"+aItem.title+", aSendTo:"+aSendTo);
 
-		var req = <nsTypes:ItemChange xmlns:nsTypes="http://schemas.microsoft.com/exchange/services/2006/types">
-			  <nsTypes:ItemId Id={aId} ChangeKey={aChangeKey}/>
-			  <nsTypes:Updates>
-			    <nsTypes:SetItemField>
-			      <nsTypes:FieldURI FieldURI="item:Subject"/>
-			      <nsTypes:CalendarItem>
-				<nsTypes:Subject>{aItem.title}</nsTypes:Subject>
-			      </nsTypes:CalendarItem>
-			    </nsTypes:SetItemField>
-			  </nsTypes:Updates>
-			</nsTypes:ItemChange>;
+		
+		var e = exchWebService.commonFunctions.xmlToJxon('<nsTypes:ItemChange xmlns:nsTypes="'+nsTypesStr+'">' +
+				'<nsTypes:ItemId Id="' + aId + '" ChangeKey="' + aChangeKey + '"/>' +
+			  	'<nsTypes:Updates>' +
+			    	'<nsTypes:SetItemField>' +
+			      		'<nsTypes:FieldURI FieldURI="item:Subject"/>' +
+			      		'<nsTypes:CalendarItem>' +
+							'<nsTypes:Subject>' + aItem.title + '</nsTypes:Subject>' +
+			      		'</nsTypes:CalendarItem>' +
+			    	'</nsTypes:SetItemField>' +
+			  	'</nsTypes:Updates>' +
+				'</nsTypes:ItemChange>');
 
 		var self = this;
 		this.addToQueue( erUpdateItemRequest,
