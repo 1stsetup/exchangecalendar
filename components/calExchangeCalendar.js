@@ -6670,8 +6670,8 @@ this.logInfo("getTaskItemsOK 4");
 			myResponseType = aCalendarItem.getTagValue("t:MyResponseType");
 		}
 
-		if (aCalendarItem.getTagValue("t:Organizer", "") != "") {
-			//this.logInfo(" ==A ORGANIZER== title:"+item.title+", org:"+String(aCalendarItem.getTagValue("t:Organizer")));
+		if (aCalendarItem.getTag("t:Organizer", "")) {
+			//this.logInfo(" ==A ORGANIZER== title:"+item.title+", org:"+String(aCalendarItem.getTag("t:Organizer")));
 			var org = this.createAttendee(aCalendarItem.getTag("t:Organizer"), "CHAIR");
 
 /*			if (org.id.replace(/^mailto:/, '').toLowerCase() != this.mailbox.toLowerCase()) {
