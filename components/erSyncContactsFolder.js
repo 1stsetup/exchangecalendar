@@ -75,24 +75,29 @@ erSyncContactsFolderRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erSyncContactsFolderRequest.execute\n");
 
-		var req = <nsMessages:SyncFolderItems xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:SyncFolderItems xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		req.nsMessages::ItemShape.nsTypes::BaseShape = "AllProperties";
-		req.nsMessages::ItemShape.nsTypes::BodyType = 'Text';
+		var itemShape = req.addChildTag("ItemShape", "nsMessages", null);
+		itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");
+		itemShape.addChildTag("BodyType", "nsTypes", "Text");
 
-		req.nsMessages::ItemShape.nsTypes::AdditionalProperties.content += <>
-		    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Common" PropertyId={MAPI_PidTagBody} PropertyType="String" xmlns:nsTypes={nsTypes}/>
-		    </>;
+		var extendedFieldURI = itemShape.addChildTag("AdditionalProperties", "nsTypes", null).addChildTag("ExtendedFieldURI", "nsTypes", null);
+		extendedFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
+		extendedFieldURI.setAttribute("PropertyId", MAPI_PidTagBody);
+		extendedFieldURI.setAttribute("PropertyType", "String");
 
-		req.nsMessages::SyncFolderId = makeParentFolderIds("SyncFolderId", this.argument);
+		var parentFolder = makeParentFolderIds2("SyncFolderId", this.argument);
+		req.addChildTagObject(parentFolder);
 	
 		if (aSyncState) {
-			req.nsMessages::SyncState = aSyncState;
+			req.addChildTag("SyncState", "nsMessages", aSyncState);
 		}
 
-		req.nsMessages::MaxChangesReturned = 512;  // We only want a synstate to ask it fast.
+		req.addChildTag("MaxChangesReturned", "nsMessages", "512");
 		
-		//exchWebService.commonFunctions.LOG(String(this.parent.makeSoapMessage(req))+"\n");
+		this.parent.xml2jxon = true;
+
+		//exchWebService.commonFunctions.LOG("erSyncContactsFolderRequest.execute:"+String(this.parent.makeSoapMessage(req))+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
@@ -100,49 +105,42 @@ erSyncContactsFolderRequest.prototype = {
 	{
 		//exchWebService.commonFunctions.LOG("erSyncContactsFolderRequest.onSendOk:"+String(aResp)+"\n");
 
-		var rm = aResp..nsMessages::SyncFolderItemsResponseMessage;
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
-		var ResponseCode = rm.nsMessages::ResponseCode.toString();
+		if (rm.length > 0) {
+			var syncState = rm[0]["m:SyncState"].value;
 
-		if (ResponseCode == "NoError") {
-			var syncState = rm.nsMessages::SyncState.toString();
+			var lastItemInRange = rm[0]["m:IncludesLastItemInRange"].value;
 
-			var lastItemInRange = rm.nsMessages::IncludesLastItemInRange.toString();
-
-				for each (var creation in rm.nsMessages::Changes.nsTypes::Create) {
-					for each (var contact in creation.nsTypes::Contact) {
-						//this.creations.contacts.push(contact);
-						this.creations.contacts.push({Id: contact.nsTypes::ItemId.@Id.toString(),
-							  ChangeKey: contact.nsTypes::ItemId.@ChangeKey.toString()});
-					}
-					for each (var distlist in creation.nsTypes::DistributionList) {
-						//this.creations.distlists.push(distlist);
-						this.creations.distlists.push({Id: distlist.nsTypes::ItemId.@Id.toString(),
-							  ChangeKey: distlist.nsTypes::ItemId.@ChangeKey.toString()});
-					}
+			for each (var creation in rm[0].XPath("/m:Changes/t:Create")) {
+				for each (var contact in creation.XPath("/t:Contact")) {
+					//this.creations.contacts.push(contact);
+					this.creations.contacts.push({Id: contact.getAttributeByTag("t:ItemId", "Id"),
+						  ChangeKey: contact.getAttributeByTag("t:ItemId", "ChangeKey")});
 				}
-	
-				for each (var update in rm.nsMessages::Changes.nsTypes::Update) {
-					for each (var contact in update.nsTypes::Contact) {
-						//this.updates.contacts.push(contact);
-						this.updates.contacts.push({Id: contact.nsTypes::ItemId.@Id.toString(),
-							  ChangeKey: contact.nsTypes::ItemId.@ChangeKey.toString()});
-					}
-					for each (var distlist in update.nsTypes::DistributionList) {
-						//this.updates.distlists.push(distlist);
-						this.updates.distlists.push({Id: distlist.nsTypes::ItemId.@Id.toString(),
-							  ChangeKey: distlist.nsTypes::ItemId.@ChangeKey.toString()});
-					}
+				for each (var distlist in creation.XPath("/t:DistributionList")) {
+					//this.creations.distlists.push(distlist);
+					this.creations.distlists.push({Id: distlist.getAttributeByTag("t:ItemId", "Id"),
+						  ChangeKey: distlist.getAttributeByTag("t:ItemId", "ChangeKey")});
 				}
+			}
 
-				for each (var deleted in rm.nsMessages::Changes.nsTypes::Delete) {
-					for each (var contact in deleted.nsTypes::Contact) {
-						this.deletions.contacts.push(contact);
-					}
-					for each (var distlist in deleted.nsTypes::DistributionList) {
-						this.deletions.distlists.push(distlist);
-					}
+			for each (var update in rm[0].XPath("/m:Changes/t:Update")) {
+				for each (var contact in update.XPath("/t:Contact")) {
+					//this.updates.contacts.push(contact);
+					this.updates.contacts.push({Id: contact.getAttributeByTag("t:ItemId", "Id"),
+						  ChangeKey: contact.getAttributeByTag("t:ItemId", "ChangeKey")});
 				}
+				for each (var distlist in update.XPath("/t:DistributionList")) {
+					//this.updates.distlists.push(distlist);
+					this.updates.distlists.push({Id: distlist.getAttributeByTag("t:ItemId", "Id"),
+						  ChangeKey: distlist.getAttributeByTag("t:ItemId", "ChangeKey")});
+				}
+			}
+
+			for each (var deleted in rm[0].XPath("/m:Changes/t:Delete")) {
+				this.deletions.contacts.push(deleted);
+			}
 
 			if (lastItemInRange == "false") {
 				this.execute(syncState);
@@ -156,7 +154,7 @@ erSyncContactsFolderRequest.prototype = {
 			}
 		}
 		else {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SYNCFOLDERITEMS_UNKNOWN, "Error during SyncFolderItems:"+ResponseCode);
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SYNCFOLDERITEMS_UNKNOWN, "Error during erSyncContactsFolderRequest");
 			return;
 		}
 

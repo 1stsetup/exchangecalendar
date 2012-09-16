@@ -1187,9 +1187,9 @@ exchangeAbFolderDirectory.prototype = {
 	
 		for each(var deletedCard in deletions.contacts) {
 			exchWebService.commonAbFunctions.logInfo("Deleted Contact card:"+deletedCard.toString(),2);
-			if (this.contacts[deletedCard.nsTypes::ItemId.@Id.toString()]) {
-				MailServices.ab.notifyDirectoryItemDeleted(this, this.contacts[deletedCard.nsTypes::ItemId.@Id.toString()]);
-				delete this.contacts[deletedCard.nsTypes::ItemId.@Id.toString()];
+			if (this.contacts[deletedCard.getAttributeByTag("t:ItemId", "Id")]) {
+				MailServices.ab.notifyDirectoryItemDeleted(this, this.contacts[deletedCard.getAttributeByTag("t:ItemId", "Id")]);
+				delete this.contacts[deletedCard.getAttributeByTag("t:ItemId", "Id")];
 			}
 		}
 
