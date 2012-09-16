@@ -4519,18 +4519,24 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			e.addChildTag("Location", "nsTypes", aItem.getProperty("LOCATION") || "");
 
 			var attendees = aItem.getAttendees({});
-			var reqAttendees = e.addChildTag("RequiredAttendees", "nsTypes", null);
-			var optAttendees = e.addChildTag("OptionalAttendees", "nsTypes", null);
+			var ae;
+			
 			for each (var attendee in attendees) {
 				switch (attendee.role) {
 				case "REQ-PARTICIPANT":
+					if (!reqAttendees) {
+						var reqAttendees = e.addChildTag("RequiredAttendees", "nsTypes", null);
+					}
 					ae = reqAttendees.addChildTag("Attendee", "nsTypes", null);
 					break;
 				case "OPT-PARTICIPANT":
+					if (!optAttendees) {
+						var optAttendees = e.addChildTag("OptionalAttendees", "nsTypes", null);
+					}
 					ae = optAttendees.addChildTag("Attendee", "nsTypes", null);
 					break;
 				}
-				var mailbox = ae.addChildTag("Name", "nsTypes", null);
+				var mailbox = ae.addChildTag("Mailbox", "nsTypes", null);
 				mailbox.addChildTag("Name", "nsTypes", attendee.commonName);
 
 				var tmpEmailAddress = attendee.id.replace(/^mailto:/, '');
@@ -4977,7 +4983,7 @@ this.logInfo("!!CHANGED:"+String(e));
 			'Organizer'			: true,
 		};
 	
-		var ce = upd.addChildTag("Updates", "tsTypes", null);
+		var ce = upd.addChildTag("Updates", "nsTypes", null);
 
 		if (isEvent(aOldItem)) {
 			var oe = this.convertCalAppointmentToExchangeAppointment(aOldItem, null, false);
@@ -4995,11 +5001,13 @@ this.logInfo("!!CHANGED:"+String(e));
 		var neprops = ne.XPath("*");
 		for each (var prop in oeprops) {
 			var fullTagName = prop.nameSpace+':'+prop.tagName;
-			if (ne.getTag(fullTagName) || noDelete[prop.tagName]) {
+			if (ne.getTags(fullTagName).length > 0 || noDelete[prop.tagName]) {
+				if (ne.getTags(fullTagName).length > 0) { this.logInfo("     -- ne.getTags("+fullTagName+").length > 0") };
+				if (noDelete[prop.tagName]) { this.logInfo("     -- noDelete["+prop.tagName+"] == true") };
 				continue;
 			}
 
-			if ((isInvitation) && (ne.getTagValue(fullTagName) || noUpdateOnInvitation[prop.tagName])) {
+			if ((isInvitation) && (ne.getTags(fullTagName).length > 0 || noUpdateOnInvitation[prop.tagName])) {
 				continue;
 			}
 	
@@ -5025,6 +5033,7 @@ this.logInfo("!!CHANGED:"+String(e));
 			ceCount++;
 		}
 
+		var oeStr = oe.toString();
 		for each (var prop in neprops) {
 			var fullTagName = prop.nameSpace+':'+prop.tagName;
 
@@ -5040,17 +5049,25 @@ this.logInfo("!!CHANGED:"+String(e));
 			}
 
 			if (! doSave) {
-				var contains = false;
+				if (oeStr.indexOf(prop.toString()) > -1) {
+					this.logInfo( "       !!! Equal to old value:"+prop.toString());
+					continue;
+				}
+				this.logInfo( "       !!! NOT EQUAL to old value:"+prop.toString());
+/*				var contains = false;
 				for each (var prop2 in oeprops) {
-					//this.logInfo("ne:" + String(prop) + ':' + String(prop2));
 					if (prop2.toString() == prop.toString()) {
+						this.logInfo("   !!! ne:" + prop2.toString() + ' == ' + prop.toString());
 						contains = true;
 						break;
+					}
+					else {
+						this.logInfo("   ??? ne:" + prop2.toString() + ' == ' + prop.toString());
 					}
 				}
 				if (contains) {
 					continue;
-				}
+				}*/
 			}
 	
 			var se = ce.addChildTag("SetItemField", "nsTypes", null);
@@ -5082,11 +5099,12 @@ this.logInfo("!!CHANGED:"+String(e));
 				}
 			}
 			if (isEvent(aOldItem)) {
-				se.addChildTag("CalendarItem", "nsTypes", prop);
+				se.addChildTag("CalendarItem", "nsTypes", prop.value);
 			}
 			if (isToDo(aOldItem)) {
-				se.addChildTag("Task", "nsTypes", prop);
+				se.addChildTag("Task", "nsTypes", prop.value);
 			}
+			ceCount++;
 		}
 	
 		if (onlySnoozeChanged) {
