@@ -3042,7 +3042,7 @@ this.logInfo("singleModified doNotify");
 	{
 		var self = this;
 
-		this.logInfo("Going to remove responseItem:"+aResponse.nsTypes::Subject.toString()+" from:"+aResponse.nsTypes::Sender.nsTypes::Mailbox.nsTypes::Name.toString()+" ("+aResponse.nsTypes::Sender.nsTypes::Mailbox.nsTypes::EmailAddress.toString()+")");
+		this.logInfo("Going to remove responseItem:"+aResponse.getTagValue("t:Subject")+" from:"+aResponse.getTag("t:Sender").getTag("t:Mailbox").getTagValue("t:Name")+" ("+aResponse.getTag("t:Sender").getTag("t:Mailbox").getTagValue("t:EmailAddress")+")");
 		this.addToQueue( erDeleteItemRequest, 
 			{user: this.user, 
 			 mailbox: this.mailbox,
@@ -3050,8 +3050,8 @@ this.logInfo("singleModified doNotify");
 			 serverUrl: this.serverUrl,
 			 item: null,
 			 folderID: null,
-			 id: aResponse.nsTypes::ItemId.@Id,
-			 changeKey: aResponse.nsTypes::ItemId.@ChangeKey,
+			 id: aResponse.getAttributeByTag("t:ItemId", "Id"),
+			 changeKey: aResponse.getAttributeByTag("t:ItemId", "ChangeKey"),
 			 itemType: "response"}, 
 			function(erDeleteItemRequest) { self.removeMeetingItemOk(erDeleteItemRequest);}, 
 			function(erDeleteItemRequest, aCode, aMsg) { self.removeMeetingItemError(erDeleteItemRequest, aCode, aMsg);},
@@ -3776,7 +3776,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			return;
 		}
 
-		var r = <nsTypes:Recurrence xmlns:nsTypes={nsTypes}/>;
+		var r = e.addChildTag("Recurrence", "nsTypes", null);
 
 		/* can't get parameters of RRULEs... have to do it manually :/ */
 		var prop = {};
@@ -3811,36 +3811,42 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		case 'YEARLY':
 			if (prop["BYDAY"]) {
 				var m = prop["BYDAY"].match(/^(-?\d)(..)$/);
-				r.nsTypes::RelativeYearlyRecurrence.nsTypes::DaysOfWeek = dayRevMap[m[2]];
-				r.nsTypes::RelativeYearlyRecurrence.nsTypes::DayOfWeekIndex = weekRevMap[m[1]];
-				r.nsTypes::RelativeYearlyRecurrence.nsTypes::Month = monthIdxMap[prop["BYMONTH"] - 1];
+				var ryr = r.addChildTag("RelativeYearlyRecurrence", "nsTypes", null);
+				ryr.addChildTag("DaysOfWeek", "nsTypes", dayRevMap[m[2]]);
+				ryr.addChildTag("DayOfWeekIndex", "nsTypes", dayRevMap[m[1]]);
+				ryr.addChildTag("Month", "nsTypes", monthIdxMap[prop["BYMONTH"] - 1]);
 			} else {
-				r.nsTypes::AbsoluteYearlyRecurrence.nsTypes::DayOfMonth = prop["BYMONTHDAY"];
-				r.nsTypes::AbsoluteYearlyRecurrence.nsTypes::Month = monthIdxMap[prop["BYMONTH"] - 1];
+				var ayr = r.addChildTag("AbsoluteYearlyRecurrence", "nsTypes", null);
+				ayr.addChildTag("DayOfMonth", "nsTypes", prop["BYMONTHDAY"]);
+				ayr.addChildTag("Month", "nsTypes", monthIdxMap[prop["BYMONTH"] - 1]);
 			}
 			break;
 		case 'MONTHLY':
 			if (prop["BYDAY"]) {
-				r.nsTypes::RelativeMonthlyRecurrence.nsTypes::Interval = rrule.interval;
+				var rmr = r.addChildTag("RelativeMonthlyRecurrence", "nsTypes", null);				
+				rmr.addChildTag("Interval", "nsTypes", rrule.interval);
 				var m = prop["BYDAY"].match(/^(-?\d)(..)$/);
-				r.nsTypes::RelativeMonthlyRecurrence.nsTypes::DaysOfWeek = dayRevMap[m[2]];
-				r.nsTypes::RelativeMonthlyRecurrence.nsTypes::DayOfWeekIndex = weekRevMap[m[1]];
+				rmr.addChildTag("DaysOfWeek", "nsTypes", dayRevMap[m[2]]);
+				rmr.addChildTag("DayOfWeekIndex", "nsTypes", weekRevMap[m[1]]);
 			} else {
-				r.nsTypes::AbsoluteMonthlyRecurrence.nsTypes::Interval = rrule.interval;
-				r.nsTypes::AbsoluteMonthlyRecurrence.nsTypes::DayOfMonth = prop["BYMONTHDAY"];
+				var amr = r.addChildTag("AbsoluteMonthlyRecurrence", "nsTypes", null);
+				amr.addChildTag("Interval", "nsTypes", rrule.interval);
+				amr.addChildTag("DayOfMonth", "nsTypes", prop["BYMONTHDAY"]);
 			}
 			break;
 		case 'WEEKLY':
-			r.nsTypes::WeeklyRecurrence.nsTypes::Interval = rrule.interval;
+			var wr = r.addChildTag("WeeklyRecurrence", "nsTypes", null);
+			wr.addChildTag("Interval", "nsTypes", rrule.interval);
 			var days = [];
 			var daystr = prop["BYDAY"] || dayIdxMap[startDate.weekday];
 			for each (let day in daystr.split(",")) {
 				days.push(dayRevMap[day]);
 			}
-			r.nsTypes::WeeklyRecurrence.nsTypes::DaysOfWeek = days.join(' ');
+			wr.addChildTag("DaysOfWeek", "nsTypes", days.join(' '));
 			break;
 		case 'DAILY':
-			r.nsTypes::DailyRecurrence.nsTypes::Interval = rrule.interval;
+			var dr = r.addChildTag("DailyRecurrence", "nsTypes", null);
+			dr.addChildTag("Interval", "nsTypes", rrule.interval);
 			break;
 		}
 
@@ -3855,8 +3861,9 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		if (rrule.isByCount && rrule.count != -1) {
-			r.nsTypes::NumberedRecurrence.nsTypes::StartDate = startDateStr;
-			r.nsTypes::NumberedRecurrence.nsTypes::NumberOfOccurrences = rrule.count;
+			var nr = r.addChildTag("NumberedRecurrence", "nsTypes", null);
+			nr.addChildTag("StartDate", "nsTypes", startDateStr);
+			nr.addChildTag("NumberOfOccurrences", "nsTypes", rrule.count);
 		} else if (!rrule.isByCount && rrule.untilDate) {
 
 			var endDate = rrule.untilDate.clone();
@@ -3876,15 +3883,15 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				}
 				var endDateStr = cal.toRFC3339(endDate).substr(0, 19); //cal.toRFC3339(tmpEnd).length-6);
 			}
-			r.nsTypes::EndDateRecurrence.nsTypes::StartDate = startDateStr;
-			r.nsTypes::EndDateRecurrence.nsTypes::EndDate = endDateStr;
+			var edr = r.addChildTag("EndDateRecurrence", "nsTypes", null);
+			edr.addChildTag("StartDate", "nsTypes", startDateStr);
+			edr.addChildTag("EndDate", "nsTypes", endDateStr);
 		} else {
-			r.nsTypes::NoEndRecurrence.nsTypes::StartDate = startDateStr;
+			var ner = r.addChildTag("NoEndRecurrence", "nsTypes", null);
+			ner.addChildTag("StartDate", "nsTypes", startDateStr);
 		}
 
 		/* We won't write WKST/FirstDayOfWeek for now because it is Exchange 2010 and up */
-
-		e.appendChild(r);
 	},
 
 	getAlarmTime: function _getAlarmTime(aItem)
@@ -3978,15 +3985,15 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 		if (tmpStr) {
 			this.logInfo("We have a new PidLidReminderSignalTime:"+tmpStr);
-			let eprop = <nsTypes:ExtendedProperty xmlns:nsTypes={nsTypes}/>;
-			eprop.nsTypes::ExtendedFieldURI.@DistinguishedPropertySetId = "Common";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyId = MAPI_PidLidReminderSignalTime;
-			eprop.nsTypes::ExtendedFieldURI.@PropertyType = "SystemTime";
+			var eprop = e.addChildTag("ExtendedProperty", "nsTypes", null);
+			var extField = eprop.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extField.setAttribute("DistinguishedPropertySetId", "Common");
+			extField.setAttribute("PropertyId", MAPI_PidLidReminderSignalTime);
+			extField.setAttribute("PropertyType", "SystemTime");
+
 			var newSnoozeTime = cal.createDateTime(tmpStr);
 			newSnoozeTime = newSnoozeTime.getInTimezone(cal.UTC());
-			eprop.nsTypes::Value = cal.toRFC3339(newSnoozeTime);
-
-			e.appendChild(eprop);
+			eprop.addChildTag("Value", "nsTypes", cal.toRFC3339(newSnoozeTime));
 		}
 
 		this.logInfo("getSingleSnoozeState END");
@@ -4085,15 +4092,16 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		if (tmpStr != "") {
-			let eprop = <nsTypes:ExtendedProperty xmlns:nsTypes={nsTypes}/>;
-			eprop.nsTypes::ExtendedFieldURI.@DistinguishedPropertySetId = "Common";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyId = MAPI_PidLidReminderSignalTime;
-			eprop.nsTypes::ExtendedFieldURI.@PropertyType = "SystemTime";
+			var eprop = e.addChildTag("ExtendedProperty", "nsTypes", null);
+
+			var extField = eprop.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extField.setAttribute("DistinguishedPropertySetId", "Common");
+			extField.setAttribute("PropertyId", MAPI_PidLidReminderSignalTime);
+			extField.setAttribute("PropertyType", "SystemTime");
+			
 			var newSnoozeTime = cal.createDateTime(tmpStr);
 			newSnoozeTime = newSnoozeTime.getInTimezone(cal.UTC());
-			eprop.nsTypes::Value = cal.toRFC3339(newSnoozeTime);
-
-			e.appendChild(eprop);
+			eprop.addChildTag("Value", "nsTypes", cal.toRFC3339(newSnoozeTime));
 		}
 		this.logInfo("getMasterSnoozeStates END");
 		return tmpStr;
@@ -4153,32 +4161,30 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 			}
 
-			let eprop = <nsTypes:ExtendedProperty xmlns:nsTypes={nsTypes}/>;
-			eprop.nsTypes::ExtendedFieldURI.@DistinguishedPropertySetId = "Common";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyId = MAPI_PidLidReminderSet;
-			eprop.nsTypes::ExtendedFieldURI.@PropertyType = "Boolean";
+			var eprop = e.addChildTag("ExtendedProperty", "nsTypes", null);
 
+			var extField = eprop.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extField.setAttribute("DistinguishedPropertySetId", "Common");
+			extField.setAttribute("PropertyId", MAPI_PidLidReminderSet);
+			extField.setAttribute("PropertyType", "Boolean");
 		//	if (nextReminder.indexOf("4501-01-01T00:00:00Z") > -1) {
 				// Reminder is turned off.
 		//		eprop.nsTypes::Value = "false";
 		//	}
 		//	else {
-				eprop.nsTypes::Value = "true";
+				eprop.addChildTag("Value", "nsTypes", "true");
 		//	}
-
-			e.appendChild(eprop);
-
 		}
 		else {
 			this.logInfo("addSnoozeDismissState: item has no alarms");
 
-			let eprop = <nsTypes:ExtendedProperty xmlns:nsTypes={nsTypes}/>;
-			eprop.nsTypes::ExtendedFieldURI.@DistinguishedPropertySetId = "Common";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyId = MAPI_PidLidReminderSet;
-			eprop.nsTypes::ExtendedFieldURI.@PropertyType = "Boolean";
-			eprop.nsTypes::Value = "false";
-
-			e.appendChild(eprop);
+			var eprop = e.addChildTag("ExtendedProperty", "nsTypes", null);
+			
+			var extField = eprop.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extField.setAttribute("DistinguishedPropertySetId", "Common");
+			extField.setAttribute("PropertyId", MAPI_PidLidReminderSet);
+			extField.setAttribute("PropertyType", "Boolean");
+			eprop.addChildTag("Value", "nsTypes", "true");
 		}
 
 		this.logInfo("addSnoozeDismissState: End:"+tmpStr);
@@ -4195,9 +4201,9 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		// The order in which create items are specified is important.
 		// EWS expects the right order.
 
-		var e = <nsTypes:CalendarItem xmlns:nsTypes={nsTypes} xmlns:nsMessages={nsMessages}/>;
+		var e = exchWebService.commonFunctions.xmlToJxon('<nsTypes:CalendarItem xmlns:nsTypes="'+nsTypesStr+'" xmlns:nsMessages="'+nsMessagesStr+'"/>');
 
-		e.nsTypes::Subject = aItem.title;
+		e.addChildTag("Subject", "nsTypes", aItem.title);
 
 		const privacies = { "PUBLIC": "Normal",
 				"CONFIDENTIAL": "Confidential", 
@@ -4205,33 +4211,35 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				null: "Normal" };
 		
 		if (privacies[aItem.privacy] == undefined) {
-			e.nsTypes::Sensitivity = "Normal"; // BUG 82
+			e.addChildTag("Sensitivity", "nsTypes", "Normal");
 		}
 		else {
-			e.nsTypes::Sensitivity = privacies[aItem.privacy];
+			e.addChildTag("Sensitivity", "nsTypes", privacies[aItem.privacy]);
 		}
 
-		e.nsTypes::Body.@BodyType = "Text";
-		e.nsTypes::Body = aItem.getProperty('DESCRIPTION') || "";
+		var body = e.addChildTag("Body", "nsTypes", aItem.getProperty('DESCRIPTION') || "");
+		body.setAttribute("BodyType", "Text");
 
 		var categories = aItem.getCategories({});
+		var categoriesTag = e.addChildTag("Categories", "nsTypes", null);
 		for each (var category in categories) {
-			e.nsTypes::Categories.list += <nsTypes:String xmlns:nsTypes={nsTypes}>{category}</nsTypes:String>;
+			categoriesTag.addChildTag("String", "nsTypes", category);
 		}
 	
-		e.nsTypes::Importance = "Normal";
+		var importance = "Normal";
 		if (aItem.priority > 5) {
-			e.nsTypes::Importance = "Low";
+			importance = "Low";
 		}
 		if (aItem.priority == 5) {
-			e.nsTypes::Importance = "Normal";
+			importance = "Normal";
 		}
 		if (aItem.priority < 5) {
-			e.nsTypes::Importance = "High";
+			importance = "High";
 		}
 		if (aItem.priority == 0) {
-			e.nsTypes::Importance = "Normal";
+			importance = "Normal";
 		}
+		e.addChildTag("Importance", "nsTypes", importance);
 
 		if (aItem.alarmLastAck) {
 			this.logInfo("[[[[[[[[[[[ alarmLastAck:"+aItem.alarmLastAck.icalString+"]]]]]]]]]]]]]]]]]]]");
@@ -4451,31 +4459,31 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				break;
 			}
 	
-			e.nsTypes::ReminderDueBy = exchAlarmStart;
-			e.nsTypes::ReminderIsSet = 'true';
+			e.addChildTag("ReminderDueBy", "nsTypes", exchAlarmStart);
+			e.addChildTag("ReminderIsSet", "nsTypes", "true");
 			if (offset.inSeconds != 0) {
-				e.nsTypes::ReminderMinutesBeforeStart = (offset.inSeconds / 60) * -1;
+				e.addChildTag("ReminderMinutesBeforeStart", "nsTypes", String((offset.inSeconds / 60) * -1));
 			}
 			else {
-				e.nsTypes::ReminderMinutesBeforeStart = 0;
+				e.addChildTag("ReminderMinutesBeforeStart", "nsTypes", "0");
 			}
 
 		}
 		else {
-			e.nsTypes::ReminderIsSet = 'false';
+			e.addChildTag("ReminderIsSet", "nsTypes", "false");
 		}
 
 		// Save snooze/dismiss state
 		this.addSnoozeDismissState(e, aItem, alarmTime);
 
 		if (aItem.getProperty("X-UID")) {
-			e.nsTypes::UID = aItem.getProperty("X-UID");
+			e.addChildTag("UID", "nsTypes", aItem.getProperty("X-UID"));
 		}
 		else {
 // TODO: Check if this is still valid..
 			if (aItem.id) {
 				// This is when we accept and an iTIP
-				e.nsTypes::UID = aItem.id;
+				e.addChildTag("UID", "nsTypes", aItem.id);
 				aItem.setProperty("X-UID", aItem.id);
 				if (aItem.currenceInfo) {
 					this.logInfo("we have recurrence info");
@@ -4501,48 +4509,48 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		};
 
 		if (!this.isInvitation(aItem, true)) {
-			e.nsTypes::Start = exchStart;
-			e.nsTypes::End = exchEnd;
+			e.addChildTag("Start", "nsTypes", exchStart);
+			e.addChildTag("End", "nsTypes", exchEnd);
 
-			e.nsTypes::IsAllDayEvent = aItem.startDate.isDate;
+			e.addChildTag("IsAllDayEvent", "nsTypes", aItem.startDate.isDate);
 	
-			e.nsTypes::LegacyFreeBusyStatus = freeBusy[aItem.getProperty("TRANSP")];
+			e.addChildTag("LegacyFreeBusyStatus", "nsTypes", freeBusy[aItem.getProperty("TRANSP")]);
 	
-			e.nsTypes::Location = aItem.getProperty("LOCATION") || "";
+			e.addChildTag("Location", "nsTypes", aItem.getProperty("LOCATION") || "");
 
 			var attendees = aItem.getAttendees({});
+			var reqAttendees = e.addChildTag("RequiredAttendees", "nsTypes", null);
+			var optAttendees = e.addChildTag("OptionalAttendees", "nsTypes", null);
 			for each (var attendee in attendees) {
-				var ae = <nsTypes:Attendee xmlns:nsTypes={nsTypes}/>;
-	
-				ae.nsTypes::Mailbox.nsTypes::Name = attendee.commonName;
+				switch (attendee.role) {
+				case "REQ-PARTICIPANT":
+					ae = reqAttendees.addChildTag("Attendee", "nsTypes", null);
+					break;
+				case "OPT-PARTICIPANT":
+					ae = optAttendees.addChildTag("Attendee", "nsTypes", null);
+					break;
+				}
+				var mailbox = ae.addChildTag("Name", "nsTypes", null);
+				mailbox.addChildTag("Name", "nsTypes", attendee.commonName);
 
 				var tmpEmailAddress = attendee.id.replace(/^mailto:/, '');
 				if (tmpEmailAddress.indexOf("@") > 0) {
-					ae.nsTypes::Mailbox.nsTypes::EmailAddress = tmpEmailAddress;
+					mailbox.addChildTag("EmailAddress", "nsTypes", tmpEmailAddress);
 				}
 				else {
-					ae.nsTypes::Mailbox.nsTypes::EmailAddress = "unknown@somewhere.com";
+					mailbox.addChildTag("EmailAddress", "nsTypes", "unknown@somewhere.com");
 				}
-				ae.nsTypes::ResponseType = attendeeStatus[attendee.participationStatus];
-	
-				switch (attendee.role) {
-				case "REQ-PARTICIPANT":
-					e.nsTypes::RequiredAttendees.nsTypes::Attendee += ae;
-					break;
-				case "OPT-PARTICIPANT":
-					e.nsTypes::OptionalAttendees.nsTypes::Attendee += ae;
-					break;
-				}
+				ae.addChildTag("ResponseType", "nsTypes", attendeeStatus[attendee.participationStatus]);
 			}
 
 			this.makeRecurrenceRule(aItem, e);
 	
 			if (this.isVersion2007) {
-				e.nsTypes::MeetingTimeZone.@TimeZoneName = this.getEWSTimeZoneId(tmpStart.timezone);
+				e.addChildTag("MeetingTimeZone", "nsTypes", null).setAttribute("TimeZoneName", this.getEWSTimeZoneId(tmpStart.timezone));
 			}
 			else {
-				e.nsTypes::StartTimeZone.@Id = this.getEWSTimeZoneId(tmpStart.timezone);
-				e.nsTypes::EndTimeZone.@Id = this.getEWSTimeZoneId(tmpEnd.timezone);
+				e.addChildTag("StartTimeZone", "nsTypes", null).setAttribute("Id", this.getEWSTimeZoneId(tmpStart.timezone));
+				e.addChildTag("EndTimeZone", "nsTypes", null).setAttribute("Id", this.getEWSTimeZoneId(tmpEnd.timezone));
 			}
 
 		}
@@ -4554,14 +4562,14 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			if ((aItem.hasProperty("X-exchangeITIP1")) && (aItem.getProperty("X-exchangeITIP1") == "true")) {
 				this.logInfo("This is a message which came from an import or an copy/paste operation or is an invitation from an external party outside our Exchange.");
 
-				e.nsTypes::Start = exchStart;
-				e.nsTypes::End = exchEnd;
+				e.addChildTag("Start", "nsTypes", exchStart);
+				e.addChildTag("End", "nsTypes", exchEnd);
 
-				e.nsTypes::IsAllDayEvent = aItem.startDate.isDate;
+				e.addChildTag("IsAllDayEvent", "nsTypes", aItem.startDate.isDate);
 	
-				e.nsTypes::LegacyFreeBusyStatus = freeBusy[aItem.getProperty("TRANSP")];
-	
-				e.nsTypes::Location = aItem.getProperty("LOCATION") || "";
+				e.addChildTag("LegacyFreeBusyStatus", "nsTypes", freeBusy[aItem.getProperty("TRANSP")]);
+					
+				e.addChildTag("Location", "nsTypes", aItem.getProperty("LOCATION") || "");
 
 				// Set if the item is from the user itself or not.
 				if (aItem.organizer) {
@@ -4570,7 +4578,6 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 					}
 					else {
 						this.logInfo(" ## I am NOT the organizer of this meeting.'"+aItem.organizer.id.replace(/^mailto:/, '')+"' is the organizer.");
-//						e.nsTypes::Organizer.nsTypes::Mailbox.nsTypes::EmailAddress = aItem.organizer.id.replace(/^mailto:/, '');
 					}
 				}
 				else {
@@ -4614,11 +4621,11 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				this.makeRecurrenceRule(aItem, e);
 	
 				if (this.isVersion2007) {
-					e.nsTypes::MeetingTimeZone.@TimeZoneName = this.getEWSTimeZoneId(tmpStart.timezone);
+					e.addChildTag("MeetingTimeZone", "nsTypes", null).setAttribute("TimeZoneName", this.getEWSTimeZoneId(tmpStart.timezone));
 				}
 				else {
-					e.nsTypes::StartTimeZone.@Id = this.getEWSTimeZoneId(tmpStart.timezone);
-					e.nsTypes::EndTimeZone.@Id = this.getEWSTimeZoneId(tmpEnd.timezone);
+					e.addChildTag("StartTimeZone", "nsTypes", null).setAttribute("Id", this.getEWSTimeZoneId(tmpStart.timezone));
+					e.addChildTag("EndTimeZone", "nsTypes", null).setAttribute("Id", this.getEWSTimeZoneId(tmpEnd.timezone));
 				}
 
 			}
@@ -4635,37 +4642,44 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			aAction = "modify";
 		}
 
-		var e = <nsTypes:Task xmlns:nsTypes={nsTypes} xmlns:nsMessages={nsMessages}/>;
+		var e = exchWebService.commonFunctions.xmlToJxon('<nsTypes:Task xmlns:nsTypes="'+nsTypesStr+'" xmlns:nsMessages="'+nsMessagesStr+'"/>');
 
-		e.nsTypes::Subject = aItem.title;
+		e.addChildTag("Subject", "nsTypes", aItem.title);
 
 		const privacies = { "PUBLIC": "Normal",
 				"CONFIDENTIAL": "Confidential", 
 				"PRIVATE" : "Private",
 				null: "Normal" };
-		e.nsTypes::Sensitivity = privacies[aItem.privacy];
+		if (privacies[aItem.privacy] == undefined) {
+			e.addChildTag("Sensitivity", "nsTypes", "Normal");
+		}
+		else {
+			e.addChildTag("Sensitivity", "nsTypes", privacies[aItem.privacy]);
+		}
 
-		e.nsTypes::Body.@BodyType = "Text";
-		e.nsTypes::Body = aItem.getProperty('DESCRIPTION') || "";
+		var body = e.addChildTag("Body", "nsTypes", aItem.getProperty('DESCRIPTION') || "");
+		body.setAttribute("BodyType", "Text");
 
 		var categories = aItem.getCategories({});
+		var categoriesTag = e.addChildTag("Categories", "nsTypes", null);
 		for each (var category in categories) {
-			e.nsTypes::Categories.list += <nsTypes:String xmlns:nsTypes={nsTypes}>{category}</nsTypes:String>;
+			categoriesTag.addChildTag("String", "nsTypes", category);
 		}
 	
-		e.nsTypes::Importance = "Normal";
+		var importance = "Normal";
 		if (aItem.priority > 5) {
-			e.nsTypes::Importance = "Low";
+			importance = "Low";
 		}
 		if (aItem.priority == 5) {
-			e.nsTypes::Importance = "Normal";
+			importance = "Normal";
 		}
 		if (aItem.priority < 5) {
-			e.nsTypes::Importance = "High";
+			importance = "High";
 		}
 		if (aItem.priority == 0) {
-			e.nsTypes::Importance = "Normal";
+			importance = "Normal";
 		}
+		e.addChildTag("Importance", "nsTypes", importance);
 		 
 
 		var alarmTime = this.getAlarmTime(aItem);
@@ -4689,14 +4703,14 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			}
 	
 			if (newAlarmTime) {
-				e.nsTypes::ReminderDueBy = cal.toRFC3339(newAlarmTime);
+				e.addChildTag("ReminderDueBy", "nsTypes", cal.toRFC3339(newAlarmTime));
 			}
 
-			e.nsTypes::ReminderIsSet = 'true';
-			e.nsTypes::ReminderMinutesBeforeStart = 0;
+			e.addChildTag("ReminderIsSet", "nsTypes", "true");
+			e.addChildTag("ReminderMinutesBeforeStart", "nsTypes", "0");
 		}
 		else {
-			e.nsTypes::ReminderIsSet = 'false';
+			e.addChildTag("ReminderIsSet", "nsTypes", "false");
 		}
 
 		// Save snooze/dismiss state
@@ -4704,30 +4718,30 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 		// Delegation changes
 		if (aItem.hasProperty("X-exchWebService-PidLidTaskLastUpdate")) {
-			let eprop = <nsTypes:ExtendedProperty xmlns:nsTypes={nsTypes}/>;
-			eprop.nsTypes::ExtendedFieldURI.@DistinguishedPropertySetId = "Task";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyId = "33045";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyType = "SystemTime";
-			eprop.nsTypes::Value = aItem.getProperty("X-exchWebService-PidLidTaskLastUpdate");
-			e.appendChild(eprop); 
+			var eprop = e.addChildTag("ExtendedProperty", "nsTypes", null);
+			var extField = eprop.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extField.setAttribute("DistinguishedPropertySetId", "Task");
+			extField.setAttribute("PropertyId", "33045");
+			extField.setAttribute("PropertyType", "SystemTime");
+			eprop.addChildTag("Value", "nsTypes", aItem.getProperty("X-exchWebService-PidLidTaskLastUpdate"));
 		}
 
 		if (aItem.hasProperty("X-exchWebService-PidLidTaskHistory")) {
-			let eprop = <nsTypes:ExtendedProperty xmlns:nsTypes={nsTypes}/>;
-			eprop.nsTypes::ExtendedFieldURI.@DistinguishedPropertySetId = "Task";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyId = "33050";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyType = "Integer";
-			eprop.nsTypes::Value = aItem.getProperty("X-exchWebService-PidLidTaskHistory");
-			e.appendChild(eprop); 
+			var eprop = e.addChildTag("ExtendedProperty", "nsTypes", null);
+			var extField = eprop.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extField.setAttribute("DistinguishedPropertySetId", "Task");
+			extField.setAttribute("PropertyId", "33050");
+			extField.setAttribute("PropertyType", "Integer");
+			eprop.addChildTag("Value", "nsTypes", aItem.getProperty("X-exchWebService-PidLidTaskHistory"));
 		}
 
 		if (aItem.hasProperty("X-exchWebService-PidLidTaskAccepted")) {
-			let eprop = <nsTypes:ExtendedProperty xmlns:nsTypes={nsTypes}/>;
-			eprop.nsTypes::ExtendedFieldURI.@DistinguishedPropertySetId = "Task";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyId = "33032";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyType = "Boolean";
-			eprop.nsTypes::Value = aItem.getProperty("X-exchWebService-PidLidTaskAccepted");
-			e.appendChild(eprop); 
+			var eprop = e.addChildTag("ExtendedProperty", "nsTypes", null);
+			var extField = eprop.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extField.setAttribute("DistinguishedPropertySetId", "Task");
+			extField.setAttribute("PropertyId", "33032");
+			extField.setAttribute("PropertyType", "Boolean");
+			eprop.addChildTag("Value", "nsTypes", aItem.getProperty("X-exchWebService-PidLidTaskAccepted"));
 		}
 
 
@@ -4747,7 +4761,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			tmpDuration.minutes = -1;
 			tmpStart.addDuration(tmpDuration);*/
 
-			e.nsTypes::CompleteDate = cal.toRFC3339(tmpStart);
+			e.addChildTag("CompleteDate", "nsTypes", cal.toRFC3339(tmpStart));
 		}
 
 
@@ -4758,10 +4772,10 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				aItem.dueDate = aItem.dueDate.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
 			}
 
-			e.nsTypes::DueDate = cal.toRFC3339(aItem.dueDate);
+			e.addChildTag("DueDate", "nsTypes", cal.toRFC3339(aItem.dueDate));
 		}
 		if (aItem.percentComplete) {
-			e.nsTypes::PercentComplete = aItem.percentComplete;
+			e.addChildTag("PercentComplete", "nsTypes", aItem.percentComplete);
 		}
 //}
 
@@ -4775,7 +4789,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 					aItem.entryDate = aItem.entryDate.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
 				}
 
-				e.nsTypes::StartDate = cal.toRFC3339(aItem.entryDate);
+				e.addChildTag("StartDate", "nsTypes", cal.toRFC3339(aItem.entryDate));
 			}
 //		}
 
@@ -4785,9 +4799,14 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				"NEEDS-ACTION" : "WaitingOnOthers",
 				"CANCELLED" : "Deferred",
 				null: "NotStarted" };
-		e.nsTypes::Status = statuses[aItem.status];
+		if (statuses[aItem.status] == undefined) {
+			e.addChildTag("Status", "nsTypes", "NotStarted");
+		}
+		else {
+			e.addChildTag("Status", "nsTypes", statuses[aItem.status]);
+		}
 
-this.logInfo("!!CHANGED:"+String(e));
+		this.logInfo("!!CHANGED:"+String(e));
 
 		return e;
 	},
@@ -4936,13 +4955,18 @@ this.logInfo("!!CHANGED:"+String(e));
 
 	makeUpdateOneItem: function _makeUpdateOneItem(aNewItem, aOldItem, aIndex, aMasterId, aMasterChangeKey, aInvitation)
 	{
-		var upd = <nsTypes:ItemChange xmlns:nsTypes={nsTypes}/>;
+		var upd = exchWebService.commonFunctions.xmlToJxon('<nsTypes:ItemChange xmlns:nsTypes="'+nsTypesStr+'"/>');
 
 		if (!aIndex) {
-			upd.ItemId = <nsTypes:ItemId Id={aOldItem.id} ChangeKey={aOldItem.getProperty("X-ChangeKey")} xmlns:nsTypes={nsTypes}/>;
+			var itemId = upd.addChildTag("ItemId", "nsTypes", null);
+			itemId.setAttribute("Id", aOldItem.id);
+			itemId.setAttribute("ChangeKey", aOldItem.getProperty("X-ChangeKey"));			
 		}
 		else {
-			upd.OccurrenceItemId = <nsTypes:OccurrenceItemId RecurringMasterId={aMasterId} ChangeKey={aMasterChangeKey} InstanceIndex={aIndex} xmlns:nsTypes={nsTypes}/>;
+			var oItemId = upd.addChildTag("OccurrenceItemId", "nsTypes", null);
+			oItemId.setAttribute("RecurringMasterId", aMasterId);
+			oItemId.setAttribute("ChangeKey", aMasterChangeKey);
+			oItemId.setAttribute("InstanceIndex", aIndex);
 		}
 	
 		var isInvitation = aInvitation;
@@ -4964,7 +4988,7 @@ this.logInfo("!!CHANGED:"+String(e));
 			'Organizer'			: true,
 		};
 	
-		var ce = new XMLList();
+		var ce = upd.addChildTag("Updates", "tsTypes", null);
 
 		if (isEvent(aOldItem)) {
 			var oe = this.convertCalAppointmentToExchangeAppointment(aOldItem, null, false);
@@ -4976,99 +5000,111 @@ this.logInfo("!!CHANGED:"+String(e));
 		}
 	
 		var onlySnoozeChanged = true;
+		var ceCount = 0;
 
-		for each (var prop in oe) {
-			if (ne[prop.name()].length() > 0 || noDelete[prop.localName()]) {
+		var oeprops = oe.XPath("*");
+		var neprops = ne.XPath("*");
+		for each (var prop in oeprops) {
+			var fullTagName = prop.nameSpace+':'+prop.tagName;
+			if (ne.getTag(fullTagName) || noDelete[prop.tagName]) {
 				continue;
 			}
 
-			if ((isInvitation) && (ne[prop.name()].length() > 0 || noUpdateOnInvitation[prop.localName()])) {
+			if ((isInvitation) && (ne.getTagValue(fullTagName) || noUpdateOnInvitation[prop.tagName])) {
 				continue;
 			}
 	
-			var de = <nsTypes:DeleteItemField xmlns:nsTypes={nsTypes}/>;
-			if (prop.localName() == "ExtendedProperty") {
-				de.nsTypes::ExtendedFieldURI = prop.nsTypes::ExtendedFieldURI;
+			var de = ce.addChildTag("DeleteItemField", "nsTypes", null);
+			if (prop.tagName == "ExtendedProperty") {
+				de.addChildTagObject(prop.getTag("nsTypes:ExtendedFieldURI"));
 			} else {
-				if ((fieldPathMap[prop.localName()] == "calendar") && (isEvent(aOldItem))) {
-					de.nsTypes::FieldURI.@FieldURI = 'calendar:' + prop.localName();
+				if ((fieldPathMap[prop.tagName] == "calendar") && (isEvent(aOldItem))) {
+					de.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", 'calendar:' + prop.tagName);
 				}
 				else {
-					if ((fieldPathMap[prop.localName()] == "calendar") && (isToDo(aOldItem))) {
-						de.nsTypes::FieldURI.@FieldURI = 'task:' + prop.localName();
+					if ((fieldPathMap[prop.tagName] == "calendar") && (isToDo(aOldItem))) {
+						de.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", 'task:' + prop.tagName);
 					}
 					else {
-						de.nsTypes::FieldURI.@FieldURI = fieldPathMap[prop.localName()] + ':' + prop.localName();
+						de.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", fieldPathMap[prop.tagName] + ':' + prop.tagName);
 					}
 				}
 
 			}
 	
 			onlySnoozeChanged = false;
-			ce += de;
+			ceCount++;
 		}
 
-		for each (var prop in ne) {
+		for each (var prop in neprops) {
+			var fullTagName = prop.nameSpace+':'+prop.tagName;
 
-			if ((isInvitation) && (noUpdateOnInvitation[prop.localName()])) {
+			if ((isInvitation) && (noUpdateOnInvitation[prop.tagName])) {
 				continue;
 			}
 	
 			// Always save lastLightningModified field
 			var doSave = false;
-			if ((prop.localName() == "ExtendedProperty") && (prop.nsTypes::ExtendedFieldURI.@PropertyName == "lastLightningModified")) {
+			if ((prop.tagName == "ExtendedProperty") &&
+				(prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyName") == "lastLightningModified")) {
 				doSave = true;
 			}
 
 			if (! doSave) {
-				if (oe.children().contains(prop)) {
+				var contains = false;
+				for each (var prop2 in oeprops) {
+					//this.logInfo("ne:" + String(prop) + ':' + String(prop2));
+					if (prop2.toString() == prop.toString()) {
+						contains = true;
+						break;
+					}
+				}
+				if (contains) {
 					continue;
 				}
 			}
 	
-			var se = <nsTypes:SetItemField xmlns:nsTypes={nsTypes}/>;
-			if (prop.localName() == "ExtendedProperty") {
-				se.nsTypes::ExtendedFieldURI = prop.nsTypes::ExtendedFieldURI;
+			var se = ce.addChildTag("SetItemField", "nsTypes", null);
+			if (prop.tagName == "ExtendedProperty") {
+				se.addChildTagObject(prop.getTag("nsTypes:ExtendedFieldURI"));
 
-				if ((prop.nsTypes::ExtendedFieldURI.@PropertyId != MAPI_PidLidReminderSignalTime) && (prop.nsTypes::ExtendedFieldURI.@PropertyId != "34051")  && (prop.nsTypes::ExtendedFieldURI.@PropertyId != "34049")) {
+				if ((prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyId") != MAPI_PidLidReminderSignalTime) && 
+				    (prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyId") != "34051") &&
+				    (prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyId") != "34049")) {
 					onlySnoozeChanged = false;
 				}
 			} else {
 
-				if ((fieldPathMap[prop.localName()] == "calendar") && (isEvent(aOldItem))) {
+				if ((fieldPathMap[prop.tagName] == "calendar") && (isEvent(aOldItem))) {
 					onlySnoozeChanged = false;
-					se.nsTypes::FieldURI.@FieldURI = 'calendar:' + prop.localName();
+					se.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", 'calendar:' + prop.tagName);
 				}
 				else {
-					if ((fieldPathMap[prop.localName()] == "calendar") && (isToDo(aOldItem))) {
+					if ((fieldPathMap[prop.tagName] == "calendar") && (isToDo(aOldItem))) {
 						onlySnoozeChanged = false;
-						se.nsTypes::FieldURI.@FieldURI = 'task:' + prop.localName();
+						se.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", 'task:' + prop.tagName);
 					}
 					else {
-						if ((prop.localName() != "ReminderMinutesBeforeStart") && (prop.localName() != "ReminderIsSet")) {
+						if ((prop.tagName != "ReminderMinutesBeforeStart") && (prop.tagName != "ReminderIsSet")) {
 							onlySnoozeChanged = false;
 						}
-						se.nsTypes::FieldURI.@FieldURI = fieldPathMap[prop.localName()] + ':' + prop.localName();
+						se.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", fieldPathMap[prop.tagName] + ':' + prop.tagName);
 					}
 				}
 			}
 			if (isEvent(aOldItem)) {
-				se.nsTypes::CalendarItem.content = prop;
+				se.addChildTag("CalendarItem", "nsTypes", prop);
 			}
 			if (isToDo(aOldItem)) {
-				se.nsTypes::Task.content = prop;
+				se.addChildTag("Task", "nsTypes", prop);
 			}
-	
-			ce += se;
 		}
-	
-		upd.nsTypes::Updates.content = ce;
 	
 		if (onlySnoozeChanged) {
 			this.logInfo("onlySnoozeChanged Or reminder time before start.");
 		}
 
-		if (!ce[0]) {
+		if (ceCount == 0) {
 			return {changes: null, onlySnoozeChanged: onlySnoozeChanged};
 		}
 
@@ -5401,17 +5437,18 @@ this.logInfo("!!CHANGED:"+String(e));
 	{
 		this.logInfo("doAttachmentUpdatesFinalize: item:"+aItem.title+", aSendTo:"+aSendTo);
 
-		var req = <nsTypes:ItemChange xmlns:nsTypes="http://schemas.microsoft.com/exchange/services/2006/types">
-			  <nsTypes:ItemId Id={aId} ChangeKey={aChangeKey}/>
-			  <nsTypes:Updates>
-			    <nsTypes:SetItemField>
-			      <nsTypes:FieldURI FieldURI="item:Subject"/>
-			      <nsTypes:CalendarItem>
-				<nsTypes:Subject>{aItem.title}</nsTypes:Subject>
-			      </nsTypes:CalendarItem>
-			    </nsTypes:SetItemField>
-			  </nsTypes:Updates>
-			</nsTypes:ItemChange>;
+		
+		var e = exchWebService.commonFunctions.xmlToJxon('<nsTypes:ItemChange xmlns:nsTypes="'+nsTypesStr+'">' +
+				'<nsTypes:ItemId Id="' + aId + '" ChangeKey="' + aChangeKey + '"/>' +
+			  	'<nsTypes:Updates>' +
+			    	'<nsTypes:SetItemField>' +
+			      		'<nsTypes:FieldURI FieldURI="item:Subject"/>' +
+			      		'<nsTypes:CalendarItem>' +
+							'<nsTypes:Subject>' + aItem.title + '</nsTypes:Subject>' +
+			      		'</nsTypes:CalendarItem>' +
+			    	'</nsTypes:SetItemField>' +
+			  	'</nsTypes:Updates>' +
+				'</nsTypes:ItemChange>');
 
 		var self = this;
 		this.addToQueue( erUpdateItemRequest,
