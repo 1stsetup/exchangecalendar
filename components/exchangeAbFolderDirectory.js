@@ -940,61 +940,65 @@ exchangeAbFolderDirectory.prototype = {
 				.createInstance(Ci.nsIAbCard);
 	
 			newCard.directoryId = this.uuid;
-			newCard.localId = contact.nsTypes::ItemId.@Id.toString();
-			newCard.setProperty("X-ChangeKey", contact.nsTypes::ItemId.@ChangeKey.toString());
-			newCard.setProperty("DisplayName", contact.nsTypes::DisplayName.toString());
-			newCard.setProperty("FirstName", contact.nsTypes::GivenName.toString());
-			newCard.setProperty("LastName", contact.nsTypes::Surname.toString());
-			newCard.setProperty("PrimaryEmail", contact.nsTypes::EmailAddresses.nsTypes::Entry.(@Key=="EmailAddress1").toString());
-			newCard.setProperty("SecondEmail", contact.nsTypes::EmailAddresses.nsTypes::Entry.(@Key=="EmailAddress2").toString());
+			newCard.localId = contact.getAttributeByTag("t:ItemId", "Id");
+			newCard.setProperty("X-ChangeKey", contact.getAttributeByTag("t:ItemId", "ChangeKey"));
+			newCard.setProperty("DisplayName", contact.getTagValue("t:DisplayName"));
+			newCard.setProperty("FirstName", contact.getTagValue("t:GivenName"));
+			newCard.setProperty("LastName", contact.getTagValue("t:Surname"));
+			newCard.setProperty("PrimaryEmail", contact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress1"]', ""));
+			newCard.setProperty("SecondEmail", contact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress2"]', ""));
 
-			newCard.setProperty("JobTitle", contact.nsTypes::JobTitle.toString());
-			newCard.setProperty("Department", contact.nsTypes::Department.toString());
-			newCard.setProperty("Company", contact.nsTypes::CompanyName.toString());
+			newCard.setProperty("JobTitle", contact.getTagValue("t:JobTitle"));
+			newCard.setProperty("Department", contact.getTagValue("t:Department"));
+			newCard.setProperty("Company", contact.getTagValue("t:CompanyName"));
 
-			newCard.setProperty("HomePhone", contact.nsTypes::PhoneNumbers.nsTypes::Entry.(@Key=="HomePhone").toString());
+			newCard.setProperty("HomePhone", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="HomePhone"]', ""));
 
-/*			var workPhone = contact.nsTypes::PhoneNumbers.nsTypes::Entry.(@Key=="BusinessPhone").toString();
-			if ((workPhone) && (workPhone != "")) {
-				workPhone += "/" + contact.nsTypes::PhoneNumbers.nsTypes::Entry.(@Key=="BusinessPhone2").toString();
+			newCard.setProperty("WorkPhone", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="BusinessPhone"]', ""));
+			newCard.setProperty("WorkPhone2", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="BusinessPhone2"]', ""));
+			newCard.setProperty("CellularNumber", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="MobilePhone"]', ""));
+			newCard.setProperty("PagerNumber", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="Pager"]', ""));
+			newCard.setProperty("FaxNumber", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="Telex"]', ""));
+
+			var homeDetails = contact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Home"]');
+			if (homeDetails.length > 0) {
+				newCard.setProperty("HomeAddress", homeDetails[0].getTagValue('t:Street', ""));
+				newCard.setProperty("HomeCity", homeDetails[0].getTagValue('t:City', ""));
+				newCard.setProperty("HomeState", homeDetails[0].getTagValue('t:State', ""));
+				newCard.setProperty("HomeCountry", homeDetails[0].getTagValue('t:CountryOrRegion', ""));
+				newCard.setProperty("HomeZipCode", homeDetails[0].getTagValue('t:PostalCode', ""));
 			}
-			else {
-				workPhone = contact.nsTypes::PhoneNumbers.nsTypes::Entry.(@Key=="BusinessPhone2").toString();
-			}*/
-			newCard.setProperty("WorkPhone", contact.nsTypes::PhoneNumbers.nsTypes::Entry.(@Key=="BusinessPhone").toString());
-			newCard.setProperty("WorkPhone2", contact.nsTypes::PhoneNumbers.nsTypes::Entry.(@Key=="BusinessPhone2").toString());
-			newCard.setProperty("CellularNumber", contact.nsTypes::PhoneNumbers.nsTypes::Entry.(@Key=="MobilePhone").toString());
-			newCard.setProperty("PagerNumber", contact.nsTypes::PhoneNumbers.nsTypes::Entry.(@Key=="Pager").toString());
-			newCard.setProperty("FaxNumber", contact.nsTypes::PhoneNumbers.nsTypes::Entry.(@Key=="Telex").toString());
 
-			newCard.setProperty("HomeAddress", contact.nsTypes::PhysicalAddresses.nsTypes::Entry.(@Key=="Home").nsTypes::Street.toString());
-			newCard.setProperty("HomeCity", contact.nsTypes::PhysicalAddresses.nsTypes::Entry.(@Key=="Home").nsTypes::City.toString());
-			newCard.setProperty("HomeState", contact.nsTypes::PhysicalAddresses.nsTypes::Entry.(@Key=="Home").nsTypes::State.toString());
-			newCard.setProperty("HomeCountry", contact.nsTypes::PhysicalAddresses.nsTypes::Entry.(@Key=="Home").nsTypes::CountryOrRegion.toString());
-			newCard.setProperty("HomeZipCode", contact.nsTypes::PhysicalAddresses.nsTypes::Entry.(@Key=="Home").nsTypes::PostalCode.toString());
+			var workDetails = contact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Business"]');
+			if (workDetails.length > 0) {
+				newCard.setProperty("WorkAddress", workDetails[0].getTagValue('t:Street', ""));
+				newCard.setProperty("WorkCity", workDetails[0].getTagValue('t:City', ""));
+				newCard.setProperty("WorkState", workDetails[0].getTagValue('t:State', ""));
+				newCard.setProperty("WorkCountry", workDetails[0].getTagValue('t:CountryOrRegion', ""));
+				newCard.setProperty("WorkZipCode", workDetails[0].getTagValue('t:PostalCode', ""));
+			}
 
-			newCard.setProperty("WorkAddress", contact.nsTypes::PhysicalAddresses.nsTypes::Entry.(@Key=="Business").nsTypes::Street.toString());
-			newCard.setProperty("WorkCity", contact.nsTypes::PhysicalAddresses.nsTypes::Entry.(@Key=="Business").nsTypes::City.toString());
-			newCard.setProperty("WorkState", contact.nsTypes::PhysicalAddresses.nsTypes::Entry.(@Key=="Business").nsTypes::State.toString());
-			newCard.setProperty("WorkCountry", contact.nsTypes::PhysicalAddresses.nsTypes::Entry.(@Key=="Business").nsTypes::CountryOrRegion.toString());
-			newCard.setProperty("WorkZipCode", contact.nsTypes::PhysicalAddresses.nsTypes::Entry.(@Key=="Business").nsTypes::PostalCode.toString());
+			var otherDetails = contact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Other"]');
+			if (otherDetails.length > 0) {
+				newCard.setProperty("OtherAddress", workDetails[0].getTagValue('t:Street', ""));
+				newCard.setProperty("OtherCity", workDetails[0].getTagValue('t:City', ""));
+				newCard.setProperty("OtherState", workDetails[0].getTagValue('t:State', ""));
+				newCard.setProperty("OtherCountry", workDetails[0].getTagValue('t:CountryOrRegion', ""));
+				newCard.setProperty("OtherZipCode", workDetails[0].getTagValue('t:PostalCode', ""));
+			}
 
-			newCard.setProperty("OtherAddress", contact.nsTypes::PhysicalAddresses.nsTypes::Entry.(@Key=="Other").nsTypes::Street.toString());
-			newCard.setProperty("OtherCity", contact.nsTypes::PhysicalAddresses.nsTypes::Entry.(@Key=="Other").nsTypes::City.toString());
-			newCard.setProperty("OtherState", contact.nsTypes::PhysicalAddresses.nsTypes::Entry.(@Key=="Other").nsTypes::State.toString());
-			newCard.setProperty("OtherCountry", contact.nsTypes::PhysicalAddresses.nsTypes::Entry.(@Key=="Other").nsTypes::CountryOrRegion.toString());
-			newCard.setProperty("OtherZipCode", contact.nsTypes::PhysicalAddresses.nsTypes::Entry.(@Key=="Other").nsTypes::PostalCode.toString());
+			newCard.setProperty("_AimScreenName", contact.getTagValueByXPath('/t:ImAddresses/t:Entry[@Key="ImAddress"]', ""));
+			newCard.setProperty("WebPage1", contact.getTagValue("t:BusinessHomePage"));
 
-			newCard.setProperty("_AimScreenName", contact.nsTypes::ImAddresses.nsTypes::Entry.(@Key=="ImAddress1").toString());
-			newCard.setProperty("WebPage1", contact.nsTypes::BusinessHomePage.toString());
+			newCard.setProperty("Notes", contact.getTagValue("t:Body"));
 
-			newCard.setProperty("Notes", contact.nsTypes::Body.toString());
+			var birthDay = contact.getTagValue("t:Birthday");
 
-			var birthDay = contact.nsTypes::Birthday.toString();
-
-			newCard.setProperty("BirthYear", birthDay.substr(0,4));
-			newCard.setProperty("BirthMonth", birthDay.substr(5,2));
-			newCard.setProperty("BirthDay", birthDay.substr(8,2));
+			if (birthDay) {
+				newCard.setProperty("BirthYear", birthDay.substr(0,4));
+				newCard.setProperty("BirthMonth", birthDay.substr(5,2));
+				newCard.setProperty("BirthDay", birthDay.substr(8,2));
+			}
 
 
 			if (this.contacts[newCard.localId]) {
@@ -1110,7 +1114,7 @@ exchangeAbFolderDirectory.prototype = {
 
 		for each(var contact in aContacts) {
 			exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString(),2);
-			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: new childCards:"+contact.nsTypes::Subject.toString());//+String(contact));
+			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: new childCards:"+contact.getTagValue("t:Subject"));//+String(contact));
 			this.ecUpdateCard(contact);
 
 		}
@@ -1211,7 +1215,7 @@ exchangeAbFolderDirectory.prototype = {
 
 		for each(var contact in aContacts) {
 			exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString(),2);
-			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: new childCards:"+contact.nsTypes::Subject.toString());
+			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: new childCards:"+contact.getTagValue("t:Subject"));
 			this.ecUpdateCard(contact);
 
 		}

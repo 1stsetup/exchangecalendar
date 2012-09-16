@@ -64,33 +64,38 @@ erGetContactsRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erGetContactsRequest.execute\n");
 
-		var req = <nsMessages:GetItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		req.nsMessages::ItemShape.nsTypes::BaseShape = "AllProperties";
-		req.nsMessages::ItemShape.nsTypes::BodyType = 'Text';
+		var itemShape = req.addChildTag("ItemShape", "nsMessages", null);
+		itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");		
+		itemShape.addChildTag("BodyType", "nsTypes", "Text");
 
-		req.nsMessages::ItemShape.nsTypes::AdditionalProperties.content = <>
-		    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Common" PropertyId={MAPI_PidTagBody} PropertyType="String" xmlns:nsTypes={nsTypes}/>
-		    </>;
+		var extendedFieldURI = itemShape.addChildTag("AdditionalProperties", "nsTypes", null).addChildTag("ExtendedFieldURI", "nsTypes", null);
+		extendedFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
+		extendedFieldURI.setAttribute("PropertyId", MAPI_PidTagBody);
+		extendedFieldURI.setAttribute("PropertyType", "String");
 
-		var itemids = <nsMessages:ItemIds xmlns:nsMessages={nsMessages}/>;
+		var itemids = req.addChildTag("ItemIds", "nsMessages", null);
 		for each (var item in this.ids) {
-			itemids.nsTypes::ItemId += <nsTypes:ItemId Id={item.Id} ChangeKey={item.ChangeKey} xmlns:nsTypes={nsTypes} />;
+			var itemId = itemids.addChildTag("ItemId", "nsTypes", null);
+			itemId.setAttribute("Id", item.Id);
+			itemId.setAttribute("ChangeKey", item.ChangeKey);
 		}
 
-		req.appendChild(itemids);
+		this.parent.xml2jxon = true;
 
-
-		exchWebService.commonFunctions.LOG("erGetContactsRequest.execute 11:"+String(req));
+		//exchWebService.commonFunctions.LOG("erGetContactsRequest.execute:"+String(req));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erGetContactsRequest.onSendOk:"+String(aResp));
+		//exchWebService.commonFunctions.LOG("erGetContactsRequest.onSendOk:"+String(aResp));
+
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:ResponseCode");
 
 		var contacts = [];
-		for each (var e in aResp..nsMessages::Items.*) {
+		for each (var e in aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage/m:Items/*")) {
 			contacts.push(e);
 		}
 

@@ -402,6 +402,16 @@ mivIxml2jxon.prototype = {
 		}
 	},
 
+	getTagValueByXPath: function _getTagValueByXPath(aXPath, aDefaultValue)
+	{
+		var results = this.XPath(aXPath);
+		if (results.length > 0) {
+			return results[0].value;
+		}
+		
+		return aDefaultValue;
+	},
+
 	setParentTag: function _setParentTag(aNewParent)
 	{
 		this.parentTag = aNewParent;
