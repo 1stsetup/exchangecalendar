@@ -87,15 +87,6 @@ erFindTaskItemsRequest.prototype = {
 		var itemShape = req.addChildTag("ItemShape", "nsMessages", null); 
 		itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");
 
-/*		req.nsMessages::Restriction.nsTypes::IsEqualTo.content = <>
-		    	<nsTypes:FieldURI FieldURI="item:ItemClass" xmlns:nsTypes={nsTypes}/>
-
-		    	<nsTypes:FieldURIOrConstant xmlns:nsTypes={nsTypes}>
-			    	<nsTypes:Constant Value="IPM.Task" xmlns:nsTypes={nsTypes}/>
-		    	</nsTypes:FieldURIOrConstant>
-		    </>;*/
-
-
 		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
 		req.addChildTagObject(parentFolder);
 

@@ -103,7 +103,7 @@ erGetFolderRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erGetFolderRequest.onSendOk:"+String(aResp));
+		//exchWebService.commonFunctions.LOG("erGetFolderRequest.onSendOk:"+String(aResp));
 		// Get FolderID and ChangeKey
 		var aError = false;
 		var aCode = 0;

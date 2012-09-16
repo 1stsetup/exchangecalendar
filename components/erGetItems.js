@@ -246,26 +246,6 @@ erGetItemsRequest.prototype = {
 				</>;
 */
 
-/*		if (this.argument.GUID) {
-			req.nsMessages::ItemShape.nsTypes::AdditionalProperties.content += <>
-			    	<nsTypes:ExtendedFieldURI PropertySetId={this.argument.GUID} PropertyName="alarmLastAck" PropertyType="SystemTime" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI PropertySetId={this.argument.GUID} PropertyName="lastLightningModified" PropertyType="SystemTime" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Common" PropertyId={MAPI_PidLidReminderSignalTime} PropertyType="SystemTime" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Common" PropertyId={MAPI_PidLidReminderSet} PropertyType="Boolean" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Common" PropertyId={MAPI_PidLidReminderDelta} PropertyType="Integer" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Task" PropertyId={MAPI_PidLidTaskAccepted} PropertyType="Boolean" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Task" PropertyId={MAPI_PidLidTaskLastUpdate} PropertyType="SystemTime" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Task" PropertyId={MAPI_PidLidTaskAcceptanceState} PropertyType="Integer" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Task" PropertyId={MAPI_PidLidTaskMode} PropertyType="Integer" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Task" PropertyId={MAPI_PidLidTaskGlobalId} PropertyType="Binary" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Task" PropertyId={MAPI_PidLidTaskHistory} PropertyType="Integer" xmlns:nsTypes={nsTypes}/>
-			    	<nsTypes:ExtendedFieldURI DistinguishedPropertySetId="Task" PropertyId={MAPI_PidLidTaskOwnership} PropertyType="Integer" xmlns:nsTypes={nsTypes}/>
-
-			    </>;
-		}
-*/
-		
-
 		var itemids = req.addChildTag("ItemIds", "nsMessages", null);
 		for each (var item in this.ids) {
 			var itemId = itemids.addChildTag("ItemId", "nsTypes", null);
