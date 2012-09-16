@@ -66,6 +66,7 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 	this.messageLength = 0;
 	this.closed = false;
 	this.parentTag = null;
+	this.nameSpaces = {};
 
 	this.uuid = exchWebService.commonFunctions.getUUID();
 
@@ -969,7 +970,10 @@ mivIxml2jxon.prototype = {
 		case "*" : // Wildcard. Will parse all children.
 			tmpPath = tmpPath.substr(1);
 			for (var index in this) {
-				if ((index.indexOf(tagSeparator) > -1) && (this[index].tagName != this.tagName)) {
+				if ((this[index]) && (!this[index].tagName)) {
+					this.logInfo("  !! tag: Weird missing tagName for this["+index+"]", -1);	
+				}
+				if ((index.indexOf(tagSeparator) > -1) && (this[index]) && (this[index].tagName) && (this[index].tagName != this.tagName)) {
 					this.logInfo(" -- tag:"+index, 1);
 					if (Array.isArray(this[index])) {
 						for (var index2 in this[index]) {
