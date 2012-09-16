@@ -5098,12 +5098,14 @@ this.logInfo("!!CHANGED:"+String(e));
 					}
 				}
 			}
+			var parentTag = null;
 			if (isEvent(aOldItem)) {
-				se.addChildTag("CalendarItem", "nsTypes", prop.value);
+				parentTag = se.addChildTag("CalendarItem", "nsTypes", null);
 			}
 			if (isToDo(aOldItem)) {
-				se.addChildTag("Task", "nsTypes", prop.value);
+				parentTag = se.addChildTag("Task", "nsTypes", null);
 			}
+			parentTag.addChildTagObject(prop);
 			ceCount++;
 		}
 	
