@@ -55,6 +55,8 @@ var nsMessages = new Namespace("nsMessages", "http://schemas.microsoft.com/excha
 const nsSoapStr = "http://schemas.xmlsoap.org/soap/envelope/";
 const nsTypesStr = "http://schemas.microsoft.com/exchange/services/2006/types";
 const nsMessagesStr = "http://schemas.microsoft.com/exchange/services/2006/messages";
+const nsAutodiscoverResponseStr1 = "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006";
+const nsAutodiscoverResponseStr2 = "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a";
 
 var nsAutodiscoverResponse = new Namespace("nsAutodiscoverResponse", "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a");
 
@@ -482,6 +484,8 @@ ExchangeRequest.prototype = {
 				newXML.addNameSpace("s", nsSoapStr);
 				newXML.addNameSpace("m", nsMessagesStr);
 				newXML.addNameSpace("t", nsTypesStr);
+				newXML.addNameSpace("a1", nsAutodiscoverResponseStr1);
+				newXML.addNameSpace("a2", nsAutodiscoverResponseStr2);
 				newXML.processXMLString(xml, 0, null);
 			}
 			catch(exc) { this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 

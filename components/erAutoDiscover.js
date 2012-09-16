@@ -108,7 +108,7 @@ erAutoDiscoverRequest.prototype = {
 		var aMsg = String(aResp);
 
 		// Try to get the Displayname if it is available
-		var tag = aResp.XPath("/_default_:Autodiscover/_default_:Response/_default_:User/_default_:DisplayName");
+		var tag = aResp.XPath("/a1:Autodiscover/a2:Response/a2:User/a2:DisplayName");
 		if (tag.length > 0) {
 			DisplayName = tag[0].value;
 		}
@@ -117,7 +117,7 @@ erAutoDiscoverRequest.prototype = {
 		}
 
 		// Try to get the SMTP address if it is available
-		var tag = aResp.XPath("/_default_:Autodiscover/_default_:Response/_default_:User/_default_:AutoDiscoverSMTPAddress");
+		var tag = aResp.XPath("/a1:Autodiscover/a2:Response/a2:User/a2:AutoDiscoverSMTPAddress");
 		if (tag.length > 0) {
 			SMTPaddress = tag[0].value;
 		}
@@ -126,15 +126,22 @@ erAutoDiscoverRequest.prototype = {
 		}
 
 		// Try to get the EWS urls if they are available
-		ewsUrls = aResp.XPath("/_default_:Autodiscover/_default_:Response/_default_:Account/_default_:Protocol[/_default_:Type='WEB']//_default_:ASUrl");
+		ewsUrls = aResp.XPath("/a1:Autodiscover/a2:Response/a2:Account/a2:Protocol[a2:Type='WEB']/*/a2:Protocol/a2:ASUrl");
 		if (ewsUrls.length > 0) {
-			exchWebService.commonFunctions.LOG(" cc:"+ewsUrls+".");
+			exchWebService.commonFunctions.LOG(" cc protocol type WEB:"+ewsUrls+".");
 			aError = false;
 		}
 		else {
-			aMsg = "autodiscoverOk error getting ewsUrls from:"+this.parent.currentUrl;
-			aCode = this.parent.ER_ERROR_AUTODISCOVER_GET_EWSULR;
-			aError = true;
+			ewsUrls = aResp.XPath("/a1:Autodiscover/a2:Response/a2:Account/a2:Protocol[a2:Type='EXCH']/a2:EwsUrl");
+			if (ewsUrls.length > 0) {
+				exchWebService.commonFunctions.LOG(" cc protocol type EXCH:"+ewsUrls+".");
+				aError = false;
+			}
+			else {
+				aMsg = "autodiscoverOk error getting ewsUrls from:"+this.parent.currentUrl;
+				aCode = this.parent.ER_ERROR_AUTODISCOVER_GET_EWSULR;
+				aError = true;
+			}
 		}
 	
 		if (aError) {
