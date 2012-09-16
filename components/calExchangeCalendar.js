@@ -4642,38 +4642,44 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			aAction = "modify";
 		}
 
-		throw "cal:convertCalTaskToExchangeTask:var e = <nsTypes:Task xmlns:nsTypes={nsTypes} xmlns:nsMessages={nsMessages}/>";
-		
+		var e = exchWebService.commonFunctions.xmlToJxon('<nsTypes:Task xmlns:nsTypes="'+nsTypesStr+'" xmlns:nsMessages="'+nsMessagesStr+'"/>');
 
-		e.nsTypes::Subject = aItem.title;
+		e.addChildTag("Subject", "nsTypes", aItem.title);
 
 		const privacies = { "PUBLIC": "Normal",
 				"CONFIDENTIAL": "Confidential", 
 				"PRIVATE" : "Private",
 				null: "Normal" };
-		e.nsTypes::Sensitivity = privacies[aItem.privacy];
+		if (privacies[aItem.privacy] == undefined) {
+			e.addChildTag("Sensitivity", "nsTypes", "Normal");
+		}
+		else {
+			e.addChildTag("Sensitivity", "nsTypes", privacies[aItem.privacy]);
+		}
 
-		e.nsTypes::Body.@BodyType = "Text";
-		e.nsTypes::Body = aItem.getProperty('DESCRIPTION') || "";
+		var body = e.addChildTag("Body", "nsTypes", aItem.getProperty('DESCRIPTION') || "");
+		body.setAttribute("BodyType", "Text");
 
 		var categories = aItem.getCategories({});
+		var categoriesTag = e.addChildTag("Categories", "nsTypes", null);
 		for each (var category in categories) {
-			e.nsTypes::Categories.list += <nsTypes:String xmlns:nsTypes={nsTypes}>{category}</nsTypes:String>;
+			categoriesTag.addChildTag("String", "nsTypes", category);
 		}
 	
-		e.nsTypes::Importance = "Normal";
+		var importance = "Normal";
 		if (aItem.priority > 5) {
-			e.nsTypes::Importance = "Low";
+			importance = "Low";
 		}
 		if (aItem.priority == 5) {
-			e.nsTypes::Importance = "Normal";
+			importance = "Normal";
 		}
 		if (aItem.priority < 5) {
-			e.nsTypes::Importance = "High";
+			importance = "High";
 		}
 		if (aItem.priority == 0) {
-			e.nsTypes::Importance = "Normal";
+			importance = "Normal";
 		}
+		e.addChildTag("Importance", "nsTypes", importance);
 		 
 
 		var alarmTime = this.getAlarmTime(aItem);
@@ -4697,14 +4703,14 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			}
 	
 			if (newAlarmTime) {
-				e.nsTypes::ReminderDueBy = cal.toRFC3339(newAlarmTime);
+				e.addChildTag("ReminderDueBy", "nsTypes", cal.toRFC3339(newAlarmTime));
 			}
 
-			e.nsTypes::ReminderIsSet = 'true';
-			e.nsTypes::ReminderMinutesBeforeStart = 0;
+			e.addChildTag("ReminderIsSet", "nsTypes", "true");
+			e.addChildTag("ReminderMinutesBeforeStart", "nsTypes", "0");
 		}
 		else {
-			e.nsTypes::ReminderIsSet = 'false';
+			e.addChildTag("ReminderIsSet", "nsTypes", "false");
 		}
 
 		// Save snooze/dismiss state
@@ -4712,30 +4718,30 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 		// Delegation changes
 		if (aItem.hasProperty("X-exchWebService-PidLidTaskLastUpdate")) {
-			let eprop = <nsTypes:ExtendedProperty xmlns:nsTypes={nsTypes}/>;
-			eprop.nsTypes::ExtendedFieldURI.@DistinguishedPropertySetId = "Task";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyId = "33045";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyType = "SystemTime";
-			eprop.nsTypes::Value = aItem.getProperty("X-exchWebService-PidLidTaskLastUpdate");
-			e.appendChild(eprop); 
+			var eprop = e.addChildTag("ExtendedProperty", "nsTypes", null);
+			var extField = eprop.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extField.setAttribute("DistinguishedPropertySetId", "Task");
+			extField.setAttribute("PropertyId", "33045");
+			extField.setAttribute("PropertyType", "SystemTime");
+			eprop.addChildTag("Value", "nsTypes", aItem.getProperty("X-exchWebService-PidLidTaskLastUpdate"));
 		}
 
 		if (aItem.hasProperty("X-exchWebService-PidLidTaskHistory")) {
-			let eprop = <nsTypes:ExtendedProperty xmlns:nsTypes={nsTypes}/>;
-			eprop.nsTypes::ExtendedFieldURI.@DistinguishedPropertySetId = "Task";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyId = "33050";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyType = "Integer";
-			eprop.nsTypes::Value = aItem.getProperty("X-exchWebService-PidLidTaskHistory");
-			e.appendChild(eprop); 
+			var eprop = e.addChildTag("ExtendedProperty", "nsTypes", null);
+			var extField = eprop.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extField.setAttribute("DistinguishedPropertySetId", "Task");
+			extField.setAttribute("PropertyId", "33050");
+			extField.setAttribute("PropertyType", "Integer");
+			eprop.addChildTag("Value", "nsTypes", aItem.getProperty("X-exchWebService-PidLidTaskHistory"));
 		}
 
 		if (aItem.hasProperty("X-exchWebService-PidLidTaskAccepted")) {
-			let eprop = <nsTypes:ExtendedProperty xmlns:nsTypes={nsTypes}/>;
-			eprop.nsTypes::ExtendedFieldURI.@DistinguishedPropertySetId = "Task";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyId = "33032";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyType = "Boolean";
-			eprop.nsTypes::Value = aItem.getProperty("X-exchWebService-PidLidTaskAccepted");
-			e.appendChild(eprop); 
+			var eprop = e.addChildTag("ExtendedProperty", "nsTypes", null);
+			var extField = eprop.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extField.setAttribute("DistinguishedPropertySetId", "Task");
+			extField.setAttribute("PropertyId", "33032");
+			extField.setAttribute("PropertyType", "Boolean");
+			eprop.addChildTag("Value", "nsTypes", aItem.getProperty("X-exchWebService-PidLidTaskAccepted"));
 		}
 
 
@@ -4755,7 +4761,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			tmpDuration.minutes = -1;
 			tmpStart.addDuration(tmpDuration);*/
 
-			e.nsTypes::CompleteDate = cal.toRFC3339(tmpStart);
+			e.addChildTag("CompleteDate", "nsTypes", cal.toRFC3339(tmpStart));
 		}
 
 
@@ -4766,10 +4772,10 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				aItem.dueDate = aItem.dueDate.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
 			}
 
-			e.nsTypes::DueDate = cal.toRFC3339(aItem.dueDate);
+			e.addChildTag("DueDate", "nsTypes", cal.toRFC3339(aItem.dueDate));
 		}
 		if (aItem.percentComplete) {
-			e.nsTypes::PercentComplete = aItem.percentComplete;
+			e.addChildTag("PercentComplete", "nsTypes", aItem.percentComplete);
 		}
 //}
 
@@ -4783,7 +4789,7 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 					aItem.entryDate = aItem.entryDate.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
 				}
 
-				e.nsTypes::StartDate = cal.toRFC3339(aItem.entryDate);
+				e.addChildTag("StartDate", "nsTypes", cal.toRFC3339(aItem.entryDate));
 			}
 //		}
 
@@ -4793,9 +4799,14 @@ this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				"NEEDS-ACTION" : "WaitingOnOthers",
 				"CANCELLED" : "Deferred",
 				null: "NotStarted" };
-		e.nsTypes::Status = statuses[aItem.status];
+		if (statuses[aItem.status] == undefined) {
+			e.addChildTag("Status", "nsTypes", "NotStarted");
+		}
+		else {
+			e.addChildTag("Status", "nsTypes", statuses[aItem.status]);
+		}
 
-this.logInfo("!!CHANGED:"+String(e));
+		this.logInfo("!!CHANGED:"+String(e));
 
 		return e;
 	},
