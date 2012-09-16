@@ -95,7 +95,7 @@ erDeleteItemRequest.prototype = {
 
 		var affectedTaskOccurrences = "";
 
-		var itemids = <nsMessages:ItemIds xmlns:nsMessages={nsMessages}/>;
+		var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ItemIds xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
 		if (this.argument.whichOccurrence == "all_occurrences") {
 			this.itemType = "master";  // Seems if we want to delete all occurrences then we need to delete the master.
@@ -103,13 +103,20 @@ erDeleteItemRequest.prototype = {
 
 		switch (this.itemType) {
 			case "single" :
-				itemids.nsTypes::ItemId += <nsTypes:ItemId Id={this.id} ChangeKey={this.changeKey} xmlns:nsTypes={nsTypes} />;
+				var itemId = itemids.addChildTag("ItemId", "nsTypes", null);
+				itemId.setAttribute("Id", this.id);
+				itemId.setAttribute("ChangeKey", this.changeKey);
+
 				if (cal.isToDo(this.argument.item)) {
 					affectedTaskOccurrences='AllOccurrences';
 				}
 				break;
 			case "occurrence" :
-				itemids.nsTypes::OccurrenceItemId += <nsTypes:OccurrenceItemId RecurringMasterId={this.argument.masterID} ChangeKey={this.argument.masterChangeKey} InstanceIndex={this.itemIndex} xmlns:nsTypes={nsTypes} />;
+				var occurrenceItemId = itemids.addChildTag("OccurrenceItemId", "nsTypes", null);
+				occurrenceItemId.setAttribute("RecurringMasterId", this.argument.masterID);
+				occurrenceItemId.setAttribute("ChangeKey", this.argument.masterChangeKey);
+				occurrenceItemId.setAttribute("InstanceIndex", this.itemIndex);
+
 				if (this.argument.whichOccurrence == "single_occurence") {
 					affectedTaskOccurrences='SpecifiedOccurrenceOnly';
 				}
@@ -118,8 +125,10 @@ erDeleteItemRequest.prototype = {
 				}
 				break;
 			case "master" :
-				itemids.nsTypes::ItemId += <nsTypes:ItemId Id={this.id} ChangeKey={this.changeKey} xmlns:nsTypes={nsTypes} />;
-//				itemids.nsTypes::RecurringMasterItemId += <nsTypes:RecurringMasterItemId OccurrenceId={this.id} ChangeKey={this.changeKey} xmlns:nsTypes={nsTypes} />;
+				var itemId = itemids.addChildTag("ItemId", "nsTypes", null);
+				itemId.setAttribute("Id", this.id);
+				itemId.setAttribute("ChangeKey", this.changeKey);
+
 				if (this.argument.whichOccurrence == "single_occurence") {
 					affectedTaskOccurrences='SpecifiedOccurrenceOnly';
 				}
@@ -129,22 +138,27 @@ erDeleteItemRequest.prototype = {
 				break;
 			case "meeting":
 			case "response":
-				itemids.nsTypes::ItemId += <nsTypes:ItemId Id={this.id} ChangeKey={this.changeKey} xmlns:nsTypes={nsTypes} />;
+				var itemId = itemids.addChildTag("ItemId", "nsTypes", null);
+				itemId.setAttribute("Id", this.id);
+				itemId.setAttribute("ChangeKey", this.changeKey);
+
 				break;
 		}
 
-		var req = <nsMessages:DeleteItem DeleteType="HardDelete" xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:DeleteItem DeleteType="HardDelete" xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
 		if ((this.itemType != "meeting") && (cal.isEvent(this.argument.item))) {
-			req.@SendMeetingCancellations = sendMeetingCancellations;
+			req.setAttribute("SendMeetingCancellations", sendMeetingCancellations);
 		}	
 
 		if (affectedTaskOccurrences != "") {
-			req.@AffectedTaskOccurrences = affectedTaskOccurrences;
+			req.setAttribute("AffectedTaskOccurrences", affectedTaskOccurrences);
 		}
 
-		req.appendChild(itemids);
+		req.addChildTagObject(itemids);
 
+		this.parent.xml2jxon = true;
+		
 		//exchWebService.commonFunctions.LOG("erDeleteItemRequest.execute>"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
@@ -153,13 +167,14 @@ erDeleteItemRequest.prototype = {
 	{
 		//exchWebService.commonFunctions.LOG("erDeleteItemRequest.onSendOk>"+String(aResp));
 
-		try {
-			var responseCode = aResp..nsMessages::ResponseCode.toString();
-		}
-		catch(err) {
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:DeleteItemResponse/m:ResponseMessages/m:DeleteItemResponseMessage/m:ResponseCode");
+
+		if (rm.length == 0) {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
 			return;
 		}
+
+		var responseCode = rm[0].value;
 
 		if ((responseCode != "NoError") && (responseCode != "ErrorItemNotFound")) {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on deleting item:"+responseCode);
