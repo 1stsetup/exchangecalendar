@@ -91,7 +91,7 @@ erFindContactsRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erFindContactsRequest.onSendOk:"+String(aResp));
+		exchWebService.commonFunctions.LOG("erFindContactsRequest.onSendOk:"+String(aResp));
 
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:ResponseCode");
 
@@ -117,14 +117,13 @@ erFindContactsRequest.prototype = {
 			var totalItemsInView = rootFolder[0].getAttribute("TotalItemsInView", 0);
 			var includesLastItemInRange = rootFolder[0].getAttribute("IncludesLastItemInRange", "true");
 
-			var contacts = rootFolder[0].XPath("/t:Items/t:Contact");
-			for each (var contact in contacts) {
+			for each (var contact in rootFolder[0].XPath("/t:Items/t:Contact")) {
+				exchWebService.commonFunctions.LOG("erFindContactsRequest.contacts: id:"+contact.getAttributeByTag("t:ItemId", "Id")+", changekey:"+contact.getAttributeByTag("t:ItemId", "ChangeKey"));
 				contacts.push({Id: contact.getAttributeByTag("t:ItemId", "Id"),
 					  ChangeKey: contact.getAttributeByTag("t:ItemId", "ChangeKey")});
 			}
 		
-			var distributionLists = rootFolder[0].XPath("/t:Items/t:DistributionList");
-			for each (var distlist in distributionLists) {
+			for each (var distlist in rootFolder[0].XPath("/t:Items/t:DistributionList")) {
 				distlists.push({Id: distlist.getAttributeByTag("t:ItemId", "Id"),
 					  ChangeKey: distlist.getAttributeByTag("t:ItemId", "ChangeKey")});
 			}
