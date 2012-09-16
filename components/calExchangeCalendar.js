@@ -5446,7 +5446,7 @@ this.logInfo("!!CHANGED:"+String(e));
 	{
 		this.logInfo("doAttachmentUpdatesFinalize: item:"+aItem.title+", aSendTo:"+aSendTo);
 
-		var req = <nsTypes:ItemChange xmlns:nsTypes="http://schemas.microsoft.com/exchange/services/2006/types">
+		/*var req = <nsTypes:ItemChange xmlns:nsTypes="http://schemas.microsoft.com/exchange/services/2006/types">
 			  <nsTypes:ItemId Id={aId} ChangeKey={aChangeKey}/>
 			  <nsTypes:Updates>
 			    <nsTypes:SetItemField>
@@ -5456,7 +5456,14 @@ this.logInfo("!!CHANGED:"+String(e));
 			      </nsTypes:CalendarItem>
 			    </nsTypes:SetItemField>
 			  </nsTypes:Updates>
-			</nsTypes:ItemChange>;
+			</nsTypes:ItemChange>;*/
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsTypes:ItemChange xmlns:nsTypes="'+nsTypesStr+'">');
+		var itemId = req.addChildTag("ItemId", "nsTypes", null);
+		itemId.setAttribute("Id", aId);
+		itemId.setAttribute("ChangeKey", aChangeKey);
+		var setItemField = req.addChildTag("Update", "nsTypes", null).addChildTag("SetItemField", "nsTypes", null);
+		setItemField.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Subject");
+		setItemField.addChildTag("CalendarItem", "nsTypes", null).addChildTag("Subject", "nsTypes", aItem.title);
 
 		var self = this;
 		this.addToQueue( erUpdateItemRequest,
