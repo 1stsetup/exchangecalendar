@@ -76,10 +76,12 @@ erForewardItemRequest.prototype = {
 	{
 		exchWebService.commonFunctions.LOG("erForewardItemRequest.execute\n");
 
-		var req = <nsMessages:CreateItem xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
-		req.@MessageDisposition="SendAndSaveCopy"; 
-		var consemail = new Array();
-		
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:CreateItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		req.setAttribute("MessageDisposition", "SendAndSaveCopy");
+
+		var forwardItem = req.addChildTag("Items", "nsMessages", null).addChildTag("ForwardItem", "nsTypes", null);
+		var toRecipients = forwardItem.addChildTag("ToRecipients", "nsTypes", null);
+
 		for each (let emailId in this.argument.attendees) 
                 { 
                         var email = new String(emailId); 
@@ -87,42 +89,50 @@ erForewardItemRequest.prototype = {
                         var end = email.indexOf('>'); 
 			let mailbox = <nsTypes:Mailbox xmlns:nsTypes={nsTypes}/>;
 			if(start<0){
-				mailbox.nsTypes::EmailAddress =email;				
+				toRecipients.addChildTag("Mailbox", "nsTypes", null).addChildTag("EmailAddress", "nsTypes", email);
 			}
 			else{
-				mailbox.nsTypes::EmailAddress =email.slice(start+1,end);
+				toRecipients.addChildTag("Mailbox", "nsTypes", null).addChildTag("EmailAddress", "nsTypes", email.slice(start+1,end));
 			}
-			consemail.push(mailbox);	
                 }
-		var arrLen = consemail.length ;
-		for (let j=1; j<=arrLen ; j++)
-		{		
-   			req.nsMessages::Items.nsTypes::ForwardItem.nsTypes::ToRecipients.nsTypes += consemail.pop();
-		}
+		
+		var referenceItemId = forwardItem.addChildTag("ReferenceItemId", "nsTypes", null);
+		referenceItemId.setAttribute("Id", this.argument.item.id);
+		referenceItemId.setAttribute("ChangeKey", this.argument.changeKey);
 
-		req.nsMessages::Items.nsTypes::ForwardItem.nsTypes::ReferenceItemId.@Id=this.argument.item.id; 
-		req.nsMessages::Items.nsTypes::ForwardItem.nsTypes::ReferenceItemId.@ChangeKey=this.argument.changeKey; 
-		req.nsMessages::Items.nsTypes::ForwardItem.nsTypes::NewBodyContent.@BodyType="Text"; 
-		req.nsMessages::Items.nsTypes::ForwardItem.nsTypes::NewBodyContent=this.argument.description; 
-		exchWebService.commonFunctions.LOG("erForewardItemRequest.execute>"+String(this.parent.makeSoapMessage(req)));
-                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		forwardItem.addChildTag("NewBodyContent", "nsTypes", this.argument.description).setAttribute("BodyType", "Text");
+
+		this.parent.xml2jxon = true;
+		
+		//exchWebService.commonFunctions.LOG("erForewardItemRequest.execute>"+String(this.parent.makeSoapMessage(req)));
+ 
+               this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 		
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erForewardItemRequest.onSendOk: "+String(aResp)+"\n");
-		try {
-			var responseCode = aResp..nsMessages::ResponseCode.toString();
-		}
-		catch(err) {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Response does not contain expected field");
+		//exchWebService.commonFunctions.LOG("erForewardItemRequest.onSendOk: "+String(aResp)+"\n");
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:CreateItemResponse/m:ResponseMessages/m:CreateItemResponseMessage/m:ResponseCode");
+
+		if (rm.length == 0) {
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
 			return;
 		}
+
+		var responseCode = rm[0].value;
+
 		var response;
 		if (responseCode != "NoError") {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on creating item:("+responseCode+") "+String(aResp));
-			response="Event forewarding not successful!";
+			var messageText = aResp.XPath("/s:Envelope/s:Body/m:CreateItemResponse/m:ResponseMessages/m:CreateItemResponseMessage/m:MessageText");
+			if (messageText.length == 0) {
+				messageText = "(unknown)";
+			}
+			else {
+				messageText = messageText[0].value;
+			}
+			response="Event forewarding not successful!:"+messageText+"("+responseCode+")";
+			//this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Event forewarding not successful!:"+messageText+"("+responseCode+")" );
 		}
 		else{
 			response = "Event forewarding successful!";
