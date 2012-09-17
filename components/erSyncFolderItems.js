@@ -157,7 +157,7 @@ erSyncFolderItemsRequest.prototype = {
 						this.updates.push({Id: calendarItem.getAttribute("Id").toString(),
 					  ChangeKey: calendarItem.getAttribute("ChangeKey").toString()});
 					}
-					var tasks = update.XPath("/m:Task/t:ItemId");
+					var tasks = update.XPath("/t:Task/t:ItemId");
 					for each (var task in tasks) {
 						this.updates.push({Id: task.getAttribute("Id").toString(),
 					  ChangeKey: task.getAttribute("ChangeKey").toString()});
