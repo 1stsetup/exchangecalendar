@@ -1,3 +1,6 @@
+Version 3.0.0-beta2:
+- Fixed two parts which were not yet converted. Editing of tasks still to do.
+
 Version 3.0.0-beta:
 - Complete rewrite of all xml handling stuff from using e4x to the new xmlToJxon object.
 
