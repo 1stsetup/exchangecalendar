@@ -5002,8 +5002,8 @@ this.logInfo("!!CHANGED:"+String(e));
 		for each (var prop in oeprops) {
 			var fullTagName = prop.nameSpace+':'+prop.tagName;
 			if (ne.getTags(fullTagName).length > 0 || noDelete[prop.tagName]) {
-				if (ne.getTags(fullTagName).length > 0) { this.logInfo("     -- ne.getTags("+fullTagName+").length > 0") };
-				if (noDelete[prop.tagName]) { this.logInfo("     -- noDelete["+prop.tagName+"] == true") };
+				if (ne.getTags(fullTagName).length > 0) { this.logInfo("     -- ne.getTags("+fullTagName+").length > 0", 2) };
+				if (noDelete[prop.tagName]) { this.logInfo("     -- noDelete["+prop.tagName+"] == true", 2) };
 				continue;
 			}
 
@@ -5036,7 +5036,7 @@ this.logInfo("!!CHANGED:"+String(e));
 		var oeStr = oe.toString();
 		for each (var prop in neprops) {
 			var fullTagName = prop.nameSpace+':'+prop.tagName;
-			this.logInfo("    ???: neprops: tagName:"+prop.tagName+","+prop.toString());
+			//this.logInfo("    ???: neprops: tagName:"+prop.tagName+","+prop.toString());
 
 			if ((isInvitation) && (noUpdateOnInvitation[prop.tagName])) {
 				continue;
@@ -5046,30 +5046,16 @@ this.logInfo("!!CHANGED:"+String(e));
 			var doSave = false;
 			if ((prop.tagName == "ExtendedProperty") &&
 				(prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyName", "") == "lastLightningModified")) {
-				this.logInfo("    ???: doSave = true for tagName:"+prop.tagName+","+prop.toString());
+				//this.logInfo("    ???: doSave = true for tagName:"+prop.tagName+","+prop.toString());
 				doSave = true;
 			}
 
 			if (! doSave) {
 				if (oeStr.indexOf(prop.toString()) > -1) {
-					this.logInfo( "       !!! Equal to old value:"+prop.toString());
+					this.logInfo( "       !!! Equal to old value:"+prop.toString(), 2);
 					continue;
 				}
-				this.logInfo( "       !!! NOT EQUAL to old value:"+prop.toString());
-/*				var contains = false;
-				for each (var prop2 in oeprops) {
-					if (prop2.toString() == prop.toString()) {
-						this.logInfo("   !!! ne:" + prop2.toString() + ' == ' + prop.toString());
-						contains = true;
-						break;
-					}
-					else {
-						this.logInfo("   ??? ne:" + prop2.toString() + ' == ' + prop.toString());
-					}
-				}
-				if (contains) {
-					continue;
-				}*/
+				this.logInfo( "       !!! NOT EQUAL to old value:"+prop.toString(), 2);
 			}
 	
 			var se = ce.addChildTag("SetItemField", "nsTypes", null);

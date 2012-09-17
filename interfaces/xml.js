@@ -982,7 +982,7 @@ mivIxml2jxon.prototype = {
 			tmpPath = tmpPath.substr(1);
 			for (var index in this) {
 
-				if ((this[index]) && (index.indexOf(tagSeparator))) {
+				if ((this[index]) && (index.indexOf(tagSeparator) > -1)) {
 					var tmpTagName = "";
 					var tmpIsArray = isArray(this[index]);
 					if (tmpIsArray) {
@@ -992,8 +992,8 @@ mivIxml2jxon.prototype = {
 						tmpTagName = this[index].tagName;
 					}
 
-					if (this[index].tagName != this.tagName) {
-						this.logInfo(" -- tag:"+index, 1);
+					if (tmpTagName != this.tagName) {
+						this.logInfo(" -- tag:"+index, 2);
 						if (tmpIsArray) {
 							for (var index2 in this[index]) {
 								result.push(this[index][index2]);
@@ -1025,7 +1025,7 @@ mivIxml2jxon.prototype = {
 			if (index != "") {
 
 				if (this.if(index)) {
-					this.logInfo(" %%%%%%%%%%%%%% -------- MATCHFOUND ---------- %%%%%%%%%%%%%%", 1);
+					this.logInfo(" %%%%%%%%%%%%%% -------- MATCHFOUND ---------- %%%%%%%%%%%%%%", 2);
 					result.push(this);
 				}
 
@@ -1122,7 +1122,8 @@ mivIxml2jxon.prototype = {
 						}
 					}
 					else {
-						this.logInfo("~~a:"+result[index].tagName, 2);
+						this.logInfo("~~aa:index:"+index, 2);
+						this.logInfo("~~ab:"+result[index].tagName, 2);
 						var tmpResult = result[index].XPath(tmpPath);
 						if (tmpResult) {
 							for (var index2 in tmpResult) {
@@ -1476,6 +1477,8 @@ mivIxml2jxon.prototype = {
 
 	logInfo: function _logInfo(message, aDebugLevel) {
 
+		return;
+
 		if (!aDebugLevel) {
 			var debugLevel = 1;
 		}
@@ -1485,7 +1488,7 @@ mivIxml2jxon.prototype = {
 
 		var prefB = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
 		var storedDebugLevel = exchWebService.commonFunctions.safeGetIntPref(prefB, "extensions.1st-setup.xml2jxon", 0, true);
-		//var storedDebugLevel = 2;
+		var storedDebugLevel = 0;
 
 		if (debugLevel <= storedDebugLevel) {
 			exchWebService.commonFunctions.LOG("[xml2jxon] "+message + " ("+exchWebService.commonFunctions.STACKshort()+")");

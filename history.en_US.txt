@@ -1,3 +1,6 @@
+Version 3.0.0-beta4:
+- Fixed problem where a reminder change (dismiss or new time) was not saved to exchange.
+
 Version 3.0.0-beta3:
 - Fixed bug 182: Reoccuring Events keep popping up in reminder.
 
