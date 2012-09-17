@@ -971,7 +971,7 @@ mivIxml2jxon.prototype = {
 			tmpPath = tmpPath.substr(1);
 			for (var index in this) {
 				if ((this[index]) && (!this[index].tagName)) {
-					this.logInfo("  !! tag: Weird missing tagName for this["+index+"]", -1);	
+					this.logInfo("  !! tag: Weird missing tagName for this["+index+"]", 2);	
 				}
 				if ((index.indexOf(tagSeparator) > -1) && (this[index]) && (this[index].tagName) && (this[index].tagName != this.tagName)) {
 					this.logInfo(" -- tag:"+index, 1);
