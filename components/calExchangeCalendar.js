@@ -6246,7 +6246,9 @@ this.logInfo("getTaskItemsOK 4");
 			     (isEvent(this.itemCache[index])) &&
 			     (this.itemCache[index].parentItem.id == aMaster.id) ) {
 				this.logInfo("removeChildrenFromMaster: Removing child:"+this.itemCache[index].title+", startdate="+this.itemCache[index].startDate.toString());
-				this.itemCache[index].parentItem = this.itemCache[index];
+				if (this.itemCache[index].isMutable) {
+					this.itemCache[index].parentItem = this.itemCache[index];
+				}
 				this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
 				delete this.itemCache[index];
 			}

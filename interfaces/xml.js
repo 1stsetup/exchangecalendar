@@ -380,7 +380,7 @@ mivIxml2jxon.prototype = {
 	{
 		var tmpObject = this.getTag(aTagName);
 		if (!tmpObject) {
-			return null;
+			return [];
 		}
 
 		if (isArray(tmpObject)) {
