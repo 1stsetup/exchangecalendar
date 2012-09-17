@@ -6094,7 +6094,6 @@ this.logInfo("getTaskItemsOK 4");
 		 * We need to obey and build an iCalendar string which we feed in
 		 * to get the proper recurrence info.
 		 */
-
 		var comps = {};
 	
 		for each (var rec in aElement) {
@@ -6124,8 +6123,8 @@ this.logInfo("getTaskItemsOK 4");
 	
 			var weekdays = [];
 			var week = [];
-			var comps = rec.XPath("/*");
-			for each (var comp in comps) {
+			var comps2 = rec.XPath("/*");
+			for each (var comp in comps2) {
 				switch (comp.tagName) {
 				case 'DaysOfWeek':
 					for each (let day in comp.value.split(" ")) {
@@ -6184,7 +6183,6 @@ this.logInfo("getTaskItemsOK 4");
 		var prop = recrule.icalProperty;
 		prop.value = compstrs.join(';');
 		recrule.icalProperty = prop;
-
 		return recrule;
 	},
 
