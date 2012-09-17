@@ -615,6 +615,17 @@ mivIxml2jxon.prototype = {
 		return result;
 	},
 
+	get tagName()
+	{
+		return this._tagName;
+	},
+
+	set tagName(aValue)
+	{
+		this.logInfo("set tagName: old="+this._tagName+", new="+aValue, 2);
+		this._tagName = aValue;
+	},
+
 	nameSpacesToString: function _nameSpacesToString()
 	{
 		var result = "";
@@ -970,20 +981,31 @@ mivIxml2jxon.prototype = {
 		case "*" : // Wildcard. Will parse all children.
 			tmpPath = tmpPath.substr(1);
 			for (var index in this) {
-				if ((this[index]) && (!this[index].tagName)) {
-					this.logInfo("  !! tag: Weird missing tagName for this["+index+"]", 2);	
-				}
-				if ((index.indexOf(tagSeparator) > -1) && (this[index]) && (this[index].tagName) && (this[index].tagName != this.tagName)) {
-					this.logInfo(" -- tag:"+index, 1);
-					if (Array.isArray(this[index])) {
-						for (var index2 in this[index]) {
-							result.push(this[index][index2]);
-						}
+
+				if ((this[index]) && (index.indexOf(tagSeparator))) {
+					var tmpTagName = "";
+					var tmpIsArray = isArray(this[index]);
+					if (tmpIsArray) {
+						tmpTagName = this[index][0].tagName;
 					}
 					else {
-						result.push(this[index]);
+						tmpTagName = this[index].tagName;
 					}
+
+					if (this[index].tagName != this.tagName) {
+						this.logInfo(" -- tag:"+index, 1);
+						if (tmpIsArray) {
+							for (var index2 in this[index]) {
+								result.push(this[index][index2]);
+							}
+						}
+						else {
+							result.push(this[index]);
+						}
+					}
+					
 				}
+
 			}
 			break;
 
@@ -1060,7 +1082,7 @@ mivIxml2jxon.prototype = {
 						}
 
 						if (realIndex == tmpPath2) {
-							if (Array.isArray(this[index])) {
+							if (isArray(this[index])) {
 								this.logInfo(" ^^ found tag:"+index+" and is an array with "+this[index].length+" elements.", 2);
 								for (var index2 in this[index]) {
 									result.push(this[index][index2]);
@@ -1088,11 +1110,24 @@ mivIxml2jxon.prototype = {
 					finalResult.push(result[index]);
 				}
 				else {
-					this.logInfo("~~a:"+result[index].tagName, 2);
-					var tmpResult = result[index].XPath(tmpPath);
-					if (tmpResult) {
-						for (var index2 in tmpResult) {
-							finalResult.push(tmpResult[index2]);
+					if (isArray(result[index])) {
+						for (var index2 in result[index]) {
+							this.logInfo("~~a:"+result[index][index2].tagName, 2);
+							var tmpResult = result[index][index2].XPath(tmpPath);
+							if (tmpResult) {
+								for (var index3 in tmpResult) {
+									finalResult.push(tmpResult[index3]);
+								}
+							}
+						}
+					}
+					else {
+						this.logInfo("~~a:"+result[index].tagName, 2);
+						var tmpResult = result[index].XPath(tmpPath);
+						if (tmpResult) {
+							for (var index2 in tmpResult) {
+								finalResult.push(tmpResult[index2]);
+							}
 						}
 					}
 				}
@@ -1449,8 +1484,8 @@ mivIxml2jxon.prototype = {
 		}
 
 		var prefB = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
-		var storedDebugLevel = exchWebService.commonFunctions.safeGetIntPref(prefB, "extensions.1st-setup.xml2jxon", 1, true);
-		var storedDebugLevel = 0;
+		var storedDebugLevel = exchWebService.commonFunctions.safeGetIntPref(prefB, "extensions.1st-setup.xml2jxon", 0, true);
+		//var storedDebugLevel = 2;
 
 		if (debugLevel <= storedDebugLevel) {
 			exchWebService.commonFunctions.LOG("[xml2jxon] "+message + " ("+exchWebService.commonFunctions.STACKshort()+")");

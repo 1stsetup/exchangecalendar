@@ -5036,6 +5036,7 @@ this.logInfo("!!CHANGED:"+String(e));
 		var oeStr = oe.toString();
 		for each (var prop in neprops) {
 			var fullTagName = prop.nameSpace+':'+prop.tagName;
+			this.logInfo("    ???: neprops: tagName:"+prop.tagName+","+prop.toString());
 
 			if ((isInvitation) && (noUpdateOnInvitation[prop.tagName])) {
 				continue;
@@ -5044,7 +5045,8 @@ this.logInfo("!!CHANGED:"+String(e));
 			// Always save lastLightningModified field
 			var doSave = false;
 			if ((prop.tagName == "ExtendedProperty") &&
-				(prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyName") == "lastLightningModified")) {
+				(prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyName", "") == "lastLightningModified")) {
+				this.logInfo("    ???: doSave = true for tagName:"+prop.tagName+","+prop.toString());
 				doSave = true;
 			}
 
@@ -5074,9 +5076,9 @@ this.logInfo("!!CHANGED:"+String(e));
 			if (prop.tagName == "ExtendedProperty") {
 				se.addChildTagObject(prop.getTag("nsTypes:ExtendedFieldURI"));
 
-				if ((prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyId") != MAPI_PidLidReminderSignalTime) && 
-				    (prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyId") != "34051") &&
-				    (prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyId") != "34049")) {
+				if ((prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyId", "") != MAPI_PidLidReminderSignalTime) && 
+				    (prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyId", "") != "34051") &&
+				    (prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyId", "") != "34049")) {
 					onlySnoozeChanged = false;
 				}
 			} else {
