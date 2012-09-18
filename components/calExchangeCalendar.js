@@ -9210,13 +9210,19 @@ function NSGetFactory(cid) {
 	return NSGetFactory.mainEC(cid);
 } 
 
-var tmpStr = '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'+"\r\n"+'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'+"\r\n"+'xmlns:xsd="http://www.w3.org/2001/XMLSchema">'+"\r\n"+'<soap:Header><t:ServerVersionInfo'+"\r\n"+'MajorVersion="8" MinorVersion="3" MajorBuildNumber="279" MinorBuildNumber="1"'+"\r\n"+'Version="Exchange2007_SP1"'+"\r\n"+'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"'+"\r\n"+'/></soap:Header><soap:Body><m:SyncFolderItemsResponse'+"\r\n"+'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"'+"\r\n"+'xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"><m:ResponseMessages><m:SyncFolderItemsResponseMessage'+"\r\n"+'ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode><m:SyncState>.'+"\r\n"+'..</m:SyncState><m:IncludesLastItemInRange>true</m:IncludesLastItemInRange><m:Changes'+"\r\n"+'/></m:SyncFolderItemsResponseMessage></m:ResponseMessages></m:SyncFolderItemsResponse></soap:Body></soap:Envelope>';
+var tmpStr = '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'+"\r\n"+'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'+"\r\n"+'xmlns:xsd="http://www.w3.org/2001/XMLSchema">'+"\r\n"+'<soap:Header><t:ServerVersionInfo'+"\r\n"+'MajorVersion="8" MinorVersion="3" MajorBuildNumber="279" MinorBuildNumber="1"'+"\r\n"+'Version="Exchange2007_SP1"'+"\r\n"+'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"'+"\r\n"+'/></soap:Header>\n\t<soap:Body>\n\t\t<m:SyncFolderItemsResponse'+"\r\n"+'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"'+"\r\n"+'xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"><m:ResponseMessages><m:SyncFolderItemsResponseMessage'+"\r\n"+'ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode><m:SyncState>.'+"\r\n"+'..</m:SyncState><m:IncludesLastItemInRange>true</m:IncludesLastItemInRange><m:Changes'+"\r\n"+'/></m:SyncFolderItemsResponseMessage></m:ResponseMessages></m:SyncFolderItemsResponse></soap:Body></soap:Envelope>';
 
+var start = new Date().getTime();
+var samples = 1;//5000;
+for (var i=0;i<samples;i++) {
 var tmpXML = exchWebService.commonFunctions.xmlToJxon(tmpStr);
 				tmpXML.addNameSpace("s", nsSoapStr);
 				tmpXML.addNameSpace("m", nsMessagesStr);
 				tmpXML.addNameSpace("t", nsTypesStr);
 				tmpXML.addNameSpace("michel", nsTypesStr);
+}
+var elapsed = new Date().getTime() - start;
+exchWebService.commonFunctions.LOG(">>>>>>>>>>> -----:elapsed:"+elapsed+", for samples:"+samples);
 exchWebService.commonFunctions.LOG(">>>>>>>>>>> -----:Going to do XPath");
 var tmpobject = tmpXML.XPath("/s:Envelope/s:Header/michel:ServerVersionInfo");
 exchWebService.commonFunctions.LOG(">>>>>>>>>>> -----: MinorVersion:"+tmpobject[0].getAttribute("MinorVersion"));
