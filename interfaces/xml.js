@@ -615,17 +615,6 @@ mivIxml2jxon.prototype = {
 		return result;
 	},
 
-	get tagName()
-	{
-		return this._tagName;
-	},
-
-	set tagName(aValue)
-	{
-		this.logInfo("set tagName: old="+this._tagName+", new="+aValue, 2);
-		this._tagName = aValue;
-	},
-
 	nameSpacesToString: function _nameSpacesToString()
 	{
 		var result = "";

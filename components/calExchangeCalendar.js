@@ -605,11 +605,6 @@ calExchangeCalendar.prototype = {
 				}
 			}
 
-/*			var effectiveRights = this.folderProperties.nsSoap::Body.nsMessages::GetFolderResponse.nsMessages::ResponseMessages.nsMessages::GetFolderResponseMessage.nsMessages::Folders.nsTypes::CalendarFolder.nsTypes::EffectiveRights;
-			if (((effectiveRights.nsTypes::Delete.toString() == "false") || (effectiveRights.nsTypes::Modify.toString() == "false")) &&
-				(effectiveRights.nsTypes::CreateContents.toString() == "false")) {
-				aValue = true;
-			}*/
 		}
 
 		var changed = false;
@@ -6642,7 +6637,6 @@ this.logInfo("getTaskItemsOK 4");
 */
 
 		var cats = [];
-//		for each (var cat in aCalendarItem.nsTypes::Categories.nsTypes::String) {
 		for each (var cat in aCalendarItem.XPath("/t:Categories/t:String")) {
 			cats.push(cat.value);
 		}
@@ -7932,7 +7926,6 @@ this.logInfo("getTaskItemsOK 4");
 				}
 
 				var standardMatch = null;
-//				var periods = timeZoneDefinition.nsTypes::Periods..nsTypes::Period.(@Name == "Standard");
 				var periods = timeZoneDefinition.XPath("/t:Periods/t:Period[@Name = 'Standard']");
 				if (periods.length > 0) {
 					for (var index in periods) {
@@ -7947,7 +7940,6 @@ this.logInfo("getTaskItemsOK 4");
 				if (standardMatch) {
 					var daylightMatch = null;
 					if (tmpBiasValues.daylight) {
-//						var periods = timeZoneDefinition.nsTypes::Periods..nsTypes::Period.(@Name == "Daylight");
 						var periods = timeZoneDefinition.XPath("/t:Periods/t:Period[@Name = 'Daylight']");
 						if (periods.length > 0) {
 							for (var index in periods) {

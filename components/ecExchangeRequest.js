@@ -491,6 +491,7 @@ ExchangeRequest.prototype = {
 			catch(exc) { this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
 		}
 		else {
+			this.logInfo("processXMLString: WARNING WARNING a piece is still using old E4X code. Please report to exchangecalendar@extensions.1st-setup.nl:"+xml+"\n", -1);
 			if (this.e4x) {
 				try {
 					xml = new XML(xml);
