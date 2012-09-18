@@ -1,3 +1,6 @@
+Version 3.0.0-rc2:
+- Optimized the xml handling code so startup and other communications are faster.
+
 Version 3.0.0-rc1:
 - Converted last part, editing of tasks, from e4x to xml2jxon.
 
