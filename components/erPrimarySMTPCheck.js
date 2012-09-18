@@ -94,7 +94,7 @@ erPrimarySMTPCheckRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erPrimarySMTPCheckRequest.onSendOk: "+String(aResp));
+		exchWebService.commonFunctions.LOG("erPrimarySMTPCheckRequest.onSendOk: "+String(aResp));
 
 		var aError = false;
 		var aCode = 0;
@@ -104,10 +104,10 @@ erPrimarySMTPCheckRequest.prototype = {
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage[@ResponseClass='Error']");
 
 		if (rm.length > 0) {
-			aMsg = rm[0]["m:MessageText"].value+"("+rm[0]["m:ResponseCode"].value+")";
-			switch (rm[0]["m:ResponseCode"].value) {
+			aMsg = rm[0].getTagValue("m:MessageText")+"("+rm[0].getTagValue("m:ResponseCode")+")";
+			switch (rm[0].getTagValue("m:ResponseCode")) {
 			case "ErrorNonPrimarySmtpAddress": 
-				aResult = rm[0]["m:MessageXml"].XPath("/t:Value[@Name='Primary']");
+				aResult = rm[0].XPath("/m:MessageXml/t:Value[@Name='Primary']");
 				if (aResult.length > 0) {
 					aResult = aResult[0].value;
 					aError = false;
