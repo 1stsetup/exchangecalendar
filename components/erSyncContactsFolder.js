@@ -108,9 +108,9 @@ erSyncContactsFolderRequest.prototype = {
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
 		if (rm.length > 0) {
-			var syncState = rm[0]["m:SyncState"].value;
+			var syncState = rm[0].getTagValue("m:SyncState");
 
-			var lastItemInRange = rm[0]["m:IncludesLastItemInRange"].value;
+			var lastItemInRange = rm[0].getTagValue("m:IncludesLastItemInRange");
 
 			for each (var creation in rm[0].XPath("/m:Changes/t:Create")) {
 				for each (var contact in creation.XPath("/t:Contact")) {
