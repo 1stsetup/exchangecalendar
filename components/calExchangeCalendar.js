@@ -599,8 +599,8 @@ calExchangeCalendar.prototype = {
 		if (this.folderProperties) {
 			var effectiveRights = this.folderProperties.XPath("/s:Envelope/s:Body/m:GetFolderResponse/m:ResponseMessages/m:GetFolderResponseMessage/m:Folders/t:CalendarFolder/t:EffectiveRights");
 			if (effectiveRights.length > 0) {
-				if (((effectiveRights[0]["t:Delete"].value == "false") || (effectiveRights[0]["t:Modify"].value == "false")) &&
-					(effectiveRights[0]["t:CreateContents"].value == "false")) {
+				if (((effectiveRights[0].getTagValue("t:Delete") == "false") || (effectiveRights[0].getTagValue("t:Modify") == "false")) &&
+					(effectiveRights[0].getTagValue("t:CreateContents") == "false")) {
 					aValue = true;
 				}
 			}
@@ -7707,7 +7707,7 @@ this.logInfo("getTaskItemsOK 4");
 		var timeZoneDefinitionArray = rm[0].XPath("/m:TimeZoneDefinitions/t:TimeZoneDefinition");
 		this.logInfo("$$$ timeZoneDefinitionArray.length:"+timeZoneDefinitionArray.length);
 		for (var index in timeZoneDefinitionArray) {
-			timeZoneDefinitions[timeZoneDefinitionArray[index]["@Id"]] = timeZoneDefinitionArray[index];
+			timeZoneDefinitions[timeZoneDefinitionArray[index].getAttribute("Id")] = timeZoneDefinitionArray[index];
 		}
 
 		return timeZoneDefinitions;
@@ -9213,7 +9213,7 @@ function NSGetFactory(cid) {
 var tmpStr = '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'+"\r\n"+'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'+"\r\n"+'xmlns:xsd="http://www.w3.org/2001/XMLSchema">'+"\r\n"+'<soap:Header><t:ServerVersionInfo'+"\r\n"+'MajorVersion="8" MinorVersion="3" MajorBuildNumber="279" MinorBuildNumber="1"'+"\r\n"+'Version="Exchange2007_SP1"'+"\r\n"+'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"'+"\r\n"+'/></soap:Header>\n\t<soap:Body>\n\t\t<m:SyncFolderItemsResponse'+"\r\n"+'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"'+"\r\n"+'xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"><m:ResponseMessages><m:SyncFolderItemsResponseMessage'+"\r\n"+'ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode><m:SyncState>.'+"\r\n"+'..</m:SyncState><m:IncludesLastItemInRange>true</m:IncludesLastItemInRange><m:Changes'+"\r\n"+'/></m:SyncFolderItemsResponseMessage></m:ResponseMessages></m:SyncFolderItemsResponse></soap:Body></soap:Envelope>';
 
 var start = new Date().getTime();
-var samples = 1;//5000;
+var samples = 5000;
 for (var i=0;i<samples;i++) {
 var tmpXML = exchWebService.commonFunctions.xmlToJxon(tmpStr);
 				tmpXML.addNameSpace("s", nsSoapStr);

@@ -549,12 +549,12 @@ ExchangeRequest.prototype = {
 			try {
 				if (this.xml2jxon) {
 					var serverVersion = resp.XPath("/s:Header/t:ServerVersionInfo");
-					if ((serverVersion.length > 0) && (serverVersion[0]["@Version"] != "")) {
-						if (serverVersion[0]["@Version"] == "Exchange2010_SP2") {
+					if ((serverVersion.length > 0) && (serverVersion[0].getAttribute("Version") != "")) {
+						if (serverVersion[0].getAttribute("@Version") == "Exchange2010_SP2") {
 							gEWSServerVersion[this.currentUrl] = "Exchange2010_SP1";
 						}
 						else {
-							gEWSServerVersion[this.currentUrl] = serverVersion[0]["@Version"];
+							gEWSServerVersion[this.currentUrl] = serverVersion[0].getAttribute("@Version");
 						}
 					}
 				}
@@ -858,7 +858,7 @@ ExchangeRequest.prototype = {
 	{
 		var rm = aResp.XPath("/s:Envelope/s:Body/*/m:ResponseMessages/*[@ResponseClass='Error']");
 		if (rm.length > 0) {
-			return rm[0]["m:MessageText"].value+"("+rm[0]["m:ResponseCode"].value+")";
+			return rm[0].getTagValue("m:MessageText").value+"("+rm[0].getTagValue("m:ResponseCode")+")";
 		}
 		else {
 			return null;
