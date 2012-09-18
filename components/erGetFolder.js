@@ -103,7 +103,7 @@ erGetFolderRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erGetFolderRequest.onSendOk:"+String(aResp));
+		exchWebService.commonFunctions.LOG("erGetFolderRequest.onSendOk:"+String(aResp));
 		// Get FolderID and ChangeKey
 		var aError = false;
 		var aCode = 0;
@@ -118,10 +118,10 @@ erGetFolderRequest.prototype = {
 				var calendarFolder = rm[0].XPath("/m:Folders/t:TasksFolder");
 			}
 			if (calendarFolder.length > 0) {
-				var folderID = calendarFolder[0]["t:FolderId"]["@Id"];
-				var changeKey = calendarFolder[0]["t:FolderId"]["@ChangeKey"];
-				var folderClass = calendarFolder[0]["t:FolderClass"].value;
-				this.displayName = calendarFolder[0]["t:DisplayName"].value;
+				var folderID = calendarFolder[0].getAttributeByTag("t:FolderId", "Id");
+				var changeKey = calendarFolder[0].getAttributeByTag("t:FolderId", "ChangeKey");
+				var folderClass = calendarFolder[0].getTagValue("t:FolderClass");
+				this.displayName = calendarFolder[0].getTagValue("t:DisplayName");
 			}
 			else {
 				aMsg = "Did not find any CalendarFolder parts.";
