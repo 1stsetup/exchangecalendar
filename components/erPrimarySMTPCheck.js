@@ -94,7 +94,7 @@ erPrimarySMTPCheckRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erPrimarySMTPCheckRequest.onSendOk: "+String(aResp));
+		//exchWebService.commonFunctions.LOG("erPrimarySMTPCheckRequest.onSendOk: "+String(aResp));
 
 		var aError = false;
 		var aCode = 0;
