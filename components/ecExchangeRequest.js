@@ -116,7 +116,12 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 	this.prefB = Cc["@mozilla.org/preferences-service;1"]
 			.getService(Ci.nsIPrefBranch);
 
+	this.debug = exchWebService.commonFunctions.safeGetBoolPref(this.prefB, "extensions.1st-setup.network.debug", false, true);
+	this.debuglevel = exchWebService.commonFunctions.safeGetIntPref(this.prefB, "extensions.1st-setup.network.debuglevel", 0, true);
 
+	if ((this.debuglevel == 0) || (!exchWebService.commonFunctions.shouldLog())) {
+		this.debug = false;
+	}
 }
 
 ExchangeRequest.prototype = {
@@ -158,9 +163,6 @@ ExchangeRequest.prototype = {
 
 	logInfo: function _logInfo(aMsg, aLevel)
 	{
-		this.debug = exchWebService.commonFunctions.safeGetBoolPref(this.prefB, "extensions.1st-setup.network.debug", false, true);
-		this.debuglevel = exchWebService.commonFunctions.safeGetIntPref(this.prefB, "extensions.1st-setup.network.debuglevel", 1, true);
-
 		if (!aLevel) var aLevel = 1;
 
 		if ((this.debug) && (aLevel <= this.debuglevel)) {
@@ -232,7 +234,7 @@ ExchangeRequest.prototype = {
 		this.xmlReq.addEventListener("loadend", function(evt) { tmp.loadend(evt); }, false);
 
 		// remove domain part in xmlhttprequest.open call
-		this.logInfo(": 1 ExchangeRequest.sendRequest : user="+this.mArgument.user+", url="+this.currentUrl);
+		if (this.debug) this.logInfo(": 1 ExchangeRequest.sendRequest : user="+this.mArgument.user+", url="+this.currentUrl);
 
 		if ((this.prePassword == "") && (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl])) {
 			this.prePassword = exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].prePassword;
@@ -242,7 +244,7 @@ ExchangeRequest.prototype = {
 
 		try {
 			if (this.prePassword != "") {
-				this.logInfo("We have a prePassword: *******");
+				if (this.debug) this.logInfo("We have a prePassword: *******");
 			}
 
 			if (this.prePassword == "") {
@@ -264,12 +266,12 @@ ExchangeRequest.prototype = {
 				}
 			}
 			else {
-				this.logInfo("We leave the basic auth details out of the request because we are trying for Kerberos Authentication.");
+				if (this.debug) this.logInfo("We leave the basic auth details out of the request because we are trying for Kerberos Authentication.");
 			}
 
 		}
 		catch(err) {
-			this.logInfo(": ERROR on ExchangeRequest.sendRequest to URL:"+this.currentUrl+". err:"+err); 
+			if (this.debug) this.logInfo(": ERROR on ExchangeRequest.sendRequest to URL:"+this.currentUrl+". err:"+err); 
 
 			if (this.tryNextURL()) {
 				return;
@@ -294,33 +296,33 @@ ExchangeRequest.prototype = {
 		// XXX we want to preserve POST across 302 redirects TODO: This might go away because header params are copyied right now.
 		httpChannel.redirectionLimit = 0;
 
-		this.logInfo(": sendRequest Sending: " + this.mData+"\n", 2);
+		if (this.debug) this.logInfo(": sendRequest Sending: " + this.mData+"\n", 2);
 
 		this.xmlReq.send(this.mData);
 	},
 
 	loadstart: function _loadtstart(evt)
 	{
-		this.logInfo(": ExchangeRequest.loadstart");
+		if (this.debug) this.logInfo(": ExchangeRequest.loadstart");
 		this.shutdown = false;
 		this.badCert = false;
 	},
 
 	loadend: function _loadend(evt)
 	{
-		this.logInfo(": ExchangeRequest.loadend");
+		if (this.debug) this.logInfo(": ExchangeRequest.loadend");
 	},
 
 	progress: function _progress(evt)
 	{
-		this.logInfo(": ExchangeRequest.progress. loaded:"+evt.loaded+", total:"+evt.total);
+		if (this.debug) this.logInfo(": ExchangeRequest.progress. loaded:"+evt.loaded+", total:"+evt.total);
 	},
 
 	error: function _error(evt)
 	{
 		let xmlReq = this.mXmlReq;
 
-		this.logInfo(": ExchangeRequest.error :"+evt.type+", readyState:"+xmlReq.readyState+", status:"+xmlReq.status+", lastStatus:"+this._notificationCallbacks.lastStatus);
+		if (this.debug) this.logInfo(": ExchangeRequest.error :"+evt.type+", readyState:"+xmlReq.readyState+", status:"+xmlReq.status+", lastStatus:"+this._notificationCallbacks.lastStatus);
 
 		if ((!this.shutdown) && (this.badCert)) {
 			// On this connection a bad certificate was seen. Wait until it resets.
@@ -372,23 +374,23 @@ ExchangeRequest.prototype = {
 
 	abort: function _abort(evt)
 	{
-		this.logInfo("ExchangeRequest.abort: type:"+evt.type);
+		if (this.debug) this.logInfo("ExchangeRequest.abort: type:"+evt.type);
 		if (evt.type != "abort") {
-			this.logInfo("ecExchangeRequest.abort: "+evt.type);
+			if (this.debug) this.logInfo("ecExchangeRequest.abort: "+evt.type);
 		}
 //		this.fail(-3, "User aborted data transfer.");
 	},
 
 	onUserStop: function _onUserStop(aCode, aMsg)
 	{
-		this.logInfo("ecExchangeRequest.onUserStop: aCode:"+aCode+", aMsg:"+aMsg);
+		if (this.debug) this.logInfo("ecExchangeRequest.onUserStop: aCode:"+aCode+", aMsg:"+aMsg);
 		this.mXmlReq.abort();
 		this.fail(aCode, aMsg);
 	},
 
 	isHTTPRedirect: function(evt)
 	{
-		this.logInfo("exchangeRequest.isHTTPRedirect");
+		if (this.debug) this.logInfo("exchangeRequest.isHTTPRedirect");
 		let xmlReq = this.mXmlReq;
 
 		if (xmlReq.readyState != 4)
@@ -398,16 +400,16 @@ ExchangeRequest.prototype = {
 		case 301:  // Moved Permanently
 		case 302:  // Found
 		case 307:  // Temporary redirect (since HTTP/1.1)
-			this.logInfo(": ExchangeRequest.redirect :"+evt.type+", readyState:"+xmlReq.readyState+", status:"+xmlReq.status);
+			if (this.debug) this.logInfo(": ExchangeRequest.redirect :"+evt.type+", readyState:"+xmlReq.readyState+", status:"+xmlReq.status);
 
 			let httpChannel = xmlReq.channel.QueryInterface(Ci.nsIHttpChannel);
 			let loc = httpChannel.getResponseHeader("Location");
 
 			// The location could be a relative path
 			if (loc.indexOf("http") == -1) {
-				this.logInfo("new location looks to be relative.");
+				if (this.debug) this.logInfo("new location looks to be relative.");
 				if (loc.indexOf("/") == 0) {
-					this.logInfo("Relative to the root of the server.");
+					if (this.debug) this.logInfo("Relative to the root of the server.");
 					// Relative to the root of the server
 					//Find position of third slash https://xxx/
 					var slashCounter = 0;
@@ -432,11 +434,11 @@ ExchangeRequest.prototype = {
 				}
 				else {
 					// Relative to last dir.
-					this.logInfo("it is relative to the last dir. Currently not able to handle this. Will be available in future version.");
+					if (this.debug) this.logInfo("it is relative to the last dir. Currently not able to handle this. Will be available in future version.");
 				}
 			}
 
-			this.logInfo(": Redirect: " + loc + "\n");
+			if (this.debug) this.logInfo(": Redirect: " + loc + "\n");
 
                         // XXX pheer loops.
                         xmlReq.abort();
@@ -452,11 +454,11 @@ ExchangeRequest.prototype = {
 	{
 		let xmlReq = this.mXmlReq;
 
-		this.logInfo(": ExchangeRequest.onLoad :"+evt.type+", readyState:"+xmlReq.readyState+", status:"+xmlReq.status);
-		this.logInfo(": ExchangeRequest.onLoad :"+xmlReq.responseText,2);
+		if (this.debug) this.logInfo(": ExchangeRequest.onLoad :"+evt.type+", readyState:"+xmlReq.readyState+", status:"+xmlReq.status);
+		if (this.debug) this.logInfo(": ExchangeRequest.onLoad :"+xmlReq.responseText,2);
 
 		if (xmlReq.readyState != 4) {
-			this.logInfo("readyState < 4. THIS SHOULD NEVER HAPPEN. PLEASE REPORT.");
+			if (this.debug) this.logInfo("readyState < 4. THIS SHOULD NEVER HAPPEN. PLEASE REPORT.");
 			return;
 		}
 
@@ -478,7 +480,7 @@ ExchangeRequest.prototype = {
 			    var newXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
 					       .createInstance(Ci.mivIxml2jxon);
 			}
-			catch(exc) { this.logInfo("createInstance error:"+exc);}
+			catch(exc) { if (this.debug) this.logInfo("createInstance error:"+exc);}
 
 			try {
 				newXML.addNameSpace("s", nsSoapStr);
@@ -488,7 +490,7 @@ ExchangeRequest.prototype = {
 				newXML.addNameSpace("a2", nsAutodiscoverResponseStr2);
 				newXML.processXMLString(xml, 0, null);
 			}
-			catch(exc) { this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
+			catch(exc) { if (this.debug) this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
 		}
 		else {
 			this.logInfo("processXMLString: WARNING WARNING a piece is still using old E4X code. Please report to exchangecalendar@extensions.1st-setup.nl:"+xml+"\n", -1);
@@ -497,22 +499,22 @@ ExchangeRequest.prototype = {
 					xml = new XML(xml);
 				}
 				catch(er) {
-					this.logInfo("XML conversion error 1: "+ er);
+					if (this.debug) this.logInfo("XML conversion error 1: "+ er);
 					// BUG 61 Convert all Hex codes to decimal
 					xml = xml.replace(/&#x([0123456789ABCDEF][0123456789ABCDEF]?);/g, function(str, ent) { return "&#"+parseInt(ent,16)+";"; }); 
 					try {
 						xml = new XML(xml);
 					}
 					catch(er2) {
-						this.logInfo("XML conversion error 2: "+ er);
+						if (this.debug) this.logInfo("XML conversion error 2: "+ er);
 						 // BUG 61 remove all decimal codes below character 32 (space) 
 						xml = xml.replace(/&#([0123456789]?);/g, function(str, ent) parseInt(ent,10) < 32 ? "" : "&#"+parseInt(ent,10)+";" );
 						try {
 							xml = new XML(xml);
 						}
 						catch (er3) {
-							this.logInfo("FATAL XML conversion error 3: "+ er3);
-							this.logInfo("          String which fails: "+ xml, 2);
+							if (this.debug) this.logInfo("FATAL XML conversion error 3: "+ er3);
+							if (this.debug) this.logInfo("          String which fails: "+ xml, 2);
 
 							var answer = xmlReq.responseText.substr(0,100)+"\n\n";
 					
@@ -590,14 +592,14 @@ ExchangeRequest.prototype = {
 
 	tryNextURL: function _tryNextURL()
 	{
-		this.logInfo("exchangeRequest.tryNextURL");
+		if (this.debug) this.logInfo("exchangeRequest.tryNextURL");
                 let xmlReq = this.mXmlReq;
 		if (xmlReq.readyState != 4) {
 			xmlReq.abort();
 		}
 
 		if (this.urllist.length > 0) {
-			this.logInfo("exchangeRequest.tryNextURL: We have another URLto try the request on.");
+			if (this.debug) this.logInfo("exchangeRequest.tryNextURL: We have another URLto try the request on.");
 			this.sendRequest(this.mData);
 			return true;
 		}
@@ -637,7 +639,7 @@ ExchangeRequest.prototype = {
 
 	retryForBasicAuth: function _retryForBasicAuth()
 	{
-		this.logInfo("exchangeRequest.retryForBasicAuth: We will try Basic Auth Authentication.");
+		if (this.debug) this.logInfo("exchangeRequest.retryForBasicAuth: We will try Basic Auth Authentication.");
 		this.kerberos = true;
 
                 let xmlReq = this.mXmlReq;
@@ -701,7 +703,7 @@ ExchangeRequest.prototype = {
 					return true;
 				}*/
 
-                                this.logInfo(": isConnError req.status="+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText, 2);
+                                if (this.debug) this.logInfo(": isConnError req.status="+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText, 2);
 
 				if (this.tryNextURL()) {
 					return false;
@@ -720,7 +722,7 @@ ExchangeRequest.prototype = {
 						// This might be generated because of a password not yet supplied in open function during a request so we try again
 						//if ((this.prePassword == "") && 
 						if	((!exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl]) || (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount < 3)) {
-							this.logInfo("isHTTPError: We are going to ask the user or password store for a password and try again.");
+							if (this.debug) this.logInfo("isHTTPError: We are going to ask the user or password store for a password and try again.");
 							this.prePassword = this.getPrePassword(this.currentUrl, this.mArgument.user);
 
 /*							var tmpURL = this.currentUrl;
@@ -735,7 +737,7 @@ ExchangeRequest.prototype = {
 
 							if (this.prePassword) {
 
-								this.logInfo("isHTTPError: We received a prePassword. Going to retry current URL");
+								if (this.debug) this.logInfo("isHTTPError: We received a prePassword. Going to retry current URL");
 
 								if (!exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl]) {
 									exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl] = {};
@@ -750,12 +752,12 @@ ExchangeRequest.prototype = {
 
 								return true;
 							}
-							this.logInfo("isHTTPError: User canceled request for prePassword.");
+							if (this.debug) this.logInfo("isHTTPError: User canceled request for prePassword.");
 						}
 
 						if	((exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl]) && (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount > 2)) {
 							// Failed three times. Remove password also from password store.
-							this.logInfo("isHTTPError: Failed password "+exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount+" times. Stopping communication.");
+							if (this.debug) this.logInfo("isHTTPError: Failed password "+exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount+" times. Stopping communication.");
 							var title = "Microsoft Exchange EWS";
 							var tmpURL = this.currentUrl;
 							if (this.mArgument.user != "") {
@@ -792,7 +794,7 @@ ExchangeRequest.prototype = {
 				case 599: errMsg = "Network connect timeout error"; break;
 				}
 
-                                this.logInfo(": isConnError req.status="+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText, 2);
+                                if (this.debug) this.logInfo(": isConnError req.status="+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText, 2);
 
 				if (this.tryNextURL()) {
 					return false;
@@ -815,7 +817,7 @@ ExchangeRequest.prototype = {
 
 	fail: function(aCode, aMsg)
 	{
-		this.logInfo("ecExchangeRequest.fail: aCode:"+aCode+", aMsg:"+aMsg);
+		if (this.debug) this.logInfo("ecExchangeRequest.fail: aCode:"+aCode+", aMsg:"+aMsg);
 		if (this.mCbError) {
 			this.mCbError(this, aCode, aMsg);
 		}
@@ -838,7 +840,7 @@ ExchangeRequest.prototype = {
 		}
 		else {
 
-			this.logInfo("makeSoapMessage: aReq is NOT xml.");
+			if (this.debug) this.logInfo("makeSoapMessage: aReq is NOT xml.");
 
 			var msg = exchWebService.commonFunctions.xmlToJxon('<nsSoap:Envelope xmlns:nsSoap="'+nsSoap+'" xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
