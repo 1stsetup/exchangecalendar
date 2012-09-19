@@ -1,3 +1,6 @@
+Version 3.0.0-rc3:
+- Optimized the code to improve speed.
+
 Version 3.0.0-rc2:
 - Optimized the xml handling code so startup and other communications are faster.
 
