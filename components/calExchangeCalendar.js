@@ -8575,6 +8575,7 @@ this.logInfo("getTaskItemsOK 4");
 		
 			   sqlStatement.reset();
 			   return;
+			}
 		}
 		
 		if (isEvent(aCalItem)) {
