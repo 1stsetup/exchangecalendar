@@ -1,9 +1,9 @@
-<!ENTITY label.acceptbutton "Save">
-<!ENTITY label.cancelbutton "Cancel">
+<!ENTITY label.acceptbutton "Sauvegarder">
+<!ENTITY label.cancelbutton "Annulation">
 
 <!ENTITY ecsettings.tab.adsettings "Exchange/Windows AD">
-<!ENTITY ecsettings.tab.meetingrequestsettings "Vergader verzoeken">
+<!ENTITY ecsettings.tab.meetingrequestsettings "Réglages de rendez vous">
 
-<!ENTITY label.ecExchangeSettings.title "Name in list:">
-<!ENTITY exchangeWebService.preference.contacts.pollinterval "Refresh interval in seconds:">
+<!ENTITY label.ecExchangeSettings.title "Noms dans la liste:">
+<!ENTITY exchangeWebService.preference.contacts.pollinterval "Interval de rafraichissement en secondes:">
 
