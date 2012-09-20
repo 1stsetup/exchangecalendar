@@ -1,9 +1,9 @@
-<!ENTITY toolbar.button.label.addaccount "Add Exchange contact folder">
-<!ENTITY toolbar.button.tooltip.addaccount "This will add a new Exchange contact folder">
+<!ENTITY toolbar.button.label.addaccount "Ajouter un fichier de contacts Exchange">
+<!ENTITY toolbar.button.tooltip.addaccount "Pour ajouter un nouveau fichier de contacts Exchange">
 
-<!ENTITY toolbar.button.label.deleteaccount "Remove Exchange contact folder">
-<!ENTITY toolbar.button.tooltip.deleteaccount "This will remove and existing Exchange contact folder">
+<!ENTITY toolbar.button.label.deleteaccount "Suppimer le fichier de contacts Exchange">
+<!ENTITY toolbar.button.tooltip.deleteaccount "Pour supprimer un fichier existant de contacts Exchange">
 
-<!ENTITY deleteExchangeCmd.label "Remove Exchange contact folder">
+<!ENTITY deleteExchangeCmd.label "Suppression du fichier des contacts Exchange">
 
 
