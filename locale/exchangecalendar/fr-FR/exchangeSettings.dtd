@@ -35,15 +35,15 @@ written by deepak
 
 start
 -->
-<!ENTITY ecsettings.tab.offlineCachingproperties "Offline Caching">
+<!ENTITY ecsettings.tab.offlineCachingproperties "Cache hors connection">
 
-<!ENTITY label.offlineCacheproperties.cachingStartDate "Start Date of caching:">
-<!ENTITY label.offlineCacheproperties.cachingEndDate "End date of caching:">
-<!ENTITY label.offlineCacheproperties.totalEvents "Total number of events cached:">
-<!ENTITY label.offlineCacheproperties.totalTasks "Total number of tasks cached:">
+<!ENTITY label.offlineCacheproperties.cachingStartDate "Date de début du cache:">
+<!ENTITY label.offlineCacheproperties.cachingEndDate "Date de fin du cache:">
+<!ENTITY label.offlineCacheproperties.totalEvents "Nombre total d'évènements dans le cache:">
+<!ENTITY label.offlineCacheproperties.totalTasks "Nombre total de tâches dans le cache:">
 
-<!ENTITY label.offlineCacheproperties.monthsBeforeStartDate "Number of months to cache items prior to today:">
-<!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Number of months to cache items after today:">
+<!ENTITY label.offlineCacheproperties.monthsBeforeStartDate "Taille du cache en nombre de mois avant aujourd'hui:">
+<!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Taille du cache en nombre de mois après aujourd'hui:">
 
-<!ENTITY button.offlineCacheproperties.clearCache "Clear Offline Cached Data">
+<!ENTITY button.offlineCacheproperties.clearCache "Supprimer les données hors connection cachées">
 
