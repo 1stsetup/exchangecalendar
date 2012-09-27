@@ -450,6 +450,47 @@ ExchangeRequest.prototype = {
 		return false;
 	},
 
+	unchunk: function _unchunk(aStr)
+	{
+		var pos = aStr.indexOf("\r\n");
+		if ((pos > -1) && (pos < 5)) {
+			var chunkCounter = 1;
+			var chunkLength = parseInt(aStr.substr(0,pos), 16);
+			if (chunkLength == NaN) {
+				if (this.debug) this.logInfo("unchunk: 1st chunk is not a number:"+aStr.substr(0,pos));
+				return "";
+			}
+			if (this.debug) this.logInfo("unchunk: 1st chunk has length:"+chunkLength);
+			pos = pos+2;
+			var newStr = "";
+			while (chunkLength > 0) {
+				newStr = aStr.substr(pos, chunkLength);
+				pos = pos + chunkLength + 2;
+				var tmpStr = aStr.substr(pos, 6);
+				var pos2 = tmpStr.indexOf("\r\n");
+				if (pos2 > -1) {
+					chunkCounter++;
+					if (this.debug) this.logInfo("unchunk: Found next chunk. Number:"+chunkCounter);
+					chunkLength = parseInt(tmpStr.substr(0,pos2), 16);
+					if (chunkLength == NaN) {
+						if (this.debug) this.logInfo("unchunk: Chunk '"+chunkCounter+"' is not a number:"+tmpStr);
+						return "";
+					}
+					if (this.debug) this.logInfo("unchunk: Chunk '"+chunkCounter+"' has length:"+chunkLength);
+					pos = pos + pos2 + 2;
+				}
+				else {
+					if (this.debug) this.logInfo("unchunk: Trying to determine chunk '"+chunkCounter+"' length but it is more than 4 bytes big!! size:"+tmpStr);
+					return "";
+				}
+			}
+		}
+		else {
+			if (this.debug) this.logInfo("unchunk: Trying to determine first chunk length but it is very big...!! size:"+pos);
+			return aStr;
+		}
+	},
+
 	onLoad:function _onLoad(evt) 
 	{
 		let xmlReq = this.mXmlReq;
@@ -471,6 +512,15 @@ ExchangeRequest.prototype = {
 		}
 
 		var xml = xmlReq.responseText; // bug 270553
+
+		// It appears that in exchange2010_sp2 the xml response is send in chunks with a length header.
+		// Try to detect this.
+		var header = xml.substr(0,6);
+		if (header.indexOf("\r\n") > -1) {
+			if (this.debug) this.logInfo("onLoad: Looks like we have a chunked response. Will try to unchunk it.");
+			xml = this.unchunk(xml);
+		}
+
 		xml = xml.replace(/^<\?xml\s+version\s*=\s*(?:"[^"]+"|'[^']+')[^?]*\?>/, ""); // bug 336551
 
 		xml = xml.replace(/&#x10;/g, ""); // BUG 61 remove hexadecimal code 0x10. It will fail in xml conversion.
