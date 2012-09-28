@@ -461,23 +461,30 @@ ExchangeRequest.prototype = {
 				return "";
 			}
 			if (this.debug) this.logInfo("unchunk: 1st chunk has length:"+chunkLength);
-			pos = pos+2;
 			var newStr = "";
 			while (chunkLength > 0) {
-				newStr = newStr + aStr.substr(pos, chunkLength);
+				newStr = newStr + aStr.substr(pos+2, chunkLength);
+					if (this.debug) this.logInfo("unchunk: CunkStr:"+aStr.substr(pos+2, chunkLength));
 				pos = pos + chunkLength + 2;
+				// Next two bytes should be \r\n
+				var check = aStr.substr(pos, 2);
+				if (check != "\r\n") {
+					if (this.debug) this.logInfo("unchunk: Strange. Expected 0D0A (Cr+Lf) but found:"+check+". Stopping processing of this chunked message.");
+					return "";
+				}
+				pos = pos + 2;
 				var tmpStr = aStr.substr(pos, 6);
 				var pos2 = tmpStr.indexOf("\r\n");
+				chunkCounter++;
 				if (pos2 > -1) {
-					chunkCounter++;
-					if (this.debug) this.logInfo("unchunk: Found next chunk. Number:"+chunkCounter);
+					if (this.debug) this.logInfo("unchunk: Found next chunk. Number:"+chunkCounter+", LengthStr:"+tmpStr.substr(0,pos2));
 					chunkLength = parseInt(tmpStr.substr(0,pos2), 16);
 					if (isNaN(chunkLength)) {
 						if (this.debug) this.logInfo("unchunk: Chunk '"+chunkCounter+"' is not a number:"+tmpStr);
 						return "";
 					}
 					if (this.debug) this.logInfo("unchunk: Chunk '"+chunkCounter+"' has length:"+chunkLength);
-					pos = pos + pos2 + 2;
+					pos = pos + pos2;
 				}
 				else {
 					if (this.debug) this.logInfo("unchunk: Trying to determine chunk '"+chunkCounter+"' length but it is more than 4 bytes big!! size:"+tmpStr);
@@ -1244,6 +1251,19 @@ ecnsIAuthPrompt2.prototype = {
 	//nsICancelable asyncPromptAuth(in nsIChannel aChannel, in nsIAuthPromptCallback aCallback, in nsISupports aContext, in PRUint32 level, in nsIAuthInformation authInfo);
 	asyncPromptAuth: function _asyncPromptAuth(aChannel, aCallback, aContext, level, authInfo)
 	{
+		var header = this.exchangeRequest.mXmlReq.getAllResponseHeaders();
+		this.logInfo("asyncPromptAuth: readyState="+this.exchangeRequest.mXmlReq.readyState);
+		this.logInfo("asyncPromptAuth: getAllResponseHeaders="+header);
+		this.logInfo("asyncPromptAuth: level="+level);
+
+		var channel = aChannel.QueryInterface(Components.interfaces.nsIHttpChannel);
+		this.logInfo("_nsIAuthPrompt2_timercb: channel.responseStatus="+channel.responseStatus);
+		var acceptedAuthentications = channel.getResponseHeader("WWW-Authenticate");
+		acceptedAuthentications = acceptedAuthentications.split("\n");
+		for each (var index in acceptedAuthentications) {
+			this.logInfo("_nsIAuthPrompt2_timercb: WWW-Authenticate:"+index);
+		}
+
 		this.username = this.exchangeRequest.mArgument.user;
 		this.password = null;
 
