@@ -40,13 +40,14 @@
 
 You can view, delete, create and update calendar and task/todo items. And manage "Out of Office" settings.
 
-Dutch, French, English and German localizations.
+Dutch, French, English, German and Japanese localizations.
 
 Some of the icons and images used are from the Fugue Icons Collection made by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)</em:description>
     <em:creator>Michel Verbraak (info@1st-setup.nl)</em:creator>
     <em:developer>Michel Verbraak</em:developer>
     <em:translator>Dominique Fillon (fr-FR)</em:translator>
     <em:translator>Christian A. Meyer (de)</em:translator>
+    <em:translator>Hiroshi Miura (ja-JP)</em:translator>
     <em:homepageURL>http://www.1st-setup.nl/wordpress/?page_id=133</em:homepageURL>
     <em:iconURL>chrome://exchangecalendar/content/lightningexchangecalendar.png</em:iconURL>
     <em:type>2</em:type> <!-- type: extension -->
@@ -60,7 +61,7 @@ Some of the icons and images used are from the Fugue Icons Collection made by Yu
 
 You can view, delete, create and update calendar and task/todo items. And manage "Out of Office" settings.
 
-Dutch, French, English and German localizations.
+Dutch, French, English, German and Japanese localizations.
 
 Some of the icons and images used are from the Fugue Icons Collection made by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)</em:description>
 		</Description>
@@ -75,11 +76,24 @@ Op dit moment kan men agenda en taken items bekijken, wijzigen, maken en verwijd
 
 Je kunt ook de Exchange (EWS) instellingen aanpassen.
 
-In het Nederlands, Frans, Engels en Duits vertaald.
+In het Nederlands, Frans, Engels, Duits en Japanse vertaald.
 
 Sommige van de iconen en plaatjes komen uit de Fugue Icons collectie gemaakt door Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)</em:description>
 		</Description>
 	</em:localized>
 
+	<em:localized>
+		<Description>
+			<em:locale>ja-JP</em:locale>
+			<em:name>Exchange 2007/2010 予定表と仕事プロバイダ</em:name>
+			<em:description>予定表と仕事について、lightningで、マイクロソフト Exchange 2007/2010 EWSサーバと同期できるようにします。
+
+予定表・仕事ややることリストの、閲覧や削除、作成と更新が可能です。「外出中」の管理も可能です。
+
+オランダ語やフランス語、英語、ドイツ語、そして日本語の地域化が提供されます。
+
+使用されている一部のアイコンやイメージは、Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)さんの、the Fugue Icons Collectionから取られました。</em:description>
+		</Description>
+	</em:localized>
   </Description>
 </RDF>
