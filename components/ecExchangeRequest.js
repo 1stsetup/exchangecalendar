@@ -107,8 +107,6 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.uuid = exchWebService.commonFunctions.getUUID();
 
-	this.debug = true;
-
 	this.prePassword = "";
 
 	this.kerberos = true;
@@ -116,12 +114,6 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 	this.prefB = Cc["@mozilla.org/preferences-service;1"]
 			.getService(Ci.nsIPrefBranch);
 
-	this.debug = exchWebService.commonFunctions.safeGetBoolPref(this.prefB, "extensions.1st-setup.network.debug", false, true);
-	this.debuglevel = exchWebService.commonFunctions.safeGetIntPref(this.prefB, "extensions.1st-setup.network.debuglevel", 0, true);
-
-	if ((this.debuglevel == 0) || (!exchWebService.commonFunctions.shouldLog())) {
-		this.debug = false;
-	}
 }
 
 ExchangeRequest.prototype = {
@@ -160,6 +152,20 @@ ExchangeRequest.prototype = {
 	ER_ERROR_CONVERTID: -214, // Specified SMTP address does not exist.
 
 	ERR_PASSWORD_ERROR: -300, // To many password errors.
+
+	get debug()
+	{
+		if ((this.debuglevel == 0) || (!exchWebService.commonFunctions.shouldLog())) {
+			return false;
+		}
+
+		return exchWebService.commonFunctions.safeGetBoolPref(this.prefB, "extensions.1st-setup.network.debug", false, true);
+	},
+
+	get debuglevel()
+	{
+		return exchWebService.commonFunctions.safeGetIntPref(this.prefB, "extensions.1st-setup.network.debuglevel", 0, true);
+	},
 
 	logInfo: function _logInfo(aMsg, aLevel)
 	{
@@ -390,8 +396,8 @@ ExchangeRequest.prototype = {
 
 	isHTTPRedirect: function(evt)
 	{
-		if (this.debug) this.logInfo("exchangeRequest.isHTTPRedirect");
 		let xmlReq = this.mXmlReq;
+		if (this.debug) this.logInfo("exchangeRequest.isHTTPRedirect.xmlReq. xmlReq.readyState:"+xmlReq.readyState+", xmlReq.status:"+xmlReq.status);
 
 		if (xmlReq.readyState != 4)
 			return false;
@@ -463,9 +469,34 @@ ExchangeRequest.prototype = {
 			if (this.debug) this.logInfo("unchunk: 1st chunk has length:"+chunkLength);
 			var newStr = "";
 			while (chunkLength > 0) {
-				newStr = newStr + aStr.substr(pos+2, chunkLength);
-					if (this.debug) this.logInfo("unchunk: CunkStr:"+aStr.substr(pos+2, chunkLength));
-				pos = pos + chunkLength + 2;
+				var bytesToCopy = chunkLength;
+				pos = pos + 2;
+				var charCode;
+				while (bytesToCopy > 0) {
+					newStr = newStr + aStr.substr(pos, 1);
+					charCode = aStr.charCodeAt(pos);
+					if (charCode <= 0xFF) {
+						bytesToCopy--;
+					}
+					else {
+						if (charCode <= 0xFFFF) {
+							if (this.debug) this.logInfo("unchunk: TWO bytes copied '"+aStr.substr(pos, 1)+"'="+charCode);
+							bytesToCopy = bytesToCopy - 2;
+
+						}
+						else {
+							if (charCode <= 0xFFFFFF) {
+								if (this.debug) this.logInfo("unchunk: THREE bytes copied '"+aStr.substr(pos, 1)+"'="+charCode);
+								bytesToCopy = bytesToCopy - 3;
+							}
+						}
+					}
+					pos++;
+				}
+
+				//newStr = newStr + aStr.substr(pos+2, chunkLength);
+					if (this.debug) this.logInfo("unchunk: pos:"+pos+", CunkStr:"+newStr+"|");
+				//pos = pos + chunkLength + 2;
 				// Next two bytes should be \r\n
 				var check = aStr.substr(pos, 2);
 				if (check != "\r\n") {
@@ -1257,11 +1288,26 @@ ecnsIAuthPrompt2.prototype = {
 		this.logInfo("asyncPromptAuth: level="+level);
 
 		var channel = aChannel.QueryInterface(Components.interfaces.nsIHttpChannel);
-		this.logInfo("_nsIAuthPrompt2_timercb: channel.responseStatus="+channel.responseStatus);
-		var acceptedAuthentications = channel.getResponseHeader("WWW-Authenticate");
-		acceptedAuthentications = acceptedAuthentications.split("\n");
-		for each (var index in acceptedAuthentications) {
-			this.logInfo("_nsIAuthPrompt2_timercb: WWW-Authenticate:"+index);
+		this.logInfo("asyncPromptAuth: channel.responseStatus="+channel.responseStatus);
+
+
+		try {
+			var offeredAuthentications = channel.getRequestHeader("Authorization");
+			this.logInfo("asyncPromptAuth: Authorization:"+offeredAuthentications);
+		}
+		catch(err) {
+				this.logInfo("asyncPromptAuth: NO Authorization in request header!?");
+		}
+
+		try {
+			var acceptedAuthentications = channel.getResponseHeader("WWW-Authenticate");
+			acceptedAuthentications = acceptedAuthentications.split("\n");
+			for each (var index in acceptedAuthentications) {
+				this.logInfo("asyncPromptAuth: WWW-Authenticate:"+index);
+			}
+		}
+		catch(err) {
+				this.logInfo("asyncPromptAuth: NO WWW-Authenticate in response header!?");
 		}
 
 		this.username = this.exchangeRequest.mArgument.user;
