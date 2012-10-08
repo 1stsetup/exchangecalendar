@@ -4181,7 +4181,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			extField.setAttribute("DistinguishedPropertySetId", "Common");
 			extField.setAttribute("PropertyId", MAPI_PidLidReminderSet);
 			extField.setAttribute("PropertyType", "Boolean");
-			eprop.addChildTag("Value", "nsTypes", "true");
+			eprop.addChildTag("Value", "nsTypes", "false");
 		}
 
 		if (this.debug) this.logInfo("addSnoozeDismissState: End:"+tmpStr);
