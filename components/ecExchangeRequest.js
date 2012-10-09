@@ -107,8 +107,6 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.uuid = exchWebService.commonFunctions.getUUID();
 
-	this.debug = true;
-
 	this.prePassword = "";
 
 	this.kerberos = true;
@@ -116,12 +114,6 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 	this.prefB = Cc["@mozilla.org/preferences-service;1"]
 			.getService(Ci.nsIPrefBranch);
 
-	this.debug = exchWebService.commonFunctions.safeGetBoolPref(this.prefB, "extensions.1st-setup.network.debug", false, true);
-	this.debuglevel = exchWebService.commonFunctions.safeGetIntPref(this.prefB, "extensions.1st-setup.network.debuglevel", 0, true);
-
-	if ((this.debuglevel == 0) || (!exchWebService.commonFunctions.shouldLog())) {
-		this.debug = false;
-	}
 }
 
 ExchangeRequest.prototype = {
@@ -160,6 +152,20 @@ ExchangeRequest.prototype = {
 	ER_ERROR_CONVERTID: -214, // Specified SMTP address does not exist.
 
 	ERR_PASSWORD_ERROR: -300, // To many password errors.
+
+	get debug()
+	{
+		if ((this.debuglevel == 0) || (!exchWebService.commonFunctions.shouldLog())) {
+			return false;
+		}
+
+		return exchWebService.commonFunctions.safeGetBoolPref(this.prefB, "extensions.1st-setup.network.debug", false, true);
+	},
+
+	get debuglevel()
+	{
+		return exchWebService.commonFunctions.safeGetIntPref(this.prefB, "extensions.1st-setup.network.debuglevel", 0, true);
+	},
 
 	logInfo: function _logInfo(aMsg, aLevel)
 	{
@@ -390,8 +396,8 @@ ExchangeRequest.prototype = {
 
 	isHTTPRedirect: function(evt)
 	{
-		if (this.debug) this.logInfo("exchangeRequest.isHTTPRedirect");
 		let xmlReq = this.mXmlReq;
+		if (this.debug) this.logInfo("exchangeRequest.isHTTPRedirect.xmlReq. xmlReq.readyState:"+xmlReq.readyState+", xmlReq.status:"+xmlReq.status);
 
 		if (xmlReq.readyState != 4)
 			return false;
@@ -450,6 +456,80 @@ ExchangeRequest.prototype = {
 		return false;
 	},
 
+	unchunk: function _unchunk(aStr)
+	{
+		var pos = aStr.indexOf("\r\n");
+		if ((pos > -1) && (pos < 5)) {
+			var chunkCounter = 1;
+			var chunkLength = parseInt(aStr.substr(0,pos), 16);
+			if (isNaN(chunkLength)) {
+				if (this.debug) this.logInfo("unchunk: 1st chunk is not a number:"+aStr.substr(0,pos));
+				return "";
+			}
+			if (this.debug) this.logInfo("unchunk: 1st chunk has length:"+chunkLength);
+			var newStr = "";
+			while (chunkLength > 0) {
+				var bytesToCopy = chunkLength;
+				pos = pos + 2;
+				var charCode;
+				while (bytesToCopy > 0) {
+					newStr = newStr + aStr.substr(pos, 1);
+					charCode = aStr.charCodeAt(pos);
+					if (charCode <= 0xFF) {
+						bytesToCopy--;
+					}
+					else {
+						if (charCode <= 0xFFFF) {
+							if (this.debug) this.logInfo("unchunk: TWO bytes copied '"+aStr.substr(pos, 1)+"'="+charCode);
+							bytesToCopy = bytesToCopy - 2;
+
+						}
+						else {
+							if (charCode <= 0xFFFFFF) {
+								if (this.debug) this.logInfo("unchunk: THREE bytes copied '"+aStr.substr(pos, 1)+"'="+charCode);
+								bytesToCopy = bytesToCopy - 3;
+							}
+						}
+					}
+					pos++;
+				}
+
+				//newStr = newStr + aStr.substr(pos+2, chunkLength);
+					if (this.debug) this.logInfo("unchunk: pos:"+pos+", CunkStr:"+newStr+"|");
+				//pos = pos + chunkLength + 2;
+				// Next two bytes should be \r\n
+				var check = aStr.substr(pos, 2);
+				if (check != "\r\n") {
+					if (this.debug) this.logInfo("unchunk: Strange. Expected 0D0A (Cr+Lf) but found:"+check+". Stopping processing of this chunked message.");
+					return "";
+				}
+				pos = pos + 2;
+				var tmpStr = aStr.substr(pos, 6);
+				var pos2 = tmpStr.indexOf("\r\n");
+				chunkCounter++;
+				if (pos2 > -1) {
+					if (this.debug) this.logInfo("unchunk: Found next chunk. Number:"+chunkCounter+", LengthStr:"+tmpStr.substr(0,pos2));
+					chunkLength = parseInt(tmpStr.substr(0,pos2), 16);
+					if (isNaN(chunkLength)) {
+						if (this.debug) this.logInfo("unchunk: Chunk '"+chunkCounter+"' is not a number:"+tmpStr);
+						return "";
+					}
+					if (this.debug) this.logInfo("unchunk: Chunk '"+chunkCounter+"' has length:"+chunkLength);
+					pos = pos + pos2;
+				}
+				else {
+					if (this.debug) this.logInfo("unchunk: Trying to determine chunk '"+chunkCounter+"' length but it is more than 4 bytes big!! size:"+tmpStr);
+					return "";
+				}
+			}
+			return newStr;
+		}
+		else {
+			if (this.debug) this.logInfo("unchunk: Trying to determine first chunk length but it is very big...!! size:"+pos);
+			return aStr;
+		}
+	},
+
 	onLoad:function _onLoad(evt) 
 	{
 		let xmlReq = this.mXmlReq;
@@ -471,6 +551,16 @@ ExchangeRequest.prototype = {
 		}
 
 		var xml = xmlReq.responseText; // bug 270553
+
+		// It appears that in exchange2010_sp2 the xml response is send in chunks with a length header.
+		// Try to detect this.
+
+/*		var header = xml.substr(0,6);
+		if (header.indexOf("\r\n") > -1) {
+			if (this.debug) this.logInfo("onLoad: Looks like we have a chunked response. Will try to unchunk it.");
+			xml = this.unchunk(xml);
+		}*/
+
 		xml = xml.replace(/^<\?xml\s+version\s*=\s*(?:"[^"]+"|'[^']+')[^?]*\?>/, ""); // bug 336551
 
 		xml = xml.replace(/&#x10;/g, ""); // BUG 61 remove hexadecimal code 0x10. It will fail in xml conversion.
@@ -1184,6 +1274,34 @@ ecnsIAuthPrompt2.prototype = {
 	//nsICancelable asyncPromptAuth(in nsIChannel aChannel, in nsIAuthPromptCallback aCallback, in nsISupports aContext, in PRUint32 level, in nsIAuthInformation authInfo);
 	asyncPromptAuth: function _asyncPromptAuth(aChannel, aCallback, aContext, level, authInfo)
 	{
+		var header = this.exchangeRequest.mXmlReq.getAllResponseHeaders();
+		this.logInfo("asyncPromptAuth: readyState="+this.exchangeRequest.mXmlReq.readyState);
+		this.logInfo("asyncPromptAuth: getAllResponseHeaders="+header);
+		this.logInfo("asyncPromptAuth: level="+level);
+
+		var channel = aChannel.QueryInterface(Components.interfaces.nsIHttpChannel);
+		this.logInfo("asyncPromptAuth: channel.responseStatus="+channel.responseStatus);
+
+
+		try {
+			var offeredAuthentications = channel.getRequestHeader("Authorization");
+			this.logInfo("asyncPromptAuth: Authorization:"+offeredAuthentications);
+		}
+		catch(err) {
+				this.logInfo("asyncPromptAuth: NO Authorization in request header!?");
+		}
+
+		try {
+			var acceptedAuthentications = channel.getResponseHeader("WWW-Authenticate");
+			acceptedAuthentications = acceptedAuthentications.split("\n");
+			for each (var index in acceptedAuthentications) {
+				this.logInfo("asyncPromptAuth: WWW-Authenticate:"+index);
+			}
+		}
+		catch(err) {
+				this.logInfo("asyncPromptAuth: NO WWW-Authenticate in response header!?");
+		}
+
 		this.username = this.exchangeRequest.mArgument.user;
 		this.password = null;
 
