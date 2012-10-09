@@ -400,7 +400,7 @@ function calExchangeCalendar() {
 	this.mIsOffline = Components.classes["@mozilla.org/network/io-service;1"]
                              .getService(Components.interfaces.nsIIOService).offline;
 
-	exchWebService.commonFunctions.LOG("Our offline status is:"+this.mIsOffline);
+	this.logInfo("Our offline status is:"+this.mIsOffline);
 
 }
 
@@ -9207,13 +9207,11 @@ exchWebService.check4addon = {
 
 function NSGetFactory(cid) {
 
-	exchWebService.commonFunctions.LOG("--XX- calExchangeCalendar--1");
 	try {
 		if (!NSGetFactory.mainEC) {
 			// Load main script from lightning that we need.
 			cal.loadScripts(scriptLoadOrder, Cu.getGlobalForObject(this));
 			NSGetFactory.mainEC = XPCOMUtils.generateNSGetFactory([calExchangeCalendar]);
-			exchWebService.commonFunctions.LOG("---XX- huppeltje");
 			
 	}
 
@@ -9225,9 +9223,10 @@ function NSGetFactory(cid) {
 
 	convertToVersion1();
 
-	exchWebService.commonFunctions.LOG("---XX- calExchangeCalendar-miv");
 	return NSGetFactory.mainEC(cid);
 } 
+
+/* Following is code for testing and debugging.
 
 var tmpStr = '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'+"\r\n"+'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'+"\r\n"+'xmlns:xsd="http://www.w3.org/2001/XMLSchema">'+"\r\n"+'<soap:Header><t:ServerVersionInfo'+"\r\n"+'MajorVersion="8" MinorVersion="3" MajorBuildNumber="279" MinorBuildNumber="1"'+"\r\n"+'Version="Exchange2007_SP1"'+"\r\n"+'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"'+"\r\n"+'/></soap:Header>\n\t<soap:Body>\n\t\t<m:SyncFolderItemsResponse'+"\r\n"+'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"'+"\r\n"+'xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"><m:ResponseMessages><m:SyncFolderItemsResponseMessage'+"\r\n"+'ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode><m:SyncState>.'+"\r\n"+'..</m:SyncState><m:IncludesLastItemInRange>true</m:IncludesLastItemInRange><m:Changes'+"\r\n"+'/></m:SyncFolderItemsResponseMessage></m:ResponseMessages></m:SyncFolderItemsResponse></soap:Body></soap:Envelope>';
 
@@ -9247,4 +9246,4 @@ var tmpobject = tmpXML.XPath("/s:Envelope/s:Header/michel:ServerVersionInfo");
 exchWebService.commonFunctions.LOG(">>>>>>>>>>> -----: MinorVersion:"+tmpobject[0].getAttribute("MinorVersion"));
 exchWebService.commonFunctions.LOG(">>>>>>>>>>> -----:"+tmpXML.toString());
 
-
+*/
