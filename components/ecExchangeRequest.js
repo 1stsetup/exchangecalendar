@@ -48,17 +48,12 @@ Cu.import("resource://exchangecalendar/ecFunctions.js");
 var EXPORTED_SYMBOLS = ["ExchangeRequest", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponseStr1", "nsAutodiscoverResponseStr2", "xml_tag", "getEWSServerVersion", "setEWSServerVersion"];
 
 var xml_tag = '<?xml version="1.0" encoding="utf-8"?>\n';
-//var nsSoap = new Namespace("nsSoap", "http://schemas.xmlsoap.org/soap/envelope/");
-//var nsTypes = new Namespace("nsTypes", "http://schemas.microsoft.com/exchange/services/2006/types");
-//var nsMessages = new Namespace("nsMessages", "http://schemas.microsoft.com/exchange/services/2006/messages");
 
 const nsSoapStr = "http://schemas.xmlsoap.org/soap/envelope/";
 const nsTypesStr = "http://schemas.microsoft.com/exchange/services/2006/types";
 const nsMessagesStr = "http://schemas.microsoft.com/exchange/services/2006/messages";
 const nsAutodiscoverResponseStr1 = "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006";
 const nsAutodiscoverResponseStr2 = "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a";
-
-//var nsAutodiscoverResponse = new Namespace("nsAutodiscoverResponse", "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a");
 
 var gExchangeRequestVersion = "0.1";
 
