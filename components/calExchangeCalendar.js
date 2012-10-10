@@ -9030,6 +9030,8 @@ ecObserver.prototype = {
 
 function convertToVersion1()
 {
+	var tmpPrefService = Cc["@mozilla.org/preferences-service;1"]
+                    .getService(Ci.nsIPrefService);
 	var tmpPrefs = Cc["@mozilla.org/preferences-service;1"]
                     .getService(Ci.nsIPrefService)
 		    .getBranch("calendar.registry.");
@@ -9062,6 +9064,7 @@ function convertToVersion1()
 						    .getService(Ci.nsIPrefService)
 						    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+updateToUUID+".");
 					updatePrefs.setIntPref("exchangePrefVersion", 1);
+					tmpPrefService.savePrefFile(nsnull);
 				}
 				newUUID = true;
 				oldUUID = tmpUUID;
