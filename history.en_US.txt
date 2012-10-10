@@ -1,3 +1,7 @@
+Version 3.0.0:
+- Removed all references to e4x
+- Removed some bugs and stabilized the code.
+
 Version 3.0.0-rc4:
 - Add Japanese translation.
 - Added fix for new chunked message responses from Exchange server.
