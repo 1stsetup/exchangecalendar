@@ -400,7 +400,7 @@ function calExchangeCalendar() {
 	this.mIsOffline = Components.classes["@mozilla.org/network/io-service;1"]
                              .getService(Components.interfaces.nsIIOService).offline;
 
-	exchWebService.commonFunctions.LOG("Our offline status is:"+this.mIsOffline);
+	exchWebService.commonFunctions.LOG("Our offline status is:"+this.mIsOffline+".");
 
 }
 
