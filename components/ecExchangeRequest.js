@@ -45,12 +45,12 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 
-var EXPORTED_SYMBOLS = ["ExchangeRequest","nsSoap","nsTypes","nsMessages", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponse", "xml_tag", "getEWSServerVersion", "setEWSServerVersion"];
+var EXPORTED_SYMBOLS = ["ExchangeRequest", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponseStr1", "nsAutodiscoverResponseStr2", "xml_tag", "getEWSServerVersion", "setEWSServerVersion"];
 
 var xml_tag = '<?xml version="1.0" encoding="utf-8"?>\n';
-var nsSoap = new Namespace("nsSoap", "http://schemas.xmlsoap.org/soap/envelope/");
-var nsTypes = new Namespace("nsTypes", "http://schemas.microsoft.com/exchange/services/2006/types");
-var nsMessages = new Namespace("nsMessages", "http://schemas.microsoft.com/exchange/services/2006/messages");
+//var nsSoap = new Namespace("nsSoap", "http://schemas.xmlsoap.org/soap/envelope/");
+//var nsTypes = new Namespace("nsTypes", "http://schemas.microsoft.com/exchange/services/2006/types");
+//var nsMessages = new Namespace("nsMessages", "http://schemas.microsoft.com/exchange/services/2006/messages");
 
 const nsSoapStr = "http://schemas.xmlsoap.org/soap/envelope/";
 const nsTypesStr = "http://schemas.microsoft.com/exchange/services/2006/types";
@@ -58,7 +58,7 @@ const nsMessagesStr = "http://schemas.microsoft.com/exchange/services/2006/messa
 const nsAutodiscoverResponseStr1 = "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006";
 const nsAutodiscoverResponseStr2 = "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a";
 
-var nsAutodiscoverResponse = new Namespace("nsAutodiscoverResponse", "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a");
+//var nsAutodiscoverResponse = new Namespace("nsAutodiscoverResponse", "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a");
 
 var gExchangeRequestVersion = "0.1";
 
@@ -565,100 +565,38 @@ ExchangeRequest.prototype = {
 
 		xml = xml.replace(/&#x10;/g, ""); // BUG 61 remove hexadecimal code 0x10. It will fail in xml conversion.
 
-		if (this.xml2jxon) {
-			try {
-			    var newXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
-					       .createInstance(Ci.mivIxml2jxon);
-			}
-			catch(exc) { if (this.debug) this.logInfo("createInstance error:"+exc);}
-
-			try {
-				newXML.addNameSpace("s", nsSoapStr);
-				newXML.addNameSpace("m", nsMessagesStr);
-				newXML.addNameSpace("t", nsTypesStr);
-				newXML.addNameSpace("a1", nsAutodiscoverResponseStr1);
-				newXML.addNameSpace("a2", nsAutodiscoverResponseStr2);
-				newXML.processXMLString(xml, 0, null);
-			}
-			catch(exc) { if (this.debug) this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
+		try {
+		    var newXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
+				       .createInstance(Ci.mivIxml2jxon);
 		}
-		else {
-			this.logInfo("processXMLString: WARNING WARNING a piece is still using old E4X code. Please report to exchangecalendar@extensions.1st-setup.nl:"+xml+"\n", -1);
-			if (this.e4x) {
-				try {
-					xml = new XML(xml);
-				}
-				catch(er) {
-					if (this.debug) this.logInfo("XML conversion error 1: "+ er);
-					// BUG 61 Convert all Hex codes to decimal
-					xml = xml.replace(/&#x([0123456789ABCDEF][0123456789ABCDEF]?);/g, function(str, ent) { return "&#"+parseInt(ent,16)+";"; }); 
-					try {
-						xml = new XML(xml);
-					}
-					catch(er2) {
-						if (this.debug) this.logInfo("XML conversion error 2: "+ er);
-						 // BUG 61 remove all decimal codes below character 32 (space) 
-						xml = xml.replace(/&#([0123456789]?);/g, function(str, ent) parseInt(ent,10) < 32 ? "" : "&#"+parseInt(ent,10)+";" );
-						try {
-							xml = new XML(xml);
-						}
-						catch (er3) {
-							if (this.debug) this.logInfo("FATAL XML conversion error 3: "+ er3);
-							if (this.debug) this.logInfo("          String which fails: "+ xml, 2);
+		catch(exc) { if (this.debug) this.logInfo("createInstance error:"+exc);}
 
-							var answer = xmlReq.responseText.substr(0,100)+"\n\n";
-					
-							this.fail(this.ER_ERROR_XML_CONVERSION_ERROR, "Fatal XML conversion error. Probably because we did not receive a page with XML. (onLoad)\n\n"+answer);
-							if (this.tryNextURL()) {
-								return;
-							}
-
-							xmlReq.abort();
-							return;
-						}
-					}
-				}
-			}
+		try {
+			newXML.addNameSpace("s", nsSoapStr);
+			newXML.addNameSpace("m", nsMessagesStr);
+			newXML.addNameSpace("t", nsTypesStr);
+			newXML.addNameSpace("a1", nsAutodiscoverResponseStr1);
+			newXML.addNameSpace("a2", nsAutodiscoverResponseStr2);
+			newXML.processXMLString(xml, 0, null);
 		}
+		catch(exc) { if (this.debug) this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
 
 		this.mAuthFail = 0;
 		this.mRunning  = false;
 
 		var resp;
-		if (this.xml2jxon) {
-			resp = newXML;
-		}
-		else {
-			if (this.e4x) {
-				resp = xml;
-			} else {
-				resp = xmlReq.responseXML;
-			}
-		}
+		resp = newXML;
 
 		if (this.mCbOk) {
 			// Try to get server version and store it.
 			try {
-				if (this.xml2jxon) {
-					var serverVersion = resp.XPath("/s:Header/t:ServerVersionInfo");
-					if ((serverVersion.length > 0) && (serverVersion[0].getAttribute("Version") != "")) {
-						if (serverVersion[0].getAttribute("@Version") == "Exchange2010_SP2") {
-							gEWSServerVersion[this.currentUrl] = "Exchange2010_SP1";
-						}
-						else {
-							gEWSServerVersion[this.currentUrl] = serverVersion[0].getAttribute("@Version");
-						}
+				var serverVersion = resp.XPath("/s:Header/t:ServerVersionInfo");
+				if ((serverVersion.length > 0) && (serverVersion[0].getAttribute("Version") != "")) {
+					if (serverVersion[0].getAttribute("@Version") == "Exchange2010_SP2") {
+						gEWSServerVersion[this.currentUrl] = "Exchange2010_SP1";
 					}
-				}
-				else {
-					var serverVersion = resp.nsSoap::Header.nsTypes::ServerVersionInfo;
-					if ((serverVersion) && (serverVersion.@Version != "")) {
-						if (serverVersion.@Version == "Exchange2010_SP2") {
-							gEWSServerVersion[this.currentUrl] = "Exchange2010_SP1";
-						}
-						else {
-							gEWSServerVersion[this.currentUrl] = serverVersion.@Version;
-						}
+					else {
+						gEWSServerVersion[this.currentUrl] = serverVersion[0].getAttribute("@Version");
 					}
 				}
 			}
@@ -915,35 +853,17 @@ ExchangeRequest.prototype = {
 
 	makeSoapMessage: function erMakeSoapMessage(aReq)
 	{
-		if (typeof(aReq) == "xml") {
-			var msg = <nsSoap:Envelope xmlns:nsSoap={nsSoap} xmlns:nsTypes={nsTypes} xmlns:nsMessages={nsMessages}/>;
+		var msg = exchWebService.commonFunctions.xmlToJxon('<nsSoap:Envelope xmlns:nsSoap="'+nsSoapStr+'" xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-			if (this.mArgument.ServerVersion) {
-				msg.nsSoap::Header.nsTypes::RequestServerVersion.@Version = this.mArgument.ServerVersion; 
-			}
-			else {
-				msg.nsSoap::Header.nsTypes::RequestServerVersion.@Version = getEWSServerVersion(); 
-			}
-			msg.nsSoap::Body.request = aReq;
-
-			return xml_tag + String(msg);
+		if (this.mArgument.ServerVersion) {
+			msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", this.mArgument.ServerVersion);
 		}
 		else {
-
-			if (this.debug) this.logInfo("makeSoapMessage: aReq is NOT xml.");
-
-			var msg = exchWebService.commonFunctions.xmlToJxon('<nsSoap:Envelope xmlns:nsSoap="'+nsSoap+'" xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
-
-			if (this.mArgument.ServerVersion) {
-				msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", this.mArgument.ServerVersion);
-			}
-			else {
-				msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", getEWSServerVersion());
-			}
-			msg.addChildTag("Body", "nsSoap", null).addChildTagObject(aReq);
-
-			return xml_tag + msg.toString();
+			msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", getEWSServerVersion());
 		}
+		msg.addChildTag("Body", "nsSoap", null).addChildTagObject(aReq);
+
+		return xml_tag + msg.toString();
 	},
 
 	getSoapErrorMsg: function _getSoapErrorMsg(aResp)
