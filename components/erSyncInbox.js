@@ -108,7 +108,7 @@ erSyncInboxRequest.prototype = {
 			req.addChildTag("MaxChangesReturned", "nsMessages", "512");
 //		}
 //		else {
-//			req.nsMessages::MaxChangesReturned = 15;  // We will ask 15 items at a time.
+//			req.addChildTag("MaxChangesReturned", "nsMessages", "15");  // We will ask 15 items at a time.
 //		}
 		
 		this.parent.xml2jxon = true;

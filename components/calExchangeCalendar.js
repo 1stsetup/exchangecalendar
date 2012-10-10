@@ -4108,22 +4108,6 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 	{
 		if (this.debug) this.logInfo("getAlarmLastAck");
 		var tmpStr = "";
-/*		if (aItem.alarmLastAck) {
-			if (this.debug) this.logInfo("getAlarmLastAck: alarmLastAck:"+aItem.alarmLastAck.toString());
-			var tmpDateTime = aItem.alarmLastAck.getInTimezone(exchWebService.commonFunctions.ecUTC());
-			tmpStr = tmpStr + "alarmLastAck="+cal.toRFC3339(tmpDateTime.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone()));
-
-			
-			let eprop = <nsTypes:ExtendedProperty xmlns:nsTypes={nsTypes}/>;
-			eprop.nsTypes::ExtendedFieldURI.@PropertySetId = calExchangeCalendarGUID;
-			eprop.nsTypes::ExtendedFieldURI.@PropertyName = "alarmLastAck";
-			eprop.nsTypes::ExtendedFieldURI.@PropertyType = "SystemTime";
-			eprop.nsTypes::Value = cal.toRFC3339(tmpDateTime.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone()));
-
-			e.appendChild(eprop);
-
-		}
-		if (this.debug) this.logInfo("getAlarmLastAck END");*/
 		return tmpStr;
 	},
 
@@ -4587,39 +4571,6 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 					if (this.debug) this.logInfo(" ## There is not organizer for this meeting.");
 				}
 		
-
-/*				var attendees = aItem.getAttendees({});
-				for each (var attendee in attendees) {
-					const attendeeStatus = {
-						"NEEDS-ACTION"	: "Unknown",
-						"TENTATIVE"	: "Tentative",
-						"ACCEPTED"	: "Accept",
-						"DECLINED"	: "Decline",
-						null		: "Unknown"
-					};
-	
-					var ae = <nsTypes:Attendee xmlns:nsTypes={nsTypes}/>;
-	
-					ae.nsTypes::Mailbox.nsTypes::Name = attendee.commonName;
-
-					var tmpEmailAddress = attendee.id.replace(/^mailto:/, '');
-					if (tmpEmailAddress.indexOf("@") > 0) {
-						ae.nsTypes::Mailbox.nsTypes::EmailAddress = tmpEmailAddress;
-					}
-					else {
-						ae.nsTypes::Mailbox.nsTypes::EmailAddress = "unknown@somewhere.com";
-					}
-					ae.nsTypes::ResponseType = attendeeStatus[attendee.participationStatus];
-	
-					switch (attendee.role) {
-					case "REQ-PARTICIPANT":
-						e.nsTypes::RequiredAttendees.nsTypes::Attendee += ae;
-						break;
-					case "OPT-PARTICIPANT":
-						e.nsTypes::OptionalAttendees.nsTypes::Attendee += ae;
-						break;
-					}
-				} */
 
 				this.makeRecurrenceRule(aItem, e);
 	
@@ -6061,7 +6012,6 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			attendee.participationStatus = participationMap[aElement.getTagValue("t:ResponseType")];
 
 			// check if we specified a myResponseType for the complete item and the specified mailbox is equal to the mailbox for the calendar.
-			//if (this.debug) this.logInfo("aMyResponseType:"+aMyResponseType+", EmailAddress:"+mbox.nsTypes::EmailAddress.toString().toLowerCase()+", mailbox:"+this.mailbox.toLowerCase());
 			if ((aMyResponseType) && (mbox.getTagValue("t:EmailAddress").toLowerCase() == this.mailbox.toLowerCase())) {
 				attendee.participationStatus = participationMap[aMyResponseType];
 				//if (this.debug) this.logInfo("Setting my response type from the global myresponsetype for the item.");
@@ -6668,11 +6618,6 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 			var propertyName = extendedProperty.getAttributeByTag("t:ExtendedFieldURI", "PropertyName", "");
 			switch (propertyName) {
-/*				case "alarmLastAck" :
-					//if (this.debug) this.logInfo("  alarmLastAck:"+extendedProperty.nsTypes::Value.toString());
-					item.alarmLastAck = this.tryToSetDateValue(extendedProperty.nsTypes::Value, null);
-					doNotHandleOldAddon = true;
-					break; */
 				case "lastLightningModified":
 					var lastLightningModified = this.tryToSetDateValue(extendedProperty.getTagValue("t:Value"), null);
 					var lastModifiedTime = this.tryToSetDateValue(aCalendarItem.getTagValue("t:LastModifiedTime"), null);
@@ -6868,10 +6813,6 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 					this.recurringMasterCache[uid] = item;
 	
-					// Removed because it probably does not need to be set. We found this out when working on the offline cache (16-05-2012)
-					//item.recurrenceId = this.tryToSetDateValue(aCalendarItem.nsTypes::RecurrenceId, item.startDate);
-					//this.setSnoozeTime(null, item);
-	
 					if ((loadChildren) || (this.newMasters[uid])) {
 
 						if (this.debug) this.logInfo("We have a master and it was set as new. So we download it's children.title:"+item.title);
@@ -6925,9 +6866,6 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		var item = createTodo();
 
 		item.entryDate = this.tryToSetDateValue(aTask.getTagValue("t:StartDate"), null);
-/*		if (!item.entryDate) {
-			item.entryDate = this.tryToSetDateValue(aTask.nsTypes::Recurrence.nsTypes::EndDateRecurrence.nsTypes::StartDate, null);
-		}*/
 
 		item.dueDate = this.tryToSetDateValue(aTask.getTagValue("t:DueDate"), item.dueDate);
 		item.completedDate = this.tryToSetDateValue(aTask.getTagValue("t:CompleteDate"), item.completedDate);
@@ -6984,11 +6922,6 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 			var propertyName = extendedProperty.getAttributeByTag("t:ExtendedFieldURI","PropertyName");
 			switch (propertyName) {
-/*				case "alarmLastAck" :
-					//if (this.debug) this.logInfo("  alarmLastAck:"+extendedProperty.nsTypes::Value.toString());
-					item.alarmLastAck = this.tryToSetDateValue(extendedProperty.nsTypes::Value, null);
-					doNotHandleOldAddon = true;
-					break; */
 				case "lastLightningModified":
 					var lastLightningModified = this.tryToSetDateValue(extendedProperty.getTagValue("t:Value"), null);
 					var lastModifiedTime = this.tryToSetDateValue(aCalendarItem.getTagValue("t:LastModifiedTime"), null);
@@ -7420,7 +7353,6 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			var tmpFolderProperties = exchWebService.commonFunctions.safeGetCharPref(this.prefs,"folderProperties", null);
 			if (tmpFolderProperties) {
 				//if (this.debug) this.logInfo("Restore folderProperties from prefs.js:"+tmpFolderProperties);
-				//var tmpXML = new XML(tmpFolderProperties);
 				var tmpXML = exchWebService.commonFunctions.xmlToJxon(tmpFolderProperties);
 				this.folderProperties = tmpXML;
 				this.setFolderProperties(tmpXML, tmpFolderClass);
@@ -7675,8 +7607,6 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			istream.close();
 
 			try {
-				//this._ews_2010_timezonedefinitions = new XML(lines);
-
 				try {
 				    this._ews_2010_timezonedefinitions = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
 						       .createInstance(Ci.mivIxml2jxon);
@@ -7700,7 +7630,6 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 	getEWSTimeZones: function _getEWSTimeZones(aTimeZoneDefinitions)
 	{
-		//var rm = aTimeZoneDefinitions..nsMessages::GetServerTimeZonesResponseMessage;
 		var rm = aTimeZoneDefinitions.XPath("/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage");
 		if (rm.length == 0) return null;
 
@@ -8851,7 +8780,6 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 				if (doContinue) {
 					if (this.debug) this.logInfo("Found item in offline Cache.");
-					//var cachedItem = new XML(sqlStatement.row.item);
 					var cachedItem = exchWebService.commonFunctions.xmlToJxon(sqlStatement.row.item);
 
 					//cachedItem.content = ;

@@ -207,7 +207,6 @@ exchWebService.exchangeSettings = {
 	{
 		exchWebService.commonFunctions.LOG("showFolderProprties:"+aProperties.toString());
 		var serverVersionInfo = aProperties.XPath('/s:Header/t:ServerVersionInfo')[0];
-		//var serverVersionInfo = aProperties.nsSoap::Header.nsTypes::ServerVersionInfo;
 		document.getElementById("exchWebServices-ServerVersionInfo").value = serverVersionInfo.getAttribute('Version') + " ("+serverVersionInfo.getAttribute('MajorVersion')+"."+serverVersionInfo.getAttribute('MinorVersion')+"."+serverVersionInfo.getAttribute('MajorBuildNumber')+"."+serverVersionInfo.getAttribute('MinorBuildNumber')+")";
 
 		var propType = "calendar";
@@ -225,9 +224,6 @@ exchWebService.exchangeSettings = {
 		document.getElementById("exchWebServices-CalendarFolder-DisplayName").value = calendarFolder.getTagValue('t:DisplayName');
 		document.getElementById("exchWebServices-CalendarFolder-TotalCount").value = calendarFolder.getTagValue('t:TotalCount');
 		document.getElementById("exchWebServices-CalendarFolder-ChildFolderCount").value = calendarFolder.getTagValue('t:ChildFolderCount');
-		//document.getElementById("exchWebServices-CalendarFolder-DisplayName").value = calendarFolder.nsTypes::DisplayName.toString();
-		//document.getElementById("exchWebServices-CalendarFolder-TotalCount").value = calendarFolder.nsTypes::TotalCount.toString();
-		//document.getElementById("exchWebServices-CalendarFolder-ChildFolderCount").value = calendarFolder.nsTypes::ChildFolderCount.toString();
 
 		var effectiveRights = calendarFolder.XPath('t:EffectiveRights')[0];
 		document.getElementById("exchWebServices-CalendarFolder-EffectiveRights-CreateAssociated").value = effectiveRights.getTagValue('t:CreateAssociated');
@@ -236,12 +232,6 @@ exchWebService.exchangeSettings = {
 		document.getElementById("exchWebServices-CalendarFolder-EffectiveRights-Delete").value = effectiveRights.getTagValue('t:Delete');
 		document.getElementById("exchWebServices-CalendarFolder-EffectiveRights-Modify").value = effectiveRights.getTagValue('t:Modify');
 		document.getElementById("exchWebServices-CalendarFolder-EffectiveRights-Read").value = effectiveRights.getTagValue('t:Read');
-		//document.getElementById("exchWebServices-CalendarFolder-EffectiveRights-CreateAssociated").value = calendarFolder.nsTypes::EffectiveRights.nsTypes::CreateAssociated.toString();
-		//document.getElementById("exchWebServices-CalendarFolder-EffectiveRights-CreateContents").value = calendarFolder.nsTypes::EffectiveRights.nsTypes::CreateContents.toString();
-		//document.getElementById("exchWebServices-CalendarFolder-EffectiveRights-CreateHierarchy").value = calendarFolder.nsTypes::EffectiveRights.nsTypes::CreateHierarchy.toString();
-		//document.getElementById("exchWebServices-CalendarFolder-EffectiveRights-Delete").value = calendarFolder.nsTypes::EffectiveRights.nsTypes::Delete.toString();
-		//document.getElementById("exchWebServices-CalendarFolder-EffectiveRights-Modify").value = calendarFolder.nsTypes::EffectiveRights.nsTypes::Modify.toString();
-		//document.getElementById("exchWebServices-CalendarFolder-EffectiveRights-Read").value = calendarFolder.nsTypes::EffectiveRights.nsTypes::Read.toString();
 
 		// PermissionSet
 		var permissions = new Array;
@@ -288,7 +278,6 @@ exchWebService.exchangeSettings = {
 		document.getElementById("exchWebServices-SharedFolderID").hidden = true;
 
 		if (window.arguments[0].calendar.getProperty("exchWebService.getFolderProperties")) {
-			//var folderProperties = new XML(window.arguments[0].calendar.getProperty("exchWebService.getFolderProperties"));
 			var folderProperties = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
 						       .createInstance(Ci.mivIxml2jxon);
 			folderProperties.processXMLString(window.arguments[0].calendar.getProperty("exchWebService.getFolderProperties"), 0, null);

@@ -39,11 +39,11 @@ var Cu = Components.utils;
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 
-var EXPORTED_SYMBOLS = ["makeParentFolderIds", "makeParentFolderIds2", "publicFoldersMap"];
+var EXPORTED_SYMBOLS = ["makeParentFolderIds2", "publicFoldersMap"];
 
 const publicFoldersMap = { "publicfoldersroot" : true };
 
-function makeParentFolderIds(aParentItem, aArgument)
+/*function makeParentFolderIds(aParentItem, aArgument)
 {
 	var ParentFolderIds = <nsMessages:{aParentItem} xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
 
@@ -71,7 +71,7 @@ function makeParentFolderIds(aParentItem, aArgument)
 	}
 
 	return ParentFolderIds;
-}
+}*/
 
 // This is the xml2jxon version.
 function makeParentFolderIds2(aParentItem, aArgument)
