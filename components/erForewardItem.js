@@ -87,7 +87,6 @@ erForewardItemRequest.prototype = {
                         var email = new String(emailId); 
                         var start = email.indexOf('<'); 
                         var end = email.indexOf('>'); 
-			let mailbox = <nsTypes:Mailbox xmlns:nsTypes={nsTypes}/>;
 			if(start<0){
 				toRecipients.addChildTag("Mailbox", "nsTypes", null).addChildTag("EmailAddress", "nsTypes", email);
 			}
