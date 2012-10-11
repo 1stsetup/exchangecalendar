@@ -225,6 +225,7 @@ this.logInfo("cardMatchesQuery: aQuery="+aQuery);
 					}
 					break;
 				case "bw":
+					this.logInfo("   -'"+queryFields[0]+"'='"+aCard.getProperty(queryFields[0], "")+"' bw:'"+queryFields[2]+"'");
 					if (aCard.getProperty(queryFields[0], "").toLowerCase().indexOf(queryFields[2].toLowerCase()) == 0) {
 						this.logInfo("   -- Matches card."+queryFields[0]+"="+aCard.getProperty(queryFields[0], "")+", value="+queryFields[2]);
 						return true;
