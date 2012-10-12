@@ -501,7 +501,13 @@ exchWebService.commonFunctions = {
 	    let stack = "";
 	    let frame = components.stack.caller;
 	    if ((frame) && (frame.caller)) {
-			var filename = frame.caller.filename.replace(/^.*(\\|\/|\:)/, '');
+			var filename;
+			if (frame.caller.filename) {
+				filename = frame.caller.filename.replace(/^.*(\\|\/|\:)/, '');
+			}
+			else {
+				filename = "(null)";
+			}
 			stack += frame.caller.name+ " in " + filename + ":" + frame.caller.lineNumber;
 	    }
 
