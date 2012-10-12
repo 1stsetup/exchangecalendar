@@ -5408,11 +5408,12 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			    </nsTypes:SetItemField>
 			  </nsTypes:Updates>
 			</nsTypes:ItemChange>;*/
-		var req = exchWebService.commonFunctions.xmlToJxon('<nsTypes:ItemChange xmlns:nsTypes="'+nsTypesStr+'">');
+
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsTypes:ItemChange xmlns:nsTypes="'+nsTypesStr+'"/>');
 		var itemId = req.addChildTag("ItemId", "nsTypes", null);
 		itemId.setAttribute("Id", aId);
 		itemId.setAttribute("ChangeKey", aChangeKey);
-		var setItemField = req.addChildTag("Update", "nsTypes", null).addChildTag("SetItemField", "nsTypes", null);
+		var setItemField = req.addChildTag("Updates", "nsTypes", null).addChildTag("SetItemField", "nsTypes", null);
 		setItemField.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Subject");
 		setItemField.addChildTag("CalendarItem", "nsTypes", null).addChildTag("Subject", "nsTypes", aItem.title);
 
@@ -6305,9 +6306,9 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 				var newAttachment = createAttachment();
 				newAttachment.setParameter("X-AttachmentId",fileAttachment.getAttributeByTag("t:AttachmentId","Id")); 
-				newAttachment.uri = makeURL(this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size"))+"&user="+encodeURIComponent(this.user));
+				newAttachment.uri = makeURL(this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
 
-				if (this.debug) this.logInfo("New attachment URI:"+this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size"))+"&user="+encodeURIComponent(this.user));
+				if (this.debug) this.logInfo("New attachment URI:"+this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
 
 				aItem.addAttachment(newAttachment);
 			}
