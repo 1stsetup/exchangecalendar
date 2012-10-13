@@ -941,16 +941,16 @@ exchangeAbFolderDirectory.prototype = {
 	
 			newCard.directoryId = this.uuid;
 			newCard.localId = contact.getAttributeByTag("t:ItemId", "Id");
-			newCard.setProperty("X-ChangeKey", contact.getAttributeByTag("t:ItemId", "ChangeKey"));
-			newCard.setProperty("DisplayName", contact.getTagValue("t:DisplayName"));
-			newCard.setProperty("FirstName", contact.getTagValue("t:GivenName"));
-			newCard.setProperty("LastName", contact.getTagValue("t:Surname"));
+			newCard.setProperty("X-ChangeKey", contact.getAttributeByTag("t:ItemId", "ChangeKey", ""));
+			newCard.setProperty("DisplayName", contact.getTagValue("t:DisplayName", ""));
+			newCard.setProperty("FirstName", contact.getTagValue("t:GivenName", ""));
+			newCard.setProperty("LastName", contact.getTagValue("t:Surname", ""));
 			newCard.setProperty("PrimaryEmail", contact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress1"]', ""));
 			newCard.setProperty("SecondEmail", contact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress2"]', ""));
 
-			newCard.setProperty("JobTitle", contact.getTagValue("t:JobTitle"));
-			newCard.setProperty("Department", contact.getTagValue("t:Department"));
-			newCard.setProperty("Company", contact.getTagValue("t:CompanyName"));
+			newCard.setProperty("JobTitle", contact.getTagValue("t:JobTitle", ""));
+			newCard.setProperty("Department", contact.getTagValue("t:Department", ""));
+			newCard.setProperty("Company", contact.getTagValue("t:CompanyName", ""));
 
 			newCard.setProperty("HomePhone", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="HomePhone"]', ""));
 
@@ -988,9 +988,9 @@ exchangeAbFolderDirectory.prototype = {
 			}
 
 			newCard.setProperty("_AimScreenName", contact.getTagValueByXPath('/t:ImAddresses/t:Entry[@Key="ImAddress"]', ""));
-			newCard.setProperty("WebPage1", contact.getTagValue("t:BusinessHomePage"));
+			newCard.setProperty("WebPage1", contact.getTagValue("t:BusinessHomePage", ""));
 
-			newCard.setProperty("Notes", contact.getTagValue("t:Body"));
+			newCard.setProperty("Notes", contact.getTagValue("t:Body", ""));
 
 			var birthDay = contact.getTagValue("t:Birthday");
 
