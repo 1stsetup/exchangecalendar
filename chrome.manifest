@@ -49,4 +49,7 @@ interfaces interfaces/mivIxml2jxon.xpt
 component {d7165a60-7d64-42b2-ac48-6ccfc0962abb} interfaces/xml.js
 contract @1st-setup.nl/conversion/xml2jxon;1 {d7165a60-7d64-42b2-ac48-6ccfc0962abb}
  
+interfaces interfaces/updater/mivUpdater.xpt
+component {fb9aeba0-152a-11e2-892e-0800200c9a66} interfaces/updater/mivUpdater.js
+contract @1st-setup.nl/checkers/updater;1 {fb9aeba0-152a-11e2-892e-0800200c9a66}
 

@@ -46,6 +46,8 @@ exchWebService.check4Lightning = {
 
 	lightningAlertTimer: Cc["@mozilla.org/timer;1"]
 					.createInstance(Ci.nsITimer),
+	lightningAlertTimer2: Cc["@mozilla.org/timer;1"]
+					.createInstance(Ci.nsITimer),
 
 	lightningAlertCallback: function _lightningAlertCallback() 
 	{
@@ -152,8 +154,58 @@ exchWebService.check4Lightning = {
 		if ((exchWebService) && (exchWebService.check4Lightning)) {
 			document.removeEventListener("load", exchWebService.check4Lightning.onLoad, true);
 			exchWebService.check4Lightning.checkLightningIsInstalled();
+			
+			var updatecheck = Cc["@1st-setup.nl/checkers/updater;1"]
+						       .createInstance(Ci.mivUpdater);
+			updatecheck.checkForUpdate("exchangecalendar@extensions.1st-setup.nl" , exchWebService.check4Lightning.updaterCallBack);
 		}
 	},
+
+	updaterCallBack: function _updaterCallBack(aResult)
+	{
+				if (aResult.versionChanged <= 0) {
+					exchWebService.commonFunctions.LOG("No new version available.");
+				}
+				else {
+					exchWebService.commonFunctions.LOG("New version available.");
+					exchWebService.commonFunctions.LOG(" ++ Version:"+aResult.updateDetails[1]);
+					exchWebService.commonFunctions.LOG(" ++ URL:"+aResult.updateDetails[2]);
+					exchWebService.check4Lightning.lightningAlertTimer2.initWithCallback(function(){ exchWebService.check4Lightning.lightningAlertCallback2(aResult);}, 15000, exchWebService.check4Lightning.lightningAlertTimer2.TYPE_ONE_SHOT);
+				}
+	},
+
+	lightningAlertCallback2: function _lightningAlertCallback2(aResult) 
+	{
+		exchWebService.commonFunctions.LOG("lightningAlertCallback2.");
+
+		var prefB = Cc["@mozilla.org/preferences-service;1"].
+				getService(Ci.nsIPrefBranch);
+		var promptStr = "There is an update available for the Exchange Calendar and Tasks provider on the main website.\n\nDo you want to install this newer version:"+aResult.updateDetails[1];
+		promptStr += "\n\nOr read the info on "+aResult.updateDetails[3];
+		var promptTitle = "Update available";
+
+		var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"].  
+			getService(Ci.nsIPromptService);  
+
+		var answer = { value: false };
+
+		var flags = prompts.BUTTON_POS_0 * prompts.BUTTON_TITLE_YES +
+				prompts.BUTTON_POS_1 * prompts.BUTTON_TITLE_NO +
+				prompts.BUTTON_POS_2 * prompts.BUTTON_TITLE_IS_STRING;
+
+		var button = prompts.confirmEx(null, promptTitle, promptStr, flags, "", "", "Info", null, answer);
+
+		exchWebService.commonFunctions.LOG("lightningAlertCallback2. button:"+button); 		
+
+		if (button == 0) {
+			openContentTab(aResult.updateDetails[2], "tab", "www.1st-setup.nl");
+		}
+		if (button == 2) {
+			openContentTab(aResult.updateDetails[3], "tab", "www.1st-setup.nl");
+		}
+
+	},
+
 
 }
 
