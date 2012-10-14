@@ -1,6 +1,7 @@
 Version 3.1.0:
 - Fixed bug 196: Version 3.0.0-rc3 seems to interfere with address autocompletion
 - Fixed bug 204: Thunderbird hangs when creating a new item with attachment
+- Added automatic update functionality. This will check the developer website for new versions and give the change to autmoatically install it. 
 
 Version 3.0.0:
 - Removed all references to e4x
