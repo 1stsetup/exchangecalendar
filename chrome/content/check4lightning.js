@@ -155,9 +155,11 @@ exchWebService.check4Lightning = {
 			document.removeEventListener("load", exchWebService.check4Lightning.onLoad, true);
 			exchWebService.check4Lightning.checkLightningIsInstalled();
 			
-			var updatecheck = Cc["@1st-setup.nl/checkers/updater;1"]
-						       .createInstance(Ci.mivUpdater);
-			updatecheck.checkForUpdate("exchangecalendar@extensions.1st-setup.nl" , exchWebService.check4Lightning.updaterCallBack);
+			if (exchWebService.commonFunctions.safeGetBoolPref(null, "extensions.1st-setup.others.checkForNewAddOnVersion", true, true)) {
+				var updatecheck = Cc["@1st-setup.nl/checkers/updater;1"]
+							       .createInstance(Ci.mivUpdater);
+				updatecheck.checkForUpdate("exchangecalendar@extensions.1st-setup.nl" , exchWebService.check4Lightning.updaterCallBack);
+			}
 		}
 	},
 
@@ -168,9 +170,11 @@ exchWebService.check4Lightning = {
 				}
 				else {
 					exchWebService.commonFunctions.LOG("New version available.");
-					exchWebService.commonFunctions.LOG(" ++ Version:"+aResult.updateDetails[1]);
-					exchWebService.commonFunctions.LOG(" ++ URL:"+aResult.updateDetails[2]);
-					exchWebService.check4Lightning.lightningAlertTimer2.initWithCallback(function(){ exchWebService.check4Lightning.lightningAlertCallback2(aResult);}, 15000, exchWebService.check4Lightning.lightningAlertTimer2.TYPE_ONE_SHOT);
+					exchWebService.commonFunctions.LOG(" ++ Version:"+aResult.updateDetails.newVersion);
+					exchWebService.commonFunctions.LOG(" ++ URL:"+aResult.updateDetails.updateURL);
+					if (exchWebService.commonFunctions.safeGetBoolPref(null, "extensions.1st-setup.others.warnAboutNewAddOnVersion", true, true)) {
+						exchWebService.check4Lightning.lightningAlertTimer2.initWithCallback(function(){ exchWebService.check4Lightning.lightningAlertCallback2(aResult);}, 15000, exchWebService.check4Lightning.lightningAlertTimer2.TYPE_ONE_SHOT);
+					}
 				}
 	},
 
@@ -180,8 +184,10 @@ exchWebService.check4Lightning = {
 
 		var prefB = Cc["@mozilla.org/preferences-service;1"].
 				getService(Ci.nsIPrefBranch);
-		var promptStr = "There is an update available for the Exchange Calendar and Tasks provider on the main website.\n\nDo you want to install this newer version:"+aResult.updateDetails[1];
-		promptStr += "\n\nOr read the info on "+aResult.updateDetails[3];
+		var promptStr = "There is an update available for the Exchange Calendar and Tasks provider on the main website.";
+		promptStr += "\n\nDo you want to install this newer version: "+aResult.updateDetails.newVersion;
+		promptStr += "\nCurrent version is: "+aResult.addon.version;
+		promptStr += "\n\nOr read the info on "+aResult.updateDetails.infoURL;
 		var promptTitle = "Update available";
 
 		var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"].  
@@ -193,19 +199,19 @@ exchWebService.check4Lightning = {
 				prompts.BUTTON_POS_1 * prompts.BUTTON_TITLE_NO +
 				prompts.BUTTON_POS_2 * prompts.BUTTON_TITLE_IS_STRING;
 
-		var button = prompts.confirmEx(null, promptTitle, promptStr, flags, "", "", "Info", null, answer);
+		var button = prompts.confirmEx(null, promptTitle, promptStr, flags, "", "", "Info", "Do not show this prompt anymore.", answer);
 
 		exchWebService.commonFunctions.LOG("lightningAlertCallback2. button:"+button); 		
+		prefB.setBoolPref("extensions.1st-setup.others.warnAboutNewAddOnVersion", !answer.value);
 
 		if (button == 0) {
-			openContentTab(aResult.updateDetails[2], "tab", "www.1st-setup.nl");
+			aResult.updater.installNewVersion(aResult, true);
 		}
 		if (button == 2) {
-			openContentTab(aResult.updateDetails[3], "tab", "www.1st-setup.nl");
+			openContentTab(aResult.updateDetails.infoURL, "tab", "www.1st-setup.nl");
 		}
 
 	},
-
 
 }
 

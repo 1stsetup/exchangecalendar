@@ -63,6 +63,14 @@
                         name="extensions.1st-setup.others.retryCount"
                         type="int"/>
 
+            <preference id="extensions.1st-setup.others.checkForNewAddOnVersion"
+                        name="extensions.1st-setup.others.checkForNewAddOnVersion"
+                        type="bool"/>
+
+            <preference id="extensions.1st-setup.others.warnAboutNewAddOnVersion"
+                        name="extensions.1st-setup.others.warnAboutNewAddOnVersion"
+                        type="bool"/>
+
         </preferences>
 
         <groupbox id="exchangeWebService_others_prefs_groupbox">
@@ -74,6 +82,19 @@
 				preference="extensions.1st-setup.others.retryCount"
 				increment="1" min="0" max="9999" type="number"/>
 		    </hbox>
+            </vbox>
+	</groupbox>
+
+        <groupbox id="exchangeWebService_others_prefs_groupbox2">
+            <caption label="&exchangeWebService.preference.updateFunction.label;"/>
+            <vbox>
+			<checkbox id="exchangeWebService_preference_others_checkForNewAddOnVersion"
+					preference="extensions.1st-setup.others.checkForNewAddOnVersion"
+					label="&exchangeWebService.preference.checkForUpdates.label;"/>
+
+			<checkbox id="exchangeWebService_preference_others_warnAboutNewAddOnVersion"
+					preference="extensions.1st-setup.others.warnAboutNewAddOnVersion"
+					label="&exchangeWebService.preference.warnForUpdates.label;"/>
             </vbox>
 	</groupbox>
 
