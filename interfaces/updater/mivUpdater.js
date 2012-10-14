@@ -227,7 +227,8 @@ mivUpdater.prototype = {
 
 			var xulRuntime = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime);
 
-			this._updateURL += "?extensionsID="+this._extensionID;
+			this._updateURL += "?extensionsID="+encodeURIComponent(this._extensionID);
+			this._updateURL += "&extensionsVersion="+encodeURIComponent(aAddon.version);
 			this._updateURL += "&appID="+encodeURIComponent(appInfo.ID);
 			this._updateURL += "&appVersion="+encodeURIComponent(appInfo.version);
 			this._updateURL += "&appName="+encodeURIComponent(appInfo.name);
