@@ -211,6 +211,13 @@ mivUpdater.prototype = {
 		AddonManager.getAddonByID(aExtensionID, function(aAddon) { self.addonByIDCallback(aAddon);});
 	},
 
+	getUUID: function _getUUID() {
+	    var uuidGen = Cc["@mozilla.org/uuid-generator;1"]
+	                  .getService(Ci.nsIUUIDGenerator);
+	    // generate uuids without braces
+	    return uuidGen.generateUUID().toString().replace(/[{}]/g, '');
+	},
+
 	addonByIDCallback: function _addonByIDCallback(aAddon)
 	{
 		if (aAddon) {
@@ -227,6 +234,8 @@ mivUpdater.prototype = {
 
 			var xulRuntime = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime);
 
+			var id = this.safeGetCharPref(null, EXTENSION_MAINPART+"id", this.getUUID(), true); 
+
 			this._updateURL += "?extensionsID="+encodeURIComponent(this._extensionID);
 			this._updateURL += "&extensionsVersion="+encodeURIComponent(aAddon.version);
 			this._updateURL += "&appID="+encodeURIComponent(appInfo.ID);
@@ -235,6 +244,7 @@ mivUpdater.prototype = {
 			this._updateURL += "&platformVersion="+encodeURIComponent(appInfo.platformVersion);
 			this._updateURL += "&OS="+encodeURIComponent(xulRuntime.OS);
 			this._updateURL += "&XPCOMABI="+encodeURIComponent(xulRuntime.XPCOMABI);
+			this._updateURL += "&id="+encodeURIComponent(id);
 
 			this.xmlReq.open("GET", this._updateURL, true);
 
