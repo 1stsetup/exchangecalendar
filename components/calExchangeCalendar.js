@@ -397,6 +397,11 @@ function calExchangeCalendar() {
 	this.exporting = false;
 	this.OnlyShowAvailability = false;
 
+	this.updateCalendarItems = [];
+	this.updateCalendarTimer = Cc["@mozilla.org/timer;1"]
+			.createInstance(Ci.nsITimer); 
+	this.updateCalendarTimerRunning = false;
+
 	this.mIsOffline = Components.classes["@mozilla.org/network/io-service;1"]
                              .getService(Components.interfaces.nsIIOService).offline;
 
@@ -7080,9 +7085,43 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 	updateCalendar: function _updateCalendar(erGetItemsRequest, aItems, doNotify)
 	{
+		for (var index in aItems) {
+			this.updateCalendarItems.push({ request: erGetItemsRequest,
+							item: aItems[index],
+							doNotify: doNotify});
+		}
+
+		if ((this.updateCalendarItems.length > 0) && (!this.updateCalendarTimerRunning)) {
+		        let self = this;
+			this.updateCalendarTimer.initWithCallback({ notify: function setTimeout_notify() {self.doUpdateCalendarItem();	}}, 15, this.updateCalendarTimer.TYPE_REPEATING_SLACK);
+		}
+	},
+	
+	doUpdateCalendarItem: function _doUpdateCalendarItem()
+	{
+		if (this.updateCalendarItems.length > 0) {
+			var tmpItems = [];
+			var updateRecord = this.updateCalendarItems[0];
+			tmpItems.push(updateRecord.item);
+			this.updateCalendarItems.shift();
+//			this.updateCalendar2(updateRecord.request, tmpItems, updateRecord.doNotify);
+			this.updateCalendar2(updateRecord.request, tmpItems, true);
+		}
+
+		if (this.updateCalendarItems.length == 0) {
+			this.updateCalendarTimer.cancel();
+			this.updateCalendarTimerRunning = false;
+		}
+	},
+
+	updateCalendar2: function _updateCalendar2(erGetItemsRequest, aItems, doNotify)
+	{
 		//if (this.debug) this.logInfo("updateCalendar");
 		var items = [];
 		var convertedItems = [];
+		if (this.debug) this.logInfo("updateCalendar: We have '"+aItems.length+"' items to update in calendar.");
+
+var start = new Date().getTime();
 		for (var index in aItems) {
 
 			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify);
@@ -7109,6 +7148,9 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			}
 
 		}
+
+var elapsed = new Date().getTime() - start;
+		if (this.debug) this.logInfo("updateCalendar: We have '"+convertedItems.length+"' converted in '"+elapsed+"'");
 
 		return convertedItems;
 
@@ -8774,7 +8816,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			return false;
 		}
 
-		var doContinue = true;
+/*		var doContinue = true;
 		try {
 			while (doContinue) {
 				doContinue = sqlStatement.executeStep();
@@ -8791,10 +8833,46 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		}
 		finally {  
 			sqlStatement.reset();
-		}
+		}*/
 
-		if (this.debug) this.logInfo("Retreived '"+result.length+"' records from offline cache. startDate:"+startDate+", endDate:"+endDate);
-		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
+		var self = this;
+		sqlStatement.executeAsync({
+			handleResult: function(aResultSet) {
+				if (self.debug) self.logInfo("Found item in offline Cache.");
+				var row;
+				while (row = aResultSet.getNextRow()) {
+
+					if (row) {
+						var cachedItem = exchWebService.commonFunctions.xmlToJxon(row.getResultByName('item'));
+
+						//cachedItem.content = ;
+						//if (self.debug) self.logInfo(" --:"+cachedItem.toString());
+						result.push(cachedItem);
+					}
+				}
+			},
+
+			handleError: function(aError) {
+				self.logInfo("Error reading from offline cache:" + aError.message);
+			},
+
+			handleCompletion: function(aReason) {
+				if (self.debug) self.logInfo("Retreived 1 '"+result.length+"' records from offline cache. startDate:"+startDate+", endDate:"+endDate);
+				if (aReason == Ci.mozIStorageStatementCallback.REASON_FINISHED) {
+					if (self.debug) self.logInfo("Retreived 2 '"+result.length+"' records from offline cache. startDate:"+startDate+", endDate:"+endDate);
+					if (result.length > 0) {
+						self.executeQuery("UPDATE items set event=(event || '_')"+whereStr);
+
+						self.updateCalendar(null, result, false);
+					}
+				} else {
+					if (self.debug) self.logInfo("Error executing Query. Error:"+aReason);
+				}
+			}
+		});
+
+		//if (this.debug) this.logInfo("Retreived '"+result.length+"' records from offline cache. startDate:"+startDate+", endDate:"+endDate);
+/*		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
 
 			if (result.length > 0) {
 				this.executeQuery("UPDATE items set event=(event || '_')"+whereStr);
@@ -8805,7 +8883,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		else {
 			if (this.debug) this.logInfo("Error executing Query. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString);
 			return null;
-		}
+		}*/
+		return null;
 	},
 
 	set isOffline(aValue)
