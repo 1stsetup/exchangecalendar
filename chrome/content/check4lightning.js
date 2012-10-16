@@ -35,7 +35,10 @@ Cu.import("resource://exchangecalendar/ecFunctions.js");
 
 if (! exchWebService) var exchWebService = {};
 
+var globalUpdateCheckDone = false;
+
 exchWebService.check4Lightning = {
+
 
 	lightningIsInstalled: -1,
 	// -1 = Check for Lightning has not yet run.
@@ -155,7 +158,8 @@ exchWebService.check4Lightning = {
 			document.removeEventListener("load", exchWebService.check4Lightning.onLoad, true);
 			exchWebService.check4Lightning.checkLightningIsInstalled();
 			
-			if (exchWebService.commonFunctions.safeGetBoolPref(null, "extensions.1st-setup.others.checkForNewAddOnVersion", true, true)) {
+			if ((exchWebService.commonFunctions.safeGetBoolPref(null, "extensions.1st-setup.others.checkForNewAddOnVersion", true, true)) && (!globalUpdateCheckDone)) {
+				globalUpdateCheckDone = true;
 				var updatecheck = Cc["@1st-setup.nl/checkers/updater;1"]
 							       .createInstance(Ci.mivUpdater);
 				updatecheck.checkForUpdate("exchangecalendar@extensions.1st-setup.nl" , exchWebService.check4Lightning.updaterCallBack);
