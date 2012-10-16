@@ -6003,7 +6003,18 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			aType = "REQ-PARTICIPANT";
 		}
 
-		attendee.id = 'mailto:' + mbox.getTagValue("t:EmailAddress","unknown");
+		switch (mbox.getTagValue("t:RoutingType","unknown")) {
+			case "SMTP" :
+				attendee.id = 'mailto:' + mbox.getTagValue("t:EmailAddress","unknown");
+				break;
+			case "EX" :
+				attendee.id = 'ldap:' + mbox.getTagValue("t:EmailAddress","unknown");
+				break;
+			default:
+				this.logInfo("createAttendee: Unknown RoutingType:'"+mbox.getTagValue("t:RoutingType")+"'");
+				attendee.id = 'mailto:' + mbox.getTagValue("t:EmailAddress","unknown");
+				break;
+		}
 		attendee.commonName = mbox.getTagValue("t:Name");
 		attendee.rsvp = "FALSE";
 		attendee.userType = "INDIVIDUAL";
