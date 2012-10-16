@@ -234,7 +234,8 @@ mivUpdater.prototype = {
 
 			var xulRuntime = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime);
 
-			var id = this.safeGetCharPref(null, EXTENSION_MAINPART+"id", this.getUUID(), true); 
+			var id = this.safeGetCharPref(null, EXTENSION_MAINPART+"id", this.getUUID(), true);
+			var localeService = Cc["@mozilla.org/intl/nslocaleservice;1"].getService(Ci.nsILocaleService); 
 
 			this._updateURL += "?extensionsID="+encodeURIComponent(this._extensionID);
 			this._updateURL += "&extensionsVersion="+encodeURIComponent(aAddon.version);
@@ -245,6 +246,7 @@ mivUpdater.prototype = {
 			this._updateURL += "&OS="+encodeURIComponent(xulRuntime.OS);
 			this._updateURL += "&XPCOMABI="+encodeURIComponent(xulRuntime.XPCOMABI);
 			this._updateURL += "&id="+encodeURIComponent(id);
+			this._updateURL += "&locale="+encodeURIComponent(localeService.getLocaleComponentForUserAgent());
 
 			this.xmlReq.open("GET", this._updateURL, true);
 

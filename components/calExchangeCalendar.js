@@ -9220,39 +9220,26 @@ function convertToVersion1()
 			var tmpUUID = children[index].substr(0, pos);
 			var tmpField = children[index].substr(pos+1); 
 
-			if (tmpUUID != oldUUID) {
-
-				if ((updateToUUID) && (exchangeType)) {
-					// update uri preference
-					exchWebService.commonFunctions.LOG("Going to upgrade calendar registry '"+updateToUUID+"'");
-					
-					var updatePrefs = Cc["@mozilla.org/preferences-service;1"]
-						    .getService(Ci.nsIPrefService)
-						    .getBranch("calendar.registry."+updateToUUID+".");
-					updatePrefs.setCharPref("uri", "https://auto/"+updateToUUID);
-
-					var updatePrefs = Cc["@mozilla.org/preferences-service;1"]
-						    .getService(Ci.nsIPrefService)
-						    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+updateToUUID+".");
-					updatePrefs.setIntPref("exchangePrefVersion", 1);
-					tmpPrefService.savePrefFile(nsnull);
-				}
-				newUUID = true;
-				oldUUID = tmpUUID;
-				exchangeType = false;
-				updateToUUID = null;
-			}
-
-			if (tmpField == "type") {
-				exchangeType = true;
-			}
-
 			if (tmpField == "uri") {
 				exchWebService.commonFunctions.LOG("Going to check calendar registry '"+tmpUUID+"' if it needs to be updated.");
 
+				var tmpType = exchWebService.commonFunctions.safeGetCharPref(null, "calendar.registry."+tmpUUID+".type", null, false);
+
 				var tmpURI = exchWebService.commonFunctions.safeGetCharPref(null, "calendar.registry."+children[index], null, false);
-				if (tmpURI != "https://auto/"+tmpUUID) {
-					updateToUUID = tmpUUID;
+				if ((tmpURI != "https://auto/"+tmpUUID) && (tmpType == "exchangecalendar")) {
+					// update uri preference
+					exchWebService.commonFunctions.LOG("Going to upgrade calendar registry '"+tmpUUID+"'");
+					
+					var updatePrefs = Cc["@mozilla.org/preferences-service;1"]
+						    .getService(Ci.nsIPrefService)
+						    .getBranch("calendar.registry."+tmpUUID+".");
+					updatePrefs.setCharPref("uri", "https://auto/"+tmpUUID);
+
+					var updatePrefs = Cc["@mozilla.org/preferences-service;1"]
+						    .getService(Ci.nsIPrefService)
+						    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+tmpUUID+".");
+					updatePrefs.setIntPref("exchangePrefVersion", 1);
+					tmpPrefService.savePrefFile(nsnull);
 				}
 			}
 		}
@@ -9366,6 +9353,8 @@ function NSGetFactory(cid) {
 	try {
 		if (!NSGetFactory.mainEC) {
 			// Load main script from lightning that we need.
+			convertToVersion1();
+
 			cal.loadScripts(scriptLoadOrder, Cu.getGlobalForObject(this));
 			NSGetFactory.mainEC = XPCOMUtils.generateNSGetFactory([calExchangeCalendar]);
 			load_ews_2010_timezonedefinitions();
@@ -9377,8 +9366,6 @@ function NSGetFactory(cid) {
 		dump(e);
 		throw e;
 	}
-
-	convertToVersion1();
 
 	return NSGetFactory.mainEC(cid);
 } 

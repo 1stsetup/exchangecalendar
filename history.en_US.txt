@@ -1,3 +1,6 @@
+Version 3.1.1:
+- Fixed bug 205 Extension overwrites URI for non-echange calendars
+
 Version 3.1.0:
 - Fixed part of bug51. When emailaddress of attendee is empty do not throw an error.
 - Fixed: Bug where removal of last attachment was not possible.
