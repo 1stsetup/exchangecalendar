@@ -6008,7 +6008,18 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			aType = "REQ-PARTICIPANT";
 		}
 
-		attendee.id = 'mailto:' + mbox.getTagValue("t:EmailAddress");
+		switch (mbox.getTagValue("t:RoutingType","unknown")) {
+			case "SMTP" :
+				attendee.id = 'mailto:' + mbox.getTagValue("t:EmailAddress","unknown");
+				break;
+			case "EX" :
+				attendee.id = 'ldap:' + mbox.getTagValue("t:EmailAddress","unknown");
+				break;
+			default:
+				this.logInfo("createAttendee: Unknown RoutingType:'"+mbox.getTagValue("t:RoutingType")+"'");
+				attendee.id = 'mailto:' + mbox.getTagValue("t:EmailAddress","unknown");
+				break;
+		}
 		attendee.commonName = mbox.getTagValue("t:Name");
 		attendee.rsvp = "FALSE";
 		attendee.userType = "INDIVIDUAL";
@@ -6018,7 +6029,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			attendee.participationStatus = participationMap[aElement.getTagValue("t:ResponseType")];
 
 			// check if we specified a myResponseType for the complete item and the specified mailbox is equal to the mailbox for the calendar.
-			if ((aMyResponseType) && (mbox.getTagValue("t:EmailAddress").toLowerCase() == this.mailbox.toLowerCase())) {
+			if ((aMyResponseType) && (mbox.getTagValue("t:EmailAddress","unknown").toLowerCase() == this.mailbox.toLowerCase())) {
 				attendee.participationStatus = participationMap[aMyResponseType];
 				//if (this.debug) this.logInfo("Setting my response type from the global myresponsetype for the item.");
 			}
