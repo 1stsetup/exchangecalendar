@@ -1,3 +1,8 @@
+Version 3.1.0:
+- Fixed part of bug51. When emailaddress of attendee is empty do not throw an error.
+- Fixed: Bug where removal of last attachment was not possible.
+- Enhancement: Startup of Thunderbird has been improved.
+
 Version 3.0.2:
 - Minor bug fix.
 

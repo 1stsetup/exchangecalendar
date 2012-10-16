@@ -1260,7 +1260,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 					if (this.debug) this.logInfo("newAttachment:"+newAttachments[index].uri.spec);
 				}
 			}
-
+		}
 			// Check which have been removed.
 			var oldAttachments = aOldItem.getAttachments({});
 			for (var index in oldAttachments) {
@@ -1270,7 +1270,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 				}
 			}			
 			
-		}
+		//}
 
 		if (isEvent(aNewItem)) {
 
@@ -7131,8 +7131,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			var updateRecord = this.updateCalendarItems[0];
 			tmpItems.push(updateRecord.item);
 			this.updateCalendarItems.shift();
-			this.updateCalendar2(updateRecord.request, tmpItems, updateRecord.doNotify);
-//			this.updateCalendar2(updateRecord.request, tmpItems, true);
+//			this.updateCalendar2(updateRecord.request, tmpItems, updateRecord.doNotify);
+			this.updateCalendar2(updateRecord.request, tmpItems, true);
 		}
 
 		if (this.updateCalendarItems.length == 0) {
@@ -7149,7 +7149,6 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		var convertedItems = [];
 		if (this.debug) this.logInfo("updateCalendar: We have '"+aItems.length+"' items to update in calendar.");
 
-var start = new Date().getTime();
 		for (var index in aItems) {
 
 			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify);
@@ -7159,7 +7158,7 @@ var start = new Date().getTime();
 					// This is a new unknown item
 					this.itemCache[item.id] = item;
 
-					//if (this.debug) this.logInfo("updateCalendar: onAddItem:"+ item.title);
+					if (this.debug) this.logInfo("updateCalendar: onAddItem:"+ item.title);
 					if (doNotify) {
 						this.notifyTheObservers("onAddItem", [item]);
 					}
@@ -7168,7 +7167,7 @@ var start = new Date().getTime();
 				}
 				else {
 					// I Allready known this one.
-					//if (this.debug) this.logInfo("updateCalendar: onModifyItem:"+ item.title);
+					if (this.debug) this.logInfo("updateCalendar: onModifyItem:"+ item.title);
 
 					this.singleModified(item, doNotify);
 					this.addToOfflineCache(item, aItems[index]);
@@ -7176,9 +7175,6 @@ var start = new Date().getTime();
 			}
 
 		}
-
-var elapsed = new Date().getTime() - start;
-		if (this.debug) this.logInfo("updateCalendar: We have '"+convertedItems.length+"' converted in '"+elapsed+"'");
 
 		return convertedItems;
 
@@ -8278,9 +8274,6 @@ var elapsed = new Date().getTime() - start;
 				}
 
 				if (this.debug) this.logInfo("Created/opened offlineCache database.");
-				this.executeQuery("UPDATE items set event='y' where event='y_'");
-				this.executeQuery("UPDATE items set event='n' where event='n_'");
-
 				// Fix the database corruption bug from version 2.0.0-2.0.3 (fixed in version 2.0.4) 26-05-2012
 				if (this.debug) this.logInfo("Running fix for database corruption bug from version 2.0.0-2.0.3 (fixed in version 2.0.4)");
 				var masters = this.executeQueryWithResults("SELECT uid FROM items WHERE type='M'",["uid"]);
@@ -8307,10 +8300,13 @@ var elapsed = new Date().getTime() - start;
 					}
 				} 
 				this.prefs.setIntPref("dbVersion", latestDBVersion);
-				this.dbInit = false;
-				this.noDB = false;
 
 			}
+			this.executeQuery("UPDATE items set event='y' where event='y_'");
+			this.executeQuery("UPDATE items set event='n' where event='n_'");
+
+			this.dbInit = false;
+			this.noDB = false;
 		}
 		else {
 			this.noDB = true;
