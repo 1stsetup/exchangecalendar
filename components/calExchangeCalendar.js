@@ -74,6 +74,9 @@ Cu.import("resource://exchangecalendar/erCreateAttachment.js");
 Cu.import("resource://exchangecalendar/erDeleteAttachment.js");
 //Cu.import("resource://interfaces/xml.js");
 
+var globalStart = new Date().getTime();
+var global_ews_2010_timezonedefinitions;
+var globalTimeZoneDefinitions = {};
 
 var tmpActivityManager = Cc["@mozilla.org/activity-manager;1"];
 
@@ -325,6 +328,9 @@ function calExchangeCalendar() {
 
 	this.setDoDebug();
 
+	this.noDB = true;
+	this.dbInit = false;
+
 	this.folderPathStatus = 1;
 	this.firstrun = true;
 	this.mUri = "";
@@ -412,6 +418,14 @@ function calExchangeCalendar() {
 var calExchangeCalendarGUID = "720a458e-b6cd-4883-8a4d-5be27ec454d8";
 
 calExchangeCalendar.prototype = {
+
+	get timeStamp()
+	{
+		var elapsed = new Date().getTime() - globalStart;
+		//dump("elapsed:"+elapsed);
+		return elapsed;
+	},
+
 	__proto__: cal.ProviderBase.prototype,
 
 // Begin nsIClassInfo
@@ -555,7 +569,6 @@ calExchangeCalendar.prototype = {
 		if (!this.endDate) {
 			this.endDate = this.offlineEndDate;
 		}
-
 		var itemsFromCache = this.getItemsFromOfflineCache(this.startDate, this.endDate);
 		if (itemsFromCache) {
 			var endTime = cal.createDateTime();
@@ -774,6 +787,7 @@ calExchangeCalendar.prototype = {
 				// Remove the offline cache database when we delete the calendar.
 				if (this.dbFile) {
 					this.dbFile.remove(true);
+					this.offlineCacheDB = null;
 				}
 			}
 			return;
@@ -7103,8 +7117,10 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		}
 
 		if ((this.updateCalendarItems.length > 0) && (!this.updateCalendarTimerRunning)) {
+			this.updateCalendarTimerRunning = true;
 		        let self = this;
-			this.updateCalendarTimer.initWithCallback({ notify: function setTimeout_notify() {self.doUpdateCalendarItem();	}}, 15, this.updateCalendarTimer.TYPE_REPEATING_SLACK);
+			this.observerService.notifyObservers(this, "onExchangeProgressChange", "2");
+			this.updateCalendarTimer.initWithCallback({ notify: function setTimeout_notify() {self.doUpdateCalendarItem();	}}, 2, this.updateCalendarTimer.TYPE_REPEATING_SLACK);
 		}
 	},
 	
@@ -7115,11 +7131,12 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			var updateRecord = this.updateCalendarItems[0];
 			tmpItems.push(updateRecord.item);
 			this.updateCalendarItems.shift();
-//			this.updateCalendar2(updateRecord.request, tmpItems, updateRecord.doNotify);
-			this.updateCalendar2(updateRecord.request, tmpItems, true);
+			this.updateCalendar2(updateRecord.request, tmpItems, updateRecord.doNotify);
+//			this.updateCalendar2(updateRecord.request, tmpItems, true);
 		}
 
 		if (this.updateCalendarItems.length == 0) {
+			this.observerService.notifyObservers(this, "onExchangeProgressChange", "-2");
 			this.updateCalendarTimer.cancel();
 			this.updateCalendarTimerRunning = false;
 		}
@@ -7638,6 +7655,8 @@ var elapsed = new Date().getTime() - start;
 
 	get ews_2010_timezonedefinitions()
 	{
+		return global_ews_2010_timezonedefinitions;
+
 		if (!this._ews_2010_timezonedefinitions) {
 
 			var somefile = chromeToPath("chrome://exchangecalendar/content/ewsTimesZoneDefinitions_2007.xml");
@@ -7700,6 +7719,16 @@ var elapsed = new Date().getTime() - start;
 
 	getTimeZones: function _getTimeZones()
 	{
+		var tmpTimer = Cc["@mozilla.org/timer;1"]
+				.createInstance(Ci.nsITimer);
+
+		var self = this;
+		tmpTimer.initWithCallback({ notify: function setTimeout_notify() {self.getTimeZones2();	}}, 1, this.cacheLoader.TYPE_ONE_SHOT);
+		
+	},
+
+	getTimeZones2: function _getTimeZones2()
+	{
 		// This only works for Exchange 2010 servers
 		if (this.debug) this.logInfo("getTimeZones 1");
 		var self = this;
@@ -7716,7 +7745,8 @@ var elapsed = new Date().getTime() - start;
 		if (this.isVersion2007) {
 			if (this.debug) this.logInfo("getTimeZones 2");
 			if (this.debug) this.logInfo("getTimeZones for 2007");
-			this.EWSTimeZones = this.getEWSTimeZones(this.ews_2010_timezonedefinitions);
+			//this.EWSTimeZones = this.getEWSTimeZones(this.ews_2010_timezonedefinitions);
+			this.EWSTimezones = globalTimeZoneDefinitions;
 			this.haveTimeZones = true;
 		}
 	},
@@ -7971,6 +8001,7 @@ var elapsed = new Date().getTime() - start;
 		// Remove the offline cache database when we delete the calendar.
 		if (this.dbFile) {
 			this.dbFile.remove(true);
+			this.offlineCacheDB = null;
 		}
 	},
 
@@ -8095,6 +8126,8 @@ var elapsed = new Date().getTime() - start;
 	createOfflineCacheDB: function _createOfflineCacheDB()
 	{
 		if ((this.mUseOfflineCache) && (!this.offlineCacheDB)) {
+			this.noDB = true;
+			this.dbInit = true;
 			this.dbFile = Cc["@mozilla.org/file/directory_service;1"]
 					.getService(Components.interfaces.nsIProperties)
 					.get("ProfD", Components.interfaces.nsIFile);
@@ -8105,8 +8138,13 @@ var elapsed = new Date().getTime() - start;
 
 			this.dbFile.append(this.id+".offlineCache.sqlite");
 
+			var dbExists = false;
+			if (this.dbFile.exists()) {
+				dbExists = true;
+			}
+
 			try {
-				this.offlineCacheDB = Services.storage.openDatabase(this.dbFile); // Will also create the file if it does not exist
+				this.offlineCacheDB = Services.storage.openUnsharedDatabase(this.dbFile); // Will also create the file if it does not exist
 			}
 			catch(exc) {
 				this.offlineCacheDB = null;
@@ -8120,150 +8158,162 @@ var elapsed = new Date().getTime() - start;
 				return;
 			}
 
-			if (!this.offlineCacheDB.tableExists("items")) {
-				if (this.debug) this.logInfo("Table 'items' does not yet exist. We are going to create it.");
-				try {
-					this.offlineCacheDB.createTable("items", "event STRING, id STRING, changeKey STRING, startDate STRING, endDate STRING, uid STRING, type STRING, parentItem STRING, item STRING");
-				}
-				catch(exc) {
-					if (this.debug) this.logInfo("Could not create table 'items'. Error:"+exc);
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_id ON items (id)";
-				if (!this.executeQuery(sqlStr)) {
-					if (this.debug) this.logInfo("Could not create index 'idx_items_id'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_type ON items (type)";
-				if (!this.executeQuery(sqlStr)) {
-					if (this.debug) this.logInfo("Could not create index 'idx_items_type'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE UNIQUE INDEX idx_items_id_changekey ON items (id, changeKey)";
-				if (!this.executeQuery(sqlStr)) {
-					if (this.debug) this.logInfo("Could not create index 'idx_items_id_changekey'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_type_uid ON items (type ASC, uid)";
-				if (!this.executeQuery(sqlStr)) {
-					if (this.debug) this.logInfo("Could not create index 'idx_items_type_uid'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_uid ON items (uid)";
-				if (!this.executeQuery(sqlStr)) {
-					if (this.debug) this.logInfo("Could not create index 'idx_items_uid'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_uid_startdate_enddate ON items (uid, startDate ASC, endDate)";
-				if (!this.executeQuery(sqlStr)) {
-					if (this.debug) this.logInfo("Could not create index 'idx_items_uid_startdate_enddate'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_startdate_enddate ON items (startDate ASC, endDate)";
-				if (!this.executeQuery(sqlStr)) {
-					if (this.debug) this.logInfo("Could not create index 'idx_items_startdate_enddate'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_parentitem_startdate_enddate ON items (parentitem, startDate ASC, endDate)";
-				if (!this.executeQuery(sqlStr)) {
-					if (this.debug) this.logInfo("Could not create index 'idx_items_startdate_enddate'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
-				var sqlStr = "CREATE INDEX idx_items_type_startdate_enddate ON items (type, startDate ASC, endDate)";
-				if (!this.executeQuery(sqlStr)) {
-					if (this.debug) this.logInfo("Could not create index 'idx_items_type_startdate_enddate'");
-					this.offlineCacheDB = null;
-					return;
-				}
-
+			var latestDBVersion = 1;
+			var dbVersion = 0;
+			if (dbExists) {
+				dbVersion = exchWebService.commonFunctions.safeGetIntPref(this.prefs, "dbVersion", 0);
 			}
 
-			if (!this.offlineCacheDB.tableExists("attachments")) {
-				if (this.debug) this.logInfo("Table 'attachments' does not yet exist. We are going to create it.");
-				try {
-					this.offlineCacheDB.createTable("attachments", "id STRING, name STRING, size INTEGER, cachePath STRING");
-				}
-				catch(exc) {
-					if (this.debug) this.logInfo("Could not create table 'attachments'. Error:"+exc);
-					return;
+			if (dbVersion < latestDBVersion) {
+				if (!this.offlineCacheDB.tableExists("items")) {
+					if (this.debug) this.logInfo("Table 'items' does not yet exist. We are going to create it.");
+					try {
+						this.offlineCacheDB.createTable("items", "event STRING, id STRING, changeKey STRING, startDate STRING, endDate STRING, uid STRING, type STRING, parentItem STRING, item STRING");
+					}
+					catch(exc) {
+						if (this.debug) this.logInfo("Could not create table 'items'. Error:"+exc);
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_id ON items (id)";
+					if (!this.executeQuery(sqlStr)) {
+						if (this.debug) this.logInfo("Could not create index 'idx_items_id'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_type ON items (type)";
+					if (!this.executeQuery(sqlStr)) {
+						if (this.debug) this.logInfo("Could not create index 'idx_items_type'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE UNIQUE INDEX idx_items_id_changekey ON items (id, changeKey)";
+					if (!this.executeQuery(sqlStr)) {
+						if (this.debug) this.logInfo("Could not create index 'idx_items_id_changekey'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_type_uid ON items (type ASC, uid)";
+					if (!this.executeQuery(sqlStr)) {
+						if (this.debug) this.logInfo("Could not create index 'idx_items_type_uid'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_uid ON items (uid)";
+					if (!this.executeQuery(sqlStr)) {
+						if (this.debug) this.logInfo("Could not create index 'idx_items_uid'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_uid_startdate_enddate ON items (uid, startDate ASC, endDate)";
+					if (!this.executeQuery(sqlStr)) {
+						if (this.debug) this.logInfo("Could not create index 'idx_items_uid_startdate_enddate'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_startdate_enddate ON items (startDate ASC, endDate)";
+					if (!this.executeQuery(sqlStr)) {
+						if (this.debug) this.logInfo("Could not create index 'idx_items_startdate_enddate'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_parentitem_startdate_enddate ON items (parentitem, startDate ASC, endDate)";
+					if (!this.executeQuery(sqlStr)) {
+						if (this.debug) this.logInfo("Could not create index 'idx_items_startdate_enddate'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
+					var sqlStr = "CREATE INDEX idx_items_type_startdate_enddate ON items (type, startDate ASC, endDate)";
+					if (!this.executeQuery(sqlStr)) {
+						if (this.debug) this.logInfo("Could not create index 'idx_items_type_startdate_enddate'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
 				}
 
-				var sqlStr = "CREATE UNIQUE INDEX idx_att_id ON attachments (id)";
-				if (!this.executeQuery(sqlStr)) {
-					if (this.debug) this.logInfo("Could not create index 'idx_att_id'");
-					this.offlineCacheDB = null;
-					return;
+				if (!this.offlineCacheDB.tableExists("attachments")) {
+					if (this.debug) this.logInfo("Table 'attachments' does not yet exist. We are going to create it.");
+					try {
+						this.offlineCacheDB.createTable("attachments", "id STRING, name STRING, size INTEGER, cachePath STRING");
+					}
+					catch(exc) {
+						if (this.debug) this.logInfo("Could not create table 'attachments'. Error:"+exc);
+						return;
+					}
+
+					var sqlStr = "CREATE UNIQUE INDEX idx_att_id ON attachments (id)";
+					if (!this.executeQuery(sqlStr)) {
+						if (this.debug) this.logInfo("Could not create index 'idx_att_id'");
+						this.offlineCacheDB = null;
+						return;
+					}
+
 				}
 
-			}
+				if (!this.offlineCacheDB.tableExists("attachments_per_item")) {
+					if (this.debug) this.logInfo("Table 'attachments_per_item' does not yet exist. We are going to create it.");
+					try {
+						this.offlineCacheDB.createTable("attachments_per_item", "itemId STRING, attId STRING");
+					}
+					catch(exc) {
+						if (this.debug) this.logInfo("Could not create table 'attachments_per_item'. Error:"+exc);
+						return;
+					}
 
-			if (!this.offlineCacheDB.tableExists("attachments_per_item")) {
-				if (this.debug) this.logInfo("Table 'attachments_per_item' does not yet exist. We are going to create it.");
-				try {
-					this.offlineCacheDB.createTable("attachments_per_item", "itemId STRING, attId STRING");
+					var sqlStr = "CREATE INDEX idx_attitem_itemid ON attachments_per_item (itemId)";
+					if (!this.executeQuery(sqlStr)) {
+						if (this.debug) this.logInfo("Could not create index 'idx_attitem_itemid'");
+						this.offlineCacheDB = null;
+						return;
+					}
 				}
-				catch(exc) {
-					if (this.debug) this.logInfo("Could not create table 'attachments_per_item'. Error:"+exc);
-					return;
-				}
 
-				var sqlStr = "CREATE INDEX idx_attitem_itemid ON attachments_per_item (itemId)";
-				if (!this.executeQuery(sqlStr)) {
-					if (this.debug) this.logInfo("Could not create index 'idx_attitem_itemid'");
-					this.offlineCacheDB = null;
-					return;
-				}
-			}
+				if (this.debug) this.logInfo("Created/opened offlineCache database.");
+				this.executeQuery("UPDATE items set event='y' where event='y_'");
+				this.executeQuery("UPDATE items set event='n' where event='n_'");
 
-			if (this.debug) this.logInfo("Created/opened offlineCache database.");
-			this.executeQuery("UPDATE items set event='y' where event='y_'");
-			this.executeQuery("UPDATE items set event='n' where event='n_'");
-
-			// Fix the database corruption bug from version 2.0.0-2.0.3 (fixed in version 2.0.4) 26-05-2012
-			if (this.debug) this.logInfo("Running fix for database corruption bug from version 2.0.0-2.0.3 (fixed in version 2.0.4)");
-			var masters = this.executeQueryWithResults("SELECT uid FROM items WHERE type='M'",["uid"]);
-			if ((masters) && (masters.length > 0)) {
-				for (var index in masters) {
-					var newMasterEndDate = this.executeQueryWithResults("SELECT max(endDate) as newEndDate FROM items WHERE uid='"+masters[index].uid+"'",["newEndDate"]);
-					if ((newMasterEndDate) && (newMasterEndDate.length > 0)) {
-						if (this.debug) this.logInfo("newMasterEndDate:"+newMasterEndDate[0].newEndDate);
-						var endDateStr = newMasterEndDate[0].newEndDate;
-						if (endDateStr) {
-							if (endDateStr.length == 10) {
-								endDateStr += "T23:59:59Z";
+				// Fix the database corruption bug from version 2.0.0-2.0.3 (fixed in version 2.0.4) 26-05-2012
+				if (this.debug) this.logInfo("Running fix for database corruption bug from version 2.0.0-2.0.3 (fixed in version 2.0.4)");
+				var masters = this.executeQueryWithResults("SELECT uid FROM items WHERE type='M'",["uid"]);
+				if ((masters) && (masters.length > 0)) {
+					for (var index in masters) {
+						var newMasterEndDate = this.executeQueryWithResults("SELECT max(endDate) as newEndDate FROM items WHERE uid='"+masters[index].uid+"'",["newEndDate"]);
+						if ((newMasterEndDate) && (newMasterEndDate.length > 0)) {
+							if (this.debug) this.logInfo("newMasterEndDate:"+newMasterEndDate[0].newEndDate);
+							var endDateStr = newMasterEndDate[0].newEndDate;
+							if (endDateStr) {
+								if (endDateStr.length == 10) {
+									endDateStr += "T23:59:59Z";
+								}
+								if (this.debug) this.logInfo("newEndDate for master setting it to:"+endDateStr);
+								this.executeQuery("UPDATE items set endDate='"+endDateStr+"' where type='M' AND uid='"+masters[index].uid+"'");
 							}
-							if (this.debug) this.logInfo("newEndDate for master setting it to:"+endDateStr);
-							this.executeQuery("UPDATE items set endDate='"+endDateStr+"' where type='M' AND uid='"+masters[index].uid+"'");
+							else {
+								if (this.debug) this.logInfo("newEndDate for master is null not going to use this. Strange!!");
+							}
 						}
 						else {
-							if (this.debug) this.logInfo("newEndDate for master is null not going to use this. Strange!!");
-						}
+							if (this.debug) this.logInfo("Could not get newEndDate for Master. What is wrong!!"); 
+						} 
 					}
-					else {
-						if (this.debug) this.logInfo("Could not get newEndDate for Master. What is wrong!!"); 
-					} 
-				}
-			} 
+				} 
+				this.prefs.setIntPref("dbVersion", latestDBVersion);
+				this.dbInit = false;
+				this.noDB = false;
 
+			}
 		}
 		else {
+			this.noDB = true;
 			var tryCount = 0;
 			while ((this.offlineCacheDB) && (tryCount < 3)) {
 				try{
@@ -8271,10 +8321,12 @@ var elapsed = new Date().getTime() - start;
 					this.offlineCacheDB = null;
 				}
 				catch(exc){
-					if (this.debug) this.logInfo("Unable to close offlineCache database connection:"+exc);
+					dump("\nUnable to close offlineCache database connection:"+exc+"\n");
+//					if (this.debug) this.logInfo("Unable to close offlineCache database connection:"+exc);
 					tryCount++;	
 				}
 			}
+			this.offlineCacheDB = null;
 		}		
 	},
 
@@ -8320,7 +8372,8 @@ var elapsed = new Date().getTime() - start;
 
 	executeQuery: function _executeQuery(aQuery)
 	{
-		if (this.debug) this.logInfo("sql-query:"+aQuery, 2);
+		if (this.debug) this.logInfo("sql-query:"+aQuery, 1);
+		if ((this.noDB) && (!this.dbInit)) return false;
 		try {
 			var sqlStatement = this.offlineCacheDB.createStatement(aQuery);
 		}
@@ -8329,11 +8382,16 @@ var elapsed = new Date().getTime() - start;
 			return false;
 		}
 
+		if ((this.noDB) && (!this.dbInit)) return false;
 		try {
 			sqlStatement.executeStep();
 		}
+		catch(err) {
+			this.logInfo("executeQuery: Error:"+err);
+		}
 		finally {  
-			sqlStatement.reset();
+			if ((this.noDB) && (!this.dbInit)) return false;
+			sqlStatement.finalize();
 		}
 
 		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
@@ -8352,6 +8410,7 @@ var elapsed = new Date().getTime() - start;
 		}
 
 		if (this.debug) this.logInfo("sql-query:"+aQuery, 2);
+		if ((this.noDB) && (!this.dbInit)) return [];
 		try {
 			var sqlStatement = this.offlineCacheDB.createStatement(aQuery);
 		}
@@ -8361,6 +8420,7 @@ var elapsed = new Date().getTime() - start;
 		}
 
 		var results = [];
+		if ((this.noDB) && (!this.dbInit)) return [];
 		try {
 			while (sqlStatement.executeStep()) {
 				var tmpResult = {};
@@ -8373,10 +8433,12 @@ var elapsed = new Date().getTime() - start;
 					}
 				}
 				results.push(tmpResult);
+				if ((this.noDB) && (!this.dbInit)) return [];
 			}
 		}
 		finally {  
-			sqlStatement.reset();
+			if ((this.noDB) && (!this.dbInit)) return [];
+			sqlStatement.finalize();
 		}
 
 		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
@@ -8410,16 +8472,18 @@ var elapsed = new Date().getTime() - start;
 			var sqlStr = "SELECT COUNT() as attcount from attachments WHERE id='"+attParams.id+"'";
 			if (this.debug) this.logInfo("sql-query:"+sqlStr, 2);
 			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
+			if (this.noDB) return;
 			sqlStatement.executeStep();
 			if (sqlStatement.row.attcount > 0) {
 				if (this.debug) this.logInfo("Going to update the attachment because it all ready exist.");
 				this.updateAttachmentInOfflineCache(aCalItem, aCalAttachment);
-				sqlStatement.reset();
+				sqlStatement.finalize();
 				return;
 			}
-			sqlStatement.reset();
+			sqlStatement.finalize();
 		
 			var sqlStr = "INSERT INTO attachments VALUES ('"+attParams.id+"', '"+attParams.name.replace(/\x27/g, "''")+"', '"+attParams.size+"', '')";
+			if (this.noDB) return;
 			if (!this.executeQuery(sqlStr)) {
 				if (this.debug) this.logInfo("Error inserting attachment into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
 			}
@@ -8428,6 +8492,7 @@ var elapsed = new Date().getTime() - start;
 			}
 
 			var sqlStr = "INSERT INTO attachments_per_item VALUES ('"+aCalItem.id+"','"+attParams.id+"')";
+			if (this.noDB) return;
 			if (!this.executeQuery(sqlStr)) {
 				if (this.debug) this.logInfo("Error inserting attachments_per_item into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
 			}
@@ -8449,6 +8514,7 @@ var elapsed = new Date().getTime() - start;
 		if (attParams) {
 
 			var sqlStr = "UPDATE attachments SET id='"+attParams.id+"', name='"+attParams.name.replace(/\x27/g, "''")+"', size='"+attParams.size+"', cachePath='' WHERE id='"+attParams.id+"'";
+			if (this.noDB) return;
 			if (!this.executeQuery(sqlStr)) {
 				if (this.debug) this.logInfo("Error updating attachment into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
 			}
@@ -8478,10 +8544,12 @@ var elapsed = new Date().getTime() - start;
 		var doContinue = true;
 		try {
 			while (doContinue) {
+				if (this.noDB) return;
 				doContinue = sqlStatement.executeStep();
 
 				if (doContinue) {
 					var sqlStr2 = "DELETE FROM attachments WHERE id='"+sqlStatement.row.attId+"'";
+					if (this.noDB) return;
 					if (!this.executeQuery(sqlStr2)) {
 						if (this.debug) this.logInfo("Error removing attachment from offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
 					}
@@ -8492,7 +8560,7 @@ var elapsed = new Date().getTime() - start;
 			}
 		}
 		finally {  
-			sqlStatement.reset();
+			sqlStatement.finalize();
 		}
 
 		if ((this.offlineCacheDB.lastError != 0) && (this.offlineCacheDB.lastError != 100) && (this.offlineCacheDB.lastError != 101)) {
@@ -8501,6 +8569,7 @@ var elapsed = new Date().getTime() - start;
 		}
 
 		var sqlStr2 = "DELETE FROM attachments_per_item WHERE itemId='"+aCalItem.id+"'";
+		if (this.noDB) return;
 		if (!this.executeQuery(sqlStr2)) {
 			if (this.debug) this.logInfo("Error removing attachments_per_item from offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
 		}
@@ -8522,6 +8591,7 @@ var elapsed = new Date().getTime() - start;
 		if (attParams) {
 
 			var sqlStr = "DELETE FROM attachments WHERE id='"+attParams.id+"'";
+			if (this.noDB) return;
 			if (!this.executeQuery(sqlStr)) {
 				if (this.debug) this.logInfo("Error removing attachment from offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
 			}
@@ -8530,6 +8600,7 @@ var elapsed = new Date().getTime() - start;
 			}
 
 			var sqlStr = "DELETE FROM attachments_per_item WHERE itemId='"+aCalItem.id+"' AND attId='"+attParams.id+"'";
+			if (this.noDB) return;
 			if (!this.executeQuery(sqlStr)) {
 				if (this.debug) this.logInfo("Error removing attachments_per_item from offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
 			}
@@ -8575,14 +8646,15 @@ var elapsed = new Date().getTime() - start;
 		var sqlStr = "SELECT COUNT() as itemcount from items WHERE id='"+aCalItem.id+"'";
 		if (this.debug) this.logInfo("sql-query:"+sqlStr, 2);
 		var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
+		if (this.noDB) return;
 		sqlStatement.executeStep();
 		if (sqlStatement.row.itemcount > 0) {
 			if (this.debug) this.logInfo("Going to update the item because it all ready exist.");
 			this.updateInOfflineCache(aCalItem, aExchangeItem);
-			sqlStatement.reset();
+			sqlStatement.finalize();
 			return;
 		}
-		sqlStatement.reset();
+		sqlStatement.finalize();
 
 		if (isEvent(aCalItem)) {
 			if (this.getItemType(aCalItem) == "M") {
@@ -8604,6 +8676,7 @@ var elapsed = new Date().getTime() - start;
 		}
 		
 		var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+aCalItem.id+"', '"+aCalItem.getProperty("X-ChangeKey")+"', '"+startDate+"', '"+endDate+"', '"+aCalItem.getProperty("X-UID")+"', '"+this.getItemType(aCalItem)+"', '"+aCalItem.parentItem.id+"', '"+aExchangeItem.toString().replace(/\x27/g, "''")+"')";
+		if (this.noDB) return;
 		if (!this.executeQuery(sqlStr)) {
 			if (this.debug) this.logInfo("Error inserting item into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
 		}
@@ -8623,13 +8696,14 @@ var elapsed = new Date().getTime() - start;
 			var sqlStr = "SELECT COUNT() as itemcount from items WHERE id='"+aCalItem.id+"' AND changeKey='"+aCalItem.getProperty("X-ChangeKey")+"'";
 			if (this.debug) this.logInfo("sql-query:"+sqlStr, 2);
 			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
+			if (this.noDB) return;
 			sqlStatement.executeStep();
 			if (sqlStatement.row.itemcount > 0) {
 				if (this.debug) this.logInfo("This item is allready in offlineCache database. id and changeKey are the same. Not going to update it.");
-				sqlStatement.reset();
+				sqlStatement.finalize();
 				return;
 			}
-			sqlStatement.reset();
+			sqlStatement.finalize();
 		}
 		
 		if (isEvent(aCalItem)) {
@@ -8662,6 +8736,7 @@ var elapsed = new Date().getTime() - start;
 		if (isEvent(aCalItem)) {
 			if (this.getItemType(aCalItem) == "M") {
 				// Lets find the real end date.
+				if (this.noDB) return;
 				var newMasterEndDate = this.executeQueryWithResults("SELECT max(endDate) as newEndDate FROM items WHERE uid='"+aCalItem.getProperty("X-UID")+"'",["newEndDate"]);
 				if ((newMasterEndDate) && (newMasterEndDate.length > 0)) {
 					if (this.debug) this.logInfo("newMasterEndDate:"+newMasterEndDate[0].newEndDate);
@@ -8698,6 +8773,7 @@ var elapsed = new Date().getTime() - start;
 		}
 		
 		var sqlStr = "UPDATE items SET event='"+eventField+"', id='"+aCalItem.id+"', changeKey='"+aCalItem.getProperty("X-ChangeKey")+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+aCalItem.getProperty("X-UID")+"', type='"+this.getItemType(aCalItem)+"', parentItem='"+aCalItem.parentItem.id+"', item='"+aExchangeItem.toString().replace(/\x27/g, "''")+"' WHERE id='"+aCalItem.id+"'";
+		if (this.noDB) return;
 		if (!this.executeQuery(sqlStr)) {
 			if (this.debug) this.logInfo("Error updating item in offlineCacheDB. Error:"+this.offlineCacheDB.lastErrorString);
 		}
@@ -8733,6 +8809,7 @@ var elapsed = new Date().getTime() - start;
 		}
 		
 		var sqlStr = "UPDATE items SET endDate='"+endDate+"' WHERE id='"+aCalItem.id+"'";
+		if (this.noDB) return;
 		if (!this.executeQuery(sqlStr)) {
 			if (this.debug) this.logInfo("Error updating master item in offlineCacheDB. Error:"+this.offlineCacheDB.lastErrorString);
 		}
@@ -8748,6 +8825,7 @@ var elapsed = new Date().getTime() - start;
 		}
 
 		var sqlStr = "DELETE FROM items WHERE id='"+aCalItem.id+"'";
+		if (this.noDB) return;
 		if (!this.executeQuery(sqlStr)) {
 			if (this.debug) this.logInfo("Error deleting item from offlineCacheDB. Error:"+this.offlineCacheDB.lastErrorString);
 		}
@@ -8858,7 +8936,9 @@ var elapsed = new Date().getTime() - start;
 
 						//cachedItem.content = ;
 						//if (self.debug) self.logInfo(" --:"+cachedItem.toString());
+						//var result = [];
 						result.push(cachedItem);
+						//self.updateCalendar(null, result, false);
 					}
 				}
 			},
@@ -8868,10 +8948,12 @@ var elapsed = new Date().getTime() - start;
 			},
 
 			handleCompletion: function(aReason) {
+				sqlStatement.finalize();
 				if (self.debug) self.logInfo("Retreived 1 '"+result.length+"' records from offline cache. startDate:"+startDate+", endDate:"+endDate);
 				if (aReason == Ci.mozIStorageStatementCallback.REASON_FINISHED) {
 					if (self.debug) self.logInfo("Retreived 2 '"+result.length+"' records from offline cache. startDate:"+startDate+", endDate:"+endDate);
 					if (result.length > 0) {
+						if (self.noDB) return;
 						self.executeQuery("UPDATE items set event=(event || '_')"+whereStr);
 
 						self.updateCalendar(null, result, false);
@@ -8933,6 +9015,7 @@ var elapsed = new Date().getTime() - start;
 
 	get offlineStartDate()
 	{
+		if (this.noDB) return;
 		var tmpStartDate = this.executeQueryWithResults("SELECT min(endDate) as newStartDate FROM items", ["newStartDate"]);
 		if ((tmpStartDate) && (tmpStartDate.length > 0)) {
 			var newStartDate = tmpStartDate[0].newStartDate;
@@ -8950,6 +9033,7 @@ var elapsed = new Date().getTime() - start;
 
 	get offlineEndDate()
 	{
+		if (this.noDB) return;
 		var tmpEndDate = this.executeQueryWithResults("SELECT max(endDate) as newEndDate FROM items", ["newEndDate"]);
 		if ((tmpEndDate) && (tmpEndDate.length > 0)) {
 			var newEndDate = tmpEndDate[0].newEndDate;
@@ -9227,6 +9311,60 @@ exchWebService.check4addon = {
 	}
 }
 
+function load_ews_2010_timezonedefinitions()
+{
+	if (!global_ews_2010_timezonedefinitions) {
+
+		var somefile = chromeToPath("chrome://exchangecalendar/content/ewsTimesZoneDefinitions_2007.xml");
+		var file = Components.classes["@mozilla.org/file/local;1"]
+				.createInstance(Components.interfaces.nsILocalFile);
+		file.initWithPath(somefile);
+
+		var istream = Components.classes["@mozilla.org/network/file-input-stream;1"].  
+				 createInstance(Components.interfaces.nsIFileInputStream);  
+		istream.init(file, -1, -1, 0);  
+		istream.QueryInterface(Components.interfaces.nsILineInputStream);  
+		  
+		// read lines into array  
+		var line = {}, lines = "", hasmore;  
+		do {  
+			hasmore = istream.readLine(line);  
+			lines += line.value;   
+		} while(hasmore);  
+		  
+		istream.close();
+
+		try {
+		    global_ews_2010_timezonedefinitions = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
+				       .createInstance(Ci.mivIxml2jxon);
+		}
+		catch(exc) { 
+				dump("\ncreateInstance error:"+exc+"\n");
+		}
+
+
+		try {
+			global_ews_2010_timezonedefinitions.processXMLString(lines, 0, null);
+		}
+		catch(exc) { 
+				dump("\nprocessXMLString error:"+exc.name+", "+exc.message+"\n");
+		} 
+
+		var rm = global_ews_2010_timezonedefinitions.XPath("/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage");
+		if (rm.length == 0) return null;
+
+		globalTimeZoneDefinitions = {};
+
+		var timeZoneDefinitionArray = rm[0].XPath("/m:TimeZoneDefinitions/t:TimeZoneDefinition");
+		for (var index in timeZoneDefinitionArray) {
+			globalTimeZoneDefinitions[timeZoneDefinitionArray[index].getAttribute("Id")] = timeZoneDefinitionArray[index];
+		}
+
+		//dump("\nEnd of get ews_2010_timezonedefinitions\n");
+	}
+
+}
+
 function NSGetFactory(cid) {
 
 	try {
@@ -9234,6 +9372,7 @@ function NSGetFactory(cid) {
 			// Load main script from lightning that we need.
 			cal.loadScripts(scriptLoadOrder, Cu.getGlobalForObject(this));
 			NSGetFactory.mainEC = XPCOMUtils.generateNSGetFactory([calExchangeCalendar]);
+			load_ews_2010_timezonedefinitions();
 			
 	}
 
