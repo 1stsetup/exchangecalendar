@@ -187,6 +187,9 @@ exchWebService.check4Lightning = {
 		var promptStr = "There is an update available for the Exchange Calendar and Tasks provider on the main website.";
 		promptStr += "\n\nDo you want to install this newer version: "+aResult.updateDetails.newVersion;
 		promptStr += "\nCurrent version is: "+aResult.addon.version;
+		if (aResult.updateDetails.msg != "") {
+			promptStr += "\n\nChanges:\n"+aResult.updateDetails.msg;
+		}
 		promptStr += "\n\nOr read the info on "+aResult.updateDetails.infoURL;
 		var promptTitle = "Update available";
 
