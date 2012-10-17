@@ -821,11 +821,18 @@ calExchangeCalendar.prototype = {
 		// if aItem.id == "31d9835f-1c29-4d18-ab39-7587c56e3982" paste in lightning after a copy in lightning.
 
 	        if (this.OnlyShowAvailability) {
-	            this.notifyOperationComplete(aListener,
+			this.readOnly = true;
+			this.notifyOperationComplete(aListener,
+        	                             Ci.calIErrors.OPERATION_CANCELLED,
+                        	             Ci.calIOperationListener.ADD,
+                        	             aItem.id,
+                        	             aItem);
+
+/*	            this.notifyOperationComplete(aListener,
 	                                         Ci.calIErrors.CAL_IS_READONLY,
 	                                         Ci.calIOperationListener.ADD,
 	                                         null,
-	                                         "Calendar is readonly");
+	                                         "Calendar is readonly");*/
 			return null;
 	        }
 
@@ -868,11 +875,21 @@ calExchangeCalendar.prototype = {
 		if (this.debug) this.logInfo("adoptItem()");
 
 		if ((this.readOnly) || (this.OnlyShowAvailability)) {
-			this.notifyOperationComplete(aListener,
-                                         Ci.calIErrors.CAL_IS_READONLY,
-                                         Ci.calIOperationListener.ADD,
-                                         null,
-                                         "Calendar is readonly");
+			this.readOnly = true;
+			if (this.OnlyShowAvailability) {
+				this.notifyOperationComplete(aListener,
+			                             Ci.calIErrors.OPERATION_CANCELLED,
+		                	             Ci.calIOperationListener.ADD,
+		                	             aItem.id,
+		                	             aItem);
+			}
+			else {
+				this.notifyOperationComplete(aListener,
+		                                 Ci.calIErrors.CAL_IS_READONLY,
+		                                 Ci.calIOperationListener.ADD,
+		                                 null,
+		                                 "Calendar is readonly");
+			}
 			return;
 		}
 
@@ -1203,11 +1220,17 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		var result = Ci.calIErrors.MODIFICATION_FAILED;
 
 	        if (this.OnlyShowAvailability) {
-	            this.notifyOperationComplete(aListener,
+			this.readOnly = true;
+			this.notifyOperationComplete(aListener,
+        	                             Ci.calIErrors.OPERATION_CANCELLED,
+                        	             Ci.calIOperationListener.MODIFY,
+        	                             aNewItem.id,
+        	                             aNewItem);
+/*	            this.notifyOperationComplete(aListener,
 	                                         Ci.calIErrors.CAL_IS_READONLY,
 	                                         Ci.calIOperationListener.MODIFY,
 	                                         null,
-	                                         "Calendar is readonly");
+	                                         "Calendar is readonly");*/
 			return null;
 	        }
 
@@ -1706,11 +1729,17 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		if (this.debug) this.logInfo("deleteItem");
 
 	        if (this.OnlyShowAvailability) {
-	            this.notifyOperationComplete(aListener,
+			this.readOnly = true;
+			this.notifyOperationComplete(aListener,
+        	                             Ci.calIErrors.OPERATION_CANCELLED,
+                        	             Ci.calIOperationListener.DELETE,
+                        	             aItem.id,
+                        	             aItem);
+/*	            this.notifyOperationComplete(aListener,
 	                                         Ci.calIErrors.CAL_IS_READONLY,
 	                                         Ci.calIOperationListener.DELETE,
 	                                         null,
-	                                         "Calendar is readonly");
+	                                         "Calendar is readonly");*/
 			return null;
 	        }
 
@@ -2106,20 +2135,24 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			this.lastValidRangeEnd = aRangeEnd.clone();
 		}
 
-		if (this.OnlyShowAvailability) {
-			if (validPeriod) {
-				this.getOnlyFreeBusyInformation(aRangeStart, aRangeEnd);
+/*		if (this.OnlyShowAvailability) {
+			var first = true;
+			for (var index in this.itemCache) {
+				if (first) {
+					this.startDate = this.itemCache[index].startDate.clone();
+					this.endDate = this.itemCache[index].endDate.clone();
+					first = false;
+				}
+				else {
+					if (this.itemCache[index].startDate.compare(this.startDate) < 0) {
+						this.startDate = this.itemCache[index].startDate.clone();
+					}
+					if (this.itemCache[index].endDate.compare(this.endDate) > 0) {
+						this.endDate = this.itemCache[index].endDate.clone();
+					}
+				}
 			}
-
-			if (aListener) {
-				this.notifyOperationComplete(aListener,
-				      Cr.NS_OK,
-				      Ci.calIOperationListener.GET,
-				      null,
-				      null);
-			}
-			return;
-		}
+		}*/
 
 		this.exporting = false;
 		if ((aItemFilter == Ci.calICalendar.ITEM_FILTER_ALL_ITEMS) &&
@@ -2224,10 +2257,26 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		}
 
 
-			if (aRangeStart)  { if (this.debug) this.logInfo("getItems 5a: aRangeStart:"+aRangeStart.toString()); }
-			if (aRangeEnd) { if (this.debug) this.logInfo("getItems 5b: aRangeEnd:"+aRangeEnd.toString()); }
+		if (aRangeStart)  { if (this.debug) this.logInfo("getItems 5a: aRangeStart:"+aRangeStart.toString()); }
+		if (aRangeEnd) { if (this.debug) this.logInfo("getItems 5b: aRangeEnd:"+aRangeEnd.toString()); }
 
-			this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
+		this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
+
+ 		if (this.OnlyShowAvailability) {
+			if ((startChanged) || (endChanged)) {
+				if (startChanged) {
+					this.getOnlyFreeBusyInformation(aRangeStart, oldStartDate);
+				}
+				if (endChanged) {
+					this.getOnlyFreeBusyInformation(oldEndDate, aRangeEnd);
+				}
+			}
+			else {
+				this.getOnlyFreeBusyInformation(aRangeStart, aRangeEnd);
+			}
+
+			return;
+		}
 
 		if (!dateChanged) {
 			if (this.debug) this.logInfo("No dateChanged. Not going to request items from server.");
@@ -2239,7 +2288,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			return;
 		}
 
-       		var self = this;
+      		var self = this;
 
 		if ((this.syncInboxState) && (!this.weAreInboxSyncing)) {
 			if ((this.folderBase == "calendar") && (!this.folderID)) {
@@ -2248,7 +2297,6 @@ if (this.debug) this.logInfo("singleModified doNotify");
 				this.checkInbox();
 			}
 		}
-
 
 		if ((wantEvents) && (this.supportsEvents)) {
 			if (this.debug) this.logInfo("Requesting events from exchange server.");
@@ -3490,66 +3538,23 @@ if (this.debug) this.logInfo("singleModified doNotify");
 					       	  start, end);
 	},
 
-	showUserAvailability: function _showUserAvailability(aEvents)
+	md5: function _md5(aString)
 	{
-
-		if (this.showUserAvailabilityBusy) {
-			return;
-		}
-
-		this.showUserAvailabilityBusy = true;
-
-		//if (this.debug) this.logInfo("showUserAvailability 1");
-
-		// Clear current list.
-		for (var index in this.itemCache) {
-			this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
-		}
-		this.itemCache = [];
-
-		
-		for (var index in aEvents) {
-			if (aEvents[index].getTagValue("t:BusyType") != "Free") {
-				var item = createEvent();
-				item.calendar = this.superCalendar;
-
-				item.id = exchWebService.commonFunctions.getUUID();
-
-				item.title = this.tryToSetValue(aEvents[index].getTagValue("t:BusyType"), "");
-				if (! item.title) {
-					item.title = "";
-				}
-
-				if (aEvents[index].getTag("t:CalendarEventDetails")) {
-					item.title = this.tryToSetValue(aEvents[index].getTag("t:CalendarEventDetails").getTagValue("t:Subject"), "")+" ("+item.title+")";
-
-					item.setProperty("LOCATION", aEvents[index].getTag("t:CalendarEventDetails").getTagValue("t:Location"));
-				}
-				else {
-					item.title = " ("+item.title+")";
- 				}
-
-		//		item.setProperty("DESCRIPTION", aCalendarItem.getTagValue("t:Body"));
-
-				item.startDate = this.tryToSetDateValue(aEvents[index].getTagValue("t:StartTime"), null);
-				if (! item.startDate) {
-					if (this.debug) this.logInfo("We have an empty startdate. Skipping this item.");
-					return null;
-				}
-
-				item.endDate = this.tryToSetDateValue(aEvents[index].getTagValue("t:EndTime"), null);
-				if (! item.endDate) {
-					if (this.debug) this.logInfo("We have an empty enddate. Skipping this item.");
-					return null;
-				}
-
-				this.itemCache[item.id] = item;
-				this.notifyTheObservers("onAddItem", [item]);
-			}
-		}
-
-		if (this.debug) this.logInfo("showUserAvailability 2");
-		this.showUserAvailabilityBusy = false;
+		var converter = Cc["@mozilla.org/intl/scriptableunicodeconverter"].
+		    createInstance(Ci.nsIScriptableUnicodeConverter);
+		 
+		// we use UTF-8 here, you can choose other encodings.
+		converter.charset = "UTF-8";
+		// result is an out parameter,
+		// result.value will contain the array length
+		var result = {};
+		// data is an array of bytes
+		var data = converter.convertToByteArray(aString, result);
+		var ch = Cc["@mozilla.org/security/hash;1"]
+				   .createInstance(Ci.nsICryptoHash);
+		ch.init(ch.MD5);
+		ch.update(data, data.length);
+		return ch.finish(true);
 	},
 
 	getUserAvailabilityRequestOK: function _getUserAvailabilityRequestOK(erGetUserAvailabilityRequest, aEvents)
@@ -3558,11 +3563,11 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		//if (this.debug) this.logInfo("getUserAvailabilityRequestOK");
 		this.saveCredentials(erGetUserAvailabilityRequest.argument);
 
+		var items = new Array();
 		if (this.OnlyShowAvailability) {
-			this.showUserAvailability(aEvents);
+			this.updateCalendar(erGetUserAvailabilityRequest, aEvents, true);
 		}
 		else {
-			var items = new Array();
 			for (var index in aEvents) {
 				var item = this.doAvailability(erGetUserAvailabilityRequest.argument.calId, aEvents[index]);
 				items.push(item);
@@ -6507,6 +6512,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 	convertExchangeAppointmentToCalAppointment: function _convertExchangeAppointmentToCalAppointment(aCalendarItem, isMeetingRequest, erGetItemsRequest, doNotify)
 	{
 		if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment:"+String(aCalendarItem), 2);
+
+
 		var item = createEvent();
 		item.calendar = this.superCalendar;
 
@@ -7079,12 +7086,69 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		return item;
 	},
 
+	convertExchangeUserAvailabilityToCalAppointment: function _convertExchangeUserAvailabilityToCalAppointment(aCalendarEvent)
+	{
+		if (aCalendarEvent.getTagValue("t:BusyType") == "Free") {
+/*			var startDate = this.tryToSetDateValue(aCalendarEvent.getTagValue("t:StartTime"), null);
+			var endDate = this.tryToSetDateValue(aCalendarEvent.getTagValue("t:EndTime"), null);
+
+			// Cleanup items that were busy but are now free.
+dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
+			for (var index in this.itemCache) {
+				if ((startDate.compare(this.itemCache[index].endDate) < 0) && (endDate.compare(this.itemCache[index].startDate) > 0)) {
+					this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
+					delete this.itemCache[index];
+				}
+			}*/
+			
+			return null;
+		}
+
+		var item = createEvent();
+		item.calendar = this.superCalendar;
+
+		item.id = this.md5(aCalendarEvent.toString());
+		if (this.itemCache[item.id]) {
+			return null;
+		}
+
+		item.title = this.tryToSetValue(aCalendarEvent.getTagValue("t:BusyType"), "");
+		if (! item.title) {
+			item.title = "";
+		}
+
+		if (aCalendarEvent.getTag("t:CalendarEventDetails")) {
+			item.title = this.tryToSetValue(aCalendarEvent.getTag("t:CalendarEventDetails").getTagValue("t:Subject"), "")+" ("+item.title+")";
+
+			item.setProperty("LOCATION", aCalendarEvent.getTag("t:CalendarEventDetails").getTagValue("t:Location"));
+		}
+		else {
+			item.title = " ("+item.title+")";
+		}
+
+//		item.setProperty("DESCRIPTION", aCalendarItem.getTagValue("t:Body"));
+
+		item.startDate = this.tryToSetDateValue(aCalendarEvent.getTagValue("t:StartTime"), null);
+		if (! item.startDate) {
+			if (this.debug) this.logInfo("We have an empty startdate. Skipping this item.");
+			return null;
+		}
+
+		item.endDate = this.tryToSetDateValue(aCalendarEvent.getTagValue("t:EndTime"), null);
+		if (! item.endDate) {
+			if (this.debug) this.logInfo("We have an empty enddate. Skipping this item.");
+			return null;
+		}
+//dump("\n-- added --:"+aCalendarEvent.toString()+"\n");
+		return item;
+	},
+
 	convertExchangeToCal: function _convertExchangeToCal(aExchangeItem, erGetItemsRequest, doNotify)
 	{
 		if (this.debug) this.logInfo("convertExchangeToCal:"+aExchangeItem);
 		if (!aExchangeItem) { return; }
 
-		var switchValue = aExchangeItem.getTagValue("t:ItemClass");
+		var switchValue = aExchangeItem.getTagValue("t:ItemClass", "");
 		if (switchValue.indexOf(".{") > -1) {
 			switchValue = switchValue.substr(0,switchValue.indexOf(".{"));
 		}
@@ -7109,6 +7173,10 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 				return this.convertExchangeTaskToCalTask(aExchangeItem, erGetItemsRequest);
 				break;
 			default :
+				if (aExchangeItem.tagName == "CalendarEvent") {
+					return this.convertExchangeUserAvailabilityToCalAppointment(aExchangeItem);
+				}
+
 				if (this.debug) this.logInfo("WARNING: convertExchangeToCal: unknown ItemClass = '"+switchValue+"'");
 		}
 	},

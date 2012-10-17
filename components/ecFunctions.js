@@ -621,6 +621,7 @@ exchWebService.commonFunctions = {
 
 		
 		exchWebService.commonFunctions.copyPreferences(fromCalPrefs, toCalPrefs);
+		toCalPrefs.deleteBranch("folderProperties");
 
 		fromCalPrefs = Cc["@mozilla.org/preferences-service;1"]
 		            .getService(Ci.nsIPrefService)
