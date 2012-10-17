@@ -3520,9 +3520,14 @@ if (this.debug) this.logInfo("singleModified doNotify");
 					item.title = "";
 				}
 
-				item.title = this.tryToSetValue(aEvents[index].getTag("t:CalendarEventDetails").getTagValue("t:Subject"), "")+" ("+item.title+")";
+				if (aEvents[index].getTag("t:CalendarEventDetails")) {
+					item.title = this.tryToSetValue(aEvents[index].getTag("t:CalendarEventDetails").getTagValue("t:Subject"), "")+" ("+item.title+")";
 
-				item.setProperty("LOCATION", aEvents[index].getTag("t:CalendarEventDetails").getTagValue("t:Location"));
+					item.setProperty("LOCATION", aEvents[index].getTag("t:CalendarEventDetails").getTagValue("t:Location"));
+				}
+				else {
+					item.title = " ("+item.title+")";
+ 				}
 
 		//		item.setProperty("DESCRIPTION", aCalendarItem.getTagValue("t:Body"));
 
