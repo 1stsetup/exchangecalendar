@@ -5624,6 +5624,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 		//exchWebService.commonFunctions.LOG("["+this.name+"] addToQueue:"+aQueueNumber+" ("+exchWebService.commonFunctions.STACKshort()+")");
 
+		aArguments["ServerVersion"] = getEWSServerVersion(this.serverUrl);
 		this.queue[aQueueNumber].push({ecRequest:aRequest,
 				 arguments: aArgument,
 				 cbOk: aCbOk,
@@ -5668,7 +5669,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			//exchWebService.commonFunctions.LOG("["+this.name+"] processQueue:"+aQueueNumber+": job:"+queueItem.ecRequest+" ("+exchWebService.commonFunctions.STACKshort()+")");
 			this.observerService.notifyObservers(this, "onExchangeProgressChange", "-1");  
 
-			queueItem.arguments["ServerVersion"] = getEWSServerVersion(this.serverUrl);
+			//queueItem.arguments["ServerVersion"] = getEWSServerVersion(this.serverUrl);
 			this.tmpJobs[aQueueNumber] = new queueItem.ecRequest(queueItem.arguments, queueItem.cbOk, queueItem.cbError, queueItem.listener);
 		}
 
