@@ -5624,7 +5624,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 		//exchWebService.commonFunctions.LOG("["+this.name+"] addToQueue:"+aQueueNumber+" ("+exchWebService.commonFunctions.STACKshort()+")");
 
-		aArguments["ServerVersion"] = getEWSServerVersion(this.serverUrl);
+		aArgument["ServerVersion"] = getEWSServerVersion(this.serverUrl);
 		this.queue[aQueueNumber].push({ecRequest:aRequest,
 				 arguments: aArgument,
 				 cbOk: aCbOk,
