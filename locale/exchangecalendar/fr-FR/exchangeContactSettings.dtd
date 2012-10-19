@@ -5,5 +5,5 @@
 <!ENTITY ecsettings.tab.meetingrequestsettings "Réglages de rendez vous">
 
 <!ENTITY label.ecExchangeSettings.title "Noms dans la liste:">
-<!ENTITY exchangeWebService.preference.contacts.pollinterval "Interval de rafraichissement en secondes:">
+<!ENTITY exchangeWebService.preference.contacts.pollinterval "Intervalle de rafraichissement en secondes:">
 
