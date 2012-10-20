@@ -390,6 +390,9 @@ function calExchangeCalendar() {
 	this.observerService = Cc["@mozilla.org/observer-service;1"]  
 	                          .getService(Ci.nsIObserverService);  
 
+	this.loadBalancer = Cc["@1st-setup.nl/exchange/loadbalancer;1"]  
+	                          .getService(Ci.mivExchangeLoadBalancer);  
+
 	this.calendarPoller = null;
 
         this.mObserver = new ecObserver(this);
@@ -5625,6 +5628,15 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		//exchWebService.commonFunctions.LOG("["+this.name+"] addToQueue:"+aQueueNumber+" ("+exchWebService.commonFunctions.STACKshort()+")");
 
 		aArgument["ServerVersion"] = getEWSServerVersion(this.serverUrl);
+
+		this.loadBalancer.addToQueue({ calendar: this,
+				 ecRequest:aRequest,
+				 arguments: aArgument,
+				 cbOk: aCbOk,
+				 cbError: aCbError,
+				 listener: aListener});
+		return;
+
 		this.queue[aQueueNumber].push({ecRequest:aRequest,
 				 arguments: aArgument,
 				 cbOk: aCbOk,

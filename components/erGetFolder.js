@@ -146,9 +146,15 @@ erGetFolderRequest.prototype = {
 			this.onSendError(aExchangeRequest, aCode, aMsg);
 		}
 		else {
+dump("@@@@@@@@@@@ 11 @@\n");
 			if (this.mCbOk) {
+dump("@@@@@@@@@@@ 12 @@\n");
 				this.properties = aResp;
+dump("@@@@@@@@@@@ 13 @@\n");
+try {
 				this.mCbOk(this, folderID, changeKey, folderClass);
+} catch(err) { dump(" $$$$ err:"+err+"\n");}
+dump("@@@@@@@@@@@ 14 @@\n");
 			}
 			this.isRunning = false;
 		}

@@ -21,7 +21,7 @@
 
 #include "nsISupports.idl"
 
-[scriptable, uuid(2db8c940-1927-11e2-892e-0800200c9a66)]
+[scriptable, uuid(2db8c940-1927-11e2-892e-0800200c9a55)]
 interface mivExchangeLoadBalancer : nsISupports
 {
 
