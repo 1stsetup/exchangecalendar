@@ -87,7 +87,12 @@ mivExchangeLoadBalancer.prototype = {
 	// Internal methods.
 	get maxJobs()
 	{
-		return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"maxjobs", 3, true);
+		return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"maxJobs", 3, true);
+	},
+
+	get sleepBetweenJobs()
+	{
+		return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"sleepBetweenJobs", 2, true);
 	},
 
 	notify: function _notify() {
@@ -129,7 +134,7 @@ mivExchangeLoadBalancer.prototype = {
 		if (!this.timer) {
 			//this.logInfo("Start timer");
 			this.timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
-			this.timer.initWithCallback(this, 25, this.timer.TYPE_REPEATING_SLACK);
+			this.timer.initWithCallback(this, this.sleepBetweenJobs, this.timer.TYPE_REPEATING_SLACK);
 		}
 	},
 
@@ -245,6 +250,7 @@ mivExchangeLoadBalancer.prototype = {
 	{
 		if (this.serverQueue[aServer]) {
 			if (this.serverQueue[aServer].jobs[aCalendar.id]) {
+				this.observerService.notifyObservers(job.calendar, "onExchangeProgressChange", -1*this.serverQueue[aServer].jobs[aCalendar.id].length); 
 				this.serverQueue[aServer].jobs[aCalendar.id] = new Array();
 			}			
 		}
