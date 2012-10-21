@@ -114,7 +114,7 @@ mivExchangeLoadBalancer.prototype = {
 		}
 
 		this.serverQueue[aJob.arguments.serverUrl].jobs[aJob.calendar.id].push(aJob);
-		//this.logInfo("Adding job to queue for server '"+aJob.arguments.serverUrl+"' for calendar '"+aJob.calendar.id+"'. We now have:"+this.serverQueue[aJob.arguments.serverUrl].jobs[aJob.calendar.id].length+" jobs.");
+		this.logInfo("Adding job to queue for server '"+aJob.arguments.serverUrl+"' for calendar '"+aJob.calendar.id+"'. We now have:"+this.serverQueue[aJob.arguments.serverUrl].jobs[aJob.calendar.id].length+" jobs.",2);
 
 		// Check if the calendar.id is allready in the list.
 		var inList = false;
@@ -132,7 +132,7 @@ mivExchangeLoadBalancer.prototype = {
 		this.observerService.notifyObservers(aJob.calendar, "onExchangeProgressChange", "1"); 
 
 		if (!this.timer) {
-			//this.logInfo("Start timer");
+			this.logInfo("Start timer");
 			this.timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
 			this.timer.initWithCallback(this, this.sleepBetweenJobs, this.timer.TYPE_REPEATING_SLACK);
 		}
@@ -154,7 +154,7 @@ mivExchangeLoadBalancer.prototype = {
 				else {
 					// Running job stopped.
 					this.jobsRunning--;
-					//this.logInfo("this.jobsRunning:"+this.jobsRunning);
+					this.logInfo("this.jobsRunning:"+this.jobsRunning);
 				}
 			}
 
@@ -207,15 +207,15 @@ mivExchangeLoadBalancer.prototype = {
 									};
 					this.serverQueue[server].runningJobs.push(newJob);
 
-					//dump("Starting job to queue for server '"+server+"' for calendar '"+job.calendar.id+"'. We now have:"+this.serverQueue[server].jobs[job.calendar.id].length+" jobs in queue and "+this.serverQueue[server].runningJobs.length+" jobs running.\n");
+					this.logInfo("Starting job to queue for server '"+server+"' for calendar '"+job.calendar.id+"'. We now have:"+this.serverQueue[server].jobs[job.calendar.id].length+" jobs in queue and "+this.serverQueue[server].runningJobs.length+" jobs running.",2);
 					this.jobsRunning++;
-					//this.logInfo("this.jobsRunning:"+this.jobsRunning);
+					this.logInfo("this.jobsRunning:"+this.jobsRunning,1);
 				}				
 			}
 		}
 
 		if (this.jobsRunning == 0) {
-			//dump("No more jobs left. Stop Timer.\n");
+			this.logInfo("No more jobs left. Stop Timer.",2);
 			this.timer.cancel();
 			delete this.timer;
 			this.timer = null;
@@ -231,7 +231,7 @@ mivExchangeLoadBalancer.prototype = {
 			arg1.argument.cbOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 		}
 		catch(err) { 
-			this.globalFunctions.LOG("onRequestOk Error:"+err + " ("+this.globalFunctions.STACKshort()+")");
+			this.globalFunctions.LOG("onRequestOk Error:"+err + " ("+this.globalFunctions.STACKshort()+")", -1);
 		}
 	},
 
@@ -242,7 +242,7 @@ mivExchangeLoadBalancer.prototype = {
 			arg1.argument.cbError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 		}
 		catch(err) { 
-			this.globalFunctions.LOG("onRequestError Error:"+err + " ("+this.globalFunctions.STACKshort()+")");
+			this.globalFunctions.LOG("onRequestError Error:"+err + " ("+this.globalFunctions.STACKshort()+")", -1);
 		}
 	},
 
@@ -267,7 +267,7 @@ mivExchangeLoadBalancer.prototype = {
 					}
 				}
 				catch(err) {
-					this.globalFunctions.LOG("stopRunningJobsForCalendar Error:"+err + " ("+this.globalFunctions.STACKshort()+")");
+					this.globalFunctions.LOG("stopRunningJobsForCalendar Error:"+err + " ("+this.globalFunctions.STACKshort()+")", -1);
 				}
 			}
 		}

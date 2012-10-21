@@ -88,6 +88,10 @@
                         name="extensions.1st-setup.contacts.debuglevel"
                         type="int"/>
 
+            <preference id="extensions.1st-setup.exchangecalendar.loadbalancer.debuglevel"
+                        name="extensions.1st-setup.exchangecalendar.loadbalancer.debuglevel"
+                        type="int"/>
+
         </preferences>
 
 	<checkbox id="exchangeWebService_debug_log"
@@ -164,6 +168,19 @@
 	    </hbox>
 	    <hbox pack="end">
 		<label value="&exchangeWebService.preference.network.debuglevel.label2;"/>
+	    </hbox>
+        </groupbox>
+
+	<groupbox id="exchangeWebService_loadbalancer_groupbox5">
+            <caption label="&exchangeWebService.preference.loadbalancer.debug.caption;"/>
+	    <hbox>
+		<label value="&exchangeWebService.preference.contacts.debuglevel.label1;"/>
+		<textbox id="exchangeWebService_preference_loadbalancer_debuglevel_textbox" 
+			preference="extensions.1st-setup.exchangecalendar.loadbalancer.debuglevel"
+			increment="1" min="0" max="2" type="number"/>
+	    </hbox>
+	    <hbox pack="end">
+		<label value="&exchangeWebService.preference.core.debuglevel.label2;"/>
 	    </hbox>
         </groupbox>
 

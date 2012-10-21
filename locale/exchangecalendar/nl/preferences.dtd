@@ -34,3 +34,6 @@
 <!ENTITY exchangeWebService.preference.updateFunction.label "Addon update functie:">
 <!ENTITY exchangeWebService.preference.checkForUpdates.label "Automatisch controleer online for een nieuwe versie als Thunderbird start.">
 <!ENTITY exchangeWebService.preference.warnForUpdates.label "Waarschuw als er een nieuwe versie beschikbaar is zodat je deze makelijk kan installeren.">
+
+<!ENTITY exchangeWebService.preference.loadbalancer.debug.caption "Loadbalancer:">
+
