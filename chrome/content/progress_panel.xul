@@ -43,16 +43,6 @@
 	<popupset>
 		<tooltip id="exchWebServicesprogresstip" orient="vertical">
 			<vbox id="exchWebServiceProgressvbox">
-				<label id="exchWebServiceProgress1"/>
-				<label id="exchWebServiceProgress2"/>
-				<label id="exchWebServiceProgress3"/>
-				<label id="exchWebServiceProgress4"/>
-				<label id="exchWebServiceProgress5"/>
-				<label id="exchWebServiceProgress6"/>
-				<label id="exchWebServiceProgress7"/>
-				<label id="exchWebServiceProgress8"/>
-				<label id="exchWebServiceProgress9"/>
-				<label id="exchWebServiceProgress10"/>
 			</vbox>
 		</tooltip>  
 	</popupset>

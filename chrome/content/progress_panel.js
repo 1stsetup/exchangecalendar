@@ -44,6 +44,7 @@ exchWebService.progressPanel = {
 	busy: false,
 	isLoaded: false,
 	imageCounter: 1,
+	firstLoad: true,
 	imageList: {    image1: "chrome://exchangecalendar/skin/arrow-circle.png",
 			image2: "chrome://exchangecalendar/skin/arrow-circle-315.png",
 			image3: "chrome://exchangecalendar/skin/arrow-circle-225.png",
@@ -72,6 +73,23 @@ exchWebService.progressPanel = {
 		}
 
 		if (topic == "onExchangeProgressChange") {
+			if (this.firstLoad) {
+				var vbox=document.getElementById("exchWebServiceProgressvbox");
+				if (vbox) {
+dump("\n WHOEPI\n");
+					var counter=1;
+					while (counter <= 100) {
+						var progressLabel=document.createElement("label");
+						progressLabel.setAttribute("id","exchWebServiceProgress"+counter);
+						progressLabel.id = "exchWebServiceProgress"+counter;
+						vbox.appendChild(progressLabel);
+						counter++;
+					}
+					this.firstLoad = false;
+				}
+
+			}
+
 			exchWebService.progressPanel.changeQueue.push({ jobchange: Number(data), calendar: subject});
 		}
 
@@ -130,7 +148,7 @@ exchWebService.progressPanel = {
 					document.getElementById("exchWebServiceProgress"+counter).hidden = false;
 					counter = counter + 1;
 				}
-				while (counter <= 10) {
+				while (counter <= 100) {
 					document.getElementById("exchWebServiceProgress"+counter).hidden = true;
 					counter = counter + 1;
 				}
