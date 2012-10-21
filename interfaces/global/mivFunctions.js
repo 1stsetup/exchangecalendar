@@ -277,42 +277,6 @@ mivFunctions.prototype = {
 
 // Following code was taken from calUtils.jsm in Lightning
 
-    /**
-     * Loads an array of calendar scripts into the passed scope.
-     *
-     * @param scriptNames an array of calendar script names
-     * @param scope       scope to load into
-     * @param baseDir     base dir; defaults to calendar-js/
-     */
-	loadScripts: function _loadScripts(scriptNames, scope, baseDir) 
-	{
-	        //let scriptLoader = Cc["@mozilla.org/moz/jssubscript-loader;1"]
-	        //                             .getService(Ci.mozIJSSubScriptLoader);
-	        let ioService = Cc["@mozilla.org/network/io-service;1"]
-	                                          .getService(Ci.nsIIOService2);
-
-	        if (!baseDir) {
-	            baseDir = __LOCATION__.parent.parent.clone();
-	            baseDir.append("calendar-js");
-	        }
-
-	        for each (let script in scriptNames) {
-	            if (!script) {
-	                // If the array element is null, then just skip this script.
-	                continue;
-	            }
-	            let scriptFile = baseDir.clone();
-	            scriptFile.append(script);
-	            let scriptUrlSpec = ioService.newFileURI(scriptFile).spec;
-	            try {
-			Cu.import(scriptUrlSpec, scope);
-	                //scriptLoader.loadSubScript(scriptUrlSpec, scope);
-	            } catch (exc) {
-	                Cu.reportError(exc + " (" + scriptUrlSpec + ")");
-	            }
-	        }
-	},
-
 // Code from calUtils.jsm
 
 // Following code was taken from calUtils.js in Lightning and modified
@@ -440,8 +404,8 @@ mivFunctions.prototype = {
 			// file is nsIFile, data is a string  
 //this.getConsoleService().logStringMessage(" >>>>>>>>>>>>>>>");
 
-			var localFile = Components.classes["@mozilla.org/file/local;1"]
-					.createInstance(Components.interfaces.nsILocalFile);
+			var localFile = Cc["@mozilla.org/file/local;1"]
+					.createInstance(Ci.nsILocalFile);
 
 			try {
 				localFile.initWithPath(file); 
@@ -450,8 +414,8 @@ mivFunctions.prototype = {
 				return;
 			}
 
-			var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].  
-				       createInstance(Components.interfaces.nsIFileOutputStream);  
+			var foStream = Cc["@mozilla.org/network/file-output-stream;1"].  
+				       createInstance(Ci.nsIFileOutputStream);  
 			      
 			try {
 				// On startup create a new file otherwise append.  
@@ -469,8 +433,8 @@ mivFunctions.prototype = {
 			      
 			// if you are sure there will never ever be any non-ascii text in data you can   
 			// also call foStream.writeData directly  
-			var converter = Components.classes["@mozilla.org/intl/converter-output-stream;1"].  
-					createInstance(Components.interfaces.nsIConverterOutputStream);  
+			var converter = Cc["@mozilla.org/intl/converter-output-stream;1"].  
+					createInstance(Ci.nsIConverterOutputStream);  
 			converter.init(foStream, "UTF-8", 0, 0);  
 			converter.writeString(aString+"\n");  
 			converter.close(); // this closes foStream  
@@ -530,19 +494,23 @@ mivFunctions.prototype = {
 	},
 
 	STACKshort: function _STACKshort() {
+
 	    let depth = 1;
-	    let skip = 1;
+	    let skip = 3;
 	    let stack = "";
 	    let frame = components.stack.caller;
-	    if ((frame) && (frame.caller)) {
+	    for (let i = 1; i <= depth + skip && frame; i++) {
+	        if (i > skip) {
 			var filename;
-			if (frame.caller.filename) {
-				filename = frame.caller.filename.replace(/^.*(\\|\/|\:)/, '');
+			if (frame.filename) {
+				filename = frame.filename.replace(/^.*(\\|\/|\:)/, '');
 			}
 			else {
 				filename = "(null)";
 			}
-			stack += frame.caller.name+ " in " + filename + ":" + frame.caller.lineNumber;
+			stack += frame.name+ " in " + filename + ":" + frame.lineNumber;
+		}
+	        frame = frame.caller;
 	    }
 
 	    return stack;

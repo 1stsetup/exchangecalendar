@@ -283,6 +283,7 @@ mivExchangeLoadBalancer.prototype = {
 		}
 
 		this.storedDebugLevel = this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"debuglevel", 0, true);
+		this.storedDebugLevel = 1;
 		if (debugLevel <= this.storedDebugLevel) {
 			this.globalFunctions.LOG("[exchangeLoadBalancer] "+message + " ("+this.globalFunctions.STACKshort()+")");
 		}

@@ -36,509 +36,6 @@ if (! exchWebService) var exchWebService = {};
 
 exchWebService.commonFunctions = {
 
-	doEncodeFolderSpecialChars: function _doEncodeFolderSpecialChars(str, r1)
-	{
-		var result = str;
-		switch (r1) {
-		case "/": result = "%2F"; break;
-		case "%": result = "%25"; break;
-		}
-
-		return result;
-	},
-
-	encodeFolderSpecialChars: function _encodeFolderSpecialChars(aStr)
-	{
-		// characters like "/" (forward slash) is converted to %2F
-		// Character "%" (percentage) is converted to %25
-		var result = aStr.toString();
-		result = result.replace(/([\x2F|\x25])/g, exchWebService.commonFunctions.doEncodeFolderSpecialChars);
-		return result;
-	},
-
-	doDecodeFolderSpecialChars: function _doDecodeFolderSpecialChars(str, r1)
-	{
-		var result = str;
-		switch (r1) {
-		case "%2F": result = "/"; break;
-		case "%25": result = "%"; break;
-		}
-		return result;
-	},
-
-	decodeFolderSpecialChars: function _decodeFolderSpecialChars(aStr)
-	{
-		// Does the oposit of encodeFolderSpecialChars
-		var result = aStr.toString();
-		result = result.replace(/(\x252F|\x2525)/g, exchWebService.commonFunctions.doDecodeFolderSpecialChars);
-		return result;
-	},
-
-	ecTZService: function _ecTZService()
-	{
-		if (Cc["@mozilla.org/calendar/timezone-service;1"]) {
-			return Cc["@mozilla.org/calendar/timezone-service;1"]
-		                     .getService(Ci.calITimezoneService);
-		}
-	
-		return null;
-	},
-
-	ecDefaultTimeZone: function _ecDefaultTimeZone()
-	{
-		if (exchWebService.commonFunctions.ecTZService()) {
-			return exchWebService.commonFunctions.ecTZService().defaultTimezone;
-		}
-		return null;
-	},
-
-	ecUTC: function _ecUTC()
-	{
-		if (exchWebService.commonFunctions.ecTZService()) {
-			return exchWebService.commonFunctions.ecTZService().UTC;
-		}	
-
-		return null;
-	},
-
-	splitUriGetParams: function _splitUriGetParams(aUri)
-	{
-		exchWebService.commonFunctions.LOG("exchWebService.commonFunctions.splitUriGetParams:"+aUri.spec);
-		if (aUri.path.indexOf("?") > -1) {
-			// We have get params.
-			let getParamsStr = aUri.path.substr(aUri.path.indexOf("?")+1);
-			// Split is in the individual params.
-			var getParams = {};
-			while (getParamsStr.indexOf("&") > -1) {
-				var tmpParam = getParamsStr.substr(0, getParamsStr.indexOf("&"));
-				getParamsStr = getParamsStr.substr(getParamsStr.indexOf("&")+1);
-				if (tmpParam.indexOf("=") > -1) {
-					getParams[tmpParam.substr(0,tmpParam.indexOf("="))] = decodeURIComponent(tmpParam.substr(tmpParam.indexOf("=")+1));
-				}
-			}
-			if (getParamsStr.indexOf("=") > -1) {
-				getParams[getParamsStr.substr(0,getParamsStr.indexOf("="))] = decodeURIComponent(getParamsStr.substr(getParamsStr.indexOf("=")+1));
-			}
-
-			return getParams;
-		}
-		
-		return null;
-	},
-
-
-	getBranch: function _getBranche(aName)
-	{
-		var lBranche = "";
-		var lName = "";
-		var lastIndexOf = aName.lastIndexOf(".");
-		if (lastIndexOf > -1) {
-			lBranche = aName.substr(0,lastIndexOf+1);
-			lName = aName.substr(lastIndexOf+1); 
-		}
-		else {
-			lName = aName;
-		}
-
-		//this.LOG("aName:"+aName+", lBranche:"+lBranche+", lName:"+lName+"|");
-
-		return { branch: Cc["@mozilla.org/preferences-service;1"]
-		                    .getService(Ci.nsIPrefService)
-				    .getBranch(lBranche),
-			   name: lName };
-	},
-
-	safeGetCharPref: function _safeGetCharPref(aBranch, aName, aDefaultValue, aCreateWhenNotAvailable)
-	{
-		if (!aBranch) {
-//			return aDefaultValue;
-			var realBranche = this.getBranch(aName);
-			if (!realBranche.branch) {
-				return aDefaultValue;
-			}
-			var aBranch = realBranche.branch;
-			var aName = realBranche.name;
-		}
-	
-		if (!aCreateWhenNotAvailable) { var aCreateWhenNotAvailable = false; }
-
-		try {
-			return aBranch.getCharPref(aName);
-		}
-		catch(err) {
-			if (aCreateWhenNotAvailable) { 
-				try {
-					aBranch.setCharPref(aName, aDefaultValue); 
-				}
-				catch(er) {
-					aBranch.deleteBranch(aName);
-					aBranch.setCharPref(aName, aDefaultValue); 
-				}
-			}
-			return aDefaultValue;
-		}
-	},
-
-	safeGetBoolPref: function _safeGetBoolPref(aBranch, aName, aDefaultValue, aCreateWhenNotAvailable)
-	{
-		if (!aBranch) {
-//			return aDefaultValue;
-			var realBranche = this.getBranch(aName);
-			if (!realBranche.branch) {
-				return aDefaultValue;
-			}
-			var aBranch = realBranche.branch;
-			var aName = realBranche.name;
-		}
-	
-		if (!aCreateWhenNotAvailable) { var aCreateWhenNotAvailable = false; }
-
-		try {
-			return aBranch.getBoolPref(aName);
-		}
-		catch(err) {
-			if (aCreateWhenNotAvailable) { 
-				try {
-					aBranch.setBoolPref(aName, aDefaultValue); 
-				}
-				catch(er) {
-					aBranch.deleteBranch(aName);
-					aBranch.setBoolPref(aName, aDefaultValue); 
-				}
-			}
-			return aDefaultValue;
-		}
-	},
-
-	safeGetIntPref: function _safeGetIntPref(aBranch, aName, aDefaultValue, aCreateWhenNotAvailable)
-	{
-		if (!aBranch) {
-//			return aDefaultValue;
-			var realBranche = this.getBranch(aName);
-			if (!realBranche.branch) {
-				return aDefaultValue;
-			}
-			var aBranch = realBranche.branch;
-			var aName = realBranche.name;
-		}
-	
-		if (!aCreateWhenNotAvailable) { var aCreateWhenNotAvailable = false; }
-
-		try {
-			return aBranch.getIntPref(aName);
-		}
-		catch(err) {
-			if (aCreateWhenNotAvailable) { 
-				try {
-					aBranch.setIntPref(aName, aDefaultValue); 
-				}
-				catch(er) {
-					aBranch.deleteBranch(aName);
-					aBranch.setIntPref(aName, aDefaultValue); 
-				}
-			}
-			return aDefaultValue;
-		}
-	},
-
-// Following code was taken from calUtils.jsm in Lightning
-
-    /**
-     * Loads an array of calendar scripts into the passed scope.
-     *
-     * @param scriptNames an array of calendar script names
-     * @param scope       scope to load into
-     * @param baseDir     base dir; defaults to calendar-js/
-     */
-	loadScripts: function _loadScripts(scriptNames, scope, baseDir) 
-	{
-	        //let scriptLoader = Cc["@mozilla.org/moz/jssubscript-loader;1"]
-	        //                             .getService(Ci.mozIJSSubScriptLoader);
-	        let ioService = Cc["@mozilla.org/network/io-service;1"]
-	                                          .getService(Ci.nsIIOService2);
-
-	        if (!baseDir) {
-	            baseDir = __LOCATION__.parent.parent.clone();
-	            baseDir.append("calendar-js");
-	        }
-
-	        for each (let script in scriptNames) {
-	            if (!script) {
-	                // If the array element is null, then just skip this script.
-	                continue;
-	            }
-	            let scriptFile = baseDir.clone();
-	            scriptFile.append(script);
-	            let scriptUrlSpec = ioService.newFileURI(scriptFile).spec;
-	            try {
-			Cu.import(scriptUrlSpec, scope);
-	                //scriptLoader.loadSubScript(scriptUrlSpec, scope);
-	            } catch (exc) {
-	                Cu.reportError(exc + " (" + scriptUrlSpec + ")");
-	            }
-	        }
-	},
-
-// Code from calUtils.jsm
-
-// Following code was taken from calUtils.js in Lightning and modified
-
-/**
- * Creates a string bundle.
- *
- * @param bundleURL The bundle URL
- * @return string bundle
- */
-	getStringBundle: function _getStringBundle(bundleURL) {
-	    let service = Cc["@mozilla.org/intl/stringbundle;1"]
-	                            .getService(Ci.nsIStringBundleService);
-	    return service.createBundle(bundleURL);
-	},
-
-/**
- * Gets the value of a string in a .properties file from the calendar bundle
- *
- * @param aBundleName  the name of the properties file.  It is assumed that the
- *                     file lives in chrome://calendar/locale/
- * @param aStringName  the name of the string within the properties file
- * @param aParams      optional array of parameters to format the string
- * @param aComponent   required stringbundle component name
- */
-	getString: function _getString(aBundleName, aStringName, aParams, aComponent) {
-	    try {
-	        if (!aComponent) {
-	            return "";
-	        }
-	        var propName = "chrome://" + aComponent + "/locale/" + aBundleName + ".properties";
-	        var props = exchWebService.commonFunctions.getStringBundle(propName);
-	
-	        if (aParams && aParams.length) {
-	            return props.formatStringFromName(aStringName, aParams, aParams.length);
-	        } else {
-	            return props.GetStringFromName(aStringName);
-	        }
-	    } catch (ex) {
-	        var s = ("Failed to read '" + aStringName + "' from " + propName + ".");
-	        Cu.reportError(s + " Error: " + ex);
-	        return s;
-	    }
-	},
-
-/**
- * Make a UUID using the UUIDGenerator service available, we'll use that.
- */
-	getUUID: function _getUUID() {
-	    var uuidGen = Cc["@mozilla.org/uuid-generator;1"]
-	                  .getService(Ci.nsIUUIDGenerator);
-	    // generate uuids without braces to avoid problems with
-	    // CalDAV servers that don't support filenames with {}
-	    return uuidGen.generateUUID().toString().replace(/[{}]/g, '');
-	},
-
-
-	/* Shortcut to the console service */
-	getConsoleService: function _getConsoleService() {
-	    return Cc["@mozilla.org/consoleservice;1"]
-	                     .getService(Ci.nsIConsoleService);
-	},
-
-
-/****
- **** debug code
- ****/
-
-/**
- * Logs a string or an object to both stderr and the js-console only in the case
- * where the calendar.debug.log pref is set to true.
- *
- * @param aArg  either a string to log or an object whose entire set of
- *              properties should be logged.
- */
-	shouldLog: function _shouldLog()
-	{
-	    var prefB = Cc["@mozilla.org/preferences-service;1"].
-	                getService(Ci.nsIPrefBranch);
-	    return exchWebService.commonFunctions.safeGetBoolPref(prefB, "extensions.1st-setup.debug.log", false, true);
-	},
-
-	LOG: function _LOG(aArg) {
-	    //var prefB = Cc["@mozilla.org/preferences-service;1"].
-	    //            getService(Ci.nsIPrefBranch);
-	    //var shouldLog = exchWebService.commonFunctions.safeGetBoolPref(prefB, "extensions.1st-setup.debug.log", false, true);
-
-	    if (!exchWebService.commonFunctions.shouldLog()) {
-	        return;
-	    }
-		
-		try {
-			exchWebService.commonFunctions.ASSERT(aArg, "Bad log argument.", true);
-		}
-		catch(exc) {
-			var aArg = exc;
-		}
-
-	    var string;
-	    // We should just dump() both String objects, and string primitives.
-	    if (!(aArg instanceof String) && !(typeof(aArg) == "string")) {
-	        var string = "1st-setup: Logging object...\n";
-	        for (var prop in aArg) {
-	            string += prop + ': ' + aArg[prop] + '\n';
-	        }
-	        string += "End object\n";
-	    } else {
-	        string = "1st-setup: " + aArg;
-	    }
-
-	    // xxx todo consider using function debug()
-	    dump(string + '\n');
-	    exchWebService.commonFunctions.getConsoleService().logStringMessage(string);
-
-		exchWebService.commonFunctions.writeToLogFile(string);
-
-	},
-
-	writeToLogFile: function _writeToLogFile(aString)
-	{
-		var prefB = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
-
-		var file = exchWebService.commonFunctions.safeGetCharPref(prefB, "extensions.1st-setup.debug.file", "/tmp/exchangecalendar.log", true);
-		if (file != "") {
-			// file is nsIFile, data is a string  
-//exchWebService.commonFunctions.getConsoleService().logStringMessage(" >>>>>>>>>>>>>>>");
-
-			var localFile = Components.classes["@mozilla.org/file/local;1"]
-					.createInstance(Components.interfaces.nsILocalFile);
-
-			try {
-				localFile.initWithPath(file); 
-			}
-			catch(er) {
-				return;
-			}
-
-			var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].  
-				       createInstance(Components.interfaces.nsIFileOutputStream);  
-			      
-			try {
-				// On startup create a new file otherwise append.  
-				if (!exchWebService.commonFunctions.debugFileInitialized) {
-					foStream.init(localFile, 0x02 | 0x08 | 0x20, 0666, 0);
-					exchWebService.commonFunctions.debugFileInitialized = true;   
-				}
-				else {
-					foStream.init(localFile, 0x02 | 0x08 | 0x10, 0666, 0);   
-				}
-			}
-			catch(er) {
-				return;
-			}
-			      
-			// if you are sure there will never ever be any non-ascii text in data you can   
-			// also call foStream.writeData directly  
-			var converter = Components.classes["@mozilla.org/intl/converter-output-stream;1"].  
-					createInstance(Components.interfaces.nsIConverterOutputStream);  
-			converter.init(foStream, "UTF-8", 0, 0);  
-			converter.writeString(aString+"\n");  
-			converter.close(); // this closes foStream  
-		}
-	},
-
-/**
- * Dumps a warning to both console and js console.
- *
- * @param aMessage warning message
- */
-	WARN: function _WARN(aMessage) {
-	    dump("1st-setup: Warning: " + aMessage + '\n');
-	    var scriptError = Cc["@mozilla.org/scripterror;1"]
-	                                .createInstance(Ci.nsIScriptError);
-	    scriptError.init("1st-setup: " + aMessage, null, null, 0, 0,
-	                     Ci.nsIScriptError.warningFlag,
-	                     "component javascript");
-	    exchWebService.commonFunctions.getConsoleService().logMessage(scriptError);
-	},
-
-/**
- * Dumps an error to both console and js console.
- *
- * @param aMessage error message
- */
-	ERROR: function _ERROR(aMessage) {
-	    dump("1st-setup: Error: " + aMessage + '\n');
-	    var scriptError = Cc["@mozilla.org/scripterror;1"]
-	                                .createInstance(Ci.nsIScriptError);
-	    scriptError.init("1st-setup: " + aMessage, null, null, 0, 0,
-	                     Ci.nsIScriptError.errorFlag,
-	                     "component javascript");
-	    exchWebService.commonFunctions.getConsoleService().logMessage(scriptError);
-	},
-
-/**
- * Returns a string describing the current js-stack with filename and line
- * numbers.
- *
- * @param aDepth (optional) The number of frames to include. Defaults to 5.
- * @param aSkip  (optional) Number of frames to skip
- */
-	STACK: function _STACK(aDepth, aSkip) {
-	    let depth = aDepth || 10;
-	    let skip = aSkip || 0;
-	    let stack = "";
-	    let frame = components.stack.caller;
-	    for (let i = 1; i <= depth + skip && frame; i++) {
-	        if (i > skip) {
-	            stack += i + ": [" + frame.filename + ":" +
-	                     frame.lineNumber + "] " + frame.name + "\n";
-	        }
-	        frame = frame.caller;
-	    }
-	    return stack;
-	},
-
-	STACKshort: function _STACKshort() {
-	    let depth = 1;
-	    let skip = 1;
-	    let stack = "";
-	    let frame = components.stack.caller;
-	    if ((frame) && (frame.caller)) {
-			var filename;
-			if (frame.caller.filename) {
-				filename = frame.caller.filename.replace(/^.*(\\|\/|\:)/, '');
-			}
-			else {
-				filename = "(null)";
-			}
-			stack += frame.caller.name+ " in " + filename + ":" + frame.caller.lineNumber;
-	    }
-
-	    return stack;
-	},
-
-/**
- * Logs a message and the current js-stack, if aCondition fails
- *
- * @param aCondition  the condition to test for
- * @param aMessage    the message to report in the case the assert fails
- * @param aCritical   if true, throw an error to stop current code execution
- *                    if false, code flow will continue
- *                    may be a result code
- */
-	ASSERT: function _ASSERT(aCondition, aMessage, aCritical) {
-	    if (aCondition) {
-	        return;
-	    }
-
-	    let string = "Assert failed: " + aMessage + '\n' + exchWebService.commonFunctions.STACK(0, 1);
-	    if (aCritical) {
-	        throw new components.Exception(string,
-	                                       aCritical === true ? Cr.NS_ERROR_UNEXPECTED : aCritical);
-	    } else {
-	        Cu.reportError(string);
-	    }
-	},
-
-// End of functions from calUtils.js
-
 	CreateSimpleEnumerator: function _CreateSimpleEnumerator(aArray) {
 	  return {
 	    _i: 0,
@@ -566,42 +63,6 @@ exchWebService.commonFunctions = {
 	  };
 	},
 
-	trim: function _trim (str) {
-		str = str.replace(/^\s+/, '');
-		for (var i = str.length - 1; i >= 0; i--) {
-			if (/\S/.test(str.charAt(i))) {
-				str = str.substring(0, i + 1);
-				break;
-			}
-		}
-		return str;
-	},
-
-	copyPreferences: function _copyPreferences(aFromPrefs, aToPrefs)
-	{
-		var children = aFromPrefs.getChildList("");
-		var count = 0;
-		if (children.length > 0) {
-			// Move prefs from old location to new location.
-			for (var index in children) {
-				count++;
-				switch (aFromPrefs.getPrefType(children[index])) {
-				case aFromPrefs.PREF_STRING:
-					aToPrefs.setCharPref(children[index], aFromPrefs.getCharPref(children[index]));
-					break;
-				case aFromPrefs.PREF_INT:
-					aToPrefs.setIntPref(children[index], aFromPrefs.getIntPref(children[index]));
-					break;
-				case aFromPrefs.PREF_BOOL:
-					aToPrefs.setBoolPref(children[index], aFromPrefs.getBoolPref(children[index]));
-					break;
-				}
-			}
-		
-		}
-		return count;
-	},
-
 	copyCalendarSettings: function _copyCalendarSettings(aFromId, aToId)
 	{
 		var fromCalPrefs = Cc["@mozilla.org/preferences-service;1"]
@@ -609,7 +70,7 @@ exchWebService.commonFunctions = {
 			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+aFromId+".");
 
 		if (aToId == undefined) {
-			var toId = exchWebService.commonFunctions.getUUID();
+			var toId = Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).getUUID();
 		}
 		else {
 			var toId = aToId;
@@ -620,7 +81,7 @@ exchWebService.commonFunctions = {
 			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+toId+".");
 
 		
-		exchWebService.commonFunctions.copyPreferences(fromCalPrefs, toCalPrefs);
+		Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).copyPreferences(fromCalPrefs, toCalPrefs);
 		toCalPrefs.deleteBranch("folderProperties");
 
 		fromCalPrefs = Cc["@mozilla.org/preferences-service;1"]
@@ -631,7 +92,7 @@ exchWebService.commonFunctions = {
 		            .getService(Ci.nsIPrefService)
 			    .getBranch("calendar.registry."+toId+".");
 
-		exchWebService.commonFunctions.copyPreferences(fromCalPrefs, toCalPrefs);
+		Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).copyPreferences(fromCalPrefs, toCalPrefs);
 
 		return toId;
 	},
@@ -651,82 +112,35 @@ exchWebService.commonFunctions = {
 		calManager.registerCalendar(newCal);
 	},
 
-	xmlToJxon: function _xmlToJxon(aXMLString) 
-	{
-		var result = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
-				.createInstance(Ci.mivIxml2jxon);
-		if ((result) && (aXMLString) && (aXMLString != ""))	{
-			try {
-				result.processXMLString(aXMLString, 0, null);
-			}
-			catch(exc) {
-				exchWebService.commonFunctions.LOG("xmlToJxon: Error processXMLString:"+exc+".("+aXMLString+")");
-				result = null;
-			}
-		}
-
-		return result;
-	},
-
-	splitOnCharacter: function _splitOnCharacter(aString, aStartPos, aSplitCharacter)
-	{
-//		exchWebService.commonFunctions.LOG("splitOnCharacter: aString:"+aString+", aSplitCharacter:"+aSplitCharacter);
-		var tmpPos = aStartPos;
-		var result = "";
-		var notClosed = true;
-		var notQuoteOpen = true;
-		var quotesUsed = "";
-		while ((tmpPos < aString.length) && (notClosed)) {
-			if ((aString.substr(tmpPos,1) == "'") || (aString.substr(tmpPos,1) == '"')) {
-				// We found quotes. Do they belong to our string.
-				if (notQuoteOpen) {
-					quotesUsed = aString.substr(tmpPos,1);
-					notQuoteOpen = false;
-				}
-				else {
-					if (aString.substr(tmpPos,1) == quotesUsed) {
-						quotesUsed = "";
-						notQuoteOpen = true;
-					}
-				}
-			}
-
-			var hitSplitCharacter = false;
-			if (notQuoteOpen) {
-				if (Array.isArray(aSplitCharacter)) {
-//					exchWebService.commonFunctions.LOG("splitOnCharacter: isArray");
-					for (var index in aSplitCharacter) {
-						if (aString.substr(tmpPos,aSplitCharacter[index].length) == aSplitCharacter[index]) {
-							hitSplitCharacter = true;
-//							exchWebService.commonFunctions.LOG("splitOnCharacter: hitSplitCharacter: index="+result);
-							break;
-						}
-					}
-				}
-				else {
-					if (aString.substr(tmpPos,aSplitCharacter.length) == aSplitCharacter) {
-						hitSplitCharacter = true;
-					}
-				}
-			}
-
-			if (hitSplitCharacter) {
-				notClosed = false;
-			}
-			else {
-				result += aString.substr(tmpPos,1);
-			}
-			tmpPos++;
-		}
-
-		if (!notClosed) {
-			return result;
-		}
-		else {
-			return null;
-		}
-	},
-
 }
+
+var mivFunctions = Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions);
+exchWebService.commonFunctions.doEncodeFolderSpecialChars	= mivFunctions.doEncodeFolderSpecialChars;
+exchWebService.commonFunctions.encodeFolderSpecialChars		= mivFunctions.encodeFolderSpecialChars;
+exchWebService.commonFunctions.doDecodeFolderSpecialChars	= mivFunctions.doDecodeFolderSpecialChars;
+exchWebService.commonFunctions.decodeFolderSpecialChars		= mivFunctions.decodeFolderSpecialChars;
+exchWebService.commonFunctions.ecTZService			= mivFunctions.ecTZService;
+exchWebService.commonFunctions.ecDefaultTimeZone		= mivFunctions.ecDefaultTimeZone;
+exchWebService.commonFunctions.ecUTC				= mivFunctions.ecUTC;
+exchWebService.commonFunctions.splitUriGetParams		= mivFunctions.splitUriGetParams;
+exchWebService.commonFunctions.getBranch			= mivFunctions.getBranch;
+exchWebService.commonFunctions.safeGetCharPref			= mivFunctions.safeGetCharPref;
+exchWebService.commonFunctions.safeGetBoolPref			= mivFunctions.safeGetBoolPref;
+exchWebService.commonFunctions.safeGetIntPref			= mivFunctions.safeGetIntPref;
+exchWebService.commonFunctions.getStringBundle			= mivFunctions.getStringBundle;
+exchWebService.commonFunctions.getString			= mivFunctions.getString;
+exchWebService.commonFunctions.getUUID				= mivFunctions.getUUID;
+exchWebService.commonFunctions.shouldLog			= mivFunctions.shouldLog;
+exchWebService.commonFunctions.LOG				= mivFunctions.LOG;
+exchWebService.commonFunctions.writeToLogFile			= mivFunctions.writeToLogFile;
+exchWebService.commonFunctions.WARN				= mivFunctions.WARN;
+exchWebService.commonFunctions.ERROR				= mivFunctions.ERROR;
+exchWebService.commonFunctions.STACK				= mivFunctions.STACK;
+exchWebService.commonFunctions.STACKshort			= mivFunctions.STACKshort;
+exchWebService.commonFunctions.ASSERT				= mivFunctions.ASSERT;
+exchWebService.commonFunctions.trim				= mivFunctions.trim;
+exchWebService.commonFunctions.copyPreferences			= mivFunctions.copyPreferences;
+exchWebService.commonFunctions.xmlToJxon			= mivFunctions.xmlToJxon;
+exchWebService.commonFunctions.splitOnCharacter			= mivFunctions.splitOnCharacter;
 
 

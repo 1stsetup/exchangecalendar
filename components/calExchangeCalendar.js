@@ -81,7 +81,7 @@ var globalTimeZoneDefinitions = {};
 var tmpActivityManager = Cc["@mozilla.org/activity-manager;1"];
 
 if (tmpActivityManager) {
-	exchWebService.commonFunctions.LOG("-- ActivityManger available. Enabeling it.");
+	Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).LOG("-- ActivityManger available. Enabeling it.");
 	const nsIAP = Ci.nsIActivityProcess;  
 	const nsIAE = Ci.nsIActivityEvent;  
 	const nsIAM = Ci.nsIActivityManager;
@@ -89,7 +89,7 @@ if (tmpActivityManager) {
 	var gActivityManager = Cc["@mozilla.org/activity-manager;1"].getService(nsIAM);  
 }
 else {
-	exchWebService.commonFunctions.LOG("-- ActivityManger not available.");
+	Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).LOG("-- ActivityManger not available.");
 }
 
 const fieldPathMap = {
@@ -294,8 +294,8 @@ function urlToPath (aPath) {
     if (!aPath || !/^file:/.test(aPath))
       return ;
     var rv;
-   var ph = Components.classes["@mozilla.org/network/protocol;1?name=file"]
-        .createInstance(Components.interfaces.nsIFileProtocolHandler);
+   var ph = Cc["@mozilla.org/network/protocol;1?name=file"]
+        .createInstance(Ci.nsIFileProtocolHandler);
     rv = ph.getFileFromURLSpec(aPath).path;
     return rv;
 }
@@ -306,9 +306,9 @@ function chromeToPath (aPath) {
       return; //not a chrome url
    var rv;
    
-      var ios = Components.classes['@mozilla.org/network/io-service;1'].getService(Components.interfaces["nsIIOService"]);
+      var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci["nsIIOService"]);
         var uri = ios.newURI(aPath, "UTF-8", null);
-        var cr = Components.classes['@mozilla.org/chrome/chrome-registry;1'].getService(Components.interfaces["nsIChromeRegistry"]);
+        var cr = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci["nsIChromeRegistry"]);
         rv = cr.convertChromeURL(uri).spec;
 
         if (/^file:/.test(rv))
@@ -325,6 +325,9 @@ function calExchangeCalendar() {
 	this.myId = null;
 
 	this.initProviderBase();
+
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
 
 	this.setDoDebug();
 
@@ -411,7 +414,7 @@ function calExchangeCalendar() {
 	this.mIsOffline = Components.classes["@mozilla.org/network/io-service;1"]
                              .getService(Components.interfaces.nsIIOService).offline;
 
-	exchWebService.commonFunctions.LOG("Our offline status is:"+this.mIsOffline+".");
+	this.globalFunctions.LOG("Our offline status is:"+this.mIsOffline+".");
 
 }
 
@@ -693,14 +696,14 @@ calExchangeCalendar.prototype = {
 		case "exchWebService.useOfflineCache":
 			return this.useOfflineCache;
 		case "exchWebService.getFolderProperties":
-			exchWebService.commonFunctions.LOG("Requesting exchWebService.getFolderProperties property.");
+			this.globalFunctions.LOG("Requesting exchWebService.getFolderProperties property.");
 			if (this.folderProperties) {
 				return this.folderProperties.toString();
 			}
 			return null;
 			break;
 		case "exchWebService.checkFolderPath":
-			exchWebService.commonFunctions.LOG("Requesting exchWebService.checkFolderPath property.");
+			this.globalFunctions.LOG("Requesting exchWebService.checkFolderPath property.");
 			this.checkFolderPath();
 			return "ok";
 			break;
@@ -726,7 +729,7 @@ calExchangeCalendar.prototype = {
                 	return false;
 		case "disabled":
 			if (this.prefs) {
-				this._disabled = exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "disabled", false);
+				this._disabled = this.globalFunctions.safeGetBoolPref(this.prefs, "disabled", false);
 				if (this._disabled) return this._disabled;
 			}
 
@@ -754,7 +757,7 @@ calExchangeCalendar.prototype = {
 		// capabilities.events.supported
 		// capabilities.tasks.supported
 
-		//exchWebService.commonFunctions.LOG("1 getProperty("+aName+")");
+		//this.globalFunctions.LOG("1 getProperty("+aName+")");
 	        return this.__proto__.__proto__.getProperty.apply(this, arguments);
 	},
 
@@ -1351,7 +1354,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 
 			if (doSendMeetingRespons) {
 				// The item is an invitation.
-				// My status has changed. Send to exchWebService.commonFunctions.
+				// My status has changed. Send to this.globalFunctions.
 				if (this.debug) this.logInfo("2 aOldItem.participationStatus="+meOld.participationStatus+", aNewItem.participationStatus="+(meNew ? meNew.participationStatus : ".."));
 				if (this.debug) this.logInfo("3a aOldItem.id="+aOldItem.id);
 				if (this.debug) this.logInfo("3b aNewItem.id="+aNewItem.id);
@@ -2657,8 +2660,8 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			 serverUrl: this.serverUrl,
 			 email: aCalId.replace(/^MAILTO:/, ""),
 			 attendeeType: 'Required',
-			 start: cal.toRFC3339(tmpStartDate.getInTimezone(exchWebService.commonFunctions.ecUTC())),
-			 end: cal.toRFC3339(tmpEndDate.getInTimezone(exchWebService.commonFunctions.ecUTC())),
+			 start: cal.toRFC3339(tmpStartDate.getInTimezone(this.globalFunctions.ecUTC())),
+			 end: cal.toRFC3339(tmpEndDate.getInTimezone(this.globalFunctions.ecUTC())),
 			 calId: aCalId,
 			 folderID: this.folderID,
 			 changeKey: this.changeKey }, 
@@ -2815,7 +2818,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 
 	get exchangePrefVersion()
 	{
-		return exchWebService.commonFunctions.safeGetIntPref( this.prefs, "exchangePrefVersion", 0);
+		return this.globalFunctions.safeGetIntPref( this.prefs, "exchangePrefVersion", 0);
 	},
 
 	get isInitialized()
@@ -2829,7 +2832,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			return false;
 		}
 
-		if (exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "disabled", false)) {
+		if (this.globalFunctions.safeGetBoolPref(this.prefs, "disabled", false)) {
 			return false;
 		}
 
@@ -2842,8 +2845,8 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			// It might have changed between restarts.
 			this.checkFolderPath();
 
-			this.syncState = exchWebService.commonFunctions.safeGetCharPref(this.prefs,"syncState", "");
-			this.syncInboxState = exchWebService.commonFunctions.safeGetCharPref(this.prefs,"syncInboxState", "");
+			this.syncState = this.globalFunctions.safeGetCharPref(this.prefs,"syncState", "");
+			this.syncInboxState = this.globalFunctions.safeGetCharPref(this.prefs,"syncInboxState", "");
 
 			this.getSyncState();
 			//this.getTimeZones(); moved to setFolderProperties.
@@ -2854,7 +2857,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	},
 
 	getCharPref: function(aName) {
-		return exchWebService.commonFunctions.safeGetCharPref(this.prefs, aName, null);
+		return this.globalFunctions.safeGetCharPref(this.prefs, aName, null);
 	},
 
 	setCharPref: function(aName, aValue) {
@@ -2864,16 +2867,16 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	},
 
 	get user() {
-		var username = exchWebService.commonFunctions.safeGetCharPref(this.prefs, "ecUser", "");
+		var username = this.globalFunctions.safeGetCharPref(this.prefs, "ecUser", "");
 		if (username.indexOf("@") > -1) {
 			return username;
 		}
 		else {
 			if (this.domain == "") {
-				return exchWebService.commonFunctions.safeGetCharPref(this.prefs, "ecUser", "");
+				return this.globalFunctions.safeGetCharPref(this.prefs, "ecUser", "");
 			}
 			else {
-				return this.domain+"\\"+exchWebService.commonFunctions.safeGetCharPref(this.prefs, "ecUser", "");
+				return this.domain+"\\"+this.globalFunctions.safeGetCharPref(this.prefs, "ecUser", "");
 			}
 		}
 	},
@@ -2889,7 +2892,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	},
 
 	get domain() {
-		return exchWebService.commonFunctions.safeGetCharPref(this.prefs, "ecDomain", "");
+		return this.globalFunctions.safeGetCharPref(this.prefs, "ecDomain", "");
 	},
 
 	set domain(value) {
@@ -2897,27 +2900,27 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	},
 
 	get mailbox() {
-		return exchWebService.commonFunctions.safeGetCharPref(this.prefs, "ecMailbox", "");
+		return this.globalFunctions.safeGetCharPref(this.prefs, "ecMailbox", "");
 	},
 
 	get serverUrl() {
-		return exchWebService.commonFunctions.safeGetCharPref(this.prefs, "ecServer", "");
+		return this.globalFunctions.safeGetCharPref(this.prefs, "ecServer", "");
 	},
 
 	get userDisplayName() {
-		return exchWebService.commonFunctions.safeGetCharPref(this.prefs, "ecDisplayname", "");
+		return this.globalFunctions.safeGetCharPref(this.prefs, "ecDisplayname", "");
 	},
 
 	get folderBase() {
-		return exchWebService.commonFunctions.safeGetCharPref(this.prefs, "ecFolderbase", "calendar");
+		return this.globalFunctions.safeGetCharPref(this.prefs, "ecFolderbase", "calendar");
 	},
 
 	get folderPath() {
-		return exchWebService.commonFunctions.safeGetCharPref(this.prefs, "ecFolderpath", "/");
+		return this.globalFunctions.safeGetCharPref(this.prefs, "ecFolderpath", "/");
 	},
 
 	get folderID() {
-		return exchWebService.commonFunctions.safeGetCharPref(this.prefs, "ecFolderID", null);
+		return this.globalFunctions.safeGetCharPref(this.prefs, "ecFolderID", null);
 	},
 
 	set folderID(aValue) {
@@ -2925,7 +2928,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	},
 
 	get changeKey() {
-		return exchWebService.commonFunctions.safeGetCharPref(this.prefs, "ecChangeKey", null);
+		return this.globalFunctions.safeGetCharPref(this.prefs, "ecChangeKey", null);
 	},
 
 	set changeKey(aValue) {
@@ -2933,7 +2936,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	},
 
 	get folderIDOfShare() {
-		return exchWebService.commonFunctions.safeGetCharPref(this.prefs, "ecFolderIDOfShare", "");
+		return this.globalFunctions.safeGetCharPref(this.prefs, "ecFolderIDOfShare", "");
 	},
 
 	get isPublicFolder()
@@ -2951,47 +2954,47 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			return false;
 		}
 
-		return exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "ecPollInbox", true);
+		return this.globalFunctions.safeGetBoolPref(this.prefs, "ecPollInbox", true);
 	},
 
 	get pollInboxInterval() {
-		return exchWebService.commonFunctions.safeGetIntPref(this.prefs, "ecPollInboxInterval", 180);
+		return this.globalFunctions.safeGetIntPref(this.prefs, "ecPollInboxInterval", 180);
 	},
 
 	get doAutoRespondMeeting() {
-		return exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "ecAutoRespondMeetingRequest", false);
+		return this.globalFunctions.safeGetBoolPref(this.prefs, "ecAutoRespondMeetingRequest", false);
 	},
 
 	get autoResponseAnswer() {
-		return exchWebService.commonFunctions.safeGetCharPref(this.prefs, "ecAutoRespondAnswer", "TENTATIVE");
+		return this.globalFunctions.safeGetCharPref(this.prefs, "ecAutoRespondAnswer", "TENTATIVE");
 	},
 
 	get doAutoRemoveInvitationCancelation1() {
-		return exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "ecAutoRemoveInvitationCancellation1", false);
+		return this.globalFunctions.safeGetBoolPref(this.prefs, "ecAutoRemoveInvitationCancellation1", false);
 	},
 
 	get doAutoRemoveInvitationCancelation2() {
-		return exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "ecAutoRemoveInvitationCancellation2", false);
+		return this.globalFunctions.safeGetBoolPref(this.prefs, "ecAutoRemoveInvitationCancellation2", false);
 	},
 
 	get doAutoRemoveInvitationResponse1() {
-		return exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "ecAutoRemoveInvitationResponse1", true);
+		return this.globalFunctions.safeGetBoolPref(this.prefs, "ecAutoRemoveInvitationResponse1", true);
 	},
 
 	get sendAutoRespondMeetingRequestMessage() {
-		return exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "ecSendAutoRespondMeetingRequestMessage", false);
+		return this.globalFunctions.safeGetBoolPref(this.prefs, "ecSendAutoRespondMeetingRequestMessage", false);
 	},
 
 	get autoRespondMeetingRequestMessage() {
-		return exchWebService.commonFunctions.safeGetCharPref(this.prefs, "ecAutoRespondMeetingRequestMessage", "");
+		return this.globalFunctions.safeGetCharPref(this.prefs, "ecAutoRespondMeetingRequestMessage", "");
 	},
 
 	get cacheStartupBefore() {
-		return exchWebService.commonFunctions.safeGetIntPref(null, "extensions.1st-setup.cache.startupBefore", 30, true);
+		return this.globalFunctions.safeGetIntPref(null, "extensions.1st-setup.cache.startupBefore", 30, true);
 	},
 
 	get cacheStartupAfter() {
-		return exchWebService.commonFunctions.safeGetIntPref(null, "extensions.1st-setup.cache.startupAfter", 30, true);
+		return this.globalFunctions.safeGetIntPref(null, "extensions.1st-setup.cache.startupAfter", 30, true);
 	},
 
 	get startCacheDate() {
@@ -3838,10 +3841,10 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		if (isEvent(aItem)) {
-			var startDateStr = cal.toRFC3339(startDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+			var startDateStr = cal.toRFC3339(startDate.getInTimezone(this.globalFunctions.ecUTC()));
 		}
 		else {
-			// We make a non-UTC datetime value for exchWebService.commonFunctions.
+			// We make a non-UTC datetime value for this.globalFunctions.
 			// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
 			//LOG("  ==== tmpStart:"+cal.toRFC3339(tmpStart));
 			var startDateStr = cal.toRFC3339(startDate).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
@@ -3856,7 +3859,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			var endDate = rrule.untilDate.clone();
 			if (isEvent(aItem)) {
 				endDate.isDate = true;
-				var endDateStr = cal.toRFC3339(endDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+				var endDateStr = cal.toRFC3339(endDate.getInTimezone(this.globalFunctions.ecUTC()));
 			}
 			else {
 				if (!endDate.isDate) {
@@ -4172,7 +4175,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		// The order in which create items are specified is important.
 		// EWS expects the right order.
 
-		var e = exchWebService.commonFunctions.xmlToJxon('<nsTypes:CalendarItem xmlns:nsTypes="'+nsTypesStr+'" xmlns:nsMessages="'+nsMessagesStr+'"/>');
+		var e = this.globalFunctions.xmlToJxon('<nsTypes:CalendarItem xmlns:nsTypes="'+nsTypesStr+'" xmlns:nsMessages="'+nsMessagesStr+'"/>');
 
 		e.addChildTag("Subject", "nsTypes", aItem.title);
 
@@ -4222,11 +4225,11 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		// Precalculate right start and end time for exchange.
 		// If not timezone specified set them to the lightning preference.
 		if ((aItem.startDate.timezone.isFloating) && (!aItem.startDate.isDate)) {
-			aItem.startDate = aItem.startDate.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
+			aItem.startDate = aItem.startDate.getInTimezone(this.globalFunctions.ecDefaultTimeZone());
 		}
 
 		if ((aItem.endDate.timezone.isFloating) && (!aItem.endDate.isDate)) {
-			aItem.endDate = aItem.endDate.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
+			aItem.endDate = aItem.endDate.getInTimezone(this.globalFunctions.ecDefaultTimeZone());
 		}
 
 		var tmpStart = aItem.startDate.clone();
@@ -4239,13 +4242,13 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			tmpDuration.minutes = -1;
 			tmpEnd.addDuration(tmpDuration);
 
-			// We make a non-UTC datetime value for exchWebService.commonFunctions.
+			// We make a non-UTC datetime value for this.globalFunctions.
 			// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
 			var exchStart = cal.toRFC3339(tmpStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
 			var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19); //cal.toRFC3339(tmpEnd).length-6);
 		}
 		else {
-			// We set in bias advanced to UCT datetime values for exchWebService.commonFunctions.
+			// We set in bias advanced to UCT datetime values for this.globalFunctions.
 			var exchStart = cal.toRFC3339(tmpStart);
 			var exchEnd = cal.toRFC3339(tmpEnd);
 		}
@@ -4315,12 +4318,12 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				if (childEvent.startDate.isDate) {
 					
 					childStart.isDate = false;
-					// We make a non-UTC datetime value for exchWebService.commonFunctions.
+					// We make a non-UTC datetime value for this.globalFunctions.
 					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
 					var exchAlarmStart = cal.toRFC3339(childStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
 				}
 				else {
-					// We set in bias advanced to UCT datetime values for exchWebService.commonFunctions.
+					// We set in bias advanced to UCT datetime values for this.globalFunctions.
 					var exchAlarmStart = cal.toRFC3339(childStart);
 				}
 			}
@@ -4352,12 +4355,12 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 					if (childEvent.startDate.isDate) {
 					
 						childStart.isDate = false;
-						// We make a non-UTC datetime value for exchWebService.commonFunctions.
+						// We make a non-UTC datetime value for this.globalFunctions.
 						// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
 						var exchAlarmStart = cal.toRFC3339(childStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
 					}
 					else {
-						// We set in bias advanced to UCT datetime values for exchWebService.commonFunctions.
+						// We set in bias advanced to UCT datetime values for this.globalFunctions.
 						var exchAlarmStart = cal.toRFC3339(childStart);
 					}
 				}
@@ -4373,12 +4376,12 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 						if (aItem.startDate.isDate) {
 					
 							childStart.isDate = false;
-							// We make a non-UTC datetime value for exchWebService.commonFunctions.
+							// We make a non-UTC datetime value for this.globalFunctions.
 							// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
 							var exchAlarmStart = cal.toRFC3339(childStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
 						}
 						else {
-							// We set in bias advanced to UCT datetime values for exchWebService.commonFunctions.
+							// We set in bias advanced to UCT datetime values for this.globalFunctions.
 							var exchAlarmStart = cal.toRFC3339(childStart);
 						}
 					}
@@ -4586,7 +4589,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			aAction = "modify";
 		}
 
-		var e = exchWebService.commonFunctions.xmlToJxon('<nsTypes:Task xmlns:nsTypes="'+nsTypesStr+'" xmlns:nsMessages="'+nsMessagesStr+'"/>');
+		var e = this.globalFunctions.xmlToJxon('<nsTypes:Task xmlns:nsTypes="'+nsTypesStr+'" xmlns:nsMessages="'+nsMessagesStr+'"/>');
 
 		e.addChildTag("Subject", "nsTypes", aItem.title);
 
@@ -4697,10 +4700,10 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			tmpStart = aItem.completedDate.clone();
 
 			if (tmpStart.timezone.isFloating) {
-				tmpStart = tmpStart.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
+				tmpStart = tmpStart.getInTimezone(this.globalFunctions.ecDefaultTimeZone());
 			}
 
-			tmpStart = tmpStart.getInTimezone(exchWebService.commonFunctions.ecUTC());
+			tmpStart = tmpStart.getInTimezone(this.globalFunctions.ecUTC());
 
 			tmpStart.isDate = true;
 			tmpStart.isDate = false;
@@ -4716,7 +4719,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 //		    (!aItem.recurrenceInfo)) {
 		if (aItem.dueDate) {
 			if (aItem.dueDate.timezone.isFloating) {
-				aItem.dueDate = aItem.dueDate.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
+				aItem.dueDate = aItem.dueDate.getInTimezone(this.globalFunctions.ecDefaultTimeZone());
 			}
 
 			e.addChildTag("DueDate", "nsTypes", cal.toRFC3339(aItem.dueDate));
@@ -4733,7 +4736,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 			if (aItem.entryDate) {
 				if (aItem.entryDate.timezone.isFloating) {
-					aItem.entryDate = aItem.entryDate.getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
+					aItem.entryDate = aItem.entryDate.getInTimezone(this.globalFunctions.ecDefaultTimeZone());
 				}
 
 				e.addChildTag("StartDate", "nsTypes", cal.toRFC3339(aItem.entryDate));
@@ -4901,7 +4904,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 	makeUpdateOneItem: function _makeUpdateOneItem(aNewItem, aOldItem, aIndex, aMasterId, aMasterChangeKey, aInvitation)
 	{
-		var upd = exchWebService.commonFunctions.xmlToJxon('<nsTypes:ItemChange xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var upd = this.globalFunctions.xmlToJxon('<nsTypes:ItemChange xmlns:nsTypes="'+nsTypesStr+'"/>');
 
 		if (!aIndex) {
 			var itemId = upd.addChildTag("ItemId", "nsTypes", null);
@@ -5393,7 +5396,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			  </nsTypes:Updates>
 			</nsTypes:ItemChange>;*/
 
-		var req = exchWebService.commonFunctions.xmlToJxon('<nsTypes:ItemChange xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var req = this.globalFunctions.xmlToJxon('<nsTypes:ItemChange xmlns:nsTypes="'+nsTypesStr+'"/>');
 		var itemId = req.addChildTag("ItemId", "nsTypes", null);
 		itemId.setAttribute("Id", aId);
 		itemId.setAttribute("ChangeKey", aChangeKey);
@@ -5519,7 +5522,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			case "single":
 			case "occurrence":
 
-			// This will be done on receiving the update from exchWebService.commonFunctions.
+			// This will be done on receiving the update from this.globalFunctions.
 				//this.notifyTheObservers("onDeleteItem", [erDeleteItemRequest.argument.item]);
 				//delete this.itemCache[erDeleteItemRequest.argument.item.id];
 				break;
@@ -5625,7 +5628,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			var queueItem = this.offlineQueue[0];
 			this.offlineQueue.shift();
 
-			//exchWebService.commonFunctions.LOG("["+this.name+"] processQueue:"+aQueueNumber+" ("+exchWebService.commonFunctions.STACKshort()+")");
+			//this.globalFunctions.LOG("["+this.name+"] processQueue:"+aQueueNumber+" ("+this.globalFunctions.STACKshort()+")");
 			//this.observerService.notifyObservers(this, "onExchangeProgressChange", "-1");  
 			var itemsFromCache = this.getItemsFromOfflineCache(queueItem.rangeStart, queueItem.rangeEnd);
 			if (itemsFromCache) {
@@ -5698,7 +5701,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				}
 			};
 
-			this.calendarPoller.initWithCallback(timerCallback, exchWebService.commonFunctions.safeGetIntPref(this.prefs, "ecCalendarPollInterval", 60) * 1000, this.calendarPoller.TYPE_REPEATING_SLACK);
+			this.calendarPoller.initWithCallback(timerCallback, this.globalFunctions.safeGetIntPref(this.prefs, "ecCalendarPollInterval", 60) * 1000, this.calendarPoller.TYPE_REPEATING_SLACK);
 		}*/
 	},
 
@@ -5716,10 +5719,10 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			// start the calendar poller
 			this.calendarPoller = Cc["@mozilla.org/timer;1"]
 					.createInstance(Ci.nsITimer);
-			this.calendarPoller.initWithCallback(timerCallback, exchWebService.commonFunctions.safeGetIntPref(this.prefs, "ecCalendarPollInterval", 60) * 1000, this.calendarPoller.TYPE_REPEATING_SLACK);
+			this.calendarPoller.initWithCallback(timerCallback, this.globalFunctions.safeGetIntPref(this.prefs, "ecCalendarPollInterval", 60) * 1000, this.calendarPoller.TYPE_REPEATING_SLACK);
 		}
 		else {
-			this.calendarPoller.initWithCallback(timerCallback, exchWebService.commonFunctions.safeGetIntPref(this.prefs, "ecCalendarPollInterval", 60) * 1000, this.calendarPoller.TYPE_REPEATING_SLACK);
+			this.calendarPoller.initWithCallback(timerCallback, this.globalFunctions.safeGetIntPref(this.prefs, "ecCalendarPollInterval", 60) * 1000, this.calendarPoller.TYPE_REPEATING_SLACK);
 		}
 	},
 
@@ -5799,7 +5802,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				}
 			};
 
-			this.calendarPoller.initWithCallback(timerCallback, exchWebService.commonFunctions.safeGetIntPref(this.prefs, "ecCalendarPollInterval", 60) * 1000, this.calendarPoller.TYPE_REPEATING_SLACK);
+			this.calendarPoller.initWithCallback(timerCallback, this.globalFunctions.safeGetIntPref(this.prefs, "ecCalendarPollInterval", 60) * 1000, this.calendarPoller.TYPE_REPEATING_SLACK);
 		}*/
 	},
 
@@ -5813,7 +5816,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 	tryToSetDateValue: function _TryToSetDateValue(ewsvalue, aDefault)
 	{
 		if ((ewsvalue) && (ewsvalue.toString().length)) {
-			return cal.fromRFC3339(ewsvalue, exchWebService.commonFunctions.ecTZService().UTC).getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
+			return cal.fromRFC3339(ewsvalue, this.globalFunctions.ecTZService().UTC).getInTimezone(this.globalFunctions.ecDefaultTimeZone());
 		}
 
 		return aDefault;
@@ -7398,21 +7401,21 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 	checkFolderPath: function _checkFolderPath()
 	{
 		// We first restore from prefs.js file from the last time.
-		var tmpFolderClass = exchWebService.commonFunctions.safeGetCharPref(this.prefs,"folderClass", null);
+		var tmpFolderClass = this.globalFunctions.safeGetCharPref(this.prefs,"folderClass", null);
 		if (tmpFolderClass) {
 			if (this.debug) this.logInfo("Restore folderClass from prefs.js:"+tmpFolderClass);
 			this.setSupportedItems(tmpFolderClass);
 
-			var tmpFolderProperties = exchWebService.commonFunctions.safeGetCharPref(this.prefs,"folderProperties", null);
+			var tmpFolderProperties = this.globalFunctions.safeGetCharPref(this.prefs,"folderProperties", null);
 			if (tmpFolderProperties) {
 				//if (this.debug) this.logInfo("Restore folderProperties from prefs.js:"+tmpFolderProperties);
-				var tmpXML = exchWebService.commonFunctions.xmlToJxon(tmpFolderProperties);
+				var tmpXML = this.globalFunctions.xmlToJxon(tmpFolderProperties);
 				this.folderProperties = tmpXML;
 				this.setFolderProperties(tmpXML, tmpFolderClass);
 			}
 		}
 
-		var prefServerVersion = exchWebService.commonFunctions.safeGetCharPref(this.prefs,"lastServerVersion", null);
+		var prefServerVersion = this.globalFunctions.safeGetCharPref(this.prefs,"lastServerVersion", null);
 		if (prefServerVersion) {
 			if (this.debug) this.logInfo("Restored prefServerVersion from prefs.js:"+prefServerVersion);
 			setEWSServerVersion(this.serverUrl, prefServerVersion);
@@ -7626,8 +7629,8 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			 serverUrl: this.serverUrl,
 			 email: this.mailbox.replace(/^MAILTO:/, ""),
 			 attendeeType: 'Required',
-			 start: cal.toRFC3339(tmpStartDate.getInTimezone(exchWebService.commonFunctions.ecUTC())),
-			 end: cal.toRFC3339(tmpEndDate.getInTimezone(exchWebService.commonFunctions.ecUTC())),
+			 start: cal.toRFC3339(tmpStartDate.getInTimezone(this.globalFunctions.ecUTC())),
+			 end: cal.toRFC3339(tmpEndDate.getInTimezone(this.globalFunctions.ecUTC())),
 			 folderID: this.folderID,
 			 changeKey: this.changeKey }, 
 			function(erGetUserAvailabilityRequest, aEvents) { self.getUserAvailabilityRequestOK(erGetUserAvailabilityRequest, aEvents);}, 
@@ -7870,7 +7873,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		if (this.EWSTimeZones) {
 			
 			if (aCalTimeZone.isFloating) {
-				var tmpZone = exchWebService.commonFunctions.ecDefaultTimeZone();
+				var tmpZone = this.globalFunctions.ecDefaultTimeZone();
 			}
 			else {
 				var tmpZone = aCalTimeZone;
@@ -7950,7 +7953,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 					}
 	
 					if ((standardMatch) && ((!tmpBiasValues.daylight) || (daylightMatch))) {
-						if (this.debug) this.logInfo("WE HAVE A TIMEZONE MATCH BETWEEN LIGHTNING AND exchWebService.commonFunctions. Cal:"+aCalTimeZone.tzid+", EWS:"+timeZoneDefinition.getAttribute("Name"));
+						if (this.debug) this.logInfo("WE HAVE A TIMEZONE MATCH BETWEEN LIGHTNING AND this.globalFunctions. Cal:"+aCalTimeZone.tzid+", EWS:"+timeZoneDefinition.getAttribute("Name"));
 	
 						// If we also found the place name this will overrule everything else.
 						if ((placeNameMatch) || (idMatch) || (!weHaveAMatch)) {
@@ -8050,7 +8053,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 		var prefTzid = cal.getPrefSafe("calendar.timezone.local", null);
 		if (this.debug) this.logInfo("-- New timezone id:"+prefTzid);
-		var newTimezone = exchWebService.commonFunctions.ecTZService().getTimezone(prefTzid);
+		var newTimezone = this.globalFunctions.ecTZService().getTimezone(prefTzid);
 		if (this.debug) this.logInfo("doTimeZoneChanged 2");
 
 		// Get all cached items into new timezone
@@ -8127,7 +8130,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			var latestDBVersion = 1;
 			var dbVersion = 0;
 			if (dbExists) {
-				dbVersion = exchWebService.commonFunctions.safeGetIntPref(this.prefs, "dbVersion", 0);
+				dbVersion = this.globalFunctions.safeGetIntPref(this.prefs, "dbVersion", 0);
 			}
 
 			if (dbVersion < latestDBVersion) {
@@ -8302,7 +8305,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			return this.mUseOfflineCache;
 		}
 		else {
-			this.mUseOfflineCache = exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "useOfflineCache", true);
+			this.mUseOfflineCache = this.globalFunctions.safeGetBoolPref(this.prefs, "useOfflineCache", true);
 			this.createOfflineCacheDB();
 			return this.mUseOfflineCache;
 		}
@@ -8431,7 +8434,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			return;
 		}
 
-		var attParams = exchWebService.commonFunctions.splitUriGetParams(aCalAttachment.uri);
+		var attParams = this.globalFunctions.splitUriGetParams(aCalAttachment.uri);
 
 		if (attParams) {
 
@@ -8475,7 +8478,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			return;
 		}
 
-		var attParams = exchWebService.commonFunctions.splitUriGetParams(aCalAttachment.uri);
+		var attParams = this.globalFunctions.splitUriGetParams(aCalAttachment.uri);
 
 		if (attParams) {
 
@@ -8552,7 +8555,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			return;
 		}
 
-		var attParams = exchWebService.commonFunctions.splitUriGetParams(aCalAttachment.uri);
+		var attParams = this.globalFunctions.splitUriGetParams(aCalAttachment.uri);
 
 		if (attParams) {
 
@@ -8583,24 +8586,24 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		}
 
 		if (isEvent(aCalItem)) {
-			var startDate = cal.toRFC3339(aCalItem.startDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
-			var endDate = cal.toRFC3339(aCalItem.endDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+			var startDate = cal.toRFC3339(aCalItem.startDate.getInTimezone(this.globalFunctions.ecUTC()));
+			var endDate = cal.toRFC3339(aCalItem.endDate.getInTimezone(this.globalFunctions.ecUTC()));
 			var eventField = "y";
 		}
 		else {
 			if (aCalItem.entryDate) {
-				var startDate = cal.toRFC3339(aCalItem.entryDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+				var startDate = cal.toRFC3339(aCalItem.entryDate.getInTimezone(this.globalFunctions.ecUTC()));
 			}
 			else {
 				var startDate = "";
 			};
 
 			if (((aCalItem.completedDate) && (aCalItem.dueDate) && (aCalItem.completedDate.compare(aCalItem.dueDate) == 1)) || ((aCalItem.completedDate) && (!aCalItem.dueDate))) {
-				var endDate = cal.toRFC3339(aCalItem.completedDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+				var endDate = cal.toRFC3339(aCalItem.completedDate.getInTimezone(this.globalFunctions.ecUTC()));
 			}
 			else {
 				if (aCalItem.dueDate) {
-					var endDate = cal.toRFC3339(aCalItem.dueDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+					var endDate = cal.toRFC3339(aCalItem.dueDate.getInTimezone(this.globalFunctions.ecUTC()));
 				}
 				else {
 					var endDate = "";
@@ -8627,7 +8630,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 				// Lets find the real end date.
 				for (var childIndex in this.itemCache) {
 					if ((this.itemCache[childIndex]) && (aCalItem.getProperty("X-UID") == this.itemCache[childIndex].getProperty("X-UID"))) {
-						var childEnd = cal.toRFC3339(this.itemCache[childIndex].endDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+						var childEnd = cal.toRFC3339(this.itemCache[childIndex].endDate.getInTimezone(this.globalFunctions.ecUTC()));
 						if (childEnd > endDate) {
 							endDate = childEnd;
 						}
@@ -8673,24 +8676,24 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		}
 		
 		if (isEvent(aCalItem)) {
-			var startDate = cal.toRFC3339(aCalItem.startDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
-			var endDate = cal.toRFC3339(aCalItem.endDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+			var startDate = cal.toRFC3339(aCalItem.startDate.getInTimezone(this.globalFunctions.ecUTC()));
+			var endDate = cal.toRFC3339(aCalItem.endDate.getInTimezone(this.globalFunctions.ecUTC()));
 			var eventField = "y";
 		}
 		else {
 			if (aCalItem.entryDate) {
-				var startDate = cal.toRFC3339(aCalItem.entryDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+				var startDate = cal.toRFC3339(aCalItem.entryDate.getInTimezone(this.globalFunctions.ecUTC()));
 			}
 			else {
 				var startDate = "";
 			};
 
 			if ((aCalItem.completedDate) && (aCalItem.completedDate.compare(aCalItem.dueDate) == 1)) {
-				var endDate = cal.toRFC3339(aCalItem.completedDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+				var endDate = cal.toRFC3339(aCalItem.completedDate.getInTimezone(this.globalFunctions.ecUTC()));
 			}
 			else {
 				if (aCalItem.dueDate) {
-					var endDate = cal.toRFC3339(aCalItem.dueDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+					var endDate = cal.toRFC3339(aCalItem.dueDate.getInTimezone(this.globalFunctions.ecUTC()));
 				}
 				else {
 					var endDate = "";
@@ -8724,7 +8727,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 /*				for (var childIndex in this.itemCache) {
 					if ((this.itemCache[childIndex]) && (aCalItem.getProperty("X-UID") == this.itemCache[childIndex].getProperty("X-UID"))) {
-						var childEnd = cal.toRFC3339(this.itemCache[childIndex].endDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+						var childEnd = cal.toRFC3339(this.itemCache[childIndex].endDate.getInTimezone(this.globalFunctions.ecUTC()));
 						if (childEnd > endDate) {
 							endDate = childEnd;
 						}
@@ -8755,13 +8758,13 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			return;
 		}
 
-		var endDate = cal.toRFC3339(aCalItem.endDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+		var endDate = cal.toRFC3339(aCalItem.endDate.getInTimezone(this.globalFunctions.ecUTC()));
 
 		if (this.getItemType(aCalItem) == "M") {
 			// Lets find the real end date.
 			for (var childIndex in this.itemCache) {
 				if ((this.itemCache[childIndex]) && (aCalItem.getProperty("X-UID") == this.itemCache[childIndex].getProperty("X-UID"))) {
-					var childEnd = cal.toRFC3339(this.itemCache[childIndex].endDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+					var childEnd = cal.toRFC3339(this.itemCache[childIndex].endDate.getInTimezone(this.globalFunctions.ecUTC()));
 					if (childEnd > endDate) {
 						endDate = childEnd;
 					}
@@ -8804,8 +8807,8 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 	syncExchangeToOfflineCache: function _syncExchangeToOfflineCache()
 	{
 		// This will sync the specified period from Exchange to offlineCache.
-		var monthsAfter = exchWebService.commonFunctions.safeGetIntPref(this.prefs, "ecOfflineCacheMonthsAfterToday", 1, true)*4;
-		var monthsBefore = exchWebService.commonFunctions.safeGetIntPref(this.prefs, "ecOfflineCacheMonthsBeforeToday", 1, true)*4;
+		var monthsAfter = this.globalFunctions.safeGetIntPref(this.prefs, "ecOfflineCacheMonthsAfterToday", 1, true)*4;
+		var monthsBefore = this.globalFunctions.safeGetIntPref(this.prefs, "ecOfflineCacheMonthsBeforeToday", 1, true)*4;
 
 		var monthAfterDurarion = cal.createDuration("P"+monthsAfter+"W");
 		var monthsBeforeDurarion = cal.createDuration("-P"+monthsBefore+"W");
@@ -8836,14 +8839,14 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		var result = [];
 
 		if (aStartDate) {
-			var startDate = cal.toRFC3339(aStartDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+			var startDate = cal.toRFC3339(aStartDate.getInTimezone(this.globalFunctions.ecUTC()));
 		}
 		else {
 			var startDate = "1900-01-01";
 		}
 
 		if (aEndDate) {
-			var endDate = cal.toRFC3339(aEndDate.getInTimezone(exchWebService.commonFunctions.ecUTC()));
+			var endDate = cal.toRFC3339(aEndDate.getInTimezone(this.globalFunctions.ecUTC()));
 		}
 		else {
 			var endDate = "3500-01-01";
@@ -8878,7 +8881,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 				if (doContinue) {
 					if (this.debug) this.logInfo("Found item in offline Cache.");
-					var cachedItem = exchWebService.commonFunctions.xmlToJxon(sqlStatement.row.item);
+					var cachedItem = this.globalFunctions.xmlToJxon(sqlStatement.row.item);
 
 					//cachedItem.content = ;
 					//if (this.debug) this.logInfo(" --:"+cachedItem.toString());
@@ -8898,7 +8901,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 				while (row = aResultSet.getNextRow()) {
 
 					if (row) {
-						var cachedItem = exchWebService.commonFunctions.xmlToJxon(row.getResultByName('item'));
+						var cachedItem = this.globalFunctions.xmlToJxon(row.getResultByName('item'));
 
 						//cachedItem.content = ;
 						//if (self.debug) self.logInfo(" --:"+cachedItem.toString());
@@ -9030,7 +9033,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			logMessage += "\nException: " + exception;
 		}
 
-		exchWebService.commonFunctions.ERROR(logMessage + "\n" + exchWebService.commonFunctions.STACK(10));
+		this.globalFunctions.ERROR(logMessage + "\n" + this.globalFunctions.STACK(10));
 	},
 
 	logInfo: function _logInfo(message, aDebugLevel) {
@@ -9044,12 +9047,12 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			var debugLevel = aDebugLevel;
 		}
 
-		if (exchWebService.commonFunctions.shouldLog()) {
+		if (this.globalFunctions.shouldLog()) {
 			exchWebService.check4addon.logAddOnVersion();
 		}
 
 		if (debugLevel <= this.storedDebugLevel) {
-			exchWebService.commonFunctions.LOG("["+this.name+"] "+message + " ("+exchWebService.commonFunctions.STACKshort()+")");
+			this.globalFunctions.LOG("["+this.name+"] "+message + " ("+this.globalFunctions.STACKshort()+")");
 		}
 	},
 
@@ -9057,11 +9060,11 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 	{
 		
 		var prefB = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
-		this.storedDebugLevel = exchWebService.commonFunctions.safeGetIntPref(prefB, "extensions.1st-setup.core.debuglevel", 0, true);
+		this.storedDebugLevel = this.globalFunctions.safeGetIntPref(prefB, "extensions.1st-setup.core.debuglevel", 0, true);
 
 		this.debug = (this.storedDebugLevel > 0);
 
-		if ((this.storedDebugLevel == 0) || (!exchWebService.commonFunctions.shouldLog())) {
+		if ((this.storedDebugLevel == 0) || (!this.globalFunctions.shouldLog())) {
 			this.debug = false;
 		}
 	},
@@ -9177,6 +9180,8 @@ function convertToVersion1()
                     .getService(Ci.nsIPrefService)
 		    .getBranch("calendar.registry.");
 
+	var mivFunctions = Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions);
+
 	var children = tmpPrefs.getChildList("");
 	if (children.length > 0) {
 		// Move prefs from old location to new location.
@@ -9191,14 +9196,14 @@ function convertToVersion1()
 			var tmpField = children[index].substr(pos+1); 
 
 			if (tmpField == "uri") {
-				exchWebService.commonFunctions.LOG("Going to check calendar registry '"+tmpUUID+"' if it needs to be updated.");
+				mivFunctions.LOG("Going to check calendar registry '"+tmpUUID+"' if it needs to be updated.");
 
-				var tmpType = exchWebService.commonFunctions.safeGetCharPref(null, "calendar.registry."+tmpUUID+".type", null, false);
+				var tmpType = mivFunctions.safeGetCharPref(null, "calendar.registry."+tmpUUID+".type", null, false);
 
-				var tmpURI = exchWebService.commonFunctions.safeGetCharPref(null, "calendar.registry."+children[index], null, false);
+				var tmpURI = mivFunctions.safeGetCharPref(null, "calendar.registry."+children[index], null, false);
 				if ((tmpURI != "https://auto/"+tmpUUID) && (tmpType == "exchangecalendar")) {
 					// update uri preference
-					exchWebService.commonFunctions.LOG("Going to upgrade calendar registry '"+tmpUUID+"'");
+					this.globalFunctions.LOG("Going to upgrade calendar registry '"+tmpUUID+"'");
 					
 					var updatePrefs = Cc["@mozilla.org/preferences-service;1"]
 						    .getService(Ci.nsIPrefService)
@@ -9231,23 +9236,24 @@ exchWebService.check4addon = {
 
 	checkAddOnIsInstalledCallback: function _checkAddOnIsInstalledCallback(aAddOn)
 	{
+		var mivFunctions = Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions);
 		if (!aAddOn) {
-			exchWebService.commonFunctions.LOG("Exchange Calendar and Tasks add-on is NOT installed.");
+			mivFunctions.LOG("Exchange Calendar and Tasks add-on is NOT installed.");
 		}
 		else {
-			exchWebService.commonFunctions.LOG(aAddOn.name +" is installed.");
+			mivFunctions.LOG(aAddOn.name +" is installed.");
 			try {
-				exchWebService.commonFunctions.LOG(aAddOn.name +" is installed from:"+aAddOn.sourceURI.prePath+aAddOn.sourceURI.path);
+				mivFunctions.LOG(aAddOn.name +" is installed from:"+aAddOn.sourceURI.prePath+aAddOn.sourceURI.path);
 			}
 			catch(err) {
-				exchWebService.commonFunctions.LOG(aAddOn.name +" unable to determine where installed from.");
+				mivFunctions.LOG(aAddOn.name +" unable to determine where installed from.");
 			}
-			exchWebService.commonFunctions.LOG(aAddOn.name +" is version:"+aAddOn.version);
+			mivFunctions.LOG(aAddOn.name +" is version:"+aAddOn.version);
 			if (aAddOn.isActive) {
-				exchWebService.commonFunctions.LOG(aAddOn.name +" is active.");
+				mivFunctions.LOG(aAddOn.name +" is active.");
 			}
 			else {
-				exchWebService.commonFunctions.LOG(aAddOn.name +" is NOT active.");
+				mivFunctions.LOG(aAddOn.name +" is NOT active.");
 			}
 		}
 
@@ -9347,17 +9353,17 @@ var tmpStr = '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelop
 var start = new Date().getTime();
 var samples = 1;//5000;
 for (var i=0;i<samples;i++) {
-var tmpXML = exchWebService.commonFunctions.xmlToJxon(tmpStr);
+var tmpXML = this.globalFunctions.xmlToJxon(tmpStr);
 				tmpXML.addNameSpace("s", nsSoapStr);
 				tmpXML.addNameSpace("m", nsMessagesStr);
 				tmpXML.addNameSpace("t", nsTypesStr);
 				tmpXML.addNameSpace("michel", nsTypesStr);
 }
 var elapsed = new Date().getTime() - start;
-exchWebService.commonFunctions.LOG(">>>>>>>>>>> -----:elapsed:"+elapsed+", for samples:"+samples);
-exchWebService.commonFunctions.LOG(">>>>>>>>>>> -----:Going to do XPath");
+this.globalFunctions.LOG(">>>>>>>>>>> -----:elapsed:"+elapsed+", for samples:"+samples);
+this.globalFunctions.LOG(">>>>>>>>>>> -----:Going to do XPath");
 var tmpobject = tmpXML.XPath("/s:Envelope/s:Header/michel:ServerVersionInfo");
-exchWebService.commonFunctions.LOG(">>>>>>>>>>> -----: MinorVersion:"+tmpobject[0].getAttribute("MinorVersion"));
-exchWebService.commonFunctions.LOG(">>>>>>>>>>> -----:"+tmpXML.toString());
+this.globalFunctions.LOG(">>>>>>>>>>> -----: MinorVersion:"+tmpobject[0].getAttribute("MinorVersion"));
+this.globalFunctions.LOG(">>>>>>>>>>> -----:"+tmpXML.toString());
 
 */

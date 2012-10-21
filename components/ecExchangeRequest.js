@@ -547,7 +547,7 @@ ExchangeRequest.prototype = {
 
 		var xml = xmlReq.responseText; // bug 270553
 
-		// It appears that in exchange2010_sp2 the xml response is send in chunks with a length header.
+		// It appears that in IIS7 it is possible the xml response is send in chunks with a length header.
 		// Try to detect this.
 
 /*		var header = xml.substr(0,6);

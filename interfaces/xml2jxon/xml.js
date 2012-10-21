@@ -29,8 +29,6 @@ var components = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
-Cu.import("resource://exchangecalendar/ecFunctions.js");
-
 function typeString(o) {
   if (typeof o != 'object')
     return typeof o;
@@ -68,7 +66,10 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 	this.tags = {};
 	this.attr = {};
 
-	this.uuid = exchWebService.commonFunctions.getUUID();
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+
+	this.uuid = this.globalFunctions.getUUID();
 
 	//this.logInfo("mivIxml2jxon.init",2);
 
@@ -152,32 +153,32 @@ mivIxml2jxon.prototype = {
 	{
 		switch (aErrorID) {
 			case Ci.mivIxml2jxon.ERR_MISSING_SPECIAL_TAG: 
-				//this.logInfo(this.tagName+":Error:ERR_MISSING_SPECIAL_TAG. ("+exchWebService.commonFunctions.STACKshort()+")");
+				//this.logInfo(this.tagName+":Error:ERR_MISSING_SPECIAL_TAG. ("+this.globalFunctions.STACKshort()+")");
 				return { name: "ERR_MISSING_SPECIAL_TAG",
 					 message: "A special tag like '?' is missing",
 				         code: aErrorID};
 			case Ci.mivIxml2jxon.ERR_INVALID_TAG: 
-				//this.logInfo(this.tagName+":Error:ERR_INVALID_SPECIAL_TAG. ("+exchWebService.commonFunctions.STACKshort()+")");
+				//this.logInfo(this.tagName+":Error:ERR_INVALID_SPECIAL_TAG. ("+this.globalFunctions.STACKshort()+")");
 				return { name: "ERR_INVALID_SPECIAL_TAG",
 					 message: "Tag is invalid",
 				         code: aErrorID};
 			case Ci.mivIxml2jxon.ERR_INVALID_SPECIAL_TAG: 
-				//this.logInfo(this.tagName+":Error:ERR_INVALID_SPECIAL_TAG. ("+exchWebService.commonFunctions.STACKshort()+")");
+				//this.logInfo(this.tagName+":Error:ERR_INVALID_SPECIAL_TAG. ("+this.globalFunctions.STACKshort()+")");
 				return { name: "ERR_INVALID_SPECIAL_TAG",
 					 message: "Special Tag is invalid",
 				         code: aErrorID};
 			case Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG: 
-				//this.logInfo(this.tagName+":Error:ERR_WRONG_CLOSING_TAG. ("+exchWebService.commonFunctions.STACKshort()+")");
+				//this.logInfo(this.tagName+":Error:ERR_WRONG_CLOSING_TAG. ("+this.globalFunctions.STACKshort()+")");
 				return { name: "ERR_WRONG_CLOSING_TAG",
 					 message: "Found wrong closing tag. Expected another.",
 				         code: aErrorID};
 			case Ci.mivIxml2jxon.ERR_WRONG_ATTRIBUTE_SEPARATOR: 
-				//this.logInfo(this.tagName+":Error:ERR_WRONG_ATTRIBUTE_SEPARATOR. ("+exchWebService.commonFunctions.STACKshort()+")");
+				//this.logInfo(this.tagName+":Error:ERR_WRONG_ATTRIBUTE_SEPARATOR. ("+this.globalFunctions.STACKshort()+")");
 				return { name: "ERR_WRONG_ATTRIBUTE_SEPARATOR",
 					 message: "Found wrong attribute separator. Expected '=' character.",
 				         code: aErrorID};
 			case Ci.mivIxml2jxon.ERR_ATTRIBUTE_VALUE_QUOTES: 
-				//this.logInfo(this.tagName+":Error:ERR_ATTRIBUTE_VALUE_QUOTES. ("+exchWebService.commonFunctions.STACKshort()+")");
+				//this.logInfo(this.tagName+":Error:ERR_ATTRIBUTE_VALUE_QUOTES. ("+this.globalFunctions.STACKshort()+")");
 				return { name: "ERR_ATTRIBUTE_VALUE_QUOTES",
 					 message: "Found error in attribute value quotes.",
 				         code: aErrorID};
@@ -311,6 +312,7 @@ mivIxml2jxon.prototype = {
 
 	setAttribute: function _setAttribute(aAttribute, aValue)
 	{
+		//this.logInfo("setAttribute: aAttribute="+aAttribute+", aValue="+aValue, 0);
 		this.attr[aAttribute] = this.convertSpecialCharatersToXML(aValue);
 	},
 
@@ -525,7 +527,7 @@ mivIxml2jxon.prototype = {
 
 	replaceFromXML: function _replaceFromXML(str, r1)
 	{
-		//exchWebService.commonFunctions.LOG("replaceFromXML: str:"+str+"|r1:"+r1);
+		//this.globalFunctions.LOG("replaceFromXML: str:"+str+"|r1:"+r1);
 		var result = str;
 //try{
 		if (r1.substr(0,1) == "#") {
@@ -548,7 +550,7 @@ mivIxml2jxon.prototype = {
 			}
 		}
 //}
-//catch(exc){ exchWebService.commonFunctions.LOG("replaceFromXML: Error:"+exc);}
+//catch(exc){ this.globalFunctions.LOG("replaceFromXML: Error:"+exc);}
 		return result;
 	},
 
@@ -560,7 +562,7 @@ mivIxml2jxon.prototype = {
 //try{
 		result = result.replace(/&(quot|apos|lt|gt|amp|#x[0123456789ancdefABCDEF][0123456789ancdefABCDEF]?[0123456789ancdefABCDEF]?[0123456789ancdefABCDEF]?|#[0123456789][0123456789]?[0123456789]?[0123456789]?);/g, this.replaceFromXML); 
 //} 
-//catch(exc) { exchWebService.commonFunctions.LOG("[xml2jxon] Error:"+exc + " ("+exchWebService.commonFunctions.STACKshort()+")");}
+//catch(exc) { this.globalFunctions.LOG("[xml2jxon] Error:"+exc + " ("+this.globalFunctions.STACKshort()+")");}
 		//this.logInfo(aString+" > "+result);
 
 		return result;
@@ -698,7 +700,7 @@ mivIxml2jxon.prototype = {
 
 	if: function _if(aCondition)
 	{
-		var level = 2;
+		var level = 0;
 
 		//this.logInfo("if: aCondition:"+aCondition, level);
 
@@ -711,7 +713,7 @@ mivIxml2jxon.prototype = {
 
 			if (tmpCondition.substr(0,1) == "(") {
 				//this.logInfo("if: found opening round bracker.", level);
-				var subCondition = exchWebService.commonFunctions.splitOnCharacter(tmpCondition.substr(1), 0, ")");
+				var subCondition = this.globalFunctions.splitOnCharacter(tmpCondition.substr(1), 0, ")");
 				//this.logInfo("if: subCondition:"+subCondition, level);
 				if (subCondition) {
 					startPos = subCondition.length;
@@ -722,7 +724,7 @@ mivIxml2jxon.prototype = {
 				}
 			}
 
-			var splitPart = exchWebService.commonFunctions.splitOnCharacter(tmpCondition.toLowerCase(), startPos, [" and ", " or "]);
+			var splitPart = this.globalFunctions.splitOnCharacter(tmpCondition.toLowerCase(), startPos, [" and ", " or "]);
 
 			var operator = null;
 			var comparison = null;
@@ -755,7 +757,7 @@ mivIxml2jxon.prototype = {
 				compareList.push( { left: subCondition, right: "", operator: operator, comparison: comparison, subCondition: subCondition} );
 			}
 			else {
-				var splitPart2 = exchWebService.commonFunctions.splitOnCharacter(splitPart, 0, ["!=", "<=", ">=", "<", "=", ">"]);
+				var splitPart2 = this.globalFunctions.splitOnCharacter(splitPart, 0, ["!=", "<=", ">=", "<", "=", ">"]);
 				if (splitPart2) {
 					// Get comparison type
 					var smallerThen = false;
@@ -831,7 +833,7 @@ mivIxml2jxon.prototype = {
 										var evalConditionRight = tmpRight[y].toString();
 									}
 									else {
-										//this.logInfo("  ** d", level);
+										this.logInfo("  ** d", level);
 										var evalConditionRight = tmpRight[y].value.toString();
 									}
 
@@ -926,7 +928,7 @@ mivIxml2jxon.prototype = {
 
 	XPath: function XPath(aPath)
 	{
-		//this.logInfo("XPath:"+aPath,1);
+		//this.logInfo("XPath:"+aPath,0);
 		var tmpPath = aPath;
 		var result = new Array();
 
@@ -936,7 +938,7 @@ mivIxml2jxon.prototype = {
 
 		switch (tmpPath.substr(0,1)) {
 		case "/" : // Find all elements by specified element name
-			var allTag = exchWebService.commonFunctions.splitOnCharacter(tmpPath.substr(1), 0, ["/", "["]);
+			var allTag = this.globalFunctions.splitOnCharacter(tmpPath.substr(1), 0, ["/", "["]);
 			if (!allTag) {
 				allTag = tmpPath.substr(1);
 			}
@@ -952,9 +954,9 @@ mivIxml2jxon.prototype = {
 			break;
 
 		case "@" : // Find attribute within this element
-			//this.logInfo("Attribute search:"+tmpPath+" in tag '"+this.tagName+"'", 2);
+			//this.logInfo("Attribute search:"+tmpPath+" in tag '"+this.tagName+"'", 0);
 			if (this.attr[tmpPath.substr(1)]) {
-				//this.logInfo("  --==--:"+this[tmpPath], 2);
+				//this.logInfo("  --==--:"+this[tmpPath], 0);
 				result.push(this.attr[tmpPath.substr(1)]);
 			}
 			tmpPath = "";
@@ -992,20 +994,21 @@ mivIxml2jxon.prototype = {
 			break;
 
 		case "[" : // Compare/match function
-			//this.logInfo("Requested XPath contains an index, attribute or compare request.", 2);
+			//this.logInfo("Requested XPath contains an index, attribute or compare request.", 0);
 
-			var index = exchWebService.commonFunctions.splitOnCharacter(tmpPath.substr(1), 0, "]");
+			var index = this.globalFunctions.splitOnCharacter(tmpPath.substr(1), 0, "]");
 			if (!index) {
 				throw "XPath error: Did not find closing square bracket. tagName:"+this.tagName+", tmpPath:"+tmpPath;
 			}
 
 			tmpPath = tmpPath.substr(index.length+2);
-			//this.logInfo("Condition: ["+index+"], tmpPath:"+tmpPath,2);
+			//this.logInfo("Condition: ["+index+"], tmpPath:"+tmpPath,0);
 
 			index = this.trim(index); 
 
 			if (index != "") {
 
+				//this.logInfo("Going to see what condition we have. index="+index);
 				if (this.if(index)) {
 					//this.logInfo(" %%%%%%%%%%%%%% -------- MATCHFOUND ---------- %%%%%%%%%%%%%%", 2);
 					result.push(this);
@@ -1036,7 +1039,7 @@ mivIxml2jxon.prototype = {
 
 				tmpPath2 = this.realTagName(tmpPath2);
 
-				//this.logInfo("We will check if specified element '"+tmpPath2+"' exists as child in '"+this.tagName+"'", 2);
+				//this.logInfo("We will check if specified element '"+tmpPath2+"' exists as child in '"+this.tagName+"'", 0);
 				for (var index in this.tags) {
 					if (index.indexOf(tagSeparator) > -1) {
 						//this.logInfo(" %%:"+index, 2);
@@ -1462,11 +1465,10 @@ mivIxml2jxon.prototype = {
 		}
 
 		var prefB = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
-		var storedDebugLevel = exchWebService.commonFunctions.safeGetIntPref(prefB, "extensions.1st-setup.xml2jxon", 0, true);
-		var storedDebugLevel = 0;
-
+		var storedDebugLevel = this.globalFunctions.safeGetIntPref(prefB, "extensions.1st-setup.xml2jxon", 0, true);
+		var storedDebugLevel = 1;
 		if (debugLevel <= storedDebugLevel) {
-			exchWebService.commonFunctions.LOG("[xml2jxon] "+message + " ("+exchWebService.commonFunctions.STACKshort()+")");
+			this.globalFunctions.LOG("[xml2jxon] "+message + " ("+this.globalFunctions.STACKshort()+")");
 		}
 	},
 

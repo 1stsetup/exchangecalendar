@@ -78,13 +78,6 @@ function NSGetFactory(cid) {
 	try {
 		if (!NSGetFactory.exchWebService_ab1) {
 			exchWebService.commonAbFunctions.logInfo("NSGetFactory for exchangeAbDirFactory 1a");
-			// Load main script from lightning that we need.
-			//loadScripts(scriptLoadOrder, Cu.getGlobalForObject(this));
-
-			// load scripts from our own components dir.
-			//var componentsFileSpec = __LOCATION__.parent.parent;
-			//componentsFileSpec.append("components");
-			//loadScripts(ecScriptLoadOrder, Cu.getGlobalForObject(this), componentsFileSpec);
 
 			NSGetFactory.exchWebService_ab1 = XPCOMUtils.generateNSGetFactory([exchangeAbDirFactory]);
 	}
