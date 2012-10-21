@@ -364,11 +364,8 @@ function calExchangeCalendar() {
 	this.meetingrequestAnswered = [];
 	this.meetingResponsesCache = [];
 
-	this.queue = new Array;
-	this.tmpJobs = new Array;
 	this.getItemSyncQueue = [];
 	this.processItemSyncQueueBusy = false;
-	this.timers = [];
 
 	this.offlineTimer = null;
 	this.offlineQueue = [];
@@ -982,8 +979,7 @@ calExchangeCalendar.prototype = {
 				 sendto: "sendtoall"}, 
 				function(erCreateItemRequest, aId, aChangeKey) { self.createItemOk(erCreateItemRequest, aId, aChangeKey);}, 
 				function(erCreateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erCreateItemRequest, aCode, aMsg);},
-				aListener,
-				2);
+				aListener);
 		}
 		else {
 			// notify the listener
@@ -1518,8 +1514,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 								 sendto: input.response}, 
 								function(erUpdateItemRequest, aId, aChangeKey) { self.updateItemOk(erUpdateItemRequest, aId, aChangeKey);}, 
 								function(erUpdateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erUpdateItemRequest, aCode, aMsg);},
-								aListener,
-								2);
+								aListener);
 							return;
 						}
 						else {
@@ -1544,8 +1539,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 									 whichOccurrence: "single_occurence" },//dialogArg.answer}, 
 									function(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey) { self.getOccurrenceIndexOk(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey);}, 
 									function(erGetOccurrenceIndexRequest, aCode, aMsg) { self.getOccurrenceIndexError(erGetOccurrenceIndexRequest, aCode, aMsg);},
-									null,
-									2);
+									null);
 							}
 							else {
 								// Could be an alarm dismiss or snooze
@@ -1596,8 +1590,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 								 sendto: input.response}, 
 								function(erUpdateItemRequest, aId, aChangeKey) { self.updateItemOk(erUpdateItemRequest, aId, aChangeKey);}, 
 								function(erUpdateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erUpdateItemRequest, aCode, aMsg);},
-								aListener,
-								2);
+								aListener);
 							//this.singleModified(aNewItem);
 							return;
 						}
@@ -1643,8 +1636,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 						 sendto: input.response}, 
 						function(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey) { self.modifyItemgetOccurrenceIndexOk(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey);}, 
 						function(erGetOccurrenceIndexRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erGetOccurrenceIndexRequest, aCode, aMsg);},
-						aListener,
-						2);
+						aListener);
 					this.singleModified(aNewItem);
 					return;
 				}
@@ -1677,8 +1669,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 					 	 actionStart: Date.now()}, 
 						function(erUpdateItemRequest, aId, aChangeKey) { self.updateItemOk(erUpdateItemRequest, aId, aChangeKey);}, 
 						function(erUpdateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erUpdateItemRequest, aCode, aMsg);},
-						aListener,
-						2);
+						aListener);
 					this.singleModified(aNewItem, true);
 					return;
 				}
@@ -1851,8 +1842,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 						 itemType: "single"}, 
 						function(erDeleteItemRequest) { self.deleteItemOk(erDeleteItemRequest);}, 
 						function(erDeleteItemRequest, aCode, aMsg) { self.deleteItemError(erDeleteItemRequest, aCode, aMsg);},
-						aListener,
-						2);
+						aListener);
 
 					break;
 				case "Occurrence" :
@@ -1873,8 +1863,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 						 whichOccurrence: "occurrence" },//dialogArg.answer}, 
 						function(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey) { self.getOccurrenceIndexOk(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey);}, 
 						function(erGetOccurrenceIndexRequest, aCode, aMsg) { self.getOccurrenceIndexError(erGetOccurrenceIndexRequest, aCode, aMsg);},
-						aListener,
-						2);
+						aListener);
 
 					break;
 				case "RecurringMaster" :
@@ -1892,8 +1881,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 						 whichOccurrence: "all_occurrences"}, 
 						function(erDeleteItemRequest) { self.deleteItemOk(erDeleteItemRequest);}, 
 						function(erDeleteItemRequest, aCode, aMsg) { self.deleteItemError(erDeleteItemRequest, aCode, aMsg);},
-						aListener,
-						2);
+						aListener);
 					break;
 				default :
 					// TODO: This will happen when the sync to/from EWS has not yet happened.
@@ -1914,8 +1902,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 				 itemType: "single"}, 
 				function(erDeleteItemRequest) { self.deleteItemOk(erDeleteItemRequest);}, 
 				function(erDeleteItemRequest, aCode, aMsg) { self.deleteItemError(erDeleteItemRequest, aCode, aMsg);},
-				aListener,
-				2);
+				aListener);
 		}
 
 
@@ -3101,8 +3088,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			 itemType: "meeting"}, 
 			function(erDeleteItemRequest) { self.removeMeetingItemOk(erDeleteItemRequest);}, 
 			function(erDeleteItemRequest, aCode, aMsg) { self.removeMeetingItemError(erDeleteItemRequest, aCode, aMsg);},
-			null,
-			2);
+			null);
 	},
 
 	removeResponseItem: function _removeResponseItem(aResponse)
@@ -3122,8 +3108,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			 itemType: "response"}, 
 			function(erDeleteItemRequest) { self.removeMeetingItemOk(erDeleteItemRequest);}, 
 			function(erDeleteItemRequest, aCode, aMsg) { self.removeMeetingItemError(erDeleteItemRequest, aCode, aMsg);},
-			null,
-			2);
+			null);
 	},
 
 	removeMeetingItemOk: function _removeMeetingItemOk(erDeleteItemRequest)
@@ -3601,20 +3586,10 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	{
 		if (this.debug) this.logInfo(" resetCalendar 1a");
 
-		for each(var tmpJob in this.tmpJobs) {
-			if (tmpJob) {
-				if ((tmpJob.isRunning) && (tmpJob.parent)) {
-					tmpJob.parent.stopRequest();
-				}
-			}
-		}
+		this.loadBalancer.stopRunningJobsForCalendar(this.serverUrl, this);
 
 		// Clean the job queue.
-		for each(var tmpQueue in this.queue) {
-			this.observerService.notifyObservers(this, "onExchangeProgressChange", -1*tmpQueue.length); 
-		}
-
-		this.queue = new Array;
+		this.loadBalancer.clearQueueForCalendar(this.serverUrl, this);
 		this.offlineQueue = [];
 
 		this.doReset = true;
@@ -3622,13 +3597,6 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		this.resetStart = Date.now();
 
 		this.inboxPoller.cancel();
-		for (var index in this.timers) {
-			if (this.timers[index]) {
-				if (this.debug) this.logInfo("cancel timer queue:"+index);
-				this.timers[index].cancel();
-				delete this.timers[index];
-			}
-		}
 
 		if (this.offlineTimer) {
 			this.offlineTimer.cancel();
@@ -3667,20 +3635,10 @@ if (this.debug) this.logInfo("singleModified doNotify");
 
 		this.doReset = false;
 
-		for each(var tmpJob in this.tmpJobs) {
-			if (tmpJob) {
-				if ((tmpJob.isRunning) && (tmpJob.parent)) {
-					tmpJob.parent.stopRequest();
-				}
-			}
-		}
+		this.loadBalancer.stopRunningJobsForCalendar(this.serverUrl, this);
 
 		// Clean the job queue again.
-		for each(var tmpQueue in this.queue) {
-			this.observerService.notifyObservers(this, "onExchangeProgressChange", -1*tmpQueue.length); 
-		}
-
-		this.queue = new Array;
+		this.loadBalancer.clearQueueForCalendar(this.serverUrl, this);
 		this.offlineQueue = [];
 
 		// Now we can initialize.
@@ -4822,8 +4780,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				 sendto: erCreateItemRequest.argument.sendto}, 
 				function(erCreateAttachmentRequest, attachmentId, RootItemId, RootItemChangeKey) { self.createAttachmentOk(erCreateAttachmentRequest, attachmentId, RootItemId, RootItemChangeKey);}, 
 				function(erCreateAttachmentRequest, aCode, aMsg) { self.createAttachmentError(erCreateAttachmentRequest, aCode, aMsg);},
-				erCreateItemRequest.listener,
-				2);
+				erCreateItemRequest.listener);
 		}
 		else {
 			if (this.debug) this.logInfo("createItemOk We have no attachments to create.");
@@ -4873,8 +4830,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				 actionStart: Date.now()}, 
 				function(erDeleteAttachmentRequest, aId, aChangeKey) { self.deleteAttachmentOk(erDeleteAttachmentRequest, aId, aChangeKey);}, 
 				function(erDeleteAttachmentRequest, aCode, aMsg) { self.deleteAttachmentError(erDeleteAttachmentRequest, aCode, aMsg);},
-				erCreateAttachmentRequest.listener,
-				2);
+				erCreateAttachmentRequest.listener);
 			return;
 		}
 		else {
@@ -5199,8 +5155,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			 messageDisposition: messageDisposition}, 
 			function(erSendMeetingResponsRequest) { self.sendMeetingResponsOk(erSendMeetingResponsRequest);}, 
 			function(erSendMeetingResponsRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erSendMeetingResponsRequest, aCode, aMsg);},
-			aListener,
-			2);
+			aListener);
 		return true;
 	},
 
@@ -5272,8 +5227,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			         sendto: erGetOccurrenceIndexRequest.argument.sendto}, 
 				function(erUpdateItemRequest, aId, aChangeKey) { self.updateItemOk(erUpdateItemRequest, aId, aChangeKey);}, 
 				function(erUpdateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erUpdateItemRequest, aCode, aMsg);},
-				erGetOccurrenceIndexRequest.listener,
-				2);
+				erGetOccurrenceIndexRequest.listener);
 			return;
 			
 		}
@@ -5401,8 +5355,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 					 actionStart: Date.now()}, 
 					function(erCreateAttachmentRequest, attachmentId, RootItemId, RootItemChangeKey) { self.createAttachmentOk(erCreateAttachmentRequest, attachmentId, RootItemId, RootItemChangeKey);}, 
 					function(erCreateAttachmentRequest, aCode, aMsg) { self.createAttachmentError(erCreateAttachmentRequest, aCode, aMsg);},
-					aListener,
-					2);
+					aListener);
 			}
 			else {
 				if (this.debug) this.logInfo("updateItemOk We have "+aAttachmentsUpdates.delete.length+" attachments to delete.");
@@ -5418,8 +5371,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 					 actionStart: Date.now()}, 
 					function(erDeleteAttachmentRequest, aId, aChangeKey) { self.deleteAttachmentOk(erDeleteAttachmentRequest, aId, aChangeKey);}, 
 					function(erDeleteAttachmentRequest, aCode, aMsg) { self.deleteAttachmentError(erDeleteAttachmentRequest, aCode, aMsg);},
-					aListener,
-					2);
+					aListener);
 			}
 		}
 		return result;
@@ -5465,8 +5417,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		         sendto: aSendTo}, 
 			function(erUpdateItemRequest, aId, aChangeKey) { self.updateItemOk(erUpdateItemRequest, aId, aChangeKey);}, 
 			function(erUpdateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erUpdateItemRequest, aCode, aMsg);},
-			aListener,
-			2);
+			aListener);
 		
 	},
 
@@ -5520,8 +5471,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 					 whichOccurrence: erGetOccurrenceIndexRequest.argument.whichOccurrence}, 
 					function(erDeleteItemRequest) { self.deleteItemOk(erDeleteItemRequest);},
 					function(erDeleteItemRequest, aCode, aMsg) { self.deleteItemError(erDeleteItemRequest, aCode, aMsg);},
-					erGetOccurrenceIndexRequest.listener,
-					2);
+					erGetOccurrenceIndexRequest.listener);
 				break;
 		}
 	},
@@ -5610,24 +5560,25 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 	},
 
-	addToQueue: function _addToQueue(aRequest, aArgument, aCbOk, aCbError, aListener, aQueueNumber)
+	addToQueue: function _addToQueue(aRequest, aArgument, aCbOk, aCbError, aListener)
 	{
 		if (this.getProperty("disabled")) {
 			if (this.debug) this.logInfo("Not adding to queue because we are disabled.");
 			return;
 		}
 
-		if (!aQueueNumber) {
-			aQueueNumber = 1;
-		}
+		if (!aArgument["serverUrl"]) aArgument["serverUrl"] = this.serverUrl;
+		if (!aArgument["user"]) aArgument["user"] = this.user;
 
-		if (!this.queue[aQueueNumber]) {
-			this.queue[aQueueNumber] = [];
-		}
+		if (!aArgument["mailbox"]) aArgument["mailbox"] = this.mailbox;
 
-		//exchWebService.commonFunctions.LOG("["+this.name+"] addToQueue:"+aQueueNumber+" ("+exchWebService.commonFunctions.STACKshort()+")");
+		if (!aArgument["folderBase"]) aArgument["folderBase"] = this.folderBase;
+		if (!aArgument["changeKey"]) aArgument["changeKey"] = this.changeKey;
+		if (!aArgument["folderBase"]) aArgument["folderBase"] = this.folderBase;
 
-		aArgument["ServerVersion"] = getEWSServerVersion(this.serverUrl);
+		if (!aArgument["GUID"]) aArgument["GUID"] = calExchangeCalendarGUID;
+
+		if (!aArgument["ServerVersion"]) aArgument["ServerVersion"] = getEWSServerVersion(this.serverUrl);
 
 		this.loadBalancer.addToQueue({ calendar: this,
 				 ecRequest:aRequest,
@@ -5635,56 +5586,6 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				 cbOk: aCbOk,
 				 cbError: aCbError,
 				 listener: aListener});
-		return;
-
-		this.queue[aQueueNumber].push({ecRequest:aRequest,
-				 arguments: aArgument,
-				 cbOk: aCbOk,
-				 cbError: aCbError,
-				 listener: aListener});
-
-		this.observerService.notifyObservers(this, "onExchangeProgressChange", "1");  
-
-
-		if (!this.timers[aQueueNumber]) {
-			if (this.debug) this.logInfo("Arming timer for queue:"+aQueueNumber);
-			this.timers[aQueueNumber] = Cc["@mozilla.org/timer;1"]
-					.createInstance(Ci.nsITimer);
-
-		        let self = this;
-			let timerCallback = {
-				notify: function setTimeout_notify() {
-					self.processQueue(aQueueNumber);
-				}
-			};
-			if (!this.shutdown) {
-				this.timers[aQueueNumber].initWithCallback(timerCallback, 50, this.timers[aQueueNumber].TYPE_REPEATING_SLACK);
-			}
-			if (this.debug) this.logInfo("Timer for for queue:"+aQueueNumber);
-
-		}
-	},
-
-	processQueue: function _processQueue(aQueueNumber)
-	{
-		if (this.tmpJobs[aQueueNumber]) {
-			if (this.tmpJobs[aQueueNumber].isRunning) {
-				//if (this.debug) this.logInfo("job still running. queue:"+aQueueNumber);
-				return;
-			}
-		}
-
-		if (this.queue[aQueueNumber].length > 0) {
-			var queueItem = this.queue[aQueueNumber][0];
-			this.queue[aQueueNumber].shift();
-
-			//exchWebService.commonFunctions.LOG("["+this.name+"] processQueue:"+aQueueNumber+": job:"+queueItem.ecRequest+" ("+exchWebService.commonFunctions.STACKshort()+")");
-			this.observerService.notifyObservers(this, "onExchangeProgressChange", "-1");  
-
-			//queueItem.arguments["ServerVersion"] = getEWSServerVersion(this.serverUrl);
-			this.tmpJobs[aQueueNumber] = new queueItem.ecRequest(queueItem.arguments, queueItem.cbOk, queueItem.cbError, queueItem.listener);
-		}
-
 	},
 
 	addToOfflineQueue: function _addToOfflineQueue(aRangeStart, aRangeEnd)
@@ -6010,8 +5911,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 				 GUID: calExchangeCalendarGUID}, 
 				function(erGetMeetingRequestByUIDRequest, aMeetingRequests) { self.getMeetingRequestByUIDOk(erGetMeetingRequestByUIDRequest, aMeetingRequests);}, 
 				function(erGetMeetingRequestByUIDRequest, aCode, aMsg) { self.getMeetingRequestByUIDError(erGetMeetingRequestByUIDRequest, aCode, aMsg);},
-				aListener,
-				1);
+				aListener);
 
 			return;
 // bug 59		}
@@ -8096,12 +7996,6 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		this.shutdown = true;
 		this.inboxPoller.cancel();
 
-		for each(var timer in this.timers) {
-			if (timer) {
-				timer.cancel();
-			}
-		}
-
 		if (this.offlineTimer) {
 			this.offlineTimer.cancel();
 		}
@@ -8110,19 +8004,9 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			this.calendarPoller.cancel();
 		}
 
-		for each(var tmpJob in this.tmpJobs) {
-			if (tmpJob) {
-				if ((tmpJob.isRunning) && (tmpJob.parent)) {
-					tmpJob.parent.stopRequest();
-				}
-			}
-		}
+		this.loadBalancer.stopRunningJobsForCalendar(this.serverUrl, this);
 
-		for each(var tmpQueue in this.queue) {
-			this.observerService.notifyObservers(this, "onExchangeProgressChange", -1*tmpQueue.length); 
-		}
-
-		this.queue = new Array;
+		this.loadBalancer.clearQueueForCalendar(this.serverUrl, this);
 		this.offlineQueue = [];
 
 		// Now we can initialize.
@@ -8987,7 +8871,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			return false;
 		}
 
-/*		var doContinue = true;
+		var doContinue = true;
 		try {
 			while (doContinue) {
 				doContinue = sqlStatement.executeStep();
@@ -9004,9 +8888,9 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		}
 		finally {  
 			sqlStatement.reset();
-		}*/
+		}
 
-		var self = this;
+/*		var self = this;
 		sqlStatement.executeAsync({
 			handleResult: function(aResultSet) {
 				if (self.debug) self.logInfo("Found item in offline Cache.");
@@ -9044,10 +8928,10 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 					if (self.debug) self.logInfo("Error executing Query. Error:"+aReason);
 				}
 			}
-		});
+		});*/
 
 		//if (this.debug) this.logInfo("Retreived '"+result.length+"' records from offline cache. startDate:"+startDate+", endDate:"+endDate);
-/*		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
+		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
 
 			if (result.length > 0) {
 				this.executeQuery("UPDATE items set event=(event || '_')"+whereStr);
@@ -9058,7 +8942,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		else {
 			if (this.debug) this.logInfo("Error executing Query. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString);
 			return null;
-		}*/
+		}
 		return null;
 	},
 

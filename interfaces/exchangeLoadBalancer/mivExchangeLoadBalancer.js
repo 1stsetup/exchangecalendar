@@ -30,6 +30,8 @@ Cu.import("resource://gre/modules/Services.jsm");
 function mivExchangeLoadBalancer() {
 	this.serverQueue = {};
 	this.runningJobs = {};
+	this.jobsRunning = 0;
+
 
 	this.timer = null;
 
@@ -63,7 +65,6 @@ mivExchangeLoadBalancer.prototype = {
 	  [iid_is(uuid),retval] out nsQIResult result
 	);	 */
 	QueryInterface: XPCOMUtils.generateQI([Ci.mivExchangeLoadBalancer,
-			Ci.nsIClassInfo,
 			Ci.nsISupports]),
 
 	//nsrefcnt Release();
@@ -71,23 +72,6 @@ mivExchangeLoadBalancer.prototype = {
 	{
 		this._refCount--;
 		return this._refCount;
-	},
-
-	// methods from nsIClassInfo
-
-	// nsISupports getHelperForLanguage(in PRUint32 language);
-	getHelperForLanguage: function _getHelperForLanguage(language) {
-		return null;
-	},
-
-	// void getInterfaces(out PRUint32 count, [array, size_is(count), retval] out nsIIDPtr array);
-	getInterfaces: function _getInterfaces(count) 
-	{
-		var ifaces = [Ci.mivExchangeLoadBalancer,
-			Ci.nsIClassInfo,
-			Ci.nsISupports];
-		count.value = ifaces.length;
-		return ifaces;
 	},
 
 	// Attributes from nsIClassInfo
@@ -107,7 +91,6 @@ mivExchangeLoadBalancer.prototype = {
 	},
 
 	notify: function _notify() {
-		dump("notify\n");
 		this.processQueue();
 	},
 
@@ -126,7 +109,7 @@ mivExchangeLoadBalancer.prototype = {
 		}
 
 		this.serverQueue[aJob.arguments.serverUrl].jobs[aJob.calendar.id].push(aJob);
-		dump("Adding job to queue for server '"+aJob.arguments.serverUrl+"' for calendar '"+aJob.calendar.id+"'. We now have:"+this.serverQueue[aJob.arguments.serverUrl].jobs[aJob.calendar.id].length+" jobs.\n");
+		//this.logInfo("Adding job to queue for server '"+aJob.arguments.serverUrl+"' for calendar '"+aJob.calendar.id+"'. We now have:"+this.serverQueue[aJob.arguments.serverUrl].jobs[aJob.calendar.id].length+" jobs.");
 
 		// Check if the calendar.id is allready in the list.
 		var inList = false;
@@ -144,9 +127,9 @@ mivExchangeLoadBalancer.prototype = {
 		this.observerService.notifyObservers(aJob.calendar, "onExchangeProgressChange", "1"); 
 
 		if (!this.timer) {
-			dump("Start timer\n");
+			//this.logInfo("Start timer");
 			this.timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
-			this.timer.initWithCallback(this, 5, this.timer.TYPE_REPEATING_SLACK);
+			this.timer.initWithCallback(this, 25, this.timer.TYPE_REPEATING_SLACK);
 		}
 	},
 
@@ -154,76 +137,61 @@ mivExchangeLoadBalancer.prototype = {
 	{
 		var jobCount = 0;
 
-dump("start processQueue\n");
-try {
-
 		for (var server in this.serverQueue) {
 
-dump("server:"+server+"\n");
 			// Cleanup jobs with have finished
 			var oldList = this.serverQueue[server].runningJobs;
 			this.serverQueue[server].runningJobs = new Array();
 			for (var runningJob in oldList) {
 				if (oldList[runningJob].exchangeRequest.isRunning) {
-dump("Server:"+server+", job:"+runningJob+" is still running.\n");
 					this.serverQueue[server].runningJobs.push(oldList[runningJob]);
 				}
 				else {
 					// Running job stopped.
-					dump("Job stopped to queue for server '"+server+"' for calendar '"+oldList[runningJob].job.calendar.id+"'. We now have:"+this.serverQueue[server].runningJobs.length+" jobs running.\n");
 					this.jobsRunning--;
+					//this.logInfo("this.jobsRunning:"+this.jobsRunning);
 				}
 			}
 
 			// See if we can start another job for this url/server
-dump("Runningjobs:"+this.serverQueue[server].runningJobs.length+", maxJobs:"+this.maxJobs+"\n");
+			//this.logInfo("Runningjobs:"+this.serverQueue[server].runningJobs.length+", maxJobs:"+this.maxJobs);
 			if (this.serverQueue[server].runningJobs.length < this.maxJobs) {
-dump("xx\n");
 				if (this.serverQueue[server].currentCalendar >= this.serverQueue[server].calendarList.length) {
 					this.serverQueue[server].currentCalendar = 0;
 				}
 				var initialCurrentCalendar = this.serverQueue[server].currentCalendar;
-dump("yy\n");
 				var noJobsLeft = false
-dump("CurrentCalendar x:"+this.serverQueue[server].currentCalendar+", id:"+this.serverQueue[server].calendarList[this.serverQueue[server].currentCalendar]+", jobs:"+this.serverQueue[server].jobs[this.serverQueue[server].calendarList[this.serverQueue[server].currentCalendar]].length+"\n");
 				while ((!noJobsLeft) && (this.serverQueue[server].currentCalendar < this.serverQueue[server].calendarList.length) && (this.serverQueue[server].jobs[this.serverQueue[server].calendarList[this.serverQueue[server].currentCalendar]].length == 0)) {
 					this.serverQueue[server].currentCalendar++;
+
+					if (this.serverQueue[server].currentCalendar >= this.serverQueue[server].calendarList.length) {
+						this.serverQueue[server].currentCalendar = 0;
+					}
 
 					if (this.serverQueue[server].currentCalendar == initialCurrentCalendar) {
 						// Stop processing for this server because there are now jobs left.
 						noJobsLeft = true;
 						
 					}
-					if ((!noJobsLeft) && (this.serverQueue[server].currentCalendar >= this.serverQueue[server].calendarList.length)) {
-						this.serverQueue[server].currentCalendar = 0;
-					}
-dump("CurrentCalendar y:"+this.serverQueue[server].currentCalendar+", id:"+this.serverQueue[server].calendarList[this.serverQueue[server].currentCalendar]+", jobs:"+this.serverQueue[server].jobs[this.serverQueue[server].calendarList[this.serverQueue[server].currentCalendar]].length+", noJobsLeft:"+noJobsLeft+"\n");
 
 				}
-dump("zz\n");
 				if ((!noJobsLeft) && (this.serverQueue[server].currentCalendar < this.serverQueue[server].calendarList.length) && (this.serverQueue[server].jobs[this.serverQueue[server].calendarList[this.serverQueue[server].currentCalendar]].length > 0)) {
-dump("01\n");
 					jobCount += this.serverQueue[server].jobs[this.serverQueue[server].calendarList[this.serverQueue[server].currentCalendar]].length;
 
 					var job = this.serverQueue[server].jobs[this.serverQueue[server].calendarList[this.serverQueue[server].currentCalendar]].shift();
-dump("02\n");
 
 					this.serverQueue[server].currentCalendar++;
-dump("03\n");
 					if (this.serverQueue[server].currentCalendar >= this.serverQueue[server].calendarList.length) {
 						this.serverQueue[server].currentCalendar = 0;
 					}
 
-dump("04\n");
 					this.observerService.notifyObservers(job.calendar, "onExchangeProgressChange", "-1"); 
 	 
-dump("05\n");
 					job.arguments["cbOk"] = job.cbOk;
 					job.arguments["cbError"] = job.cbError;
 					job.arguments["job"] = job;
 					job.arguments["calendar"] = job.calendar;
 				
-dump("06\n");
 					var self = this;
 
 					var newJob = { job: job,
@@ -232,45 +200,86 @@ dump("06\n");
 							function myError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {self.onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);}
 							, job.listener)
 									};
-dump("newJob isRunning:"+newJob.exchangeRequest.isRunning+"\n");
 					this.serverQueue[server].runningJobs.push(newJob);
 
-					dump("Starting job to queue for server '"+server+"' for calendar '"+job.calendar.id+"'. We now have:"+this.serverQueue[server].jobs[job.calendar.id].length+" jobs in queue and "+this.serverQueue[server].runningJobs.length+" jobs running.\n");
+					//dump("Starting job to queue for server '"+server+"' for calendar '"+job.calendar.id+"'. We now have:"+this.serverQueue[server].jobs[job.calendar.id].length+" jobs in queue and "+this.serverQueue[server].runningJobs.length+" jobs running.\n");
 					this.jobsRunning++;
+					//this.logInfo("this.jobsRunning:"+this.jobsRunning);
 				}				
 			}
-dump("The end\n");
 		}
 
 		if (this.jobsRunning == 0) {
-			dump("No more jobs left. Stop Timer.\n");
+			//dump("No more jobs left. Stop Timer.\n");
 			this.timer.cancel();
 			delete this.timer;
 			this.timer = null;
 		}
 
-} catch(err){dump("07: Error:"+err+"\n");}
-dump("end processQueue\n");
 	},
 
 	onRequestOk: function _onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
 	{
-		dump("onRequestOk job to queue for server '"+arg1.argument.serverUrl+"' for calendar '"+arg1.argument.job.calendar.id+"'. We now have:"+this.serverQueue[arg1.argument.serverUrl].jobs[arg1.argument.calendar.id].length+" jobs in queue and "+this.serverQueue[arg1.argument.serverUrl].runningJobs.length+" jobs running.\n");
-try{
-		arg1.argument.cbOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}catch(err) { dump("onRequestOk Error:"+err+"\n");}
+		this.logInfo("onRequestOk job to queue for server '"+arg1.argument.serverUrl+"' for calendar '"+arg1.argument.job.calendar.id+"'. We now have:"+this.serverQueue[arg1.argument.serverUrl].jobs[arg1.argument.calendar.id].length+" jobs in queue and "+this.serverQueue[arg1.argument.serverUrl].runningJobs.length+" jobs running.");
+
+		try{
+			arg1.argument.cbOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+		}
+		catch(err) { 
+			this.globalFunctions.LOG("onRequestOk Error:"+err + " ("+this.globalFunctions.STACKshort()+")");
+		}
 	},
 
 	onRequestError: function _onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
 	{
-		dump("onRequestError job to queue for server '"+arg1.argument.serverUrl+"' for calendar '"+arg1.argument.job.calendar.id+"'. We now have:"+this.serverQueue[arg1.argument.serverUrl].jobs[arg1.argument.calendar.id].length+" jobs in queue and "+this.serverQueue[arg1.argument.serverUrl].runningJobs.length+" jobs running.\n");
-try{
-		arg1.argument.cbError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}catch(err) { dump("onRequestError Error:"+err+"\n");}
+		this.logInfo("onRequestError job to queue for server '"+arg1.argument.serverUrl+"' for calendar '"+arg1.argument.job.calendar.id+"'. We now have:"+this.serverQueue[arg1.argument.serverUrl].jobs[arg1.argument.calendar.id].length+" jobs in queue and "+this.serverQueue[arg1.argument.serverUrl].runningJobs.length+" jobs running.");
+		try{
+			arg1.argument.cbError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+		}
+		catch(err) { 
+			this.globalFunctions.LOG("onRequestError Error:"+err + " ("+this.globalFunctions.STACKshort()+")");
+		}
 	},
 
-	clearQueueForCalendar: function _clearQueueForCalendar(aCalendar)
+	clearQueueForCalendar: function _clearQueueForCalendar(aServer, aCalendar)
 	{
+		if (this.serverQueue[aServer]) {
+			if (this.serverQueue[aServer].jobs[aCalendar.id]) {
+				this.serverQueue[aServer].jobs[aCalendar.id] = new Array();
+			}			
+		}
+	},
+
+	stopRunningJobsForCalendar: function _stopRunningJobsForCalendar(aServer, aCalendar)
+	{
+		if (this.serverQueue[aServer]) {
+			for (var index in this.serverQueue[server].runningJobs) {
+				// only stop for current calendar
+				try {
+					if ((this.serverQueue[server].runningJobs[index].exchangeRequest.isRunning) && (this.serverQueue[server].runningJobs[index].calendar.id == aCalendar.id)) {
+						this.serverQueue[server].runningJobs[index].exchangeRequest.stopRequest();
+					}
+				}
+				catch(err) {
+					this.globalFunctions.LOG("stopRunningJobsForCalendar Error:"+err + " ("+this.globalFunctions.STACKshort()+")");
+				}
+			}
+		}
+	},
+
+	logInfo: function _logInfo(message, aDebugLevel) {
+
+		if (!aDebugLevel) {
+			var debugLevel = 1;
+		}
+		else {
+			var debugLevel = aDebugLevel;
+		}
+
+		this.storedDebugLevel = this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"debuglevel", 0, true);
+		if (debugLevel <= this.storedDebugLevel) {
+			this.globalFunctions.LOG("[exchangeLoadBalancer] "+message + " ("+this.globalFunctions.STACKshort()+")");
+		}
 	},
 
 }

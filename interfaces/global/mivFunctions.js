@@ -32,7 +32,7 @@ Cu.import("resource:///modules/Services.jsm");
 
 function mivFunctions()
 {
-	dump("\n ++ mivFunctions.init\n");
+	//dump("\n ++ mivFunctions.init\n");
 }
 
 mivFunctions.prototype = {

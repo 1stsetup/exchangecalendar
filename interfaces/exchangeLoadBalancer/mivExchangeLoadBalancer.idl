@@ -27,6 +27,7 @@ interface mivExchangeLoadBalancer : nsISupports
 
   void addToQueue(in jsval aJob);
 
-  void clearQueueForCalendar(in jsval aCalendar);
+  void clearQueueForCalendar(in AUTF8String aServer, in jsval aCalendar);
+  void stopRunningJobsForCalendar(in AUTF8String aServer, in jsval aCalendar);
 
 };
