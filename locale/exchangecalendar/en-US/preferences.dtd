@@ -36,4 +36,7 @@
 <!ENTITY exchangeWebService.preference.warnForUpdates.label "Show warning when a new version is available. So you can easily install it.">
 
 <!ENTITY exchangeWebService.preference.loadbalancer.debug.caption "Loadbalancer:">
+<!ENTITY exchangeWebService.preference.loadbalancer.prefs.label "Loadbalancer:">
+<!ENTITY exchangeWebService.preference.loadbalancer.prefs.maxJobs.label "Maximum number of simultanious request to exchange server:">
+<!ENTITY exchangeWebService.preference.loadbalancer.prefs.sleepBetweenJobs.label "Minimum time, to wait, between request to exchange server:">
 

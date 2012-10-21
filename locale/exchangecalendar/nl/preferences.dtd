@@ -32,8 +32,11 @@
 <!ENTITY exchangeWebService.preference.others.prefs.retryCount.label "Maximum number of retries for exchange communication:">
 
 <!ENTITY exchangeWebService.preference.updateFunction.label "Addon update functie:">
-<!ENTITY exchangeWebService.preference.checkForUpdates.label "Automatisch controleer online for een nieuwe versie als Thunderbird start.">
+<!ENTITY exchangeWebService.preference.checkForUpdates.label "Controleer automatisch online voor een nieuwe versie als Thunderbird start.">
 <!ENTITY exchangeWebService.preference.warnForUpdates.label "Waarschuw als er een nieuwe versie beschikbaar is zodat je deze makelijk kan installeren.">
 
 <!ENTITY exchangeWebService.preference.loadbalancer.debug.caption "Loadbalancer:">
+<!ENTITY exchangeWebService.preference.loadbalancer.prefs.label "Loadbalancer:">
+<!ENTITY exchangeWebService.preference.loadbalancer.prefs.maxJobs.label "Maximaal aantal gelijktijdige verzoeken aan één exchange server:">
+<!ENTITY exchangeWebService.preference.loadbalancer.prefs.sleepBetweenJobs.label "Minimale tijd tussen verzoeken aan één exchange server:">
 

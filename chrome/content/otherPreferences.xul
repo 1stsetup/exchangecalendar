@@ -71,6 +71,14 @@
                         name="extensions.1st-setup.others.warnAboutNewAddOnVersion"
                         type="bool"/>
 
+            <preference id="extensions.1st-setup.exchangecalendar.loadbalancer.maxJobs"
+                        name="extensions.1st-setup.exchangecalendar.loadbalancer.maxJobs"
+                        type="int"/>
+
+            <preference id="extensions.1st-setup.exchangecalendar.loadbalancer.sleepBetweenJobs"
+                        name="extensions.1st-setup.exchangecalendar.loadbalancer.sleepBetweenJobs"
+                        type="int"/>
+
         </preferences>
 
         <groupbox id="exchangeWebService_others_prefs_groupbox">
@@ -81,6 +89,25 @@
 			<textbox id="exchangeWebService_preference_others_retryCount_textbox" 
 				preference="extensions.1st-setup.others.retryCount"
 				increment="1" min="0" max="9999" type="number"/>
+		    </hbox>
+            </vbox>
+	</groupbox>
+
+        <groupbox id="exchangeWebService_others_prefs_groupbox1">
+            <caption label="&exchangeWebService.preference.loadbalancer.prefs.label;"/>
+            <vbox>
+		    <hbox>
+			<label value="&exchangeWebService.preference.loadbalancer.prefs.maxJobs.label;"/>
+			<textbox id="exchangeWebService_preference_loadbalancer_prefs_maxJobs_textbox" 
+				preference="extensions.1st-setup.exchangecalendar.loadbalancer.maxJobs"
+				increment="1" min="0" max="9999" type="number"/>
+		    </hbox>
+		    <hbox>
+			<label value="&exchangeWebService.preference.loadbalancer.prefs.sleepBetweenJobs.label;"/>
+			<textbox id="exchangeWebService_preference_loadbalancer_prefs_sleepBetweenJobs_textbox" 
+				preference="extensions.1st-setup.exchangecalendar.loadbalancer.sleepBetweenJobs"
+				increment="1" min="0" max="9999" type="number"/>
+			<label value="(ms)"/>
 		    </hbox>
             </vbox>
 	</groupbox>
