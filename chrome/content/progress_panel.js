@@ -74,20 +74,26 @@ exchWebService.progressPanel = {
 
 		if (topic == "onExchangeProgressChange") {
 			if (this.firstLoad) {
-				var vbox=document.getElementById("exchWebServiceProgressvbox");
-				if (vbox) {
-dump("\n WHOEPI\n");
-					var counter=1;
-					while (counter <= 100) {
-						var progressLabel=document.createElement("label");
-						progressLabel.setAttribute("id","exchWebServiceProgress"+counter);
-						progressLabel.id = "exchWebServiceProgress"+counter;
-						vbox.appendChild(progressLabel);
-						counter++;
+				var tooltip=document.getElementById("exchWebServicesprogresstip");
+				if (tooltip) {
+				dump("\ntooltip:"+tooltip+"\n");
+					var vboxes = tooltip.getElementsByTagName('vbox');
+					if (vboxes.length > 0) {
+						var vbox = vboxes[0];
+	dump("\n WHOEPI\n");
+						var counter=1;
+						while (counter <= 100) {
+							var progressLabel=document.createElement("label");
+							progressLabel.setAttribute("id","exchWebServiceProgress"+counter);
+							progressLabel.id = "exchWebServiceProgress"+counter;
+							progressLabel.value = "__"+counter;
+							vbox.appendChild(progressLabel);
+							counter++;
+						}
+						document.getElementById("exchWebService-progress-panel").tooltip = tooltip.id;
+						this.firstLoad = false;
 					}
-					this.firstLoad = false;
 				}
-
 			}
 
 			exchWebService.progressPanel.changeQueue.push({ jobchange: Number(data), calendar: subject});

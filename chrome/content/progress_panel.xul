@@ -51,8 +51,7 @@
 	<statusbarpanel id="exchWebService-progress-panel"
 			insertbefore="unreadMessageCount,totalMessageCount"
 			oncommand="exchWebServices.progressPanel.openProgressDialog()"
-			hidden="true"
-			 tooltip="exchWebServicesprogresstip">
+			hidden="true">
 		<hbox id="exchWebService-progress-hbox">
 			<label id="exchWebService-progress-label"
 				onclick="exchWebServices.progressPanel.openProgressDialog()" value="Test"/>
