@@ -44,7 +44,6 @@ exchWebService.progressPanel = {
 	busy: false,
 	isLoaded: false,
 	imageCounter: 1,
-	firstLoad: true,
 	imageList: {    image1: "chrome://exchangecalendar/skin/arrow-circle.png",
 			image2: "chrome://exchangecalendar/skin/arrow-circle-315.png",
 			image3: "chrome://exchangecalendar/skin/arrow-circle-225.png",
@@ -73,29 +72,6 @@ exchWebService.progressPanel = {
 		}
 
 		if (topic == "onExchangeProgressChange") {
-			if (this.firstLoad) {
-				var tooltip=document.getElementById("exchWebServicesprogresstip");
-				if (tooltip) {
-				dump("\ntooltip:"+tooltip+"\n");
-					var vboxes = tooltip.getElementsByTagName('vbox');
-					if (vboxes.length > 0) {
-						var vbox = vboxes[0];
-	dump("\n WHOEPI\n");
-						var counter=1;
-						while (counter <= 100) {
-							var progressLabel=document.createElement("label");
-							progressLabel.setAttribute("id","exchWebServiceProgress"+counter);
-							progressLabel.id = "exchWebServiceProgress"+counter;
-							progressLabel.value = "__"+counter;
-							vbox.appendChild(progressLabel);
-							counter++;
-						}
-						document.getElementById("exchWebService-progress-panel").tooltip = tooltip.id;
-						this.firstLoad = false;
-					}
-				}
-			}
-
 			exchWebService.progressPanel.changeQueue.push({ jobchange: Number(data), calendar: subject});
 		}
 
@@ -148,15 +124,26 @@ exchWebService.progressPanel = {
 				}
 
 				// Update the tooltip
-				var counter = 1;
-				for (var calendarQueue in exchWebService.progressPanel.calendarQueues) {
-					document.getElementById("exchWebServiceProgress"+counter).value = exchWebService.progressPanel.calendarQueues[calendarQueue].name+": "+exchWebService.progressPanel.calendarQueues[calendarQueue].queueSize;
-					document.getElementById("exchWebServiceProgress"+counter).hidden = false;
-					counter = counter + 1;
-				}
-				while (counter <= 100) {
-					document.getElementById("exchWebServiceProgress"+counter).hidden = true;
-					counter = counter + 1;
+				var vbox = document.getElementById("exchWebServiceProgressvbox");
+				if (vbox) {
+					var counter = 1;
+					for (var calendarQueue in exchWebService.progressPanel.calendarQueues) {
+						if (document.getElementById("exchWebServiceProgress"+counter)) {
+							document.getElementById("exchWebServiceProgress"+counter).setAttribute("value", exchWebService.progressPanel.calendarQueues[calendarQueue].name+": "+exchWebService.progressPanel.calendarQueues[calendarQueue].queueSize);
+						}
+						else {
+							var progressLabel=document.createElement("label");
+							progressLabel.setAttribute("id","exchWebServiceProgress"+counter);
+							progressLabel.setAttribute("value", exchWebService.progressPanel.calendarQueues[calendarQueue].name+": "+exchWebService.progressPanel.calendarQueues[calendarQueue].queueSize);
+							vbox.appendChild(progressLabel);
+						}
+						document.getElementById("exchWebServiceProgress"+counter).hidden = false;
+						counter = counter + 1;
+					}
+					while (document.getElementById("exchWebServiceProgress"+counter)) {
+						document.getElementById("exchWebServiceProgress"+counter).hidden = true;
+						counter = counter + 1;
+					}
 				}
 			}
 
