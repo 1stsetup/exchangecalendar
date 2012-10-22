@@ -25,6 +25,8 @@
 interface mivExchangeLoadBalancer : nsISupports
 {
 
+  readonly attribute jsval jobList;
+	
   void addToQueue(in jsval aJob);
 
   void clearQueueForCalendar(in AUTF8String aServer, in jsval aCalendar);

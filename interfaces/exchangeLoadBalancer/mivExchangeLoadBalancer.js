@@ -138,6 +138,11 @@ mivExchangeLoadBalancer.prototype = {
 		}
 	},
 
+	get jobList()
+	{
+		return this.serverQueue;
+	},
+
 	processQueue: function _processQueue()
 	{
 		var jobCount = 0;
