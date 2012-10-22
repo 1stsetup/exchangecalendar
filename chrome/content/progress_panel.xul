@@ -43,6 +43,7 @@
 	<popupset>
 		<tooltip id="exchWebServicesprogresstip" orient="vertical">
 			<vbox id="exchWebServiceProgressvbox">
+				<label id="exchWebServices.dummy" value="dummy"/>
 			</vbox>
 		</tooltip>  
 	</popupset>
