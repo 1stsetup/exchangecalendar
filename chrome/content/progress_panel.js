@@ -49,10 +49,107 @@ exchWebService.progressPanel = {
 			image3: "chrome://exchangecalendar/skin/arrow-circle-225.png",
 			image4: "chrome://exchangecalendar/skin/arrow-circle-135.png"
 			},
+	loadBalancer : Cc["@1st-setup.nl/exchange/loadbalancer;1"]  
+	                          .getService(Ci.mivExchangeLoadBalancer),  
+	timerRunning: false,
 
 	notify: function _notify() 
 	{
 		if (exchWebService.progressPanel.isLoaded) {
+
+			var jobList = exchWebService.progressPanel.loadBalancer.jobList;
+			var running = 0;
+			var waiting = 0;
+
+			// Update the tooltip
+			var rows = document.getElementById("exchWebServices.progress.rows");
+			if (rows) {
+				var counter = 1;
+				var row;
+				var rowCount = 0;
+				for (var server in jobList) {
+					if (!document.getElementById("exchWebServiceProgress.progress.row"+rowCount)) {
+						row = document.createElement("row");
+						row.setAttribute("id","exchWebServiceProgress.progress.row"+rowCount);
+						rows.appendChild(row);
+					}
+					else {
+						row = document.getElementById("exchWebServiceProgress.progress.row"+rowCount);
+					}
+
+					var lineCount = 0;
+					var calLine;
+					if (!document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount)) {
+						var serverLine = document.createElement("label");
+						serverLine.setAttribute("id","exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount);
+						serverLine.setAttribute("value",server+":"+jobList[server].runningJobs.length);
+						row.appendChild(serverLine);
+
+						calLine = document.createElement("vbox");
+						calLine.setAttribute("id","exchWebServiceProgress.progress.row"+rowCount+".calcol.line"+lineCount);
+						row.appendChild(calLine);
+					}
+					else {
+						document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount).setAttribute("value",server+":"+jobList[server].runningJobs.length);
+						document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount).hidden = false;
+
+						calLine = document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".calcol.line"+lineCount);
+					}
+					running = running + jobList[server].runningJobs.length;
+
+
+					lineCount++;
+					for (var calendarid in jobList[server].jobs) {
+
+						var calendarName = "(unknown)";
+						if (jobList[server].jobs[calendarid].length > 0) {
+							calendarName = jobList[server].jobs[calendarid][0].calendar.name;
+						}
+
+						if (!document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount)) {
+							var line=document.createElement("label");
+							line.setAttribute("id","exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount);
+							line.setAttribute("value",calendarName+":"+jobList[server].jobs[calendarid].length);
+							calLine.appendChild(line);
+						}
+						else {
+							document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount).value = calendarName+":"+jobList[server].jobs[calendarid].length;
+							document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount).hidden = false;
+						}
+						waiting = waiting +jobList[server].jobs[calendarid].length; 
+						lineCount++;							
+					}
+					while (document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount)) {
+						document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount).hidden = true;
+						lineCount++;
+					}
+
+					rowCount++;
+				}
+
+			}
+
+			if ((waiting == 0) && (running == 0)) {
+				document.getElementById("exchWebService-progress-panel").hidden = true;
+				exchWebService.progressPanel.timer.cancel();
+				exchWebService.progressPanel.timerRunning = false;
+			}
+			else {
+				if (document.getElementById("exchWebService-progress-panel").hidden) {
+					if ((waiting > 1) || (running > 0)) {
+						document.getElementById("exchWebService-progress-panel").hidden = false;
+						exchWebService.progressPanel.timer.initWithCallback(exchWebService.progressPanel, 200, exchWebService.progressPanel.timer.TYPE_REPEATING_SLACK);
+					}
+				}
+				var tmpStr = running + "/" + waiting + " (r/w job";
+				if (waiting > 1) {
+					tmpStr = tmpStr + "s";
+				}
+				tmpStr = tmpStr + ")";
+				document.getElementById("exchWebService-progress-label").value = tmpStr;
+			}
+
+
 			exchWebService.progressPanel.imageCounter = Number(exchWebService.progressPanel.imageCounter) + Number(1);
 			if (exchWebService.progressPanel.imageCounter > 4) {
 				exchWebService.progressPanel.imageCounter = 1;
@@ -72,84 +169,11 @@ exchWebService.progressPanel = {
 		}
 
 		if (topic == "onExchangeProgressChange") {
-			exchWebService.progressPanel.changeQueue.push({ jobchange: Number(data), calendar: subject});
-		}
-
-		if (!exchWebService.progressPanel.busy) {
-			exchWebService.progressPanel.busy = true;
-			while (exchWebService.progressPanel.changeQueue.length > 0) {
-				if (exchWebService.progressPanel.changeQueue[0].jobchange != 0) {
-
-					exchWebService.progressPanel.queueSizeTotal = exchWebService.progressPanel.queueSizeTotal + exchWebService.progressPanel.changeQueue[0].jobchange;
-
-					if (!exchWebService.progressPanel.calendarQueues[exchWebService.progressPanel.changeQueue[0].calendar.id]) {
-						exchWebService.progressPanel.calendarQueues[exchWebService.progressPanel.changeQueue[0].calendar.id] = {};
-					}
-					exchWebService.progressPanel.calendarQueues[exchWebService.progressPanel.changeQueue[0].calendar.id].name = exchWebService.progressPanel.changeQueue[0].calendar.name;
-					if (exchWebService.progressPanel.calendarQueues[exchWebService.progressPanel.changeQueue[0].calendar.id].queueSize) {
-						exchWebService.progressPanel.calendarQueues[exchWebService.progressPanel.changeQueue[0].calendar.id].queueSize = exchWebService.progressPanel.calendarQueues[exchWebService.progressPanel.changeQueue[0].calendar.id].queueSize + exchWebService.progressPanel.changeQueue[0].jobchange; 
-					}
-					else {
-						exchWebService.progressPanel.calendarQueues[exchWebService.progressPanel.changeQueue[0].calendar.id].queueSize = exchWebService.progressPanel.changeQueue[0].jobchange; 
-					}
-
-					if (exchWebService.progressPanel.calendarQueues[exchWebService.progressPanel.changeQueue[0].calendar.id].queueSize == 0) {
-						if (document.getElementById(exchWebService.progressPanel.changeQueue[0].calendar.id)) {
-							document.getElementById("exchWebServiceProgressvbox").deleteChild(document.getElementById(exchWebService.progressPanel.changeQueue[0].calendar.id));
-						}
-						delete exchWebService.progressPanel.calendarQueues[exchWebService.progressPanel.changeQueue[0].calendar.id];
-					}
-
-				}
-				exchWebService.progressPanel.changeQueue.shift();
+			if (!exchWebService.progressPanel.timerRunning) {
+				exchWebService.progressPanel.timerRunning = true;
+				exchWebService.progressPanel.timer.initWithCallback(exchWebService.progressPanel, 200, exchWebService.progressPanel.timer.TYPE_REPEATING_SLACK);
 			}
-
-			if (exchWebService.progressPanel.isLoaded) {
-				if (exchWebService.progressPanel.queueSizeTotal == 0) {
-					document.getElementById("exchWebService-progress-panel").hidden = true;
-					exchWebService.progressPanel.timer.cancel();
-				}
-				else {
-					if (document.getElementById("exchWebService-progress-panel").hidden) {
-						if (exchWebService.progressPanel.queueSizeTotal > 1) {
-							document.getElementById("exchWebService-progress-panel").hidden = false;
-							exchWebService.progressPanel.timer.initWithCallback(exchWebService.progressPanel, 200, exchWebService.progressPanel.timer.TYPE_REPEATING_SLACK);
-						}
-					}
-					var tmpStr = exchWebService.progressPanel.queueSizeTotal + " job";
-					if (exchWebService.progressPanel.queueSizeTotal > 1) {
-						tmpStr = tmpStr + "s";
-					}
-					document.getElementById("exchWebService-progress-label").value = tmpStr;
-				}
-
-				// Update the tooltip
-				var vbox = document.getElementById("exchWebServiceProgressvbox");
-				if (vbox) {
-					var counter = 1;
-					for (var calendarQueue in exchWebService.progressPanel.calendarQueues) {
-						if (document.getElementById("exchWebServiceProgress"+counter)) {
-							document.getElementById("exchWebServiceProgress"+counter).setAttribute("value", exchWebService.progressPanel.calendarQueues[calendarQueue].name+": "+exchWebService.progressPanel.calendarQueues[calendarQueue].queueSize);
-						}
-						else {
-							var progressLabel=document.createElement("label");
-							progressLabel.setAttribute("id","exchWebServiceProgress"+counter);
-							progressLabel.setAttribute("value", exchWebService.progressPanel.calendarQueues[calendarQueue].name+": "+exchWebService.progressPanel.calendarQueues[calendarQueue].queueSize);
-							vbox.appendChild(progressLabel);
-						}
-						document.getElementById("exchWebServiceProgress"+counter).hidden = false;
-						counter = counter + 1;
-					}
-					while (document.getElementById("exchWebServiceProgress"+counter)) {
-						document.getElementById("exchWebServiceProgress"+counter).hidden = true;
-						counter = counter + 1;
-					}
-				}
-			}
-
-			exchWebService.progressPanel.busy = false;
 		}
-
         },
 
 	init: function _init()
@@ -162,6 +186,7 @@ exchWebService.progressPanel = {
 
 		exchWebService.progressPanel.timer = Cc["@mozilla.org/timer;1"]
 				.createInstance(Ci.nsITimer);
+		exchWebService.progressPanel.timerRunning = false;
 
 	},
 
