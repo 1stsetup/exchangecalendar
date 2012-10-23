@@ -101,10 +101,7 @@ exchWebService.progressPanel = {
 					lineCount++;
 					for (var calendarid in jobList[server].jobs) {
 
-						var calendarName = "(unknown)";
-						if (jobList[server].jobs[calendarid].length > 0) {
-							calendarName = jobList[server].jobs[calendarid][0].calendar.name;
-						}
+						var calendarName =  jobList[server].calendarNames[calendarid];
 
 						if (!document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount)) {
 							var line=document.createElement("label");
@@ -113,7 +110,7 @@ exchWebService.progressPanel = {
 							calLine.appendChild(line);
 						}
 						else {
-							document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount).value = calendarName+":"+jobList[server].jobs[calendarid].length;
+							document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount).setAttribute("value", calendarName+":"+jobList[server].jobs[calendarid].length);
 							document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount).hidden = false;
 						}
 						waiting = waiting +jobList[server].jobs[calendarid].length; 

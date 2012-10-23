@@ -105,12 +105,14 @@ mivExchangeLoadBalancer.prototype = {
 		if (!this.serverQueue[aJob.arguments.serverUrl]) {
 			this.serverQueue[aJob.arguments.serverUrl] = { currentCalendar: 0,
 									calendarList: new Array(),
+									calendarNames: {},
 									runningJobs: new Array(),
 									jobs: {} };
 		}
 
 		if (!this.serverQueue[aJob.arguments.serverUrl].jobs[aJob.calendar.id]) {
 			this.serverQueue[aJob.arguments.serverUrl].jobs[aJob.calendar.id] = new Array();
+			this.serverQueue[aJob.arguments.serverUrl].calendarNames[aJob.calendar.id] = aJob.calendar.name;
 		}
 
 		this.serverQueue[aJob.arguments.serverUrl].jobs[aJob.calendar.id].push(aJob);
