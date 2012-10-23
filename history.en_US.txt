@@ -1,7 +1,9 @@
 Version 3.1.2:
 - Fixed bug 175: After 10 calendars the jobs will hang up
+- Fixed bug 201: Number of Jobs displayed in status bar is negative
 - Added new loadbalancer for request to Exchange servers. You can now control the simultaneous request to the exchange server.
 - Created new interface for the global functions.
+- Added extra info to progress indicator. It now also uses the new loadbalancer for the statistics.
 
 Version 3.1.1:
 - Fixed bug 205 Extension overwrites URI for non-echange calendars
