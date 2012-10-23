@@ -139,7 +139,7 @@ exchWebService.progressPanel = {
 					}
 				}
 				var tmpStr = running + "/" + waiting + " (r/w job";
-				if (waiting > 1) {
+				if ((waiting+running) > 1) {
 					tmpStr = tmpStr + "s";
 				}
 				tmpStr = tmpStr + ")";
