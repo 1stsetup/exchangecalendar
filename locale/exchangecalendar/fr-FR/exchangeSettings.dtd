@@ -9,7 +9,7 @@
 
 <!ENTITY label.poll.inbox "Interrogation de la boite pour invitations, modifications et annulations.">
 <!ENTITY label.poll.inbox.interval "Frequence d'interrogation de la boite en secondes:">
-<!ENTITY label.poll.calendar.interval "Frequence d'interrogation le calendrier en secondes:">
+<!ENTITY label.poll.calendar.interval "Frequence d'interrogation du calendrier en secondes:">
 
 <!ENTITY label.nomeetingrequestsettings "Vous ne pouvez envoyer d'invitation car vous n'avez pas selectionné la bonne boite aux lettres">
 
