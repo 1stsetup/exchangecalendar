@@ -1,5 +1,5 @@
 <!ENTITY label.acceptbutton "Sauvegarder">
-<!ENTITY label.cancelbutton "Annular">
+<!ENTITY label.cancelbutton "Annuler">
 
 <!ENTITY ecsettings.tab.adsettings "Exchange/Windows AD">
 <!ENTITY ecsettings.tab.meetingrequestsettings "Réglages de rendez vous">
