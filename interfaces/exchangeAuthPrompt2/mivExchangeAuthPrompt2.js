@@ -35,6 +35,8 @@ function mivExchangeAuthPrompt2() {
 	this.passwordCache = {};
 	this.userCancel = {};
 
+	this.timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
+
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
 }
@@ -86,8 +88,8 @@ mivExchangeAuthPrompt2.prototype = {
 
 		if ((!password) || (password == "")) {
 			this.logInfo("asyncPromptAuthNotifyCallback: password is not specified and not found in passwordManager. Going to search cache.");
-			if (this.passwordCache[username+"|"+aURL+"|"+realm)) {
-				password = this.passwordCache[username+"|"+aURL+"|"+realm);
+			if (this.passwordCache[username+"|"+aURL+"|"+realm]) {
+				password = this.passwordCache[username+"|"+aURL+"|"+realm];
 			}
 		}
 		this.logInfo("asyncPromptAuthNotifyCallback: password(3)="+password);
@@ -101,7 +103,7 @@ mivExchangeAuthPrompt2.prototype = {
 				if (answer.save) {
 					this.passwordManagerSave(username, password, aURL, realm);
 				}
-				this.passwordCache[username+"|"+aURL+"|"+realm) = password;
+				this.passwordCache[username+"|"+aURL+"|"+realm] = password;
 			}
 			else {
 				// user canceled the entering of a password. 
@@ -134,8 +136,8 @@ mivExchangeAuthPrompt2.prototype = {
 
 		this.prompt[aURL].showing = true;
 
-		if (!this.queue[aURL].length == 0) {
-			this.logInfo("asyncPromptAuthNotifyCallback: This is strange, We do no request in queue for URL '"+aURL+"'.");
+		if (this.queue[aURL].length == 0) {
+			this.logInfo("asyncPromptAuthNotifyCallback: This is strange, We do not have a request in queue for URL '"+aURL+"'.");
 			return;
 		}
 
@@ -155,14 +157,15 @@ mivExchangeAuthPrompt2.prototype = {
 
 			var error = false;
 
-			if (this.userCancel[URL].canceled) {
+			if (this.userCancel[aURL].canceled) {
 				error = true;
 				this.logInfo("asyncPromptAuthNotifyCallback: User canceled entering a password in the past so we going to cancel this request also.");
 				aCallback.onAuthCancelled(aContext, true);
 			}
 			else {
+				this.logInfo("asyncPromptAuthNotifyCallback: Trying to detect username.");
 				username = aChannel.URI.username;
-				if (username)
+				if (username) {
 					username = this.globalFunctions.trim(decodeURI(aChannel.URI.username));
 				}
 
@@ -185,6 +188,9 @@ mivExchangeAuthPrompt2.prototype = {
 							this.logInfo("asyncPromptAuthNotifyCallback: WWW-Authenticate:"+index);
 							if (index.indexOf("realm=") > -1) {
 								realm = index.substr(index.indexOf("realm=")+6);
+								while (realm.indexOf('"') > -1) {
+									realm = realm.replace('"', "");
+								}
 								this.logInfo("asyncPromptAuthNotifyCallback: Found a realm going to use it. realm="+realm);
 							}
 						}
@@ -270,13 +276,13 @@ mivExchangeAuthPrompt2.prototype = {
 				this.logInfo("asyncPromptAuth: NO Authorization in request header!?");
 		}
 
-		var URL = decodeURI(aChannel.URI.scheme+aChannel.URI.hostPort+aChannel.URI.path);
+		var URL = decodeURI(aChannel.URI.scheme+"://"+aChannel.URI.hostPort+aChannel.URI.path);
 		this.logInfo("asyncPromptAuth: aChannel.URL="+this.URL+", username="+aChannel.URI.username+", password="+aChannel.URI.password);
 
 		var uuid = this.globalFunctions.getUUID();
 
-		if (!this.prompt[URL]) this.prompt[URL].showing = false;
-		if (!this.userCancel[URL]) this.userCancel[URL].canceled = false;
+		if (!this.prompt[URL]) this.prompt[URL] = { showing: false };
+		if (!this.userCancel[URL]) this.userCancel[URL] = { canceled: false };
 
 		if (!this.queue[URL]) this.queue[URL] = new Array();
 		this.queue[URL].push( {
@@ -478,17 +484,16 @@ mivExchangeAuthPrompt2.prototype = {
 		var prompter = watcher.getNewPrompter(null);
 
 	// Only show the save password box if we are supposed to.
-		var savepassword = exchWebService.commonFunctions.getString("passwordmgr", "rememberPassword", null, "passwordmgr");
+		var savepassword = this.globalFunctions.getString("passwordmgr", "rememberPassword", null, "passwordmgr");
 
 		var aTitle = "Microsoft Exchange EWS: Password request.";
 
-		var aText = exchWebService.commonFunctions.getString("commonDialogs", "EnterPasswordFor", [aUsername, aURL], "global");
+		var aText = this.globalFunctions.getString("commonDialogs", "EnterPasswordFor", [aUsername, aURL], "global");
 
 		var aPassword = { value: null };
 		var aSavePassword = { value: null };
 
-		var result = prompter.promptPassword( null,
-						aTitle,
+		var result = prompter.promptPassword( aTitle,
 						aText,
 						aPassword,
 						savepassword,
