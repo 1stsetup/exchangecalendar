@@ -1,0 +1,3 @@
+interfaces mivExchangeAuthPromptProvider.xpt
+component {1bf6e930-20fc-11e2-81c1-0800200c9a66} mivExchangeAuthPromptProvider.js
+contract @1st-setup.nl/exchange/authpromptprovider;1 {1bf6e930-20fc-11e2-81c1-0800200c9a66}

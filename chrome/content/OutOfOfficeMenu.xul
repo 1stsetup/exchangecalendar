@@ -49,5 +49,7 @@
 	<menupopup id="taskPopup">
 		<menuitem id="exchangecalendar-tools-OutOfOfficeMenu" label="Out of Office..."
 			oncommand="exchWebService.outOfOfficeMenu.openOutofOfficeDialog();" hidden="true"/>
+		<menuitem id="exchangecalendar-tools-aboutMemory" label="about:memory"
+			oncommand="exchWebService.aboutMemory.show();" hidden="false"/>
 	</menupopup>
 </overlay>

@@ -237,9 +237,9 @@ ExchangeRequest.prototype = {
 		// remove domain part in xmlhttprequest.open call
 		if (this.debug) this.logInfo(": 1 ExchangeRequest.sendRequest : user="+this.mArgument.user+", url="+this.currentUrl);
 
-		if ((this.prePassword == "") && (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl])) {
+/*		if ((this.prePassword == "") && (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl])) {
 			this.prePassword = exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].prePassword;
-		}
+		}*/
 
 		this._notificationCallbacks = new ecnsIAuthPrompt2(this);
 
@@ -248,7 +248,9 @@ ExchangeRequest.prototype = {
 				if (this.debug) this.logInfo("We have a prePassword: *******");
 			}
 
-			if (this.prePassword == "") {
+			this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user);
+
+/*			if (this.prePassword == "") {
 				this.xmlReq.open("POST", this.currentUrl, true);
 			}
 			else {
@@ -268,7 +270,7 @@ ExchangeRequest.prototype = {
 			}
 			else {
 				if (this.debug) this.logInfo("We leave the basic auth details out of the request because we are trying for Kerberos Authentication.");
-			}
+			}*/
 
 		}
 		catch(err) {
@@ -912,7 +914,8 @@ ecnsIAuthPrompt2.prototype = {
 	{
 		if ((Ci.nsIAuthPrompt2) && (iid.equals(Ci.nsIAuthPrompt2))) {    // id == 651395eb-8612-4876-8ac0-a88d4dce9e1e
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIAuthPrompt2");
-			return this;
+			return 	Cc["@1st-setup.nl/exchange/authprompt2;1"].getService();
+//			return this;
 		} 
 
 		if ((Ci.nsIBadCertListener2) && (iid.equals(Ci.nsIBadCertListener2))) {
@@ -939,7 +942,8 @@ ecnsIAuthPrompt2.prototype = {
 
 		if ((Ci.nsIAuthPromptProvider) && (iid.equals(Ci.nsIAuthPromptProvider))) {   // iid == bd9dc0fa-68ce-47d0-8859-6418c2ae8576
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIAuthPromptProvider");
-        		return this;
+			return 	Cc["@1st-setup.nl/exchange/authpromptprovider;1"].getService();
+//        		return this;
 		} 
 
 		if ((Ci.nsIChannelEventSink) && (iid.equals(Ci.nsIChannelEventSink))) {   // iid == a430d870-df77-4502-9570-d46a8de33154

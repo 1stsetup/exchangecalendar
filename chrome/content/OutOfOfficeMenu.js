@@ -96,3 +96,11 @@ exchWebService.outOfOfficeMenu = {
 
 window.addEventListener("load", exchWebService.outOfOfficeMenu.onLoad, true);
 
+exchWebService.aboutMemory = {
+
+	show: function _show()
+	{
+		openContentTab("about:memory", "tab", "www.1st-setup.nl");
+	},
+}
+
