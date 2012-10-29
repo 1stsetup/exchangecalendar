@@ -221,6 +221,15 @@ ExchangeRequest.prototype = {
 
 		this.currentUrl = aUrl;
 
+		var myAuthPrompt2 = Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
+		if (myAuthPrompt2.getUserCanceled(this.currentUrl)) {
+			
+			this.fail(this.ER_ERROR_USER_ABORT_AUTHENTICATION, "User canceled providing a valid password for url="+this.currentUrl+". Aborting this request.");
+			return;
+		}
+
+		var password = myAuthPrompt2.getPassword(null, this.mArgument.user, this.currentUrl);
+
 		this.xmlReq = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance();
 
 		this.mXmlReq = this.xmlReq;
@@ -239,18 +248,17 @@ ExchangeRequest.prototype = {
 		// remove domain part in xmlhttprequest.open call
 		if (this.debug) this.logInfo(": 1 ExchangeRequest.sendRequest : user="+this.mArgument.user+", url="+this.currentUrl);
 
-/*		if ((this.prePassword == "") && (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl])) {
-			this.prePassword = exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].prePassword;
-		}*/
-
 		this._notificationCallbacks = new ecnsIAuthPrompt2(this);
 
 		try {
-			if (this.prePassword != "") {
-				if (this.debug) this.logInfo("We have a prePassword: *******");
-			}
 
-			this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user);
+			if (password) {
+				if (this.debug) this.logInfo("We have a prePassword: *******");
+				this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user, password);
+			}
+			else {
+				this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user);
+			}
 
 /*			if (this.prePassword == "") {
 				this.xmlReq.open("POST", this.currentUrl, true);
@@ -276,6 +284,7 @@ ExchangeRequest.prototype = {
 
 		}
 		catch(err) {
+			dump("\n ERROR sendrequest:"+err+"\n");
 			if (this.debug) this.logInfo(": ERROR on ExchangeRequest.sendRequest to URL:"+this.currentUrl+". err:"+err); 
 
 			if (this.tryNextURL()) {
@@ -916,7 +925,7 @@ ecnsIAuthPrompt2.prototype = {
 	{
 		if ((Ci.nsIAuthPrompt2) && (iid.equals(Ci.nsIAuthPrompt2))) {    // id == 651395eb-8612-4876-8ac0-a88d4dce9e1e
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIAuthPrompt2");
-			return 	Cc["@1st-setup.nl/exchange/authprompt2;1"].getService();
+			return 	Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
 //			return this;
 		} 
 
@@ -1023,6 +1032,9 @@ ecnsIAuthPrompt2.prototype = {
 	// nsIProgressEventSink
 	onProgress: function _nsIProgressEventSink_onProgress(aRequest, aContext, aProgress, aProgressMax)
 	{
+		if (aRequest  instanceof Ci.nsIChannel) {
+			this.logInfo("  --- ecnsIAuthPrompt2.onProgress: this is a nsIChannel");
+		}
 		this.logInfo("  --- ecnsIAuthPrompt2.onProgress:"+aProgress+" of "+aProgressMax);
 	},
 
@@ -1038,7 +1050,14 @@ ecnsIAuthPrompt2.prototype = {
 		case 0x804b0004: this.logInfo("  --- ecnsIAuthPrompt2.onStatus: STATUS_CONNECTED_TO of "+aStatusArg); break;
 		case 0x804b0005: this.logInfo("  --- ecnsIAuthPrompt2.onStatus: STATUS_SENDING_TO of "+aStatusArg); break;
 		case 0x804b000a: this.logInfo("  --- ecnsIAuthPrompt2.onStatus: STATUS_WAITING_FOR of "+aStatusArg); break;
-		case 0x804b0006: this.logInfo("  --- ecnsIAuthPrompt2.onStatus: STATUS_RECEIVING_FROM of "+aStatusArg); break;
+		case 0x804b0006: 
+			this.logInfo("  --- ecnsIAuthPrompt2.onStatus: STATUS_RECEIVING_FROM of "+aStatusArg); 
+			if (aRequest instanceof Ci.nsIChannel) {
+				this.logInfo("  --- ecnsIAuthPrompt2.onStatus: this is a nsIChannel");
+				var myAuthPrompt2 = Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
+				myAuthPrompt2.reportOk(aRequest, aContext);
+			}
+			break;
 		default:
 			this.logInfo("  --- ecnsIAuthPrompt2.onStatus:"+aStatus+" of "+aStatusArg);
 		}

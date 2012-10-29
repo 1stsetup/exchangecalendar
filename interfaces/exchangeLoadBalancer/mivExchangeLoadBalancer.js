@@ -87,6 +87,7 @@ mivExchangeLoadBalancer.prototype = {
 	// Internal methods.
 	get maxJobs()
 	{
+		return 1;
 		return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"maxJobs", 3, true);
 	},
 
@@ -257,7 +258,7 @@ mivExchangeLoadBalancer.prototype = {
 	{
 		if (this.serverQueue[aServer]) {
 			if (this.serverQueue[aServer].jobs[aCalendar.id]) {
-				this.observerService.notifyObservers(job.calendar, "onExchangeProgressChange", -1*this.serverQueue[aServer].jobs[aCalendar.id].length); 
+				this.observerService.notifyObservers(aCalendar, "onExchangeProgressChange", -1*this.serverQueue[aServer].jobs[aCalendar.id].length); 
 				this.serverQueue[aServer].jobs[aCalendar.id] = new Array();
 			}			
 		}
@@ -266,11 +267,11 @@ mivExchangeLoadBalancer.prototype = {
 	stopRunningJobsForCalendar: function _stopRunningJobsForCalendar(aServer, aCalendar)
 	{
 		if (this.serverQueue[aServer]) {
-			for (var index in this.serverQueue[server].runningJobs) {
+			for (var index in this.serverQueue[aServer].runningJobs) {
 				// only stop for current calendar
 				try {
-					if ((this.serverQueue[server].runningJobs[index].exchangeRequest.isRunning) && (this.serverQueue[server].runningJobs[index].calendar.id == aCalendar.id)) {
-						this.serverQueue[server].runningJobs[index].exchangeRequest.stopRequest();
+					if ((this.serverQueue[aServer].runningJobs[index].exchangeRequest.isRunning) && (this.serverQueue[aServer].runningJobs[index].calendar.id == aCalendar.id)) {
+						this.serverQueue[aServer].runningJobs[index].exchangeRequest.stopRequest();
 					}
 				}
 				catch(err) {

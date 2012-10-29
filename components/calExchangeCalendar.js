@@ -3589,10 +3589,12 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	{
 		if (this.debug) this.logInfo(" resetCalendar 1a");
 
-		this.loadBalancer.stopRunningJobsForCalendar(this.serverUrl, this);
+		try {
 
 		// Clean the job queue.
 		this.loadBalancer.clearQueueForCalendar(this.serverUrl, this);
+		this.loadBalancer.stopRunningJobsForCalendar(this.serverUrl, this);
+
 		this.offlineQueue = [];
 
 		this.doReset = true;
@@ -3609,6 +3611,11 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		if (this.calendarPoller) {
 			this.calendarPoller.cancel();
 		}
+
+dump("\resetCalendar\n");
+			var myAuthPrompt2 = Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
+			myAuthPrompt2.removeUserCanceled(this.serverUrl);
+		}catch(err) { dump("\n EROROR:"+err+"\n"); }
 
 		if (this.getProperty("disabled")) {
 			// Remove all items in cache from calendar.
@@ -3638,10 +3645,11 @@ if (this.debug) this.logInfo("singleModified doNotify");
 
 		this.doReset = false;
 
-		this.loadBalancer.stopRunningJobsForCalendar(this.serverUrl, this);
-
 		// Clean the job queue again.
 		this.loadBalancer.clearQueueForCalendar(this.serverUrl, this);
+
+		this.loadBalancer.stopRunningJobsForCalendar(this.serverUrl, this);
+
 		this.offlineQueue = [];
 
 		// Now we can initialize.
@@ -3702,6 +3710,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		//this.mUseOfflineCache = null;
 
 		this.firstrun = true;
+
 		this.performStartup();
 
 /*		this.checkFolderPath();

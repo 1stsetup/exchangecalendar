@@ -25,5 +25,13 @@
 interface mivExchangeAuthPrompt2 : nsIAuthPrompt2
 {
 
-	
+	AUTF8String getPassword(in jsval aChannel, in AUTF8String username, in AUTF8String aURL, [optional] in AUTF8String realm, [optional] in boolean alwaysGetPassword);
+
+	void reportOk(in jsval aChannel, in jsval aContext);
+
+	boolean getUserCanceled(in AUTF8String aURL);
+
+	void removeUserCanceled(in AUTF8String aURL);
+
+
 };
