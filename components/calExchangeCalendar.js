@@ -2498,12 +2498,12 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		//if (this.debug) this.logInfo("Refresh. We start a sync.");
 		var self = this;
 
-		this.getSyncState();
-
 		if (this.OnlyShowAvailability) {
 			this.getOnlyFreeBusyInformation(this.lastValidRangeStart, this.lastValidRangeEnd);
 		}		
-
+		else {
+			this.getSyncState();
+		}
 
 		return;
 
@@ -7070,7 +7070,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 	convertExchangeToCal: function _convertExchangeToCal(aExchangeItem, erGetItemsRequest, doNotify)
 	{
-		if (this.debug) this.logInfo("convertExchangeToCal:"+aExchangeItem);
+		if (this.debug) this.logInfo("convertExchangeToCal:"+aExchangeItem, 2);
 		if (!aExchangeItem) { return; }
 
 		var switchValue = aExchangeItem.getTagValue("t:ItemClass", "");
@@ -7080,7 +7080,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 		if (switchValue.indexOf("IPM.Appointment") == 0) {
 
-			if (this.debug) this.logInfo("INFO: convertExchangeToCal: ItemClass = '"+switchValue+"'");
+			if (this.debug) this.logInfo("INFO: convertExchangeToCal: ItemClass = '"+switchValue+"'", 2);
 			switchValue = "IPM.Appointment";
 		}
 

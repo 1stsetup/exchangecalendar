@@ -87,13 +87,14 @@ mivExchangeLoadBalancer.prototype = {
 	// Internal methods.
 	get maxJobs()
 	{
-		return 1;
-		return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"maxJobs", 3, true);
+		return 1;  // Currently going for default one at a time to the same server because the xmlhttprequest cannot handle more simultaniously.
+		//return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"maxJobs", 3, true);
 	},
 
 	get sleepBetweenJobs()
 	{
-		return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"sleepBetweenJobs", 2, true);
+		return 0;  // Currently going for default zero because it works.
+		//return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"sleepBetweenJobs", 2, true);
 	},
 
 	notify: function _notify() {
@@ -132,7 +133,7 @@ mivExchangeLoadBalancer.prototype = {
 			this.serverQueue[aJob.arguments.serverUrl].calendarList.push(aJob.calendar.id);
 		}
 
-		this.observerService.notifyObservers(aJob.calendar, "onExchangeProgressChange", "1"); 
+		this.observerService.notifyObservers(aJob.calendar, "onExchangeProgressChange", null); 
 
 		if (!this.timer) {
 			this.logInfo("Start timer");
@@ -198,7 +199,7 @@ mivExchangeLoadBalancer.prototype = {
 						this.serverQueue[server].currentCalendar = 0;
 					}
 
-					this.observerService.notifyObservers(job.calendar, "onExchangeProgressChange", "-1"); 
+					this.observerService.notifyObservers(job.calendar, "onExchangeProgressChange", null); 
 	 
 					job.arguments["cbOk"] = job.cbOk;
 					job.arguments["cbError"] = job.cbError;
@@ -258,7 +259,7 @@ mivExchangeLoadBalancer.prototype = {
 	{
 		if (this.serverQueue[aServer]) {
 			if (this.serverQueue[aServer].jobs[aCalendar.id]) {
-				this.observerService.notifyObservers(aCalendar, "onExchangeProgressChange", -1*this.serverQueue[aServer].jobs[aCalendar.id].length); 
+				this.observerService.notifyObservers(aCalendar, "onExchangeProgressChange", null); 
 				this.serverQueue[aServer].jobs[aCalendar.id] = new Array();
 			}			
 		}

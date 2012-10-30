@@ -45,8 +45,6 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 
-//Cu.import("resource://interfaces/exchangeAuthPrompt2/mivExchangeAuthPrompt2.js");
-
 var EXPORTED_SYMBOLS = ["ExchangeRequest", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponseStr1", "nsAutodiscoverResponseStr2", "xml_tag", "getEWSServerVersion", "setEWSServerVersion"];
 
 var xml_tag = '<?xml version="1.0" encoding="utf-8"?>\n';
@@ -228,7 +226,14 @@ ExchangeRequest.prototype = {
 			return;
 		}
 
-		var password = myAuthPrompt2.getPassword(null, this.mArgument.user, this.currentUrl);
+		try {
+			var password = myAuthPrompt2.getPassword(null, this.mArgument.user, this.currentUrl);
+		}
+		catch(err) {
+			this.logInfo(err);
+			this.fail(this.ER_ERROR_USER_ABORT_AUTHENTICATION, "User canceled providing a valid password for url="+this.currentUrl+". Aborting this request.");
+			return;
+		}
 
 		this.xmlReq = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance();
 
@@ -642,24 +647,6 @@ ExchangeRequest.prototype = {
 		return false;
 	},
 
-/*	retry: function() 
-	{
-                let xmlReq = this.mXmlReq;
-		xmlReq.abort();
-
-		// Loop through the urllist
-		try {
-			this.sendRequest(this.mData);
-			return true;
-		}
-		catch(err) {
-		}
-
-		this.fail(this.ER_ERROR_INVALID_URL, "No url to send request to. (retry)");
-		xmlReq.abort();
-		return true;
-	},*/
-
 	getPrePassword: function _getPrePassword(aCurrentUrl, aUser)
 	{
 		var tmpURL = aCurrentUrl;
@@ -671,19 +658,6 @@ ExchangeRequest.prototype = {
 			tmpURL = tmpURL.substr(0, tmpColon+3) + aUser + "@" + tmpURL.substr(tmpColon+3);
 		}
 		return this._notificationCallbacks.getPrePassword(aUser, tmpURL);
-	},
-
-	retryForBasicAuth: function _retryForBasicAuth()
-	{
-		if (this.debug) this.logInfo("exchangeRequest.retryForBasicAuth: We will try Basic Auth Authentication.");
-		this.kerberos = true;
-
-                let xmlReq = this.mXmlReq;
-		//if (xmlReq.readyState != 4) {
-			xmlReq.abort();
-		//}
-
-		this.sendRequest(this.mData, this.currentUrl);
 	},
 
         isHTTPError: function()
@@ -734,11 +708,6 @@ ExchangeRequest.prototype = {
 				case 499: errMsg = "Client closed request"; break;
 				}
 
-			/*	if ((xmlReq.status == 401) && (!this.kerberos)) {
-					this.retryForBasicAuth();
-					return true;
-				}*/
-
                                 if (this.debug) this.logInfo(": isConnError req.status="+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText, 2);
 
 				if (this.tryNextURL()) {
@@ -760,16 +729,6 @@ ExchangeRequest.prototype = {
 						if	((!exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl]) || (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount < 3)) {
 							if (this.debug) this.logInfo("isHTTPError: We are going to ask the user or password store for a password and try again.");
 							this.prePassword = this.getPrePassword(this.currentUrl, this.mArgument.user);
-
-/*							var tmpURL = this.currentUrl;
-							if (this.mArgument.user != "") {
-								// We insert the username into the URL the prePassword needs it.
-								// https://webmail.example.com/ews/exchange.asmx
-
-								var tmpColon = tmpURL.indexOf("://");
-								tmpURL = tmpURL.substr(0, tmpColon+3) + this.mArgument.user + "@" + tmpURL.substr(tmpColon+3);
-							}
-							this.prePassword = this._notificationCallbacks.getPrePassword(this.mArgument.user, tmpURL);*/
 
 							if (this.prePassword) {
 
@@ -926,7 +885,6 @@ ecnsIAuthPrompt2.prototype = {
 		if ((Ci.nsIAuthPrompt2) && (iid.equals(Ci.nsIAuthPrompt2))) {    // id == 651395eb-8612-4876-8ac0-a88d4dce9e1e
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIAuthPrompt2");
 			return 	Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
-//			return this;
 		} 
 
 		if ((Ci.nsIBadCertListener2) && (iid.equals(Ci.nsIBadCertListener2))) {
@@ -954,7 +912,6 @@ ecnsIAuthPrompt2.prototype = {
 		if ((Ci.nsIAuthPromptProvider) && (iid.equals(Ci.nsIAuthPromptProvider))) {   // iid == bd9dc0fa-68ce-47d0-8859-6418c2ae8576
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIAuthPromptProvider");
 			return 	Cc["@1st-setup.nl/exchange/authpromptprovider;1"].getService();
-//        		return this;
 		} 
 
 		if ((Ci.nsIChannelEventSink) && (iid.equals(Ci.nsIChannelEventSink))) {   // iid == a430d870-df77-4502-9570-d46a8de33154
@@ -1050,14 +1007,7 @@ ecnsIAuthPrompt2.prototype = {
 		case 0x804b0004: this.logInfo("  --- ecnsIAuthPrompt2.onStatus: STATUS_CONNECTED_TO of "+aStatusArg); break;
 		case 0x804b0005: this.logInfo("  --- ecnsIAuthPrompt2.onStatus: STATUS_SENDING_TO of "+aStatusArg); break;
 		case 0x804b000a: this.logInfo("  --- ecnsIAuthPrompt2.onStatus: STATUS_WAITING_FOR of "+aStatusArg); break;
-		case 0x804b0006: 
-			this.logInfo("  --- ecnsIAuthPrompt2.onStatus: STATUS_RECEIVING_FROM of "+aStatusArg); 
-			if (aRequest instanceof Ci.nsIChannel) {
-				this.logInfo("  --- ecnsIAuthPrompt2.onStatus: this is a nsIChannel");
-				var myAuthPrompt2 = Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
-				myAuthPrompt2.reportOk(aRequest, aContext);
-			}
-			break;
+		case 0x804b0006: this.logInfo("  --- ecnsIAuthPrompt2.onStatus: STATUS_RECEIVING_FROM of "+aStatusArg); break;
 		default:
 			this.logInfo("  --- ecnsIAuthPrompt2.onStatus:"+aStatus+" of "+aStatusArg);
 		}
@@ -1086,30 +1036,6 @@ ecnsIAuthPrompt2.prototype = {
 		return "ecnsIAuthPrompt2.tooltipText";
 	},
 	
-	// nsIAuthPromptProvider
-	//void getAuthPrompt(in PRUint32 aPromptReason, in nsIIDRef iid, [iid_is(iid),retval] out nsQIResult result);
-	getAuthPrompt: function _nsIAuthPromptProvider_getAuthPrompt(aPromptReason, iid)
-	{
-		this.logInfo("  --- ecnsIAuthPrompt2.getAuthPrompt:aPromptReason:"+aPromptReason+", iid:"+iid);
-		if (iid.equals(Ci.nsIAuthPrompt2)) {    // id == 651395eb-8612-4876-8ac0-a88d4dce9e1e
-			this.logInfo("  --- ecnsIAuthPrompt2.getAuthPrompt: iid=nsIAuthPrompt2");
-			return this;
-		} 
-
-		this.logInfo("  --- ecnsIAuthPrompt2.getAuthPrompt:aPromptReason:"+aPromptReason+", iid:"+iid);
-		exchWebService.commonFunctions.LOG("  >>>>>>>>>>> MAIL THIS LINE TO exchangecalendar@extensions.1st-setup.nl: ecnsIAuthPrompt2.getAuthPrompt("+iid+")");
-  
-		return null;
-	},
-
-	//void cancel(in nsresult aReason);
-	cancel: function _cancel(aReason)
-	{
-		if (this.callback) {
-			this.callback.onAuthCancelled(this.context, false);
-		}
-	},
-
 	// nsIChannelEventSink
 	//void asyncOnChannelRedirect(in nsIChannel oldChannel, 
         //                        in nsIChannel newChannel,
@@ -1144,262 +1070,12 @@ ecnsIAuthPrompt2.prototype = {
 		this.logInfo("  --- nsIRedirectResultListener.nsIRedirectResultListener :proceeding:"+proceeding);
 	},
 
-	notify: function _nsIAuthPrompt2_timercb() {
-		if (this.callback) {
-			var password = this.getPassword();
-			if (password) {
-				if (!(this.authInfo.flags & Ci.nsIAuthInformation.ONLY_PASSWORD)) {
-					if (this.authInfo.flags & Ci.nsIAuthInformation.NEED_DOMAIN) {
-						if (this.username.indexOf("\\") > -1) {
-							this.authInfo.domain = this.username.substr(0,this.username.indexOf("\\"));
-							this.authInfo.username = this.username.substr(this.username.indexOf("\\")+1);
-						}
-						else {
-							this.authInfo.domain = "";
-							this.authInfo.username = this.username;
-						}
-					}
-					else {
-						this.authInfo.username = this.username;
-					}
-				}
-				this.authInfo.password = password;
-				//this.logInfo(" USING password for connection:["+password+"]");
-				try {
-					this.callback.onAuthAvailable(this.context, this.authInfo);
-				}
-				catch(err) {
-					this.logInfo("ecnsIAuthPrompt2.notify ERROR:"+err);
-					this.callback.onAuthCancelled(this.context, false);
-				}
-			}
-			else {
-				this.callback.onAuthCancelled(this.context, true);
-				this.exchangeRequest.onUserStop(this.exchangeRequest.ER_ERROR_USER_ABORT_AUTHENTICATION, "User canceled entering authentication details.");
-			}
-		}
-	},
-
-	cleanURL: function _cleanURL(aURL)
-	{
-		var result = aURL;
-
-		// Clean the URL as it might contain the password for the user
-		// https://domain\username:password@webmail.exmaple.com/ews/exchange.asmx
-
-		// Get second colon if it exists
-		var tmpColon = -1;
-		var firstColon = false;
-		for (var counter=0; counter < result.length; counter++) {
-			if (result.substr(counter, 1) == ":") {
-				if (!firstColon) {
-					firstColon = true;
-				}
-				else {
-					tmpColon = counter;
-					break;
-				}
-			}
-		}
-		var tmpAmpersand = this.URL.indexOf("@");
-		if ((tmpAmpersand > tmpColon) && (tmpColon > -1)) {
-			// We have a password remove it.
-			result = result.substr(0, tmpColon) + result.substr(tmpAmpersand);
-		}
-
-		return result;
-	},
-
-	// nsIAuthPrompt2
-	//nsICancelable asyncPromptAuth(in nsIChannel aChannel, in nsIAuthPromptCallback aCallback, in nsISupports aContext, in PRUint32 level, in nsIAuthInformation authInfo);
-	asyncPromptAuth: function _asyncPromptAuth(aChannel, aCallback, aContext, level, authInfo)
-	{
-		var header = this.exchangeRequest.mXmlReq.getAllResponseHeaders();
-		this.logInfo("asyncPromptAuth: readyState="+this.exchangeRequest.mXmlReq.readyState);
-		this.logInfo("asyncPromptAuth: getAllResponseHeaders="+header);
-		this.logInfo("asyncPromptAuth: level="+level);
-
-		var channel = aChannel.QueryInterface(Components.interfaces.nsIHttpChannel);
-		this.logInfo("asyncPromptAuth: channel.responseStatus="+channel.responseStatus);
-
-
-		try {
-			var offeredAuthentications = channel.getRequestHeader("Authorization");
-			this.logInfo("asyncPromptAuth: Authorization:"+offeredAuthentications);
-		}
-		catch(err) {
-				this.logInfo("asyncPromptAuth: NO Authorization in request header!?");
-		}
-
-		try {
-			var acceptedAuthentications = channel.getResponseHeader("WWW-Authenticate");
-			acceptedAuthentications = acceptedAuthentications.split("\n");
-			for each (var index in acceptedAuthentications) {
-				this.logInfo("asyncPromptAuth: WWW-Authenticate:"+index);
-			}
-		}
-		catch(err) {
-				this.logInfo("asyncPromptAuth: NO WWW-Authenticate in response header!?");
-		}
-
-		this.username = this.exchangeRequest.mArgument.user;
-		this.password = null;
-
-		this.URL = decodeURI(aChannel.URI.prePath+aChannel.URI.path);
-
-		this.URL = this.cleanURL(this.URL);
-
-		this.logInfo("asyncPromptAuth: aChannel.URI="+this.URL+", username="+this.username+", password="+this.password);
-
-		this.channel = aChannel;
-		this.callback = aCallback;
-		this.context = aContext;
-		this.level = level;
-		this.authInfo = authInfo;
-		this.trycount++;
-		if ((ecPasswordErrorList[this.URL]) && (ecPasswordErrorList[this.URL] > 3)) {
-			this.logInfo("ecnsIAuthPrompt2.asyncPromptAuth reset count to big.");
-			this.exchangeRequest.passwordError("ecnsIAuthPrompt2.asyncPromptAuth reset count to big.");
-			return null;
-		}
-
-		if (this.trycount > 4) {
-			if (!this.resetPassword()) {
-				this.logInfo("ecnsIAuthPrompt2.asyncPromptAuth COULD NOT RESET PASSWORD");
-			}
-			else {
-				this.trycount = 0;
-			}
-		}
-		this.timer.initWithCallback(this, 5, Ci.nsITimer.TYPE_ONE_SHOT);
-		return this;
-	},
-
-	// nsIAuthPrompt2
-	//boolean promptAuth(in nsIChannel aChannel, in PRUint32 level, in nsIAuthInformation authInfo);
-	promptAuth: function _promptAuth(aChannel, level, authInfo)
-	{
-		this.username = this.exchangeRequest.mArgument.user;
-		this.password = null;
-
-		this.URL = decodeURI(aChannel.URI.prePath+aChannel.URI.path);;
-
-		this.URL = this.cleanURL(this.URL);
-
-		this.logInfo("asyncPromptAuth: aChannel.URI="+this.URL+", username="+this.username+", password="+this.password);
-
-		var password = this.getPassword();
-		if (password) {
-			if (!(authInfo.flags & Ci.nsIAuthInformation.ONLY_PASSWORD)) {
-				if (authInfo.flags & Ci.nsIAuthInformation.NEED_DOMAIN) {
-					if (this.username.indexOf("\\") > -1) {
-						authInfo.domain = this.username.substr(0,this.username.indexOf("\\"));
-						authInfo.username = this.username.substr(this.username.indexOf("\\")+1);
-					}
-					else {
-						authInfo.domain = "";
-						authInfo.username = this.username;
-					}
-				}
-				else {
-					authInfo.username = this.username;
-				}
-			}
-			authInfo.password = password;
-			return true;
-		}
-		else {
-			this.exchangeRequest.onUserStop(this.exchangeRequest.ER_ERROR_USER_ABORT_AUTHENTICATION, "User canceled entering authentication details.");
-			return false;
-		}
-		return false;
-	},
-
 	getPrePassword: function _getPrePassword(aUsername, aURL)
 	{
 		this.logInfo("getPrePassword for user:"+aUsername+", server url:"+aURL);
 		this.username = aUsername;
 		this.URL = aURL;
 		return this.getPassword();
-	},
-
-	getPassword: function _getPassword()
-	{
-                var username = { value: this.username };
-
-		this.logInfo("getPassword for user:"+username.value+", server url:"+this.URL);
-
-                var password = { value: "" };
-		if (this.password) {
-	                password = { value: this.password };
-		}
-                var persist  = { value: false };
-		var title = "Microsoft Exchange EWS";
-		var realm = this.URL;
-
-		var got = this.passwordManagerGet(username.value, password, realm, title);
-
-		if (got) {
-			ecPasswordErrorList[this.URL] = 0;
-			this.logInfo(" USING password from passwordmanager:[********]");
-			return password.value;
-		}
-
-		this.logInfo(" Not a valid password from passwordmanager. Going to ask user to specify credentials.");
-
-		try {
-			if ((this.username) && (this.username != "")) {
-				var ok = this.getCredentials(title, realm, username, password, persist, true);
-			}
-			else {
-				var ok = this.getCredentials(title, realm, username, password, persist, false);
-			}
-		}
-		catch(exc) {
-			this.logInfo(exc);
-			return null;
-		}
-
-		if (!ok) {
-			this.logInfo(" User canceled entering credentials.");
-			if (ecPasswordErrorList[this.URL]) {
-				ecPasswordErrorList[this.URL] = ecPasswordErrorList[this.URL] + 1;
-			}
-			else {
-				ecPasswordErrorList[this.URL] = 1;
-			}
-			return null;
-		}
-
-		var tmpStr = ".";
-		if (persist.value) {
-			tmpStr = " and save them into the passwordmanager.";
-		}
-
-		this.logInfo(" User gave credentials. Going to use them"+tmpStr);
-
-		ecPasswordErrorList[this.URL] = 0;
-		this.exchangeRequest.user = username.value;
-		this.username = username.value;
-
-		if (persist.value) {
-			this.passwordManagerSave(username.value, password.value, realm, title);
-		}
-
-		//this.logInfo(" USING password from userinput:["+password.value+"]");
-		return password.value;
-	},
-
-	resetPassword: function()
-	{
-		if (!this.username) {
-			return false;
-		}
-
-		var title = "Microsoft Exchange EWS";
-		var realm = this.URL;
-		this.passwordManagerRemove(this.username, realm, title);
-		return true;
 	},
 
 	logInfo: function _logInfo(aMsg)
@@ -1413,206 +1089,5 @@ ecnsIAuthPrompt2.prototype = {
 		}
 	},
 
-	// Following functions taken from calAuthUtils.jsm from Lightning
 
-    /**
-     * Tries to get the username/password combination of a specific calendar name
-     * from the password manager or asks the user.
-     *
-     * @param   in aTitle           The dialog title.
-     * @param   in aRealm    The calendar name or url to look up. Can be null.
-     * @param   inout aUsername     The username that belongs to the calendar.
-     * @param   inout aPassword     The password that belongs to the calendar.
-     * @param   inout aSavePassword Should the password be saved?
-     * @param   in aFixedUsername   Whether the user name is fixed or editable
-     * @return  Could a password be retrieved?
-     */
-    getCredentials: function calGetCredentials(aTitle,
-                                               aRealm,
-                                               aUsername,
-                                               aPassword,
-                                               aSavePassword,
-                                               aFixedUsername) {
-
-        if (typeof aUsername != "object" ||
-            typeof aPassword != "object" ||
-            typeof aSavePassword != "object") {
-            throw new Components.Exception("", Cr.NS_ERROR_XPC_NEED_OUT_OBJECT);
-        }
-
-        let watcher = Cc["@mozilla.org/embedcomp/window-watcher;1"]
-                                .getService(Ci.nsIWindowWatcher);
-        let prompter = watcher.getNewPrompter(null);
-
-        // Only show the save password box if we are supposed to.
-        let savepassword = exchWebService.commonFunctions.getString("passwordmgr", "rememberPassword", null, "passwordmgr");
-
-        let aText;
-        if (aFixedUsername) {
-            aText = exchWebService.commonFunctions.getString("commonDialogs", "EnterPasswordFor", [aUsername.value, aRealm], "global");
-            return prompter.promptPassword(aTitle,
-                                           aText,
-                                           aPassword,
-                                           savepassword,
-                                           aSavePassword);
-        } else {
-            aText = exchWebService.commonFunctions.getString("commonDialogs", "EnterUserPasswordFor", [aRealm], "global");
-            return prompter.promptUsernameAndPassword(aTitle,
-                                                      aText,
-                                                      aUsername,
-                                                      aPassword,
-                                                      savepassword,
-                                                      aSavePassword);
-        }
-    },
-
-	getHostname: function _getHostname(aName)
-	{
-		var minLength = 7;
-		if (aName.indexOf('https://') > -1) {
-			minLength = 8;
-		}
-
-		while ((minLength < aName.length) && (aName.substr(minLength,1) != "/")) {
-			minLength++;
-		}
-
-		if (minLength < aName.length) {
-			return aName.substr(0, minLength);
-		}
-
-		return aName;
-	},
-
-    /**
-     * Helper to insert/update an entry to the password manager.
-     *
-     * @param aUserName     The username
-     * @param aPassword     The corresponding password
-     * @param aHostName     The corresponding hostname
-     * @param aRealm        The password realm (unused on branch)
-     */
-    passwordManagerSave: function calPasswordManagerSave(aUsername, aPassword, aHostName, aRealm) {
-
-	try {
-		exchWebService.commonFunctions.ASSERT(aUsername, "Empty username", true);
-		exchWebService.commonFunctions.ASSERT(aPassword, "Empty password", true);
-	}
-	catch(exc) {
-		this.logInfo(exc);
-		return;
-	}
-
-	var tmpHostname = aHostName; //this.getHostname(aHostName);
-
-        try {
-            let loginManager = Cc["@mozilla.org/login-manager;1"]
-                                         .getService(Ci.nsILoginManager);
-            let logins = loginManager.findLogins({}, tmpHostname, null, aRealm);
-
-            let newLoginInfo = Cc["@mozilla.org/login-manager/loginInfo;1"]
-                                         .createInstance(Ci.nsILoginInfo);
-            newLoginInfo.init(tmpHostname, null, aRealm, aUsername, aPassword, "", "");
-            if (logins.length > 0) {
-			var modified = false;
-			for each (let loginInfo in logins) {
-				if (loginInfo.username == aUsername) {
-					this.logInfo("Login credentials updated:username="+aUsername+", aHostname="+aHostName+", aRealm="+aRealm);
-					loginManager.modifyLogin(loginInfo, newLoginInfo);
-					modified = true;
-	                    		break;
-				}
-			}
-			if (!modified) {
-				this.logInfo("Login credentials saved:username="+aUsername+", aHostname="+aHostName+", aRealm="+aRealm);
-				loginManager.addLogin(newLoginInfo);
-			}
-            } else {
-		this.logInfo("Login credentials saved:username="+aUsername+", aHostname="+aHostName+", aRealm="+aRealm);
-                loginManager.addLogin(newLoginInfo);
-            }
-        } catch (exc) {
-		this.logInfo(exc);
-		return;
-        }
-    },
-
-    /**
-     * Helper to retrieve an entry from the password manager.
-     *
-     * @param in  aUsername     The username to search
-     * @param out aPassword     The corresponding password
-     * @param aHostName         The corresponding hostname
-     * @param aRealm            The password realm (unused on branch)
-     * @return                  Does an entry exist in the password manager
-     */
-    passwordManagerGet: function calPasswordManagerGet(aUsername, aPassword, aHostName, aRealm) {
-
-	try {
-	        exchWebService.commonFunctions.ASSERT(aUsername, "Empty username", true);
-        } catch (exc) {
-		this.logInfo(exc);
-		return false;
-        }
-
-	this.logInfo("passwordManagerGet: username="+aUsername+", aHostname="+aHostName+", aRealm="+aRealm);
-	var tmpHostname = aHostName; //this.getHostname(aHostName);
-
-        if (typeof aPassword != "object") {
-            throw new Components.Exception("", Cr.NS_ERROR_XPC_NEED_OUT_OBJECT);
-        }
-
-        try {
-            let loginManager = Cc["@mozilla.org/login-manager;1"]
-                                         .getService(Ci.nsILoginManager);
-
-            let logins = loginManager.findLogins({}, tmpHostname, null, aRealm);
-            for each (let loginInfo in logins) {
-                if (loginInfo.username == aUsername) {
-			this.logInfo("passwordManagerGet found password for: username="+aUsername+", aHostname="+aHostName+", aRealm="+aRealm);
-                    aPassword.value = loginInfo.password;
-                    return true;
-                }
-            }
-        } catch (exc) {
-		this.logInfo(exc);
-        }
-        return false;
-    },
-
-    /**
-     * Helper to remove an entry from the password manager
-     *
-     * @param aUsername     The username to remove.
-     * @param aHostName     The corresponding hostname
-     * @param aRealm        The password realm (unused on branch)
-     * @return              Could the user be removed?
-     */
-    passwordManagerRemove: function calPasswordManagerRemove(aUsername, aHostName, aRealm) {
- 	try {
-	        exchWebService.commonFunctions.ASSERT(aUsername, "Empty username", true);
-        } catch (exc) {
-		this.logInfo(exc);
-		return false;
-        }
-
-	this.logInfo("passwordManagerRemove: username="+aUsername+", aHostname="+aHostName+", aRealm="+aRealm);
- 	var tmpHostname = aHostName; //this.getHostname(aHostName);
-
-       try {
-            let loginManager = Cc["@mozilla.org/login-manager;1"]
-                                         .getService(Ci.nsILoginManager);
-            let logins = loginManager.findLogins({}, tmpHostname, null, aRealm);
-            for each (let loginInfo in logins) {
-                if (loginInfo.username == aUsername) {
-                    loginManager.removeLogin(loginInfo);
-                    return true;
-                }
-            }
-        } catch (exc) {
-		this.logInfo(exc);
-        }
-        return false;
-    }
-	// End funcions from calAuthUtils.jsm
 }

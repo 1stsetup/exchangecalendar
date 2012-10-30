@@ -55,6 +55,12 @@ var specialChars1 = {	" ": true,
 			"\r" : true, 
 			"\t" : true };
 
+function xmlErrorObject(aName, aMessage, aCode) {
+	this.name = aName;
+	this.message = aMessage;
+	this.code = aCode;
+}
+
 function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 
 	this.content = {};
@@ -154,34 +160,22 @@ mivIxml2jxon.prototype = {
 		switch (aErrorID) {
 			case Ci.mivIxml2jxon.ERR_MISSING_SPECIAL_TAG: 
 				//this.logInfo(this.tagName+":Error:ERR_MISSING_SPECIAL_TAG. ("+this.globalFunctions.STACKshort()+")");
-				return { name: "ERR_MISSING_SPECIAL_TAG",
-					 message: "A special tag like '?' is missing",
-				         code: aErrorID};
+				return new xmlErrorObject("ERR_MISSING_SPECIAL_TAG","A special tag like '?' is missing",aErrorID);
 			case Ci.mivIxml2jxon.ERR_INVALID_TAG: 
 				//this.logInfo(this.tagName+":Error:ERR_INVALID_SPECIAL_TAG. ("+this.globalFunctions.STACKshort()+")");
-				return { name: "ERR_INVALID_SPECIAL_TAG",
-					 message: "Tag is invalid",
-				         code: aErrorID};
+				return new xmlErrorObject("ERR_INVALID_SPECIAL_TAG", "Tag is invalid", aErrorID);
 			case Ci.mivIxml2jxon.ERR_INVALID_SPECIAL_TAG: 
 				//this.logInfo(this.tagName+":Error:ERR_INVALID_SPECIAL_TAG. ("+this.globalFunctions.STACKshort()+")");
-				return { name: "ERR_INVALID_SPECIAL_TAG",
-					 message: "Special Tag is invalid",
-				         code: aErrorID};
+				return new xmlErrorObject("ERR_INVALID_SPECIAL_TAG", "Special Tag is invalid", aErrorID);
 			case Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG: 
 				//this.logInfo(this.tagName+":Error:ERR_WRONG_CLOSING_TAG. ("+this.globalFunctions.STACKshort()+")");
-				return { name: "ERR_WRONG_CLOSING_TAG",
-					 message: "Found wrong closing tag. Expected another.",
-				         code: aErrorID};
+				return new xmlErrorObject("ERR_WRONG_CLOSING_TAG", "Found wrong closing tag. Expected another.", aErrorID);
 			case Ci.mivIxml2jxon.ERR_WRONG_ATTRIBUTE_SEPARATOR: 
 				//this.logInfo(this.tagName+":Error:ERR_WRONG_ATTRIBUTE_SEPARATOR. ("+this.globalFunctions.STACKshort()+")");
-				return { name: "ERR_WRONG_ATTRIBUTE_SEPARATOR",
-					 message: "Found wrong attribute separator. Expected '=' character.",
-				         code: aErrorID};
+				return new xmlErrorObject("ERR_WRONG_ATTRIBUTE_SEPARATOR", "Found wrong attribute separator. Expected '=' character.", aErrorID);
 			case Ci.mivIxml2jxon.ERR_ATTRIBUTE_VALUE_QUOTES: 
 				//this.logInfo(this.tagName+":Error:ERR_ATTRIBUTE_VALUE_QUOTES. ("+this.globalFunctions.STACKshort()+")");
-				return { name: "ERR_ATTRIBUTE_VALUE_QUOTES",
-					 message: "Found error in attribute value quotes.",
-				         code: aErrorID};
+				return new xmlErrorObject("ERR_ATTRIBUTE_VALUE_QUOTES", "Found error in attribute value quotes.", aErrorID);
 		}
 	},
 

@@ -120,7 +120,7 @@ erGetUserAvailabilityRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: "+String(aResp)+"\n");
+		//exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: "+String(aResp)+"\n");
 
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetUserAvailabilityResponse/m:FreeBusyResponseArray/m:FreeBusyResponse/m:ResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 

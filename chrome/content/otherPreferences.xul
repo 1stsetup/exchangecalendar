@@ -93,7 +93,7 @@
             </vbox>
 	</groupbox>
 
-        <groupbox id="exchangeWebService_others_prefs_groupbox1">
+        <groupbox id="exchangeWebService_others_prefs_groupbox1" hidden="true">
             <caption label="&exchangeWebService.preference.loadbalancer.prefs.label;"/>
             <vbox>
 		    <hbox>

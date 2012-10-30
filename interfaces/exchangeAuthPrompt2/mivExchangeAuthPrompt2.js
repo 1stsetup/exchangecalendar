@@ -30,7 +30,6 @@ Cu.import("resource://gre/modules/Services.jsm");
 function mivExchangeAuthPrompt2() {
 	dump("\nmivExchangeAuthPrompt2.init\n");
 
-	this.queue = {};
 	this.passwordCache = {};
 	this.details = {};
 
@@ -64,31 +63,6 @@ mivExchangeAuthPrompt2.prototype = {
 
 	// External methods
 
-	reportOk: function _reportOk(aChannel, aContext)
-	{
-		var aURL = decodeURI(aChannel.URI.scheme+"://"+aChannel.URI.hostPort+aChannel.URI.path);
-		if ((this.details[aURL]) && (this.details[aURL].lastContext == aContext)) {
-			this.logInfo("reportOk: lastContext which failed authentication is now ok.");
-
-			// Move from waiting to queue.
-			while (this.details[aURL].waiting.length > 0) {
-				var request = this.details[aURL].waiting.slice();
-				this.queue[aURL].push(request);
-			}
-			this.details[aURL].lastContext = null;
-
-			if (this.queue[aURL].length > 0) {
-				var self = this;
-				var notifyCallback = {
-					notify: function reportOk_notify() {
-						self.asyncPromptAuthNotifyCallback(aURL);
-					}
-				};
-				this.timer.initWithCallback(notifyCallback, 5, Ci.nsITimer.TYPE_ONE_SHOT);
-			}
-		}		
-	},
-
 	getUserCanceled: function _getUserCanceled(aURL)
 	{
 		if (this.details[aURL]) {
@@ -114,7 +88,7 @@ mivExchangeAuthPrompt2.prototype = {
 		}
 
 		if ((this.details[aURL]) && (this.details[aURL].showing) && (!alwaysGetPassword)) {
-			this.logInfo("getPassword: We are in the progress of asking the use for a valid password. So we do not have one.");
+			this.logInfo("getPassword: We are in the progress of asking the user for a valid password. So we do not have one yet.");
 			return null;
 		}
 
@@ -155,12 +129,39 @@ mivExchangeAuthPrompt2.prototype = {
 		}
 		this.logInfo("getPassword: password(3)="+password);
 
+		if ((!password) || (password == "")) {
+			this.details[aURL].showing = true;
+
+			this.logInfo("getPassword: password is not specified and not found in passwordManager and not found in cache. Going to ask user to provide one.");
+
+			var answer = this.getCredentials(username, aURL);
+
+			if (answer.result) {
+				password = answer.password;
+				this.logInfo("getPassword: User specified a password:"+password);
+				if (answer.save) {
+					this.logInfo("getPassword: User requested to store password in passwordmanager.");
+					this.passwordManagerSave(username, password, aURL, realm);
+				}
+				this.passwordCache[username+"|"+aURL+"|"+realm] = password;
+				this.details[aURL].showing = false;
+			}
+			else {
+				// user canceled the entering of a password. 
+				// What do we do next.. Clear queue and !!??
+				this.details[aURL].canceled = true;
+				this.logInfo("getPassword: User canceled entering a password.");
+				this.details[aURL].showing = false;
+				throw "getPassword: User canceled entering a password.";
+			}
+		}
+
 		return password;
 	},
  
 	asyncPromptAuthNotifyCallback: function _asyncPromptAuthNotifyCallback(aURL)
 	{
-		if (!this.queue[aURL]) {
+		if (!this.details[aURL]) {
 			this.logInfo("asyncPromptAuthNotifyCallback: This is strange, We do not have this URL '"+aURL+"' in queue");
 			return;
 		}
@@ -170,16 +171,16 @@ mivExchangeAuthPrompt2.prototype = {
 			return;
 		}
 
-		if (this.queue[aURL].length == 0) {
+		if (this.details[aURL].queue.length == 0) {
 			this.logInfo("asyncPromptAuthNotifyCallback: This is strange, We do not have a request in queue for URL '"+aURL+"'.");
 			return;
 		}
 
-		while (this.queue[aURL].length > 0) {
+		while (this.details[aURL].queue.length > 0) {
 
 			// We grab the first one from the queue.
-			var request = this.queue[aURL].shift();
-			this.logInfo("asyncPromptAuthNotifyCallback: Removed request from queue["+aURL+"]. There are now '"+this.queue[aURL].length+"' requests in queue left.");
+			var request = this.details[aURL].queue.shift();
+			this.logInfo("asyncPromptAuthNotifyCallback: Removed request from queue["+aURL+"]. There are now '"+this.details[aURL].queue.length+"' requests in queue left.");
 			var aChannel = request.channel;
 			var aCallback = request.callback;
 			var aContext = request.context;
@@ -187,11 +188,7 @@ mivExchangeAuthPrompt2.prototype = {
 			var authInfo = request.authInfo;
 
 			var username;
-			var password = aChannel.URI.password;
-			if (password) {
-				password = decodeURI(aChannel.URI.password);
-			}
-
+			var password;
 			var error = false;
 
 			if (this.details[aURL].canceled) {
@@ -236,43 +233,13 @@ mivExchangeAuthPrompt2.prototype = {
 							this.logInfo("asyncPromptAuthNotifyCallback: NO WWW-Authenticate in response header!?");
 					}
 
-					var storedpassword = this.getPassword(null, username, aURL, realm, true);
-					if ((storedpassword) && (storedpassword != password)) {
-						this.logInfo("asyncPromptAuthNotifyCallback: The password has been changed during this request. Going to try stored password.");
-						password = storedpassword;
+					// try to get password.
+					try {
+						password = this.getPassword(aChannel, username, aURL, realm, true);
 					}
-					else {
-						this.logInfo("asyncPromptAuthNotifyCallback: The password was not cached or it is the same as the failed one so do not use it but ask user to specify one.");
-						password = null;
-					}
-
-					if ((!password) || (password == "")) {
-						this.details[aURL].showing = true;
-
-						this.logInfo("asyncPromptAuthNotifyCallback: password is not specified and not found in passwordManager and not found in cache. Going to ask user to provide one.");
-
-						var answer = this.getCredentials(username, aURL);
-
-						if (answer.result) {
-							password = answer.password;
-							this.logInfo("asyncPromptAuthNotifyCallback: User specified a password:"+password);
-							if (answer.save) {
-								this.logInfo("asyncPromptAuthNotifyCallback: User requested to store password in passwordmanager.");
-								this.passwordManagerSave(username, password, aURL, realm);
-							}
-							this.passwordCache[username+"|"+aURL+"|"+realm] = password;
-							this.details[aURL].showing = false;
-						}
-						else {
-							// user canceled the entering of a password. 
-							// What do we do next.. Clear queue and !!??
-							this.details[aURL].lastContext = null;
-							this.details[aURL].canceled = true;
-							this.logInfo("asyncPromptAuthNotifyCallback: User canceled entering a password.");
-							this.details[aURL].showing = false;
-							aCallback.onAuthCancelled(aContext, true);
-							error = true;
-						}
+					catch(err) {
+						aCallback.onAuthCancelled(aContext, true);
+						error = true;
 					}
 
 					if ((!password) || (password == null)) {
@@ -317,14 +284,14 @@ mivExchangeAuthPrompt2.prototype = {
 	asyncPromptAuthCancelCallback: function _asyncPromptAuthCallBack(aReason, aURL, aUUID)
 	{
 		// Try to find the canceled request and remove from queue.
-		var oldQueue = this.queue[aURL];
-		this.queue[aURL] = new Array();
+		var oldQueue = this.details[aURL].queue;
+		this.details[aURL].queue = new Array();
 		for (var index in oldQueue) {
 			if (oldQueue[index].uuid == aUUID) {
 				oldQueue[index].callback.onAuthCancelled(oldQueue[index].context, false);
 			}
 			else {
-				this.queue[aURL].push(oldQueue[index]);
+				this.details[aURL].queue.push(oldQueue[index]);
 			}
 		}
 	},
@@ -360,33 +327,17 @@ mivExchangeAuthPrompt2.prototype = {
 		if (!this.details[URL]) this.details[URL] = { 
 						showing: false, 
 						canceled: false,
-						lastContext: null,
-						waiting: new Array()
+						queue: new Array()
 					};
 
-		if (!this.queue[URL]) this.queue[URL] = new Array();
-
-		if ((this.details[URL].lastContext != null) && (this.details[URL].lastContext != aContext)) {
-			this.details[URL].waiting.push( {
-				uuid: uuid,
-				channel: aChannel,
-				callback: aCallback,
-				context: aContext,
-				level: level,
-				authInfo: authInfo });
-			this.logInfo("asyncPromptAuth: Added request to waiting["+URL+"]. There are now '"+this.queue[URL].length+"' request in waiting queue.");
-		}
-		else {
-			this.details[URL].lastContext = aContext;
-			this.queue[URL].push( {
-				uuid: uuid,
-				channel: aChannel,
-				callback: aCallback,
-				context: aContext,
-				level: level,
-				authInfo: authInfo });
-			this.logInfo("asyncPromptAuth: Added request to queue["+URL+"]. There are now '"+this.queue[URL].length+"' request in queue.");
-		}
+		this.details[URL].queue.push( {
+			uuid: uuid,
+			channel: aChannel,
+			callback: aCallback,
+			context: aContext,
+			level: level,
+			authInfo: authInfo });
+		this.logInfo("asyncPromptAuth: Added request to queue["+URL+"]. There are now '"+this.details[URL].queue.length+"' request in queue.");
 
 		var self = this;
 		var notifyCallback = {
@@ -394,7 +345,7 @@ mivExchangeAuthPrompt2.prototype = {
 				self.asyncPromptAuthNotifyCallback(URL);
 			}
 		};
-		this.timer.initWithCallback(notifyCallback, 5, Ci.nsITimer.TYPE_ONE_SHOT);
+		this.timer.initWithCallback(notifyCallback, 0, Ci.nsITimer.TYPE_ONE_SHOT);
 
 		var cancelCallback = {
 			cancel: function asyncPromptAuth_cancel(aReason) {
