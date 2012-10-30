@@ -148,10 +148,6 @@ mivIxml2jxon.prototype = {
 	// External methods
 
 	// External attributes
-/*	ERR_MISSING_SPECIAL_TAG: 1,
-	ERR_INVALID_TAG: 2,
-	ERR_INVALID_SPECIAL_TAG: 3,
-	ERR_WRONG_CLOSING_TAG: 4,*/
 
 	// Internal methods.
 
@@ -444,10 +440,6 @@ mivIxml2jxon.prototype = {
 			this.tags[aNameSpace+tagSeparator+aTagName].push(aObject);
 			//this[aNameSpace+tagSeparator+aTagName] = this.tags[aNameSpace+tagSeparator+aTagName];
 			this.addToContent(aObject);
-		}
-		if (aObject.uuid != this.uuid) {
-			//this.logInfo("Going to add myself to myself. aObject.uuid:"+aObject.uuid+", this.uuid:"+this.uuid, 2 );
-			aObject.addChildTagObject(aObject);
 		}
 	},
 
@@ -1268,9 +1260,6 @@ mivIxml2jxon.prototype = {
 							//this.logInfo("Found opening tag '"+this.tagName+"' in xml namespace '"+this.nameSpace+"'",2);
 							if (aParent) {
 								aParent.addChildTagObject(this);
-							}
-							else {
-								this.addChildTagObject(this);
 							}
 
 							if ((tmpStart < strLength) && (tmpChar == "/")) {
