@@ -9355,24 +9355,34 @@ function NSGetFactory(cid) {
 	return NSGetFactory.mainEC(cid);
 } 
 
-/* Following is code for testing and debugging.
+/* Following is code for testing and debugging. 
 
 var tmpStr = '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'+"\r\n"+'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'+"\r\n"+'xmlns:xsd="http://www.w3.org/2001/XMLSchema">'+"\r\n"+'<soap:Header><t:ServerVersionInfo'+"\r\n"+'MajorVersion="8" MinorVersion="3" MajorBuildNumber="279" MinorBuildNumber="1"'+"\r\n"+'Version="Exchange2007_SP1"'+"\r\n"+'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"'+"\r\n"+'/></soap:Header>\n\t<soap:Body>\n\t\t<m:SyncFolderItemsResponse'+"\r\n"+'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"'+"\r\n"+'xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"><m:ResponseMessages><m:SyncFolderItemsResponseMessage'+"\r\n"+'ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode><m:SyncState>.'+"\r\n"+'..</m:SyncState><m:IncludesLastItemInRange>true</m:IncludesLastItemInRange><m:Changes'+"\r\n"+'/></m:SyncFolderItemsResponseMessage></m:ResponseMessages></m:SyncFolderItemsResponse></soap:Body></soap:Envelope>';
 
 var start = new Date().getTime();
 var samples = 1;//5000;
+var globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+
 for (var i=0;i<samples;i++) {
-var tmpXML = this.globalFunctions.xmlToJxon(tmpStr);
+var tmpXML = globalFunctions.xmlToJxon(tmpStr);
 				tmpXML.addNameSpace("s", nsSoapStr);
 				tmpXML.addNameSpace("m", nsMessagesStr);
 				tmpXML.addNameSpace("t", nsTypesStr);
 				tmpXML.addNameSpace("michel", nsTypesStr);
 }
 var elapsed = new Date().getTime() - start;
-this.globalFunctions.LOG(">>>>>>>>>>> -----:elapsed:"+elapsed+", for samples:"+samples);
-this.globalFunctions.LOG(">>>>>>>>>>> -----:Going to do XPath");
+dump(">>>>>>>>>>> -----:elapsed:"+elapsed+", for samples:"+samples+"\n");
+dump(">>>>>>>>>>> -----:Going to do XPath"+"\n");
 var tmpobject = tmpXML.XPath("/s:Envelope/s:Header/michel:ServerVersionInfo");
-this.globalFunctions.LOG(">>>>>>>>>>> -----: MinorVersion:"+tmpobject[0].getAttribute("MinorVersion"));
-this.globalFunctions.LOG(">>>>>>>>>>> -----:"+tmpXML.toString());
+dump(">>>>>>>>>>> -----: MinorVersion:"+tmpobject[0].getAttribute("MinorVersion")+"\n");
+var tmpobject = tmpXML.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success1' and m:ResponseCode='NoError']");
+if (tmpobject.length > 0) {
+	dump(">>>>>>>>>>> -----: SyncFolderItemsResponseMessage:"+tmpobject[0].toString()+"\n");
+}
+else {
+	dump(">>>>>>>>>>> -----: XPath not foound SyncFolderItemsResponseMessage"+"\n");
+}
+dump(">>>>>>>>>>> -----:"+tmpXML.toString()+"\n");
 
 */
