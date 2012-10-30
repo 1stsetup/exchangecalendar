@@ -1,0 +1,5 @@
+interfaces mivUpdater.xpt
+component {fb9aeba0-152a-11e2-892e-0800200c9a66} mivUpdater.js
+contract @1st-setup.nl/checkers/updater;1 {fb9aeba0-152a-11e2-892e-0800200c9a66}
+
+

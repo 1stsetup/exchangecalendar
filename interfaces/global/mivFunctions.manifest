@@ -1,0 +1,5 @@
+interfaces mivFunctions.xpt
+component {c7543f10-e2d1-44b3-ae37-9221e0d5b524} mivFunctions.js
+contract @1st-setup.nl/global/functions;1 {c7543f10-e2d1-44b3-ae37-9221e0d5b524}
+
+

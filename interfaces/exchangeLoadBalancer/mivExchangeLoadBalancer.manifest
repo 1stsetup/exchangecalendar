@@ -1,0 +1,5 @@
+interfaces mivExchangeLoadBalancer.xpt
+component {2db8c940-1927-11e2-892e-0800200c9a55} mivExchangeLoadBalancer.js
+contract @1st-setup.nl/exchange/loadbalancer;1 {2db8c940-1927-11e2-892e-0800200c9a55}
+
+

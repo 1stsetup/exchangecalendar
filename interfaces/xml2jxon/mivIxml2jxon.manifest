@@ -1,0 +1,5 @@
+interfaces mivIxml2jxon.xpt
+component {d7165a60-7d64-42b2-ac48-6ccfc0962abb} mivIxml2jxon.js
+contract @1st-setup.nl/conversion/xml2jxon;1 {d7165a60-7d64-42b2-ac48-6ccfc0962abb}
+ 
+
