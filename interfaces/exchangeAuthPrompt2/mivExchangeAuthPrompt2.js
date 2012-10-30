@@ -28,7 +28,6 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
 function mivExchangeAuthPrompt2() {
-	dump("\nmivExchangeAuthPrompt2.init\n");
 
 	this.passwordCache = {};
 	this.details = {};
