@@ -29,9 +29,9 @@ Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/soapFunctions.js");
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 
-var EXPORTED_SYMBOLS = ["erFindContactsRequest"];
+var EXPORTED_SYMBOLS = ["erExpandDLRequest"];
 
-function erFindContactsRequest(aArgument, aCbOk, aCbError, aListener)
+function erExpandDLRequest(aArgument, aCbOk, aCbError, aListener)
 {
 	this.mCbOk = aCbOk;
 	this.mCbError = aCbError;
@@ -51,51 +51,44 @@ function erFindContactsRequest(aArgument, aCbOk, aCbError, aListener)
 	this.changeKey = aArgument.changeKey;
 	this.listener = aListener;
 
+	this.emailAddress = aArgument.emailAddress;
+	this.itemId = aArgument.itemId;
+
 	this.isRunning = true;
 	this.execute();
 }
 
-erFindContactsRequest.prototype = {
+erExpandDLRequest.prototype = {
 
 	execute: function _execute()
 	{
-//		exchWebService.commonFunctions.LOG("erFindContactsRequest.execute\n");
+//		exchWebService.commonFunctions.LOG("erExpandDLRequest.execute\n");
 
-		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:FindItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
-		req.setAttribute("Traversal", "Shallow");
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ExpandDL xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		var itemShape = req.addChildTag("ItemShape", "nsMessages", null); 
-		itemShape.addChildTag("BaseShape", "nsTypes", "IdOnly");
+		var mailBox = req.addChildTag("Mailbox", "nsMessages", null); 
 
-		var additionalProperties = itemShape.addChildTag("AdditionalProperties", "nsTypes", null);
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Subject");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "folder:DisplayName");
-
-		var restr = exchWebService.commonFunctions.xmlToJxon('<nsMessages:Restriction xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
-		var or = restr.addChildTag("Or", "nsTypes", null);
-		var isEqualTo1 = or.addChildTag("IsEqualTo", "nsTypes", null);
-		isEqualTo1.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemClass");
-		isEqualTo1.addChildTag("FieldURIOrConstant", "nsTypes", null).addChildTag("Constant", "nsTypes", null).setAttribute("Value", "IPM.Contact");
-
-		var isEqualTo2 = or.addChildTag("IsEqualTo", "nsTypes", null);
-		isEqualTo2.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemClass");
-		isEqualTo2.addChildTag("FieldURIOrConstant", "nsTypes", null).addChildTag("Constant", "nsTypes", null).setAttribute("Value", "IPM.DistList");
-
-		req.addChildTagObject(restr);
-
-		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
-		req.addChildTagObject(parentFolder);
+		if (this.emailAddress) {
+			mailBox.addChildTag("EmailAddress", "nsTypes", this.emailAddress);
+		}
+		if (this.itemId) {
+			var itemId = mailBox.addChildTag("ItemId", "nsTypes", null);
+			itemId.setAttribute("Id", this.itemId.id);
+			itemId.setAttribute("ChangeKey", this.itemId.changeKey);
+		}
 
 		this.parent.xml2jxon = true;
 
-		//exchWebService.commonFunctions.LOG("erFindContactsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
+		exchWebService.commonFunctions.LOG("erExpandDLRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erFindContactsRequest.onSendOk:"+String(aResp));
+dump("erExpandDLRequest.onSendOk:"+String(aResp)+"\n");
+
+		exchWebService.commonFunctions.LOG("erExpandDLRequest.onSendOk:"+String(aResp));
 
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:ResponseCode");
 
@@ -122,7 +115,7 @@ erFindContactsRequest.prototype = {
 			var includesLastItemInRange = rootFolder[0].getAttribute("IncludesLastItemInRange", "true");
 
 			for each (var contact in rootFolder[0].XPath("/t:Items/t:Contact")) {
-				exchWebService.commonFunctions.LOG("erFindContactsRequest.contacts: id:"+contact.getAttributeByTag("t:ItemId", "Id")+", changekey:"+contact.getAttributeByTag("t:ItemId", "ChangeKey"));
+				exchWebService.commonFunctions.LOG("erExpandDLRequest.contacts: id:"+contact.getAttributeByTag("t:ItemId", "Id")+", changekey:"+contact.getAttributeByTag("t:ItemId", "ChangeKey"));
 				contacts.push({Id: contact.getAttributeByTag("t:ItemId", "Id"),
 					  ChangeKey: contact.getAttributeByTag("t:ItemId", "ChangeKey"),
 					  name: contact.getTagValue("t:Subject"),

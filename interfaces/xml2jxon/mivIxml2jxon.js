@@ -398,11 +398,14 @@ mivIxml2jxon.prototype = {
 	getTagValueByXPath: function _getTagValueByXPath(aXPath, aDefaultValue)
 	{
 		var results = this.XPath(aXPath);
+
+		var result = aDefaultValue;
 		if (results.length > 0) {
-			return results[0].value;
+			result = results[0].value;
 		}
 		
-		return aDefaultValue;
+		results = null;
+		return result;
 	},
 
 	setParentTag: function _setParentTag(aNewParent)
@@ -619,10 +622,8 @@ mivIxml2jxon.prototype = {
 			contentCount++;
 			if ((this.content[index] instanceof Ci.mivIxml2jxon) || (this.content[index] instanceof mivIxml2jxon)) {
 
-				if (this.content[index].tagName != this.tagName) {
-					//this.logInfo(this.tagName+":Found object at content index '"+index+"'.", 2);
-					result += this.content[index].toString();
-				}
+				//this.logInfo(this.tagName+":Found object at content index '"+index+"'.", 2);
+				result += this.content[index].toString();
 			}
 			else {
 				if ((typeof this.content[index] === "string") || (this.content[index] instanceof String)) {
@@ -861,6 +862,9 @@ mivIxml2jxon.prototype = {
 				else {
 					tmpResult = false;
 				}
+
+				tmpLeft = null;
+				tmpRight = null;
 			}
 
 			//this.logInfo(" @@@@@@@@@@@@ -------- MATCHFOUND["+index+"]:"+tmpResult+" ---------- @@@@@@@@@@@@@", level);
@@ -932,7 +936,7 @@ mivIxml2jxon.prototype = {
 			//this.logInfo(" @@ allTag="+allTag, 2);
 
 			for (var index in this.tags) {
-				if ((index.indexOf(tagSeparator) > -1) && (this.tags[index].tagName != this.tagName)) {
+				if (index.indexOf(tagSeparator) > -1) {
 					result.push(this.tags[index]);
 				}
 			}
@@ -1088,8 +1092,10 @@ mivIxml2jxon.prototype = {
 							if (tmpResult) {
 								for (var index3 in tmpResult) {
 									finalResult.push(tmpResult[index3]);
+									tmpResult[index3] = null;
 								}
 							}
+							tmpResult = null;
 						}
 					}
 					else {
@@ -1099,8 +1105,10 @@ mivIxml2jxon.prototype = {
 						if (tmpResult) {
 							for (var index2 in tmpResult) {
 								finalResult.push(tmpResult[index2]);
+								tmpResult[index2] = null;
 							}
 						}
+						tmpResult = null;
 					}
 				}
 			}
@@ -1114,8 +1122,10 @@ mivIxml2jxon.prototype = {
 				if (tmpResult) {
 					for (var index2 in tmpResult) {
 						finalResult.push(tmpResult[index2]);
+						tmpResult[index2] = null;
 					}
 				}
+				tmpResult = null;
 				result = finalResult;
 			}
 		}
@@ -1123,7 +1133,7 @@ mivIxml2jxon.prototype = {
 			//this.logInfo("@@ tmpPath:"+tmpPath+", tag:"+this.tagName+", allTag:"+allTag+", result.length="+result.length,2);
 		if ((tmpPath != "") && (tmpPath.substr(0,2) == "//") && (this.tags[allTag]) && (this.tagName == this.tags[allTag].tagName)) {
 			//this.logInfo(" !!:tag:"+this.tagName, 2);
-
+dump("3. !!??\n");
 			tmpPath = tmpPath.substr(1); // We remove one of double forward slash so it becomes a normal xpath and filtering will take place.
 			if ((tmpPath != "") && (tmpPath.substr(0,2) != "//")) {
 				var finalResult = new Array();
@@ -1132,8 +1142,10 @@ mivIxml2jxon.prototype = {
 				if (tmpResult) {
 					for (var index2 in tmpResult) {
 						finalResult.push(tmpResult[index2]);
+						tmpResult[index2] = null;
 					}
 				}
+				tmpResult = null;
 				result = finalResult;
 			}
 

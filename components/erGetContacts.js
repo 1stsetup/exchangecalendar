@@ -84,20 +84,22 @@ erGetContactsRequest.prototype = {
 
 		this.parent.xml2jxon = true;
 
-		//exchWebService.commonFunctions.LOG("erGetContactsRequest.execute:"+String(req));
+		//exchWebService.commonFunctions.LOG("erGetContactsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erGetContactsRequest.onSendOk:"+String(aResp));
+		exchWebService.commonFunctions.LOG("erGetContactsRequest.onSendOk:"+aResp.toString());
 
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:ResponseCode");
 
 		var contacts = [];
-		for each (var e in aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage/m:Items/*")) {
-			contacts.push(e);
+		var tmpList = aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage/m:Items/*");
+		for (var index in tmpList) {
+			contacts.push(tmpList[index]);
 		}
+		tmpList = null;
 
 		if (this.mCbOk) {
 			this.mCbOk(this, contacts);

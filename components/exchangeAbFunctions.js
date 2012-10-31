@@ -263,6 +263,18 @@ this.logInfo("cardMatchesQuery: aQuery="+aQuery);
 		return result;
 	},
 
+	paramsToArray: function _paramsToArray(aParams, aSplitcharacter)
+	{
+		var tmpList = aParams.split(aSplitcharacter);
+		var result = {};
+		for (var index in tmpList) {
+			var tmpParam = tmpList[index].substr(0, tmpList[index].indexOf("="));
+			var tmpValue = tmpList[index].substr(tmpList[index].indexOf("=")+1);
+			result[tmpParam] = tmpValue;
+		}
+		return result;
+	},
+
 	logInfo: function _logInfo(message, aDebugLevel) {
 
 		if (!aDebugLevel) {

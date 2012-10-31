@@ -271,7 +271,7 @@ mivExchangeLoadBalancer.prototype = {
 			for (var index in this.serverQueue[aServer].runningJobs) {
 				// only stop for current calendar
 				try {
-					if ((this.serverQueue[aServer].runningJobs[index].exchangeRequest.isRunning) && (this.serverQueue[aServer].runningJobs[index].calendar.id == aCalendar.id)) {
+					if ((this.serverQueue[aServer].runningJobs[index].exchangeRequest.isRunning) && (this.serverQueue[aServer].runningJobs[index].calendar) && (this.serverQueue[aServer].runningJobs[index].calendar.id == aCalendar.id)) {
 						this.serverQueue[aServer].runningJobs[index].exchangeRequest.stopRequest();
 					}
 				}
@@ -292,7 +292,6 @@ mivExchangeLoadBalancer.prototype = {
 		}
 
 		this.storedDebugLevel = this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"debuglevel", 0, true);
-		this.storedDebugLevel = 1;
 		if (debugLevel <= this.storedDebugLevel) {
 			this.globalFunctions.LOG("[exchangeLoadBalancer] "+message + " ("+this.globalFunctions.STACKshort()+")");
 		}

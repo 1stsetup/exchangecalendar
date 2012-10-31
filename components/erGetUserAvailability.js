@@ -130,6 +130,7 @@ erGetUserAvailabilityRequest.prototype = {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
 			return;
 		}
+		rm = null;
 
 		var items = aResp.XPath("/s:Envelope/s:Body/m:GetUserAvailabilityResponse/m:FreeBusyResponseArray/m:FreeBusyResponse/m:FreeBusyView/t:CalendarEventArray/t:CalendarEvent");
 
@@ -140,6 +141,7 @@ erGetUserAvailabilityRequest.prototype = {
 			this.mCbOk(this, items);
 		}
 		this.isRunning = false;
+		items = null;
 	},
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)

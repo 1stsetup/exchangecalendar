@@ -102,14 +102,15 @@ mivExchangeAuthPrompt2.prototype = {
 		}
 
 		var password;
+		var channelPassword;
 		if (aChannel) {
 			this.logInfo("getPassword: Going to check if password is in URI.");
-			password = aChannel.URI.password;
-			if (password) {
-				password = this.globalFunctions.trim(decodeURI(aChannel.URI.password));
+			channelPassword = aChannel.URI.password;
+			if (channelPassword) {
+				channelPassword = this.globalFunctions.trim(decodeURI(aChannel.URI.password));
 			}
 		}
-		this.logInfo("getPassword: password(1)="+password);
+		this.logInfo("getPassword: channelPassword(1)="+channelPassword);
 		if ((!password) || (password == "")) {
 			this.logInfo("getPassword: password is not specified. Going to ask passwordManager if it has been saved before.");
 			var savedPassword = this.passwordManagerGet(username, aURL, realm);
@@ -128,8 +129,14 @@ mivExchangeAuthPrompt2.prototype = {
 		}
 		this.logInfo("getPassword: password(3)="+password);
 
-		if ((!password) || (password == "")) {
-			this.details[aURL].showing = true;
+try {
+		if ((!password) || (password == "") || ((password) && (channelPassword) && (password == channelPassword))) {
+
+			if (!this.details[aURL]) this.details[aURL] = { 
+							showing: true, 
+							canceled: false,
+							queue: new Array()
+						};
 
 			this.logInfo("getPassword: password is not specified and not found in passwordManager and not found in cache. Going to ask user to provide one.");
 
@@ -154,7 +161,13 @@ mivExchangeAuthPrompt2.prototype = {
 				throw "getPassword: User canceled entering a password.";
 			}
 		}
+		else {
+			if (channelPassword != password) {
+			}
+			this.logInfo("getPassword: We have a password:"+password);
+		}
 
+} catch(err) { this.logInfo("getPassword: Error:"+err); }
 		return password;
 	},
  

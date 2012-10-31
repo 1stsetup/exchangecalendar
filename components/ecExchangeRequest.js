@@ -45,7 +45,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 
-var EXPORTED_SYMBOLS = ["ExchangeRequest", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponseStr1", "nsAutodiscoverResponseStr2", "xml_tag", "getEWSServerVersion", "setEWSServerVersion"];
+var EXPORTED_SYMBOLS = ["ExchangeRequest", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponseStr1", "nsAutodiscoverResponseStr2", "xml_tag"];
 
 var xml_tag = '<?xml version="1.0" encoding="utf-8"?>\n';
 
@@ -56,24 +56,6 @@ const nsAutodiscoverResponseStr1 = "http://schemas.microsoft.com/exchange/autodi
 const nsAutodiscoverResponseStr2 = "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a";
 
 var gExchangeRequestVersion = "0.1";
-
-var gEWSServerVersion = {};
-
-function getEWSServerVersion(aURL)
-{
-	
-	//return "Exchange2007_SP1";
-	if ((aURL) && (gEWSServerVersion[aURL])) {
-		return gEWSServerVersion[aURL];
-	}
-
-	return "Exchange2007_SP1";
-}
-
-function setEWSServerVersion(aURL, aValue)
-{
-	gEWSServerVersion[aURL] = aValue;
-}
 
 if (! exchWebService) var exchWebService = {};
 
@@ -108,6 +90,9 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.prefB = Cc["@mozilla.org/preferences-service;1"]
 			.getService(Ci.nsIPrefBranch);
+
+	this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
+			.getService(Ci.mivExchangeStatistics);
 
 }
 
@@ -605,13 +590,9 @@ ExchangeRequest.prototype = {
 			try {
 				var serverVersion = resp.XPath("/s:Header/t:ServerVersionInfo");
 				if ((serverVersion.length > 0) && (serverVersion[0].getAttribute("Version") != "")) {
-					if (serverVersion[0].getAttribute("@Version") == "Exchange2010_SP2") {
-						gEWSServerVersion[this.currentUrl] = "Exchange2010_SP1";
-					}
-					else {
-						gEWSServerVersion[this.currentUrl] = serverVersion[0].getAttribute("@Version");
-					}
+					this.exchangeStatistics.setServerVersion(this.currentUrl, serverVersion[0].getAttribute("@Version"));
 				}
+				serverVersion = null;
 			}
 			catch(err) { }
 
@@ -623,6 +604,9 @@ ExchangeRequest.prototype = {
 
 			this.mCbOk(this, resp);
 		}
+
+		resp = null;
+		newXML = null;
 
 	},
 
@@ -826,22 +810,28 @@ ExchangeRequest.prototype = {
 			msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", this.mArgument.ServerVersion);
 		}
 		else {
-			msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", getEWSServerVersion());
+			msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", this.exchangeStatistics.getServerVersion());
 		}
 		msg.addChildTag("Body", "nsSoap", null).addChildTagObject(aReq);
 
-		return xml_tag + msg.toString();
+		var tmpStr = xml_tag + msg.toString();
+		msg = null;
+		return tmpStr;
 	},
 
 	getSoapErrorMsg: function _getSoapErrorMsg(aResp)
 	{
 		var rm = aResp.XPath("/s:Envelope/s:Body/*/m:ResponseMessages/*[@ResponseClass='Error']");
+		var result;
 		if (rm.length > 0) {
-			return rm[0].getTagValue("m:MessageText").value+"("+rm[0].getTagValue("m:ResponseCode")+")";
+			result = rm[0].getTagValue("m:MessageText").value+"("+rm[0].getTagValue("m:ResponseCode")+")";
 		}
 		else {
-			return null;
+			result = null;
 		}
+
+		rm = null;
+		return result
 	},
 
 	passwordError: function erPasswordError(aMsg)
@@ -1075,7 +1065,20 @@ ecnsIAuthPrompt2.prototype = {
 		this.logInfo("getPrePassword for user:"+aUsername+", server url:"+aURL);
 		this.username = aUsername;
 		this.URL = aURL;
-		return this.getPassword();
+
+		var password;
+		var myAuthPrompt2 = Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
+		if (myAuthPrompt2.getUserCanceled(this.currentUrl)) {
+			return null;
+		}
+
+		try {
+			password = myAuthPrompt2.getPassword(null, this.mArgument.user, this.currentUrl);
+		}
+		catch(err) {
+		}
+
+		return password;
 	},
 
 	logInfo: function _logInfo(aMsg)

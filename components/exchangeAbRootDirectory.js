@@ -283,7 +283,7 @@ exchangeAbRootDirectory.prototype = {
 	get propertiesChromeURI()
 	{
 		exchWebService.commonAbFunctions.logInfo("exchangeAbRootDirectory: get propertiesChromeURI 1");
-		return null;
+		return "";
 	},
 
   /**
@@ -375,7 +375,7 @@ exchangeAbRootDirectory.prototype = {
 			var dir;
 			for each(var account in accounts) {
 				if (account != "") {
-					var dirName = this.childNodeURI+account;
+					var dirName = this.childNodeURI+"id="+encodeURI(account)+"&type=basefolder";
 					try {
 						dir = MailServices.ab.getDirectory(dirName);
 						results.push(dir);

@@ -63,7 +63,7 @@
 			tooltip="exchWebServicesprogresstip">
 		<hbox id="exchWebService-progress-hbox">
 			<label id="exchWebService-progress-label"
-				onclick="exchWebServices.progressPanel.openProgressDialog()" value="Test"/>
+				onclick="exchWebService.progressPanel.openProgressDialog()" value="Test"/>
 			<image id="exchWebService-progress-image"/>
 		</hbox>
 	</statusbarpanel>

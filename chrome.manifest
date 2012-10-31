@@ -40,11 +40,16 @@ contract @mozilla.org/addressbook/directory;1?type=exchWebService-contactRoot-di
 component {5963e917-bc68-4b68-b704-65538c81a628} components/exchangeAbFolderDirectory.js
 contract @mozilla.org/addressbook/directory;1?type=exchWebService-contactFolder-directory {5963e917-bc68-4b68-b704-65538c81a628}
 
+component {9e260dc4-90d3-457b-8885-8dff0f69eea3} components/exchangeAbDistListDirectory.js
+contract @mozilla.org/addressbook/directory;1?type=exchWebService-distList-directory {9e260dc4-90d3-457b-8885-8dff0f69eea3}
+
 component {e6f8074c-0236-4f51-b8e2-9c528727b4ee} components/exchangeAbDirFactory.js
 contract @mozilla.org/addressbook/directory-factory;1?name=exchWebService-contactRoot-directory {e6f8074c-0236-4f51-b8e2-9c528727b4ee}
 
 overlay chrome://messenger/content/addressbook/addressbook.xul chrome://exchangecalendar/content/addressbookOverlay.xul
 
+
+manifest interfaces/exchangeStatistics/mivExchangeStatistics.manifest
 manifest interfaces/global/mivFunctions.manifest
 manifest interfaces/xml2jxon/mivIxml2jxon.manifest
 manifest interfaces/updater/mivUpdater.manifest

@@ -391,7 +391,10 @@ function calExchangeCalendar() {
 	                          .getService(Ci.nsIObserverService);  
 
 	this.loadBalancer = Cc["@1st-setup.nl/exchange/loadbalancer;1"]  
-	                          .getService(Ci.mivExchangeLoadBalancer);  
+	                          .getService(Ci.mivExchangeLoadBalancer); 
+
+	this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
+			.getService(Ci.mivExchangeStatistics);
 
 	this.calendarPoller = null;
 
@@ -414,7 +417,7 @@ function calExchangeCalendar() {
 	this.mIsOffline = Components.classes["@mozilla.org/network/io-service;1"]
                              .getService(Components.interfaces.nsIIOService).offline;
 
-	this.globalFunctions.LOG("Our offline status is:"+this.mIsOffline+".");
+	//this.globalFunctions.LOG("Our offline status is:"+this.mIsOffline+".");
 
 }
 
@@ -627,6 +630,7 @@ calExchangeCalendar.prototype = {
 					aValue = true;
 				}
 			}
+			effectiveRights = null;
 
 		}
 
@@ -4964,16 +4968,18 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		var neprops = ne.XPath("*");
 		for each (var prop in oeprops) {
 			var fullTagName = prop.nameSpace+':'+prop.tagName;
-			if (ne.getTags(fullTagName).length > 0 || noDelete[prop.tagName]) {
-				if (ne.getTags(fullTagName).length > 0) { if (this.debug) this.logInfo("     -- ne.getTags("+fullTagName+").length > 0", 2) };
+			var neTags = ne.getTags(fullTagName);
+			if (neTags.length > 0 || noDelete[prop.tagName]) {
+				if (neTags.length > 0) { if (this.debug) this.logInfo("     -- ne.getTags("+fullTagName+").length > 0", 2) };
 				if (noDelete[prop.tagName]) { if (this.debug) this.logInfo("     -- noDelete["+prop.tagName+"] == true", 2) };
 				continue;
 			}
 
-			if ((isInvitation) && (ne.getTags(fullTagName).length > 0 || noUpdateOnInvitation[prop.tagName])) {
+			if ((isInvitation) && (neTags.length > 0 || noUpdateOnInvitation[prop.tagName])) {
 				continue;
 			}
-	
+			neTags = null;
+
 			var de = ce.addChildTag("DeleteItemField", "nsTypes", null);
 			if (prop.tagName == "ExtendedProperty") {
 				de.addChildTagObject(prop.getTag("nsTypes:ExtendedFieldURI"));
@@ -5063,6 +5069,9 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		if (onlySnoozeChanged) {
 			if (this.debug) this.logInfo("onlySnoozeChanged Or reminder time before start.");
 		}
+
+		oeprops = null;
+		neprops = null;
 
 		if (ceCount == 0) {
 			return {changes: null, onlySnoozeChanged: onlySnoozeChanged};
@@ -5579,18 +5588,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			return;
 		}
 
-		if (!aArgument["serverUrl"]) aArgument["serverUrl"] = this.serverUrl;
-		if (!aArgument["user"]) aArgument["user"] = this.user;
-
-		if (!aArgument["mailbox"]) aArgument["mailbox"] = this.mailbox;
-
-		if (!aArgument["folderBase"]) aArgument["folderBase"] = this.folderBase;
-		if (!aArgument["changeKey"]) aArgument["changeKey"] = this.changeKey;
-		if (!aArgument["folderBase"]) aArgument["folderBase"] = this.folderBase;
-
-		if (!aArgument["GUID"]) aArgument["GUID"] = calExchangeCalendarGUID;
-
-		if (!aArgument["ServerVersion"]) aArgument["ServerVersion"] = getEWSServerVersion(this.serverUrl);
+		if (!aArgument["ServerVersion"]) aArgument["ServerVersion"] = this.exchangeStatistics.getServerVersion(this.serverUrl);
 
 		this.loadBalancer.addToQueue({ calendar: this,
 				 ecRequest:aRequest,
@@ -6073,6 +6071,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 					break;
 				}
 			}
+			comps2 = null;
 
 			let wdtemp = weekdays;
 			weekdays = [];
@@ -6104,7 +6103,9 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 	readRecurrence: function _readRecurrence(aItem, aElement)
 	{
-		var recrule = this.readRecurrenceRule(aElement.XPath("/t:Recurrence/*"));
+		var recurrence = aElement.XPath("/t:Recurrence/*");
+		var recrule = this.readRecurrenceRule(recurrence);
+		recurrence = null;
 	
 		if (recrule === null) {
 			return null;
@@ -6112,13 +6113,14 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 	
 		var recurrenceInfo = cal.createRecurrenceInfo(aItem);
 		recurrenceInfo.setRecurrenceItems(1, [recrule]);
-	
+
 		return recurrenceInfo;
 	},
 
 	readDeletedOccurrences: function _readDeletedOccurrences(aItem, aElement)
 	{
-		for each (var mit in aElement.XPath("/t:DeletedOccurrences/*")) {
+		var deletedOccurrences = aElement.XPath("/t:DeletedOccurrences/*");
+		for each (var mit in deletedOccurrences) {
 			for (var index in this.itemCache) {
 				if ( (this.itemCache[index]) &&
 				     (this.itemCache[index].parentItem.id == aItem.id) &&
@@ -6132,6 +6134,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 			
 		}
+		deletedOccurrences = null;
 	},
 
 	notifyTheObservers: function _notifyTheObservers(aCommand, aArray)
@@ -6266,7 +6269,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 	{
 		if (aExchangeItem.getTagValue("t:HasAttachments") == "true") {
 //			if (this.debug) this.logInfo("Title:"+aItem.title+"Attachments:"+aExchangeItem.getTagValue("Attachments"));
-			for each(var fileAttachment in aExchangeItem.XPath("/t:Attachments/t:FileAttachment")) {
+			var fileAttachments = aExchangeItem.XPath("/t:Attachments/t:FileAttachment");
+			for each(var fileAttachment in fileAttachments) {
 //				if (this.debug) this.logInfo(" -- Attachment: name="+fileAttachment.getTagValue("t:Name"));
 
 				var newAttachment = createAttachment();
@@ -6277,6 +6281,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 				aItem.addAttachment(newAttachment);
 			}
+			fileAttachments = null;
 		} 
 	},
 
@@ -6532,7 +6537,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 		item.setProperty("X-IsInvitation", "false");
 		// Check what kind of item this is.
-		for each (var prop in aCalendarItem.XPath("/t:ResponseObjects/*")) {
+		var responseObjects = aCalendarItem.XPath("/t:ResponseObjects/*");
+		for each (var prop in responseObjects) {
 			switch (prop.tagName) {
 				case "AcceptItem":
 				case "TentativelyAcceptItem":
@@ -6542,6 +6548,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 					break
 			}
 		}
+		responseObjects = null;
 
 /*
   <t:ResponseObjects>
@@ -6557,9 +6564,11 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 */
 
 		var cats = [];
-		for each (var cat in aCalendarItem.XPath("/t:Categories/t:String")) {
+		var strings = aCalendarItem.XPath("/t:Categories/t:String");
+		for each (var cat in strings) {
 			cats.push(cat.value);
 		}
+		strings = null;
 		item.setCategories(cats.length, cats);
 
 		item.startDate = this.tryToSetDateValue(aCalendarItem.getTagValue("t:Start"), item.startDate);
@@ -6619,6 +6628,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			}
 
 		}
+		extendedProperties = null;
 
 		if (aCalendarItem.getTagValue("t:IsAllDayEvent") == "true") {
 			// Check if the time is 00:00:00
@@ -6668,6 +6678,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 					iAmInTheList = true;
 				}
 			}
+			attendees = null;
 			attendees = aCalendarItem.XPath("/t:OptionalAttendees/t:Attendee")
 			for each (var at in attendees) {
 				tmpAttendee = this.createAttendee(at, "OPT-PARTICIPANT", myResponseType);
@@ -6676,6 +6687,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 					iAmInTheList = true;
 				}
 			}
+			attendees = null;
 
 			if ((myResponseType) && (! iAmInTheList)) {
 				item.addAttendee(this.createMeAsAttendee(myResponseType));
@@ -6858,9 +6870,11 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		this.setCommonValues(item, aTask);
 
 		var cats = [];
-		for each (var cat in aTask.XPath("/t:Categories/t:String")) {
+		var strings = aTask.XPath("/t:Categories/t:String");
+		for each (var cat in strings) {
 			cats.push(cat.value);
 		}
+		strings = null;
 		item.setCategories(cats.length, cats);
 
 		switch(aTask.getTagValue("t:Status")) {
@@ -7172,6 +7186,8 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 				}
 			}
 
+			aItems[index] = null;
+
 		}
 
 		return convertedItems;
@@ -7202,7 +7218,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 	get isVersion2010()
 	{
-		if (getEWSServerVersion(this.serverUrl).indexOf("2010") > -1 ) {
+		if (this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("2010") > -1 ) {
 			return true;
 		}
 
@@ -7211,7 +7227,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 	get isVersion2007()
 	{
-		if (getEWSServerVersion(this.serverUrl).indexOf("2007") > -1 ) {
+		if (this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("2007") > -1 ) {
 			return true;
 		}
 
@@ -7427,7 +7443,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		var prefServerVersion = this.globalFunctions.safeGetCharPref(this.prefs,"lastServerVersion", null);
 		if (prefServerVersion) {
 			if (this.debug) this.logInfo("Restored prefServerVersion from prefs.js:"+prefServerVersion);
-			setEWSServerVersion(this.serverUrl, prefServerVersion);
+			this.exchangeStatistics.getServerVersion(this.serverUrl, prefServerVersion);
 		}
 
 		if (this.isOffline) return;
@@ -7570,6 +7586,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 			this.setSupportedItems(aFolderClass);		
 		}
+		rm = null;
 
 		this.getTimeZones();
 
@@ -7584,7 +7601,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		this.folderProperties = erGetFolderRequest.properties;
 		this.prefs.setCharPref("folderProperties", this.folderProperties.toString());
 
-		this.prefs.setCharPref("lastServerVersion", getEWSServerVersion(this.serverUrl));
+		this.prefs.setCharPref("lastServerVersion", this.exchangeStatistics.getServerVersion(this.serverUrl));
 
 		this.setFolderProperties(this.folderProperties, aFolderClass);
 
@@ -7707,7 +7724,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		for (var index in timeZoneDefinitionArray) {
 			timeZoneDefinitions[timeZoneDefinitionArray[index].getAttribute("Id")] = timeZoneDefinitionArray[index];
 		}
-
+		rm = null;
 		return timeZoneDefinitions;
 	},
 
@@ -7945,7 +7962,8 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 						}
 					}
 				}
-		
+				periods = null;
+
 				if (standardMatch) {
 					var daylightMatch = null;
 					if (tmpBiasValues.daylight) {
@@ -7959,6 +7977,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 								}
 							}
 						}
+						periods = null;
 					}
 	
 					if ((standardMatch) && ((!tmpBiasValues.daylight) || (daylightMatch))) {
@@ -9327,6 +9346,7 @@ function load_ews_2010_timezonedefinitions()
 		for (var index in timeZoneDefinitionArray) {
 			globalTimeZoneDefinitions[timeZoneDefinitionArray[index].getAttribute("Id")] = timeZoneDefinitionArray[index];
 		}
+		rm = null;
 
 		//dump("\nEnd of get ews_2010_timezonedefinitions\n");
 	}

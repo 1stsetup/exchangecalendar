@@ -149,7 +149,8 @@ erSyncFolderItemsRequest.prototype = {
 							  ChangeKey: task.getAttribute("ChangeKey").toString()});
 					}
 				}
-	
+				createItems = null;
+
 				var updateItems = rm[0].XPath("/m:Changes/t:Update");
 				for each (var update in updateItems) {
 					var calendarItems = update.XPath("/t:CalendarItem/t:ItemId");
@@ -163,13 +164,17 @@ erSyncFolderItemsRequest.prototype = {
 					  ChangeKey: task.getAttribute("ChangeKey").toString()});
 					}
 				}
+				updateItems = null;
 
 				var deleteItems = rm[0].XPath("/m:Changes/t:Delete/t:ItemId");
 				for each (var deleted in deleteItems) {
 					this.deletions.push({Id: deleted.getAttribute("Id").toString(),
 					  ChangeKey: deleted.getAttribute("ChangeKey").toString()});
 				}
+				deleteItems = null;
 			}
+
+			rm = null;
 
 			if (lastItemInRange == "false") {
 				this.execute(syncState);

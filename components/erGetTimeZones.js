@@ -52,7 +52,10 @@ var EXPORTED_SYMBOLS = ["erGetTimeZonesRequest"];
 function erGetTimeZonesRequest(aArgument, aCbOk, aCbError, aListener)
 {
 	// Check if we have at least Exchange server version 2010.
-	if (getEWSServerVersion(aArgument.serverUrl).indexOf("2010") == -1) {
+	this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
+			.getService(Ci.mivExchangeStatistics);
+
+	if (this.exchangeStatistics.getServerVersion(aArgument.serverUrl).indexOf("2010") == -1) {
 		return;
 	}
 
