@@ -426,7 +426,7 @@ exchangeAbFolderDirectory.prototype = {
 		if (this.distLists.length > 0) {
 			var dir;
 			for each(var distList in this.distLists) {
-				var dirName = this.childNodeURI+"id="+encodeURI(distList.id)+"&changeKey="+encodeURI(distList.changeKey)+"&name="+encodeURI(distList.name)+"&type=distlist";
+				var dirName = this.childNodeURI+"id="+encodeURIComponent(distList.id)+"&changeKey="+encodeURIComponent(distList.changeKey)+"&name="+encodeURIComponent(distList.name)+"&type="+distList.type;
 				try {
 					dir = MailServices.ab.getDirectory(dirName);
 					result.push(dir);
@@ -493,25 +493,25 @@ exchangeAbFolderDirectory.prototype = {
 
 			var params = exchWebService.commonAbFunctions.paramsToArray(tmpStr,"&");
 
-			this._UUID = decodeURI(params.id);
-			this._type = decodeURI(params.type);
+			this._UUID = decodeURIComponent(params.id);
+			this._type = decodeURIComponent(params.type);
 
 			if (params.changeKey) {
-				this._changeKey = decodeURI(params.changeKey);
+				this._changeKey = decodeURIComponent(params.changeKey);
 			}
 			else {
 				this._changeKey = null;
 			}
 
 			if (params.name) {
-				this._dirName = decodeURI(params.name);
+				this._dirName = decodeURIComponent(params.name);
 			}
 			else {
 				this._dirName = null;
 			}
 
 			if (params.parentId) {
-				this.parentId = decodeURI(params.parentId);
+				this.parentId = decodeURIComponent(params.parentId);
 			}
 			else {
 				this.parentId = null;
@@ -1025,71 +1025,14 @@ exchangeAbFolderDirectory.prototype = {
 
 	ecUpdateCard: function _ecUpdateCard(contact)
 	{
-			var newCard = Cc["@mozilla.org/addressbook/cardproperty;1"]
-				.createInstance(Ci.nsIAbCard);
-	
-			newCard.directoryId = this.uuid;
-			newCard.localId = contact.getAttributeByTag("t:ItemId", "Id");
-			newCard.setProperty("X-ChangeKey", contact.getAttributeByTag("t:ItemId", "ChangeKey", ""));
-			newCard.setProperty("DisplayName", contact.getTagValue("t:DisplayName", ""));
-			newCard.setProperty("FirstName", contact.getTagValue("t:GivenName", ""));
-			newCard.setProperty("LastName", contact.getTagValue("t:Surname", ""));
-			newCard.setProperty("PrimaryEmail", contact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress1"]', ""));
-			newCard.setProperty("SecondEmail", contact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress2"]', ""));
-
-			newCard.setProperty("JobTitle", contact.getTagValue("t:JobTitle", ""));
-			newCard.setProperty("Department", contact.getTagValue("t:Department", ""));
-			newCard.setProperty("Company", contact.getTagValue("t:CompanyName", ""));
-
-			newCard.setProperty("HomePhone", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="HomePhone"]', ""));
-
-			newCard.setProperty("WorkPhone", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="BusinessPhone"]', ""));
-			newCard.setProperty("WorkPhone2", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="BusinessPhone2"]', ""));
-			newCard.setProperty("CellularNumber", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="MobilePhone"]', ""));
-			newCard.setProperty("PagerNumber", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="Pager"]', ""));
-			newCard.setProperty("FaxNumber", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="Telex"]', ""));
-
-			var homeDetails = contact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Home"]');
-			if (homeDetails.length > 0) {
-				newCard.setProperty("HomeAddress", homeDetails[0].getTagValue('t:Street', ""));
-				newCard.setProperty("HomeCity", homeDetails[0].getTagValue('t:City', ""));
-				newCard.setProperty("HomeState", homeDetails[0].getTagValue('t:State', ""));
-				newCard.setProperty("HomeCountry", homeDetails[0].getTagValue('t:CountryOrRegion', ""));
-				newCard.setProperty("HomeZipCode", homeDetails[0].getTagValue('t:PostalCode', ""));
-			}
-
-			var workDetails = contact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Business"]');
-			if (workDetails.length > 0) {
-				newCard.setProperty("WorkAddress", workDetails[0].getTagValue('t:Street', ""));
-				newCard.setProperty("WorkCity", workDetails[0].getTagValue('t:City', ""));
-				newCard.setProperty("WorkState", workDetails[0].getTagValue('t:State', ""));
-				newCard.setProperty("WorkCountry", workDetails[0].getTagValue('t:CountryOrRegion', ""));
-				newCard.setProperty("WorkZipCode", workDetails[0].getTagValue('t:PostalCode', ""));
-			}
-
-			var otherDetails = contact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Other"]');
-			if (otherDetails.length > 0) {
-				newCard.setProperty("OtherAddress", workDetails[0].getTagValue('t:Street', ""));
-				newCard.setProperty("OtherCity", workDetails[0].getTagValue('t:City', ""));
-				newCard.setProperty("OtherState", workDetails[0].getTagValue('t:State', ""));
-				newCard.setProperty("OtherCountry", workDetails[0].getTagValue('t:CountryOrRegion', ""));
-				newCard.setProperty("OtherZipCode", workDetails[0].getTagValue('t:PostalCode', ""));
-			}
-
-			newCard.setProperty("_AimScreenName", contact.getTagValueByXPath('/t:ImAddresses/t:Entry[@Key="ImAddress"]', ""));
-			newCard.setProperty("WebPage1", contact.getTagValue("t:BusinessHomePage", ""));
-
-			newCard.setProperty("Notes", contact.getTagValue("t:Body", ""));
-
-			var birthDay = contact.getTagValue("t:Birthday");
-
-			if (birthDay) {
-				newCard.setProperty("BirthYear", birthDay.substr(0,4));
-				newCard.setProperty("BirthMonth", birthDay.substr(5,2));
-				newCard.setProperty("BirthDay", birthDay.substr(8,2));
-			}
-
-
+try {
+			var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
+				.createInstance(Ci.mivExchangeAbCard);
+			newCard.convertExchangeContactToCard(contact);
+}
+catch(err) {
+	dump("ecUpdateCard: error:"+err+"\n");
+}
 			if (this.contacts[newCard.localId]) {
 				exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory:  == We allready know this card. Lets see what has changed");
 
@@ -1180,18 +1123,24 @@ exchangeAbFolderDirectory.prototype = {
 		this.distLists = new Array()
 
 		for (var index in aDistLists) {
-			exchWebService.commonAbFunctions.logInfo("distListLoadOk: distList:"+aDistLists[index].toString(),2);
-			exchWebService.commonAbFunctions.logInfo("distListLoadOk: new distList:"+aDistLists[index].subject);
+			//exchWebService.commonAbFunctions.logInfo("distListLoadOk: distList:"+aDistLists[index].toString(),2);
+			exchWebService.commonAbFunctions.logInfo("distListLoadOk: new distList:"+aDistLists[index].name);
 
 			this.distLists.push({ id: aDistLists[index].Id,
 						changeKey: aDistLists[index].ChangeKey,
-						name: aDistLists[index].name } );
+						name: aDistLists[index].name,
+						type: "PrivateDL" } );
 
-			var dirName = this.childNodeURI+"id="+encodeURI(aDistLists[index].Id)+"&changeKey="+encodeURI(aDistLists[index].ChangeKey)+"&name="+encodeURI(aDistLists[index].name)+"&parentId="+this.uuid+"&type=distlist";
+			var dirName = this.childNodeURI+"id="+encodeURIComponent(aDistLists[index].Id)+"&changeKey="+encodeURIComponent(aDistLists[index].ChangeKey)+"&name="+encodeURIComponent(aDistLists[index].name)+"&parentId="+this.uuid+"&type=PrivateDL";
 
 			try {
+			exchWebService.commonAbFunctions.logInfo("distListLoadOk: A new distList:"+aDistLists[index].name+", dirName:"+dirName);
 				var dir = MailServices.ab.getDirectory(dirName);
-				MailServices.ab.notifyDirectoryItemAdded(this, dir);
+			exchWebService.commonAbFunctions.logInfo("distListLoadOk: B new distList:"+aDistLists[index].name+", dirName:"+dirName);
+				if (dir) {
+					MailServices.ab.notifyDirectoryItemAdded(this, dir);
+				}
+			exchWebService.commonAbFunctions.logInfo("distListLoadOk: C new distList:"+aDistLists[index].name+", dirName:"+dirName);
 			}
 			catch(err) {
 				exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Error adding dislist '"+dirName+"' Error:"+err);
@@ -1215,7 +1164,7 @@ exchangeAbFolderDirectory.prototype = {
 
 		for each(var contact in aContacts) {
 			exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString(),2);
-			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: new childCards:"+contact.getTagValue("t:Subject"));
+			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: new childCards:"+contact.getTagValue("t:DisplayName"));
 			this.ecUpdateCard(contact);
 
 		}
@@ -1316,7 +1265,7 @@ exchangeAbFolderDirectory.prototype = {
 
 		for each(var contact in aContacts) {
 			exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString(),2);
-			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: new childCards:"+contact.getTagValue("t:Subject"));
+			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: new childCards:"+contact.getTagValue("t:DisplayName"));
 			this.ecUpdateCard(contact);
 
 		}

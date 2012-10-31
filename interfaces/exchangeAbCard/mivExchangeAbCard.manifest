@@ -1,0 +1,5 @@
+interfaces mivExchangeAbCard.xpt
+component {5b42082a-d0f7-490a-80d2-a0a221bf23ec} mivExchangeAbCard.js
+contract @1st-setup.nl/exchange/abcard;1 {5b42082a-d0f7-490a-80d2-a0a221bf23ec}
+
+

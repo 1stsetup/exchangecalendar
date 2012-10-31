@@ -36,7 +36,7 @@ function mivExchangeStatistics() {
 
 var PREF_MAINPART = 'extensions.1st-setup.exchangecalendar.statistics.';
 
-var mivExchangeStatisticsGUID = "cd634d30-2327-11e2-81c1-0800200c9a66";
+var mivExchangeStatisticsGUID = "e491a5d9-678a-4b2c-8d7f-c1a8f8ff40e8";
 
 mivExchangeStatistics.prototype = {
 

@@ -624,6 +624,11 @@ mivFunctions.prototype = {
 	splitOnCharacter: function _splitOnCharacter(aString, aStartPos, aSplitCharacter)
 	{
 //		this.LOG("splitOnCharacter: aString:"+aString+", aSplitCharacter:"+aSplitCharacter);
+
+		if (!aString) {
+			return null;
+		}
+
 		var tmpPos = aStartPos;
 		var result = "";
 		var notClosed = true;

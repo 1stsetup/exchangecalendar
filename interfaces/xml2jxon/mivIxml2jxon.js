@@ -546,6 +546,8 @@ mivIxml2jxon.prototype = {
 	convertSpecialCharatersFromXML: function _convertSpecialCharatersFromXML(aString)
 	{
 		//this.logInfo(aString+" !! ");
+		if (!aString) return aString;
+
 		var result = aString;
 		// Convert special characters
 //try{
@@ -574,6 +576,9 @@ mivIxml2jxon.prototype = {
 	convertSpecialCharatersToXML: function _convertSpecialCharatersToXML(aString)
 	{
 		//this.logInfo(aString+" !! ");
+
+		if (!aString) return aString;
+
 		var result = aString.toString();
 		// Convert special characters
 		result = result.replace(/(&|\x22|\x27|<|>)/g, this.replaceToXML);  
@@ -1159,6 +1164,8 @@ dump("3. !!??\n");
 	processXMLString: function _processXMLString(aString, aStartPos, aParent)
 	{
 		//Search for Tag opening character "<"
+		if (!aString) return;
+
 		var pos = this.findCharacter(aString, aStartPos, "<");
 		var strLength = aString.length;
 
@@ -1418,6 +1425,8 @@ dump("3. !!??\n");
 
 	findCharacter: function _findCharacter(aString, aStartPos, aChar)
 	{
+		if (!aString) return -1;
+
 		var pos = aStartPos;
 		var strLength = aString.length;
 		while ((pos < strLength) && (aString.substr(pos, 1) != aChar)) {
@@ -1433,6 +1442,8 @@ dump("3. !!??\n");
 
 	findString: function _findString(aString, aStartPos, aNeedle)
 	{
+		if (!aString) return -1;
+
 		var pos = aStartPos;
 		var strLength = aString.length;
 		var needleLength = aNeedle.length;

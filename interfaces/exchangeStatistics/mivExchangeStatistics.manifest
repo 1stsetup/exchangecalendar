@@ -1,5 +1,5 @@
 interfaces mivExchangeStatistics.xpt
-component {cd634d30-2327-11e2-81c1-0800200c9a66} mivExchangeStatistics.js
-contract @1st-setup.nl/exchange/statistics;1 {cd634d30-2327-11e2-81c1-0800200c9a66}
+component {e491a5d9-678a-4b2c-8d7f-c1a8f8ff40e8} mivExchangeStatistics.js
+contract @1st-setup.nl/exchange/statistics;1 {e491a5d9-678a-4b2c-8d7f-c1a8f8ff40e8}
 
 

@@ -19,13 +19,13 @@
  *
  * ***** BEGIN LICENSE BLOCK *****/
 
-#include "nsISupports.idl"
+#include "nsIAbCard.idl"
 
-[scriptable, uuid(e491a5d9-678a-4b2c-8d7f-c1a8f8ff40e8)]
-interface mivExchangeStatistics : nsISupports
+[scriptable, uuid(5b42082a-d0f7-490a-80d2-a0a221bf23ec)]
+interface mivExchangeAbCard : nsIAbCard
 {
 
-  void setServerVersion(in AUTF8String aURL, in AUTF8String aVersion);
-  AUTF8String getServerVersion([optional] in AUTF8String aURL);
+	attribute boolean readOnly;
 
+	void convertExchangeContactToCard(in jsval aExchangeContact);  
 };

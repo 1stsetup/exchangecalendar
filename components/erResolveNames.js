@@ -29,9 +29,9 @@ Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/soapFunctions.js");
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 
-var EXPORTED_SYMBOLS = ["erExpandDLRequest"];
+var EXPORTED_SYMBOLS = ["erResolveNames"];
 
-function erExpandDLRequest(aArgument, aCbOk, aCbError, aListener)
+function erResolveNames(aArgument, aCbOk, aCbError, aListener)
 {
 	this.mCbOk = aCbOk;
 	this.mCbError = aCbError;
@@ -51,70 +51,74 @@ function erExpandDLRequest(aArgument, aCbOk, aCbError, aListener)
 	this.changeKey = aArgument.changeKey;
 	this.listener = aListener;
 
-	this.emailAddress = aArgument.emailAddress;
-	this.itemId = aArgument.itemId;
+	this.ids = aArgument.ids;
 
 	this.isRunning = true;
 	this.execute();
 }
 
-erExpandDLRequest.prototype = {
+erResolveNames.prototype = {
 
 	execute: function _execute()
 	{
-//		exchWebService.commonFunctions.LOG("erExpandDLRequest.execute\n");
+//		exchWebService.commonFunctions.LOG("erResolveNames.execute\n");
 
-		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ExpandDL xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		// http://msdn.microsoft.com/en-us/library/exchange/aa565329%28v=exchg.140%29.aspx
+		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ResolveNames xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		req.setAttribute("ReturnFullContactData", "true");
+		req.setAttribute("SearchScope", "ActiveDirectory");
 
-		var mailBox = req.addChildTag("Mailbox", "nsMessages", null); 
-
-		if (this.emailAddress) {
-			mailBox.addChildTag("EmailAddress", "nsTypes", this.emailAddress);
+		if ((this.ids.routingType) && (this.ids.routingType == "SMTP")) {
+			req.addChildTag("UnresolvedEntry", "nsMessages", this.ids.emailAddress); 
+			this.itemId = { id: this.ids.emailAddress, changeKey: "SMTP" };
 		}
-		if (this.itemId) {
-			var itemId = mailBox.addChildTag("ItemId", "nsTypes", null);
-			itemId.setAttribute("Id", this.itemId.id);
-			itemId.setAttribute("ChangeKey", this.itemId.changeKey);
+		else {
+			req.addChildTag("UnresolvedEntry", "nsMessages", this.ids.name); 
+			this.itemId = { id: this.ids.name, changeKey: this.ids.routingType };
 		}
 
 		this.parent.xml2jxon = true;
 
-		//exchWebService.commonFunctions.LOG("erExpandDLRequest.execute:"+String(this.parent.makeSoapMessage(req)));
+		exchWebService.commonFunctions.LOG("erResolveNames.execute:"+String(this.parent.makeSoapMessage(req)));
 
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erExpandDLRequest.onSendOk:"+String(aResp));
+		exchWebService.commonFunctions.LOG("erResolveNames.onSendOk:"+String(aResp));
 
-		var rm = aResp.XPath("/s:Envelope/s:Body/m:ExpandDLResponse/m:ResponseMessages/m:ExpandDLResponseMessage[@ResponseClass='Success' and m:ResponseCode = 'NoError']");
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:ResolveNamesResponse/m:ResponseMessages/m:ResolveNamesResponseMessage[@ResponseClass='Success' and m:ResponseCode = 'NoError']");
 
 		if (rm.length == 0) {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
 			return;
 		}
 
-		var dlExpansion = rm[0].getTags("m:DLExpansion");
+		var resolutionsSets = rm[0].getTags("m:ResolutionSet");
 		rm = null;
 
-		var allMailboxes = new Array();
-		for each(var expansion in dlExpansion) {
+		var allContacts = new Array();
+		for each(var resolutionsSet in resolutionsSets) {
 
-			var totalItemsInView = expansion.getAttribute("TotalItemsInView", 0);
-			var includesLastItem = expansion.getAttribute("IncludesLastItemInRange", "false");
+			var totalItemsInView = resolutionsSet.getAttribute("TotalItemsInView", 0);
+			var includesLastItem = resolutionsSet.getAttribute("IncludesLastItemInRange", "false");
 
-			var mailboxes = expansion.getTags("t:Mailbox");
-			for each(var mailbox in mailboxes) {
-				allMailboxes.push(mailbox);
+			var contacts = resolutionsSet.XPath("/t:Resolution/t:Contact");
+			for (var index in contacts) {
+				var itemId = contacts[index].addChildTag("ItemId", "t", null); 
+				itemId.setAttribute("Id", this.itemId.id);
+				itemId.setAttribute("ChangeKey", this.itemId.changeKey);
+		exchWebService.commonFunctions.LOG("erResolveNames.onSendOk2:"+contacts[index].toString());
+				allContacts.push(contacts[index]);
 			}
-			mailboxes = null;
+			contacts = null;
 		
 		}
-		dlExpansion = null;
+		resolutionsSets = null;
 
 		if (this.mCbOk) {
-			this.mCbOk(this, allMailboxes);
+			this.mCbOk(this, allContacts);
 		}
 		this.isRunning = false;
 	},

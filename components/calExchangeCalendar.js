@@ -3535,6 +3535,11 @@ if (this.debug) this.logInfo("singleModified doNotify");
 
 	md5: function _md5(aString)
 	{
+
+		if (!aString) {
+			return "";
+		}
+
 		var converter = Cc["@mozilla.org/intl/scriptableunicodeconverter"].
 		    createInstance(Ci.nsIScriptableUnicodeConverter);
 		 
