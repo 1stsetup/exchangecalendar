@@ -495,7 +495,7 @@ exchangeAbDistListDirectory.prototype = {
 
 						// Remove cards.
 						var oldList = this.contacts;
-						this.contacts = new Array();
+						this.contacts = {};
 						for each(var contact in oldList) {
 							exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' removed contact:"+contact.getProperty("DisplayName", ""));
 							MailServices.ab.notifyDirectoryItemDeleted(this, contact);
@@ -507,7 +507,9 @@ exchangeAbDistListDirectory.prototype = {
 						for each(var distList in oldList) {
 							exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' removed distList:"+distList.dirName);
 							MailServices.ab.notifyDirectoryDeleted(this, distList);
-						}		
+						}
+
+						return;		
 
 					}
 				}
@@ -1077,7 +1079,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
 			newCard.convertExchangeContactToCard(this, contact);
 
 			if (this.contacts[newCard.localId]) {
-				exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  == We allready know this card. Lets see what has changed");
+				exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  == We allready know this card. Lets see what has changed:"+newCard.localId);
 
 				// Check which properties changed.
 				for (var cardProperty in fixIterator(newCard.properties, Ci.nsIProperty)) {
@@ -1154,7 +1156,8 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 			mailboxType: aMailbox.getTagValue("t:MailboxType"),
 			itemId: {	id: aMailbox.getAttributeByTag("t:ItemId", "Id"), 
 					changeKey:aMailbox.getAttributeByTag("t:ItemId", "ChangeKey")
-				}
+				},
+			mailbox: aMailbox
 		};
 
 		return result;		
@@ -1246,7 +1249,14 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 
 	distListExpandError: function _distListExpandError(erExpandDLRequest, aCode, aMsg)
 	{
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: distListExpandError: aCode:"+aCode+", aMsg:"+aMsg);
 		this.isLoading = false;
+
+		if ((aCode == 0) && (aMsg == "ErrorNameResolutionNoResults")) {
+			// Name could not be resolved we use the mailbox element instead of the contacts.
+			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: Could not resolve mailbox. Going to use mailbox details for card");
+			this.ecUpdateCard(erExpandDLRequest.ids.mailbox);
+		}
 	},
 
 	contactsLoadOk: function _contactsLoadOk(erGetContactsRequest, aContacts)
@@ -1266,11 +1276,11 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 
 	mailboxLoadOk: function _contactsLoadOk(erGetContactsRequest, aContacts)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: contactsLoadOk: contacts:"+aContacts.length);
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: mailboxLoadOk: contacts:"+aContacts.length);
 
 		for each(var contact in aContacts) {
-			exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString(),2);
-			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: new childCards:"+contact.getTagValue("t:DisplayName"));
+			exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString());
+			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  mailboxLoadOk: new childCards:"+contact.getTagValue("t:DisplayName"));
 			this.ecUpdateCard(contact);
 
 		}

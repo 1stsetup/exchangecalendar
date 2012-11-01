@@ -43,36 +43,6 @@ var EXPORTED_SYMBOLS = ["makeParentFolderIds2", "publicFoldersMap"];
 
 const publicFoldersMap = { "publicfoldersroot" : true };
 
-/*function makeParentFolderIds(aParentItem, aArgument)
-{
-	var ParentFolderIds = <nsMessages:{aParentItem} xmlns:nsMessages={nsMessages} xmlns:nsTypes={nsTypes}/>;
-
-	if (! aArgument.folderID) {
-		var DistinguishedFolderId = <nsTypes:DistinguishedFolderId xmlns:nsTypes={nsTypes}/>;
-		DistinguishedFolderId.@Id = aArgument.folderBase;
-
-		// If the folderBase is a public folder then do not provide mailbox if
-		// available.
-		if (! publicFoldersMap[aArgument.folderBase]) {
-			if (aArgument.mailbox) {
-				DistinguishedFolderId.nsTypes::Mailbox.nsTypes::EmailAddress = aArgument.mailbox;
-			}
-		}
-		ParentFolderIds.appendChild(DistinguishedFolderId);		
-	}
-	else {
-		var FolderId = <nsTypes:FolderId xmlns:nsTypes={nsTypes}/>;
-		FolderId.@Id = aArgument.folderID;
-		if ((aArgument.changeKey) && (aArgument.changeKey != "")) {
-			FolderId.@ChangeKey = aArgument.changeKey;
-		}
-		
-		ParentFolderIds.appendChild(FolderId);		
-	}
-
-	return ParentFolderIds;
-}*/
-
 // This is the xml2jxon version.
 function makeParentFolderIds2(aParentItem, aArgument)
 {

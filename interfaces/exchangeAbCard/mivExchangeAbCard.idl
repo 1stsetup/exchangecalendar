@@ -25,7 +25,14 @@
 interface mivExchangeAbCard : nsIAbCard
 {
 
+	const unsigned long CARD_TYPE_CONTACT = 1;
+	const unsigned long CARD_TYPE_MAILBOX = 2;
+
 	attribute boolean readOnly;
+
+	readonly attribute unsigned long type;
+	readonly attribute AUTF8String routingType;
+	readonly attribute AUTF8String mailboxType;
 
 	void convertExchangeContactToCard(in jsval aParent, in jsval aExchangeContact);  
 };

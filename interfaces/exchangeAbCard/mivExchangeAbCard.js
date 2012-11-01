@@ -116,25 +116,25 @@ mivExchangeAbCard.prototype = {
 	//  AString getPropertyAsAString(in string name);
 	getPropertyAsAString: function _getPropertyAsAString(name)
 	{
-		return this._abCard.getPropertyAsAString(name);
+		return this._abCard.getProperty(name, "");
 	},
 
 	//  AUTF8String getPropertyAsAUTF8String(in string name);
 	getPropertyAsAUTF8String: function _getPropertyAsAUTF8String(name)
 	{
-		return this._abCard.getPropertyAsAUTF8String(name);
+		return this._abCard.getProperty(name, "");
 	},
 
 	//  unsigned long getPropertyAsUint32(in string name);
 	getPropertyAsUint32: function _getPropertyAsUint32(name)
 	{
-		return this._abCard.getPropertyAsUint32(name);
+		return this._abCard.getProperty(name, 0);
 	},
 
 	//  boolean getPropertyAsBool(in string name);
 	getPropertyAsBool: function _getPropertyAsBool(name)
 	{
-		return this._abCard.getPropertyAsBool(name);
+		return this._abCard.getProperty(name, true);
 	},
 
 	//  void setProperty(in AUTF8String name, in nsIVariant value);
@@ -146,25 +146,25 @@ mivExchangeAbCard.prototype = {
 	//  void setPropertyAsAString(in string name, in AString value);
 	setPropertyAsAString: function _setPropertyAsAString(name, value)
 	{
-		this._abCard.setPropertyAsAString(name, value);
+		this._abCard.setProperty(name, value);
 	},
 
 	//  void setPropertyAsAUTF8String(in string name, in AUTF8String value);
 	setPropertyAsAUTF8String: function _setPropertyAsAUTF8String(name, value)
 	{
-		this._abCard.setPropertyAsAUTF8String(name, value);
+		this._abCard.setProperty(name, value);
 	},
 
 	//  void setPropertyAsUint32(in string name, in unsigned long value);
 	setPropertyAsUint32: function _setPropertyAsUint32(name, value)
 	{
-		this._abCard.setPropertyAsUint32(name, value);
+		this._abCard.setProperty(name, value);
 	},
 
 	//  void setPropertyAsBool(in string name, in boolean value);
 	setPropertyAsBool: function _setPropertyAsBool(name, value)
 	{
-		this._abCard.setPropertyAsBool(name, value);
+		this._abCard.setProperty(name, value);
 	},
 
 	//  void deleteProperty(in AUTF8String name);
@@ -176,12 +176,12 @@ mivExchangeAbCard.prototype = {
 	//  attribute AString firstName;
 	get firstName()
 	{
-		return this._abCard.firsName;
+		return this._abCard.firstName;
 	},
 
 	set firstName(aValue)
 	{
-		this._abCard.firsName = aValue;
+		this._abCard.firstName = aValue;
 	},
 
 	//  attribute AString lastName;
@@ -287,98 +287,143 @@ mivExchangeAbCard.prototype = {
 		this._readOnly = aValue;
 	},
 
+	//	readonly attribute unsigned long type;
+	get type()
+	{
+		return this._type;
+	},
+
+	//	readonly attribute AUTF8String routingType;
+	get routingType()
+	{
+		return this._routingType;
+	},
+
+	//	readonly attribute AUTF8String mailboxType;
+	get mailboxType()
+	{
+		return this._mailboxType;
+	},
+
 	//	void convertExchangeContactToCard(in jsval aExchangeContact);
 	convertExchangeContactToCard: function _convertExchangeContactToCard(aParent, aExchangeContact)
 	{
 		this.logInfo("convertExchangeContactToCard: "+aExchangeContact.toString());
-try{
+
 		this.isMailList = false;
 		this.directoryId = aParent.uuid;
-		this.localId = aExchangeContact.getAttributeByTag("t:ItemId", "Id");
-		this.setProperty("X-ChangeKey", aExchangeContact.getAttributeByTag("t:ItemId", "ChangeKey", ""));
-		this.setProperty("X-ContactSource", aExchangeContact.getTagValue("t:ContactSource", ""));
-		this.setProperty("DisplayName", aExchangeContact.getTagValue("t:DisplayName", ""));
-		this.setProperty("FirstName", aExchangeContact.getTagValue("t:GivenName", ""));
-		this.setProperty("LastName", aExchangeContact.getTagValue("t:Surname", ""));
+		if (aExchangeContact.tagName == "Mailbox") {
+			this._type = Ci.mivExchangeAbCard.CARD_TYPE_MAILBOX;
+			this.localId = aExchangeContact.getTagValue("t:RoutingType","SMTP")+":"+aExchangeContact.getTagValue("t:EmailAddress","");
+			this.setProperty("DisplayName", aExchangeContact.getTagValue("t:Name", ""));
+			this.setProperty("PrimaryEmail", aExchangeContact.getTagValue("t:EmailAddress", ""));
 
-		// We need to check which email address is primary. For exchange it will start with 'SMTP:' (in capital)
-		var primaryEmail = aExchangeContact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress1"]', "");
-		var secondEmail = aExchangeContact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress2"]', "");
-		if (primaryEmail.indexOf("SMTP:") > -1) {
-			primaryEmail = primaryEmail.substr(primaryEmail.indexOf("SMTP:")+5);
-			if (secondEmail.indexOf("smtp:") > -1) {
-				secondEmail = secondEmail.substr(secondEmail.indexOf("smtp:")+5);
-			}
+/*			this.setProperty("FirstName", "");
+			this.setProperty("LastName", "");
+			this.setProperty("JobTitle", "");
+			this.setProperty("Department", "");
+			this.setProperty("Company", "");
+
+			this.setProperty("HomePhone", "");
+
+			this.setProperty("WorkPhone", "");
+			this.setProperty("WorkPhone2", "");
+			this.setProperty("CellularNumber", "");
+			this.setProperty("PagerNumber", "");
+			this.setProperty("FaxNumber", "");
+
+			this.setProperty("_AimScreenName", "");
+			this.setProperty("WebPage1", "");
+
+			this.setProperty("Notes", "");*/
+
+			this._routingType = aExchangeContact.getTagValue("t:RoutingType");
+			this._mailboxType = aExchangeContact.getTagValue("t:MailboxType");
 		}
 		else {
-			if (secondEmail.indexOf("SMTP:") > -1) {
-				var tmpPrimary = primaryEmail;
-				primaryEmail = secondEmail.substr(secondEmail.indexOf("SMTP:")+5);
-				secondEmail = tmpPrimary;
+			this._type = Ci.mivExchangeAbCard.CARD_TYPE_CONTACT;
+			this.localId = aExchangeContact.getAttributeByTag("t:ItemId", "Id");
+			this.setProperty("X-ChangeKey", aExchangeContact.getAttributeByTag("t:ItemId", "ChangeKey", ""));
+			this.setProperty("X-ContactSource", aExchangeContact.getTagValue("t:ContactSource", ""));
+			this.setProperty("DisplayName", aExchangeContact.getTagValue("t:DisplayName", ""));
+			this.setProperty("FirstName", aExchangeContact.getTagValue("t:GivenName", ""));
+			this.setProperty("LastName", aExchangeContact.getTagValue("t:Surname", ""));
+
+			// We need to check which email address is primary. For exchange it will start with 'SMTP:' (in capital)
+			var primaryEmail = aExchangeContact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress1"]', "");
+			var secondEmail = aExchangeContact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress2"]', "");
+			if (primaryEmail.indexOf("SMTP:") > -1) {
+				primaryEmail = primaryEmail.substr(primaryEmail.indexOf("SMTP:")+5);
 				if (secondEmail.indexOf("smtp:") > -1) {
 					secondEmail = secondEmail.substr(secondEmail.indexOf("smtp:")+5);
 				}
 			}
+			else {
+				if (secondEmail.indexOf("SMTP:") > -1) {
+					var tmpPrimary = primaryEmail;
+					primaryEmail = secondEmail.substr(secondEmail.indexOf("SMTP:")+5);
+					secondEmail = tmpPrimary;
+					if (secondEmail.indexOf("smtp:") > -1) {
+						secondEmail = secondEmail.substr(secondEmail.indexOf("smtp:")+5);
+					}
+				}
+			}
+
+			this.setProperty("PrimaryEmail", primaryEmail);
+			this.setProperty("SecondEmail", secondEmail);
+
+			this.setProperty("JobTitle", aExchangeContact.getTagValue("t:JobTitle", ""));
+			this.setProperty("Department", aExchangeContact.getTagValue("t:Department", ""));
+			this.setProperty("Company", aExchangeContact.getTagValue("t:CompanyName", ""));
+
+			this.setProperty("HomePhone", aExchangeContact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="HomePhone"]', ""));
+
+			this.setProperty("WorkPhone", aExchangeContact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="BusinessPhone"]', ""));
+			this.setProperty("WorkPhone2", aExchangeContact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="BusinessPhone2"]', ""));
+			this.setProperty("CellularNumber", aExchangeContact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="MobilePhone"]', ""));
+			this.setProperty("PagerNumber", aExchangeContact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="Pager"]', ""));
+			this.setProperty("FaxNumber", aExchangeContact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="Telex"]', ""));
+
+			var homeDetails = aExchangeContact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Home"]');
+			if (homeDetails.length > 0) {
+				this.setProperty("HomeAddress", homeDetails[0].getTagValue('t:Street', ""));
+				this.setProperty("HomeCity", homeDetails[0].getTagValue('t:City', ""));
+				this.setProperty("HomeState", homeDetails[0].getTagValue('t:State', ""));
+				this.setProperty("HomeCountry", homeDetails[0].getTagValue('t:CountryOrRegion', ""));
+				this.setProperty("HomeZipCode", homeDetails[0].getTagValue('t:PostalCode', ""));
+			}
+
+			var workDetails = aExchangeContact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Business"]');
+			if (workDetails.length > 0) {
+				this.setProperty("WorkAddress", workDetails[0].getTagValue('t:Street', ""));
+				this.setProperty("WorkCity", workDetails[0].getTagValue('t:City', ""));
+				this.setProperty("WorkState", workDetails[0].getTagValue('t:State', ""));
+				this.setProperty("WorkCountry", workDetails[0].getTagValue('t:CountryOrRegion', ""));
+				this.setProperty("WorkZipCode", workDetails[0].getTagValue('t:PostalCode', ""));
+			}
+
+			var otherDetails = aExchangeContact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Other"]');
+			if (otherDetails.length > 0) {
+				this.setProperty("OtherAddress", workDetails[0].getTagValue('t:Street', ""));
+				this.setProperty("OtherCity", workDetails[0].getTagValue('t:City', ""));
+				this.setProperty("OtherState", workDetails[0].getTagValue('t:State', ""));
+				this.setProperty("OtherCountry", workDetails[0].getTagValue('t:CountryOrRegion', ""));
+				this.setProperty("OtherZipCode", workDetails[0].getTagValue('t:PostalCode', ""));
+			}
+
+			this.setProperty("_AimScreenName", aExchangeContact.getTagValueByXPath('/t:ImAddresses/t:Entry[@Key="ImAddress"]', ""));
+			this.setProperty("WebPage1", aExchangeContact.getTagValue("t:BusinessHomePage", ""));
+
+			this.setProperty("Notes", aExchangeContact.getTagValue("t:Body", ""));
+
+			var birthDay = aExchangeContact.getTagValue("t:Birthday");
+
+			if (birthDay) {
+				this.setProperty("BirthYear", birthDay.substr(0,4));
+				this.setProperty("BirthMonth", birthDay.substr(5,2));
+				this.setProperty("BirthDay", birthDay.substr(8,2));
+			}
 		}
-
-		this.setProperty("PrimaryEmail", primaryEmail);
-		this.setProperty("SecondEmail", secondEmail);
-
-		this.setProperty("JobTitle", aExchangeContact.getTagValue("t:JobTitle", ""));
-		this.setProperty("Department", aExchangeContact.getTagValue("t:Department", ""));
-		this.setProperty("Company", aExchangeContact.getTagValue("t:CompanyName", ""));
-
-		this.setProperty("HomePhone", aExchangeContact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="HomePhone"]', ""));
-
-		this.setProperty("WorkPhone", aExchangeContact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="BusinessPhone"]', ""));
-		this.setProperty("WorkPhone2", aExchangeContact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="BusinessPhone2"]', ""));
-		this.setProperty("CellularNumber", aExchangeContact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="MobilePhone"]', ""));
-		this.setProperty("PagerNumber", aExchangeContact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="Pager"]', ""));
-		this.setProperty("FaxNumber", aExchangeContact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="Telex"]', ""));
-
-		var homeDetails = aExchangeContact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Home"]');
-		if (homeDetails.length > 0) {
-			this.setProperty("HomeAddress", homeDetails[0].getTagValue('t:Street', ""));
-			this.setProperty("HomeCity", homeDetails[0].getTagValue('t:City', ""));
-			this.setProperty("HomeState", homeDetails[0].getTagValue('t:State', ""));
-			this.setProperty("HomeCountry", homeDetails[0].getTagValue('t:CountryOrRegion', ""));
-			this.setProperty("HomeZipCode", homeDetails[0].getTagValue('t:PostalCode', ""));
-		}
-
-		var workDetails = aExchangeContact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Business"]');
-		if (workDetails.length > 0) {
-			this.setProperty("WorkAddress", workDetails[0].getTagValue('t:Street', ""));
-			this.setProperty("WorkCity", workDetails[0].getTagValue('t:City', ""));
-			this.setProperty("WorkState", workDetails[0].getTagValue('t:State', ""));
-			this.setProperty("WorkCountry", workDetails[0].getTagValue('t:CountryOrRegion', ""));
-			this.setProperty("WorkZipCode", workDetails[0].getTagValue('t:PostalCode', ""));
-		}
-
-		var otherDetails = aExchangeContact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Other"]');
-		if (otherDetails.length > 0) {
-			this.setProperty("OtherAddress", workDetails[0].getTagValue('t:Street', ""));
-			this.setProperty("OtherCity", workDetails[0].getTagValue('t:City', ""));
-			this.setProperty("OtherState", workDetails[0].getTagValue('t:State', ""));
-			this.setProperty("OtherCountry", workDetails[0].getTagValue('t:CountryOrRegion', ""));
-			this.setProperty("OtherZipCode", workDetails[0].getTagValue('t:PostalCode', ""));
-		}
-
-		this.setProperty("_AimScreenName", aExchangeContact.getTagValueByXPath('/t:ImAddresses/t:Entry[@Key="ImAddress"]', ""));
-		this.setProperty("WebPage1", aExchangeContact.getTagValue("t:BusinessHomePage", ""));
-
-		this.setProperty("Notes", aExchangeContact.getTagValue("t:Body", ""));
-
-		var birthDay = aExchangeContact.getTagValue("t:Birthday");
-
-		if (birthDay) {
-			this.setProperty("BirthYear", birthDay.substr(0,4));
-			this.setProperty("BirthMonth", birthDay.substr(5,2));
-			this.setProperty("BirthDay", birthDay.substr(8,2));
-		}
-}
-catch(err) {
-	dump("exchangeAbCard Error:"+err);
-}
 	},  
 
 	// Internal methods.

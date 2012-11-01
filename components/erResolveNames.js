@@ -66,7 +66,10 @@ erResolveNames.prototype = {
 		// http://msdn.microsoft.com/en-us/library/exchange/aa565329%28v=exchg.140%29.aspx
 		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ResolveNames xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 		req.setAttribute("ReturnFullContactData", "true");
-		req.setAttribute("SearchScope", "ActiveDirectory");
+		req.setAttribute("SearchScope", "ContactsActiveDirectory");
+
+//		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
+//		req.addChildTagObject(parentFolder);
 
 		if ((this.ids.routingType) && (this.ids.routingType == "SMTP")) {
 			req.addChildTag("UnresolvedEntry", "nsMessages", this.ids.emailAddress); 
@@ -79,43 +82,51 @@ erResolveNames.prototype = {
 
 		this.parent.xml2jxon = true;
 
-		exchWebService.commonFunctions.LOG("erResolveNames.execute:"+String(this.parent.makeSoapMessage(req)));
+		//exchWebService.commonFunctions.LOG("erResolveNames.execute:"+String(this.parent.makeSoapMessage(req)));
 
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erResolveNames.onSendOk:"+String(aResp));
+		//exchWebService.commonFunctions.LOG("erResolveNames.onSendOk:"+String(aResp));
 
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:ResolveNamesResponse/m:ResponseMessages/m:ResolveNamesResponseMessage[@ResponseClass='Success' and m:ResponseCode = 'NoError']");
 
 		if (rm.length == 0) {
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
-			return;
-		}
 
-		var resolutionsSets = rm[0].getTags("m:ResolutionSet");
-		rm = null;
-
-		var allContacts = new Array();
-		for each(var resolutionsSet in resolutionsSets) {
-
-			var totalItemsInView = resolutionsSet.getAttribute("TotalItemsInView", 0);
-			var includesLastItem = resolutionsSet.getAttribute("IncludesLastItemInRange", "false");
-
-			var contacts = resolutionsSet.XPath("/t:Resolution/t:Contact");
-			for (var index in contacts) {
-				var itemId = contacts[index].addChildTag("ItemId", "t", null); 
-				itemId.setAttribute("Id", this.itemId.id);
-				itemId.setAttribute("ChangeKey", this.itemId.changeKey);
-		exchWebService.commonFunctions.LOG("erResolveNames.onSendOk2:"+contacts[index].toString());
-				allContacts.push(contacts[index]);
+			rm = aResp.XPath("/s:Envelope/s:Body/m:ResolveNamesResponse/m:ResponseMessages/m:ResolveNamesResponseMessage[@ResponseClass='Error' and m:ResponseCode = 'ErrorNameResolutionNoResults']");
+			if (rm.length > 0) {
+				this.onSendError(aExchangeRequest, 0, "ErrorNameResolutionNoResults");
+				return;
 			}
-			contacts = null;
-		
+			else {
+				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
+				return;
+			}
 		}
-		resolutionsSets = null;
+		else {
+			var resolutionsSets = rm[0].getTags("m:ResolutionSet");
+
+			var allContacts = new Array();
+			for each(var resolutionsSet in resolutionsSets) {
+
+				var totalItemsInView = resolutionsSet.getAttribute("TotalItemsInView", 0);
+				var includesLastItem = resolutionsSet.getAttribute("IncludesLastItemInRange", "false");
+
+				var contacts = resolutionsSet.XPath("/t:Resolution/t:Contact");
+				for (var index in contacts) {
+					var itemId = contacts[index].addChildTag("ItemId", "t", null); 
+					itemId.setAttribute("Id", this.itemId.id);
+					itemId.setAttribute("ChangeKey", this.itemId.changeKey);
+					allContacts.push(contacts[index]);
+				}
+				contacts = null;
+		
+			}
+			resolutionsSets = null;
+		}
+		rm = null;
 
 		if (this.mCbOk) {
 			this.mCbOk(this, allContacts);
@@ -125,6 +136,7 @@ erResolveNames.prototype = {
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)
 	{
+		exchWebService.commonFunctions.LOG("erResolveNames.onSendError: aCode"+aCode+", aMsg:"+aMsg);
 		this.isRunning = false;
 		if (this.mCbError) {
 			this.mCbError(this, aCode, aMsg);
