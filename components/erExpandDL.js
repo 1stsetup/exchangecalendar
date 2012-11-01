@@ -74,7 +74,9 @@ erExpandDLRequest.prototype = {
 		if (this.itemId) {
 			var itemId = mailBox.addChildTag("ItemId", "nsTypes", null);
 			itemId.setAttribute("Id", this.itemId.id);
-			itemId.setAttribute("ChangeKey", this.itemId.changeKey);
+			if (this.itemId.changeKey) {
+				itemId.setAttribute("ChangeKey", this.itemId.changeKey);
+			}
 		}
 
 		this.parent.xml2jxon = true;

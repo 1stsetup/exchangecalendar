@@ -27,5 +27,5 @@ interface mivExchangeAbCard : nsIAbCard
 
 	attribute boolean readOnly;
 
-	void convertExchangeContactToCard(in jsval aExchangeContact);  
+	void convertExchangeContactToCard(in jsval aParent, in jsval aExchangeContact);  
 };

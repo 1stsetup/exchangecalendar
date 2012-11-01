@@ -81,7 +81,11 @@ erSyncContactsFolderRequest.prototype = {
 		itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");
 		itemShape.addChildTag("BodyType", "nsTypes", "Text");
 
-		var extendedFieldURI = itemShape.addChildTag("AdditionalProperties", "nsTypes", null).addChildTag("ExtendedFieldURI", "nsTypes", null);
+		var additionalProperties = itemShape.addChildTag("AdditionalProperties", "nsTypes", null);
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Subject");
+//		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "folder:DisplayName"); // Not allowed for this request
+
+		var extendedFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
 		extendedFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
 		extendedFieldURI.setAttribute("PropertyId", MAPI_PidTagBody);
 		extendedFieldURI.setAttribute("PropertyType", "String");
@@ -103,7 +107,7 @@ erSyncContactsFolderRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erSyncContactsFolderRequest.onSendOk:"+String(aResp)+"\n");
+		exchWebService.commonFunctions.LOG("erSyncContactsFolderRequest.onSendOk:"+String(aResp)+"\n");
 
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
@@ -116,12 +120,16 @@ erSyncContactsFolderRequest.prototype = {
 				for each (var contact in creation.XPath("/t:Contact")) {
 					//this.creations.contacts.push(contact);
 					this.creations.contacts.push({Id: contact.getAttributeByTag("t:ItemId", "Id"),
-						  ChangeKey: contact.getAttributeByTag("t:ItemId", "ChangeKey")});
+						  ChangeKey: contact.getAttributeByTag("t:ItemId", "ChangeKey"),
+					  	  name: contact.getTagValue("t:Subject"),
+					  	  displayName: contact.getTagValue("t:DisplayName")});
 				}
 				for each (var distlist in creation.XPath("/t:DistributionList")) {
 					//this.creations.distlists.push(distlist);
 					this.creations.distlists.push({Id: distlist.getAttributeByTag("t:ItemId", "Id"),
-						  ChangeKey: distlist.getAttributeByTag("t:ItemId", "ChangeKey")});
+						  ChangeKey: distlist.getAttributeByTag("t:ItemId", "ChangeKey"),
+					  	  name: distlist.getTagValue("t:Subject"),
+					  	  displayName: distlist.getTagValue("t:DisplayName")});
 				}
 			}
 
@@ -129,12 +137,16 @@ erSyncContactsFolderRequest.prototype = {
 				for each (var contact in update.XPath("/t:Contact")) {
 					//this.updates.contacts.push(contact);
 					this.updates.contacts.push({Id: contact.getAttributeByTag("t:ItemId", "Id"),
-						  ChangeKey: contact.getAttributeByTag("t:ItemId", "ChangeKey")});
+						  ChangeKey: contact.getAttributeByTag("t:ItemId", "ChangeKey"),
+					  	  name: contact.getTagValue("t:Subject"),
+					  	  displayName: contact.getTagValue("t:DisplayName")});
 				}
 				for each (var distlist in update.XPath("/t:DistributionList")) {
 					//this.updates.distlists.push(distlist);
 					this.updates.distlists.push({Id: distlist.getAttributeByTag("t:ItemId", "Id"),
-						  ChangeKey: distlist.getAttributeByTag("t:ItemId", "ChangeKey")});
+						  ChangeKey: distlist.getAttributeByTag("t:ItemId", "ChangeKey"),
+					  	  name: distlist.getTagValue("t:Subject"),
+					  	  displayName: distlist.getTagValue("t:DisplayName")});
 				}
 			}
 

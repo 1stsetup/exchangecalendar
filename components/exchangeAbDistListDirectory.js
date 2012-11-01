@@ -74,16 +74,9 @@ function exchangeAbDistListDirectory() {
 	this.findContactsRequest = null;
 	this.getContactsRequest = null;
 
-	this.pollTimer = Cc["@mozilla.org/timer;1"]
-					.createInstance(Ci.nsITimer);
-
-exchWebService.commonAbFunctions.logInfo("BliepBliep1");
 	this.contacts = {};
 	this.distLists = new Array();
 	this.childDirs = {};
-
-	this.syncState = null;
-	this.weAreSyncing = false;
 
 	this._isInitialized = false;
 
@@ -95,8 +88,6 @@ exchangeAbDistListDirectory.prototype = {
 	classID: components.ID("{9e260dc4-90d3-457b-8885-8dff0f69eea3}"),
 	contractID: "@mozilla.org/addressbook/directory;1?type=exchWebService-distList-directory",
 	classDescription: "Exchange 2007/2010 Distribution List",
-
-	activityManager : Cc["@mozilla.org/activity-manager;1"].getService(nsIAM),  
 
 	// void getInterfaces(out PRUint32 count, [array, size_is(count), retval] out nsIIDPtr array);
 	QueryInterface: XPCOMUtils.generateQI([Ci.nsIAbDirectory,
@@ -437,16 +428,8 @@ exchangeAbDistListDirectory.prototype = {
 		var result = [];
 
 		if (this.distLists.length > 0) {
-			var dir;
 			for each(var distList in this.distLists) {
-				var dirName = this.childNodeURI+"id="+encodeURIComponent(distList.id)+"&changeKey="+encodeURIComponent(distList.changeKey)+"&name="+encodeURIComponent(distList.name)+"&parentId="+this.parentId+"&type="+distList.type;
-				try {
-					dir = MailServices.ab.getDirectory(dirName);
-					result.push(dir);
-				}
-				catch(err) {
-					exchWebService.commonAbFunctions.logInfo("exchangeAbRootDirectory: Error get childNodes for '"+dirName+"'.:"+err+"\n");
-				}
+				result.push(distList);
 			}
 		}
 		return exchWebService.commonFunctions.CreateSimpleEnumerator(result);
@@ -460,10 +443,6 @@ exchangeAbDistListDirectory.prototype = {
 	get childCards()
 	{
 		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: 1 get childCards:"+ this.dirName);
-		for (var index in this.contacts) {
-			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get childCard:"+ index);
-		}
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: 2 get childCards:"+ this.dirName);
 		return exchWebService.commonFunctions.CreateSimpleObjectEnumerator(this.contacts);
 	},
 
@@ -490,16 +469,64 @@ exchangeAbDistListDirectory.prototype = {
 	init: function _init(aURI)
 	{
 		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: init. aURI:"+aURI+"\n");
+
+		if (this._isInitialized) {
+			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' is allready initialized");
+
+			var tmpStr = aURI.substr(aURI.indexOf("://")+3);
+			var params = exchWebService.commonAbFunctions.paramsToArray(tmpStr,"&");
+			var changeKey;
+			if (params.changeKey) {
+				changeKey = decodeURIComponent(params.changeKey);
+			}
+
+			if (aURI != this._URI) {
+				if (decodeURIComponent(params.id) == this.uuid) {
+					if (changeKey == this.changeKey) {
+						exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' aURI changed, id is the same but changeKey is the same. Going to do nothing.");
+						return;
+					}
+					else {
+						exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' aURI changed, id is the same and changKey is different. Going to reset/reload.");
+
+						// We could do this more clever by finding out the differences and only update those. 
+						// But how deep will a distlist go and how many cards will be in a distlist.!!??
+						// For now we clean this distlist and re add everything.
+
+						// Remove cards.
+						var oldList = this.contacts;
+						this.contacts = new Array();
+						for each(var contact in oldList) {
+							exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' removed contact:"+contact.getProperty("DisplayName", ""));
+							MailServices.ab.notifyDirectoryItemDeleted(this, contact);
+						}		
+
+						// Remove distLists.
+						var oldList = this.distLists;
+						this.distLists = new Array();
+						for each(var distList in oldList) {
+							exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' removed distList:"+distList.dirName);
+							MailServices.ab.notifyDirectoryDeleted(this, distList);
+						}		
+
+					}
+				}
+				else {
+					exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' aURI changed but id is different. Not allowed. Going to do nothing.");
+					return;
+				}
+			}
+			else {
+				exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' aURI did not change. Going to do nothing.");
+				return;
+			}
+		}
+
 		this._URI = aURI;
 
 		this._Schema = null;
 		this._UUID = "";
 		this._searchQuery = null;
-
-		if (this._isInitialized) {
-			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' is allready initialized");
-			return;
-		}
 
 		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: this is a childdir:"+aURI);
 
@@ -560,14 +587,6 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
 
 			}
 			else {
-				// Non query directories we set the refresh timer for
-			        let self = this;
-				let timerCallback = {
-					notify: function setTimeout_notify() {
-						self.syncFolder();
-					}
-				};
-
 				if (this.parentId) {
 					this.prefs = Cc["@mozilla.org/preferences-service;1"]
 					    	.getService(Ci.nsIPrefService)
@@ -578,8 +597,6 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
 					    	.getService(Ci.nsIPrefService)
 					    	.getBranch("extensions.exchangecontacts@extensions.1st-setup.nl.account."+this._UUID+".");
 				}
-
-				this.pollTimer.initWithCallback(timerCallback, exchWebService.commonFunctions.safeGetIntPref(this.prefs, "pollinterval", 300, true) * 1000, this.pollTimer.TYPE_REPEATING_SLACK);
 
 				this.loadDistListFromExchange();
 			}
@@ -1028,15 +1045,6 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
 		this.prefs.setCharPref("changekey", aValue);
 	},
 
-	saveCredentials: function _saveCredentials(aCredentials)
-	{
-		if (aCredentials) {
-			if ((aCredentials.user != "") && (aCredentials.user != "\\") && (aCredentials.user != "/")) {
-				this.user = aCredentials.user;
-			}
-		}
-	},
-
 	loadDistListFromExchange: function _loadDistListFromExchange()
 	{
 		if (this.isLoading) {
@@ -1049,11 +1057,13 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
 
 		var self = this;
 
+		// changekey set to null because the same dislist can have different changeKey when it is also added as a member of another distlist.
 		this.addToQueue( erExpandDLRequest,
 						{user: this.user, 
 						 serverUrl: this.serverUrl,
 				 		 actionStart: Date.now(),
-						 itemId: { id: this.id, changeKey: this.changeKey} },
+						 itemId: { id: this.id} },
+//						 itemId: { id: this.id, changeKey: this.changeKey} },
 						function(erExpandDLRequest, aMailboxes) { self.distListExpandOk(erExpandDLRequest, aMailboxes);}, 
 						function(erExpandDLRequest, aCode, aMsg) { self.distListExpandError(erExpandDLRequest, aCode, aMsg);},
 						null);
@@ -1062,71 +1072,9 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
 
 	ecUpdateCard: function _ecUpdateCard(contact)
 	{
-			var newCard = Cc["@mozilla.org/addressbook/cardproperty;1"]
-				.createInstance(Ci.nsIAbCard);
-	
-			newCard.directoryId = this.uuid;
-			newCard.localId = contact.getAttributeByTag("t:ItemId", "Id");
-			newCard.setProperty("X-ChangeKey", contact.getAttributeByTag("t:ItemId", "ChangeKey", ""));
-			newCard.setProperty("X-ContactSource", contact.getTagValue("t:ContactSource", ""));
-			newCard.setProperty("DisplayName", contact.getTagValue("t:DisplayName", ""));
-			newCard.setProperty("FirstName", contact.getTagValue("t:GivenName", ""));
-			newCard.setProperty("LastName", contact.getTagValue("t:Surname", ""));
-			newCard.setProperty("PrimaryEmail", contact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress1"]', ""));
-			newCard.setProperty("SecondEmail", contact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress2"]', ""));
-
-			newCard.setProperty("JobTitle", contact.getTagValue("t:JobTitle", ""));
-			newCard.setProperty("Department", contact.getTagValue("t:Department", ""));
-			newCard.setProperty("Company", contact.getTagValue("t:CompanyName", ""));
-
-			newCard.setProperty("HomePhone", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="HomePhone"]', ""));
-
-			newCard.setProperty("WorkPhone", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="BusinessPhone"]', ""));
-			newCard.setProperty("WorkPhone2", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="BusinessPhone2"]', ""));
-			newCard.setProperty("CellularNumber", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="MobilePhone"]', ""));
-			newCard.setProperty("PagerNumber", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="Pager"]', ""));
-			newCard.setProperty("FaxNumber", contact.getTagValueByXPath('/t:PhoneNumbers/t:Entry[@Key="Telex"]', ""));
-
-			var homeDetails = contact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Home"]');
-			if (homeDetails.length > 0) {
-				newCard.setProperty("HomeAddress", homeDetails[0].getTagValue('t:Street', ""));
-				newCard.setProperty("HomeCity", homeDetails[0].getTagValue('t:City', ""));
-				newCard.setProperty("HomeState", homeDetails[0].getTagValue('t:State', ""));
-				newCard.setProperty("HomeCountry", homeDetails[0].getTagValue('t:CountryOrRegion', ""));
-				newCard.setProperty("HomeZipCode", homeDetails[0].getTagValue('t:PostalCode', ""));
-			}
-
-			var workDetails = contact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Business"]');
-			if (workDetails.length > 0) {
-				newCard.setProperty("WorkAddress", workDetails[0].getTagValue('t:Street', ""));
-				newCard.setProperty("WorkCity", workDetails[0].getTagValue('t:City', ""));
-				newCard.setProperty("WorkState", workDetails[0].getTagValue('t:State', ""));
-				newCard.setProperty("WorkCountry", workDetails[0].getTagValue('t:CountryOrRegion', ""));
-				newCard.setProperty("WorkZipCode", workDetails[0].getTagValue('t:PostalCode', ""));
-			}
-
-			var otherDetails = contact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Other"]');
-			if (otherDetails.length > 0) {
-				newCard.setProperty("OtherAddress", workDetails[0].getTagValue('t:Street', ""));
-				newCard.setProperty("OtherCity", workDetails[0].getTagValue('t:City', ""));
-				newCard.setProperty("OtherState", workDetails[0].getTagValue('t:State', ""));
-				newCard.setProperty("OtherCountry", workDetails[0].getTagValue('t:CountryOrRegion', ""));
-				newCard.setProperty("OtherZipCode", workDetails[0].getTagValue('t:PostalCode', ""));
-			}
-
-			newCard.setProperty("_AimScreenName", contact.getTagValueByXPath('/t:ImAddresses/t:Entry[@Key="ImAddress"]', ""));
-			newCard.setProperty("WebPage1", contact.getTagValue("t:BusinessHomePage", ""));
-
-			newCard.setProperty("Notes", contact.getTagValue("t:Body", ""));
-
-			var birthDay = contact.getTagValue("t:Birthday");
-
-			if (birthDay) {
-				newCard.setProperty("BirthYear", birthDay.substr(0,4));
-				newCard.setProperty("BirthMonth", birthDay.substr(5,2));
-				newCard.setProperty("BirthDay", birthDay.substr(8,2));
-			}
-
+			var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
+				.createInstance(Ci.mivExchangeAbCard);
+			newCard.convertExchangeContactToCard(this, contact);
 
 			if (this.contacts[newCard.localId]) {
 				exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  == We allready know this card. Lets see what has changed");
@@ -1197,6 +1145,8 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 
 	convertExchangeMailbox: function _convertExchangeMailbox(aMailbox)
 	{
+		//exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: convertExchangeMailbox: Mailboxes:"+aMailbox.toString());
+		
 		var result = {
 			name: aMailbox.getTagValue("t:Name"),
 			emailAddress: aMailbox.getTagValue("t:EmailAddress"),
@@ -1212,8 +1162,6 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 
 	distListExpandOk: function _contactsFoundOk(erExpandDLRequest, aMailboxes)
 	{
-		this.saveCredentials(erExpandDLRequest.argument);
-
 		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: distListExpandOk: Mailboxes:"+aMailboxes.length);
 
 		if (aMailboxes.length > 0) {
@@ -1228,24 +1176,22 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 					exchWebService.commonAbFunctions.logInfo("distListLoadOk: new Contact:"+calMailbox.name);
 					if (calMailbox.itemId.id) {
 						// It is a private store contact.
-						aStoreContacts.push(calMailbox.itemId);
+						aStoreContacts.push({ Id: calMailbox.itemId.id });
 					}
 					break;
 				case "PrivateDL": // Private Store distribution list.
 					if (calMailbox.itemId.id) {
 						// It is a private store distList.
-						exchWebService.commonAbFunctions.logInfo("distListLoadOk: new Private distList:"+calMailbox.name);
-
-						this.distLists.push({ id: calMailbox.itemId.Id,
-									changeKey: calMailbox.itemId.ChangeKey,
-									name: calMailbox.name,
-									type: "PrivateDL" } );
+						exchWebService.commonAbFunctions.logInfo("distListLoadOk: new Private distList:"+calMailbox.name+" in dir:"+this.dirName);
 
 						var dirName = this.childNodeURI+"id="+encodeURIComponent(calMailbox.itemId.id)+"&changeKey="+encodeURIComponent(calMailbox.itemId.changeKey)+"&name="+encodeURIComponent(calMailbox.name)+"&parentId="+this.parentId+"&type=PrivateDL";
 
 						try {
 							var dir = MailServices.ab.getDirectory(dirName);
-							MailServices.ab.notifyDirectoryItemAdded(this, dir);
+							if (dir) {
+								this.distLists.push(dir);
+								MailServices.ab.notifyDirectoryItemAdded(this, dir);
+							}
 						}
 						catch(err) {
 							exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Error adding dislist '"+dirName+"' Error:"+err);
@@ -1300,14 +1246,11 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 
 	distListExpandError: function _distListExpandError(erExpandDLRequest, aCode, aMsg)
 	{
-		this.saveCredentials(erExpandDLRequest.argument);
 		this.isLoading = false;
 	},
 
 	contactsLoadOk: function _contactsLoadOk(erGetContactsRequest, aContacts)
 	{
-		this.saveCredentials(erGetContactsRequest.argument);
-
 		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: contactsLoadOk: contacts:"+aContacts.length);
 
 		for each(var contact in aContacts) {
@@ -1323,8 +1266,6 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 
 	mailboxLoadOk: function _contactsLoadOk(erGetContactsRequest, aContacts)
 	{
-		this.saveCredentials(erGetContactsRequest.argument);
-
 		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: contactsLoadOk: contacts:"+aContacts.length);
 
 		for each(var contact in aContacts) {
@@ -1336,121 +1277,6 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 
 		this.isLoading = false;
 
-	},
-
-	syncFolder: function _syncFolder()
-	{
-		if ((this.weAreSyncing) || (this.isLoading)) {
-			return;
-		}
-
-		this.weAreSyncing = true;
-		var self = this;
-
-		this.addToQueue( erSyncContactsFolderRequest,
-			{user: this.user, 
-			 mailbox: this.mailbox,
-			 serverUrl: this.serverUrl,
-			 folderBase: this.folderBase,
-			 folderID: this.folderID,
-			 changeKey: this.changeKey,
-			 syncState: this.syncState,
-			 actionStart: Date.now() }, 
-			function(erSyncContactsFolderRequest, creations, updates, deletions, syncState) { self.syncFolderOK(erSyncContactsFolderRequest, creations, updates, deletions, syncState);}, 
-			function(erSyncContactsFolderRequest, aCode, aMsg) { self.syncFolderError(erSyncContactsFolderRequest, aCode, aMsg);},
-			null);
-	},
-
-	syncFolderOK: function _syncFolderOK(erSyncContactsFolderRequest, creations, updates, deletions, syncState)
-	{
-		//exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: syncFolderOK "+ this.dirName);
-		this.saveCredentials(erSyncContactsFolderRequest.argument);
-
-		if ((creations.contacts.length > 0) || (updates.contacts.length > 0) || (deletions.contacts.length > 0)) {
-			this.addActivity(exchWebService.commonFunctions.getString("ExchangeContacts","syncFolderEventMessage",[creations.contacts.length, updates.contacts.length, deletions.contacts.length, this.dirName],"exchangecalendar"), "", erSyncContactsFolderRequest.argument.actionStart, Date.now())
-			exchWebService.commonAbFunctions.logInfo(exchWebService.commonFunctions.getString("ExchangeContacts","syncFolderEventMessage",[creations.contacts.length, updates.contacts.length, deletions.contacts.length, this.dirName],"exchangecalendar"));
-		}
-
-		var newCards = [];
-		for each(var newCard in creations.contacts) {
-			exchWebService.commonAbFunctions.logInfo("New Contact card:"+newCard.toString(),2);
-			newCards.push(newCard)
-			//this.ecUpdateCard(newCard);
-		}
-
-		for each(var updatedCard in updates.contacts) {
-			exchWebService.commonAbFunctions.logInfo("Updated Contact card:"+updatedCard.toString(),2);
-			newCards.push(updatedCard)
-			//this.ecUpdateCard(updatedCard);
-		}
-		
-		if (newCards.length > 0) {
-			var self = this;
-			this.addToQueue( erGetContactsRequest,
-							{user: this.user, 
-							 mailbox: this.mailbox,
-							 folderBase: this.folderBase,
-							 serverUrl: this.serverUrl,
-							 folderID: this.folderID,
-							 changeKey: this.changeKey,
-							 ids: newCards,
-					 		 actionStart: Date.now()},
-							function(erGetContactsRequest, aContacts) { self.contactsLoadOk2(erGetContactsRequest, aContacts);}, 
-							function(erGetContactsRequest, aCode, aMsg) { self.distListExpand(erGetContactsRequest, aCode, aMsg);},
-							null);
-		}
-	
-		for each(var deletedCard in deletions.contacts) {
-			exchWebService.commonAbFunctions.logInfo("Deleted Contact card:"+deletedCard.toString(),2);
-			if (this.contacts[deletedCard.getAttributeByTag("t:ItemId", "Id")]) {
-				MailServices.ab.notifyDirectoryItemDeleted(this, this.contacts[deletedCard.getAttributeByTag("t:ItemId", "Id")]);
-exchWebService.commonAbFunctions.logInfo("BliepBliep2:"+this.dirName);
-				delete this.contacts[deletedCard.getAttributeByTag("t:ItemId", "Id")];
-			}
-		}
-
-		this.syncState = syncState;
-
-		if (newCards.length == 0) {
-			this.weAreSyncing = false;
-		}
-	},
-
-	syncFolderError: function _syncFolderError(erSyncContactsFolderRequest, aCode, aMsg)
-	{
-		this.saveCredentials(erSyncContactsFolderRequest.argument);
-
-		this.weAreSyncing = false;
-	},
-
-	contactsLoadOk2: function _contactsLoadOk2(erGetContactsRequest, aContacts)
-	{
-		this.saveCredentials(erGetContactsRequest.argument);
-
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: contactsLoadOk2: contacts:"+aContacts.length);
-
-		for each(var contact in aContacts) {
-			exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString(),2);
-			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: new childCards:"+contact.getTagValue("t:DisplayName"));
-			this.ecUpdateCard(contact);
-
-		}
-
-		this.weAreSyncing = false;
-
-	},
-
-	addActivity: function _addActivity(aTitle, aText, aStartDate, aEndDate)
-	{
-		let event = Cc["@mozilla.org/activity-event;1"].createInstance(nsIAE);  
-  
-		event.init(aTitle,  
-		           null,   
-		           aText,   
-		           aStartDate,     
-		           aEndDate);          
-  
-		this.activityManager.addActivity(event);
 	},
 
 };

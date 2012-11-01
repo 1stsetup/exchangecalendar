@@ -288,20 +288,41 @@ mivExchangeAbCard.prototype = {
 	},
 
 	//	void convertExchangeContactToCard(in jsval aExchangeContact);
-	convertExchangeContactToCard: function _convertExchangeContactToCard(aExchangeContact)
+	convertExchangeContactToCard: function _convertExchangeContactToCard(aParent, aExchangeContact)
 	{
 		this.logInfo("convertExchangeContactToCard: "+aExchangeContact.toString());
 try{
 		this.isMailList = false;
-		this.directoryId = this.uuid;
+		this.directoryId = aParent.uuid;
 		this.localId = aExchangeContact.getAttributeByTag("t:ItemId", "Id");
 		this.setProperty("X-ChangeKey", aExchangeContact.getAttributeByTag("t:ItemId", "ChangeKey", ""));
 		this.setProperty("X-ContactSource", aExchangeContact.getTagValue("t:ContactSource", ""));
 		this.setProperty("DisplayName", aExchangeContact.getTagValue("t:DisplayName", ""));
 		this.setProperty("FirstName", aExchangeContact.getTagValue("t:GivenName", ""));
 		this.setProperty("LastName", aExchangeContact.getTagValue("t:Surname", ""));
-		this.setProperty("PrimaryEmail", aExchangeContact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress1"]', ""));
-		this.setProperty("SecondEmail", aExchangeContact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress2"]', ""));
+
+		// We need to check which email address is primary. For exchange it will start with 'SMTP:' (in capital)
+		var primaryEmail = aExchangeContact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress1"]', "");
+		var secondEmail = aExchangeContact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress2"]', "");
+		if (primaryEmail.indexOf("SMTP:") > -1) {
+			primaryEmail = primaryEmail.substr(primaryEmail.indexOf("SMTP:")+5);
+			if (secondEmail.indexOf("smtp:") > -1) {
+				secondEmail = secondEmail.substr(secondEmail.indexOf("smtp:")+5);
+			}
+		}
+		else {
+			if (secondEmail.indexOf("SMTP:") > -1) {
+				var tmpPrimary = primaryEmail;
+				primaryEmail = secondEmail.substr(secondEmail.indexOf("SMTP:")+5);
+				secondEmail = tmpPrimary;
+				if (secondEmail.indexOf("smtp:") > -1) {
+					secondEmail = secondEmail.substr(secondEmail.indexOf("smtp:")+5);
+				}
+			}
+		}
+
+		this.setProperty("PrimaryEmail", primaryEmail);
+		this.setProperty("SecondEmail", secondEmail);
 
 		this.setProperty("JobTitle", aExchangeContact.getTagValue("t:JobTitle", ""));
 		this.setProperty("Department", aExchangeContact.getTagValue("t:Department", ""));

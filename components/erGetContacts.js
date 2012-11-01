@@ -79,7 +79,9 @@ erGetContactsRequest.prototype = {
 		for each (var item in this.ids) {
 			var itemId = itemids.addChildTag("ItemId", "nsTypes", null);
 			itemId.setAttribute("Id", item.Id);
-			itemId.setAttribute("ChangeKey", item.ChangeKey);
+			if (item.ChangeKey) {
+				itemId.setAttribute("ChangeKey", item.ChangeKey);
+			}
 		}
 
 		this.parent.xml2jxon = true;
@@ -90,7 +92,7 @@ erGetContactsRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erGetContactsRequest.onSendOk:"+aResp.toString());
+		//exchWebService.commonFunctions.LOG("erGetContactsRequest.onSendOk:"+aResp.toString());
 
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:ResponseCode");
 

@@ -424,16 +424,8 @@ exchangeAbFolderDirectory.prototype = {
 		var result = [];
 
 		if (this.distLists.length > 0) {
-			var dir;
 			for each(var distList in this.distLists) {
-				var dirName = this.childNodeURI+"id="+encodeURIComponent(distList.id)+"&changeKey="+encodeURIComponent(distList.changeKey)+"&name="+encodeURIComponent(distList.name)+"&type="+distList.type;
-				try {
-					dir = MailServices.ab.getDirectory(dirName);
-					result.push(dir);
-				}
-				catch(err) {
-					exchWebService.commonAbFunctions.logInfo("exchangeAbRootDirectory: Error get childNodes for '"+dirName+"'.:"+err+"\n");
-				}
+				result.push(distList);
 			}
 		}
 		return exchWebService.commonFunctions.CreateSimpleEnumerator(result);
@@ -539,13 +531,6 @@ exchangeAbFolderDirectory.prototype = {
 			}
 			else {
 				// Non query directories we set the refresh timer for
-			        let self = this;
-				let timerCallback = {
-					notify: function setTimeout_notify() {
-						self.syncFolder();
-					}
-				};
-
 				if (this.parentId) {
 					this.prefs = Cc["@mozilla.org/preferences-service;1"]
 					    	.getService(Ci.nsIPrefService)
@@ -556,6 +541,16 @@ exchangeAbFolderDirectory.prototype = {
 					    	.getService(Ci.nsIPrefService)
 					    	.getBranch("extensions.exchangecontacts@extensions.1st-setup.nl.account."+this._UUID+".");
 				}
+
+				exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: init. Going to do first sync. aURI:"+aURI+"\n");
+				this.syncFolder();  // First sync to initialize.
+
+			        let self = this;
+				let timerCallback = {
+					notify: function setTimeout_notify() {
+						self.syncFolder();
+					}
+				};
 
 				this.pollTimer.initWithCallback(timerCallback, exchWebService.commonFunctions.safeGetIntPref(this.prefs, "pollinterval", 300, true) * 1000, this.pollTimer.TYPE_REPEATING_SLACK);
 
@@ -988,15 +983,6 @@ exchangeAbFolderDirectory.prototype = {
 		this.prefs.setCharPref("changekey", aValue);
 	},
 
-	saveCredentials: function _saveCredentials(aCredentials)
-	{
-		if (aCredentials) {
-			if ((aCredentials.user != "") && (aCredentials.user != "\\") && (aCredentials.user != "/")) {
-				this.user = aCredentials.user;
-			}
-		}
-	},
-
 	loadContactsFromExchange: function _loadContactsFromExchange()
 	{
 		if (this.isLoading) {
@@ -1025,14 +1011,10 @@ exchangeAbFolderDirectory.prototype = {
 
 	ecUpdateCard: function _ecUpdateCard(contact)
 	{
-try {
 			var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
 				.createInstance(Ci.mivExchangeAbCard);
-			newCard.convertExchangeContactToCard(contact);
-}
-catch(err) {
-	dump("ecUpdateCard: error:"+err+"\n");
-}
+			newCard.convertExchangeContactToCard(this, contact);
+
 			if (this.contacts[newCard.localId]) {
 				exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory:  == We allready know this card. Lets see what has changed");
 
@@ -1099,8 +1081,6 @@ catch(err) {
 
 	contactsFoundOk: function _contactsFoundOk(erFindContactsRequest, aContacts, aDistLists)
 	{
-		this.saveCredentials(erFindContactsRequest.argument);
-
 		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: contactsFoundOk: contacts:"+aContacts.length+", distributionlists:"+aDistLists.length);
 
 		if (aContacts.length > 0) {
@@ -1123,43 +1103,41 @@ catch(err) {
 		this.distLists = new Array()
 
 		for (var index in aDistLists) {
-			//exchWebService.commonAbFunctions.logInfo("distListLoadOk: distList:"+aDistLists[index].toString(),2);
-			exchWebService.commonAbFunctions.logInfo("distListLoadOk: new distList:"+aDistLists[index].name);
-
-			this.distLists.push({ id: aDistLists[index].Id,
-						changeKey: aDistLists[index].ChangeKey,
-						name: aDistLists[index].name,
-						type: "PrivateDL" } );
-
-			var dirName = this.childNodeURI+"id="+encodeURIComponent(aDistLists[index].Id)+"&changeKey="+encodeURIComponent(aDistLists[index].ChangeKey)+"&name="+encodeURIComponent(aDistLists[index].name)+"&parentId="+this.uuid+"&type=PrivateDL";
-
-			try {
-			exchWebService.commonAbFunctions.logInfo("distListLoadOk: A new distList:"+aDistLists[index].name+", dirName:"+dirName);
-				var dir = MailServices.ab.getDirectory(dirName);
-			exchWebService.commonAbFunctions.logInfo("distListLoadOk: B new distList:"+aDistLists[index].name+", dirName:"+dirName);
-				if (dir) {
-					MailServices.ab.notifyDirectoryItemAdded(this, dir);
-				}
-			exchWebService.commonAbFunctions.logInfo("distListLoadOk: C new distList:"+aDistLists[index].name+", dirName:"+dirName);
-			}
-			catch(err) {
-				exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Error adding dislist '"+dirName+"' Error:"+err);
-			}
-
+			this.addDistList(aDistLists[index]);
 		}
 
 	},
 
+	addDistList: function _addDistList(aDistList)
+	{
+		exchWebService.commonAbFunctions.logInfo("distListLoadOk: new distList:"+aDistList.name);
+
+/*		this.distLists.push({ id: aDistList.Id,
+					changeKey: aDistList.ChangeKey,
+					name: aDistList.name,
+					type: "PrivateDL" } );*/
+
+		var dirName = this.childNodeURI+"id="+encodeURIComponent(aDistList.Id)+"&changeKey="+encodeURIComponent(aDistList.ChangeKey)+"&name="+encodeURIComponent(aDistList.name)+"&parentId="+this.uuid+"&type=PrivateDL";
+
+		try {
+			var dir = MailServices.ab.getDirectory(dirName);
+			if (dir) {
+				this.distLists.push(dir);
+				MailServices.ab.notifyDirectoryItemAdded(this, dir);
+			}
+		}
+		catch(err) {
+			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Error adding distlist '"+dirName+"' Error:"+err);
+		}
+	},
+
 	contactsFindError: function _contactsFindError(erFindContactsRequest, aCode, aMsg)
 	{
-		this.saveCredentials(erFindContactsRequest.argument);
 		this.isLoading = false;
 	},
 
 	contactsLoadOk: function _contactsLoadOk(erGetContactsRequest, aContacts)
 	{
-		this.saveCredentials(erGetContactsRequest.argument);
-
 		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: contactsLoadOk: contacts:"+aContacts.length);
 
 		for each(var contact in aContacts) {
@@ -1198,8 +1176,21 @@ catch(err) {
 
 	syncFolderOK: function _syncFolderOK(erSyncContactsFolderRequest, creations, updates, deletions, syncState)
 	{
-		//exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: syncFolderOK "+ this.dirName);
-		this.saveCredentials(erSyncContactsFolderRequest.argument);
+		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: syncFolderOK "+ this.dirName);
+
+try {
+		if (!this.syncState) {
+			exchWebService.commonAbFunctions.logInfo("syncFolderOK: First sync we are not going to use the data.");
+			this.syncState = syncState;
+			this.weAreSyncing = false;
+			return;
+		}
+}
+catch(err) {
+			exchWebService.commonAbFunctions.logInfo("syncFolderOK: Err:"+err);
+	return;
+}
+		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: syncFolderOK "+ this.dirName);
 
 		if ((creations.contacts.length > 0) || (updates.contacts.length > 0) || (deletions.contacts.length > 0)) {
 			this.addActivity(exchWebService.commonFunctions.getString("ExchangeContacts","syncFolderEventMessage",[creations.contacts.length, updates.contacts.length, deletions.contacts.length, this.dirName],"exchangecalendar"), "", erSyncContactsFolderRequest.argument.actionStart, Date.now())
@@ -1210,13 +1201,11 @@ catch(err) {
 		for each(var newCard in creations.contacts) {
 			exchWebService.commonAbFunctions.logInfo("New Contact card:"+newCard.toString(),2);
 			newCards.push(newCard)
-			//this.ecUpdateCard(newCard);
 		}
 
 		for each(var updatedCard in updates.contacts) {
 			exchWebService.commonAbFunctions.logInfo("Updated Contact card:"+updatedCard.toString(),2);
 			newCards.push(updatedCard)
-			//this.ecUpdateCard(updatedCard);
 		}
 		
 		if (newCards.length > 0) {
@@ -1243,6 +1232,37 @@ catch(err) {
 			}
 		}
 
+		if ((creations.distlists.length > 0) || (updates.distlists.length > 0) || (deletions.distlists.length > 0)) {
+			this.addActivity(exchWebService.commonFunctions.getString("ExchangeDistLists","syncFolderEventMessage",[creations.distlists.length, updates.distlists.length, deletions.distlists.length, this.dirName],"exchangecalendar"), "", erSyncContactsFolderRequest.argument.actionStart, Date.now())
+			exchWebService.commonAbFunctions.logInfo(exchWebService.commonFunctions.getString("ExchangeDistLists","syncFolderEventMessage",[creations.distlists.length, updates.distlists.length, deletions.distlists.length, this.dirName],"exchangecalendar"));
+		}
+
+		for each(var newDistList in creations.distlists) {
+			exchWebService.commonAbFunctions.logInfo("New distribution list:"+newDistList.toString(),2);
+			this.addDistList(newDistList);
+		}
+
+		for each(var updatedDistList in updates.distlists) {
+			exchWebService.commonAbFunctions.logInfo("Updated distribution list:"+updatedDistList.toString(),2);
+
+			// Find current distList;
+			var oldDistList;
+			for each(var distList in this.distLists) {
+				if (distList.uuid == updatedDistList.Id) {
+					oldDistList = distList;
+					break;
+				}
+			}
+			
+			if (oldDistList) {
+				var newUri = this.childNodeURI+"id="+encodeURIComponent(updatedDistList.Id)+"&changeKey="+encodeURIComponent(updatedDistList.ChangeKey)+"&name="+encodeURIComponent(updatedDistList.name)+"&parentId="+this.uuid+"&type=PrivateDL";
+				oldDistList.init(newUri);
+			}
+			else {
+				exchWebService.commonAbFunctions.logInfo("Updated distribution list: Could not find old DistList!!?",2);
+			}
+		}
+
 		this.syncState = syncState;
 
 		if (newCards.length == 0) {
@@ -1252,15 +1272,12 @@ catch(err) {
 
 	syncFolderError: function _syncFolderError(erSyncContactsFolderRequest, aCode, aMsg)
 	{
-		this.saveCredentials(erSyncContactsFolderRequest.argument);
-
+		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: syncFolderError: aCode:"+aCode+", aMsg:"+aMsg);
 		this.weAreSyncing = false;
 	},
 
 	contactsLoadOk2: function _contactsLoadOk2(erGetContactsRequest, aContacts)
 	{
-		this.saveCredentials(erGetContactsRequest.argument);
-
 		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: contactsLoadOk2: contacts:"+aContacts.length);
 
 		for each(var contact in aContacts) {
