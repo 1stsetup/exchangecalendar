@@ -1121,7 +1121,7 @@ exchangeAbFolderDirectory.prototype = {
 	{
 		exchWebService.commonAbFunctions.logInfo("distListLoadOk: new distList:"+aDistList.name);
 
-		var dirName = this.childNodeURI+"id="+encodeURIComponent(aDistList.Id)+"&changeKey="+encodeURIComponent(aDistList.ChangeKey)+"&name="+encodeURIComponent(aDistList.name)+"&parentId="+this.uuid+"&type=PrivateDL";
+		var dirName = this.childNodeURI+"id="+encodeURIComponent(aDistList.Id)+"&name="+encodeURIComponent(aDistList.name)+"&parentId="+this.uuid+"&type=PrivateDL";
 
 		try {
 			var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
@@ -1236,6 +1236,7 @@ catch(err) {
 			//exchWebService.commonAbFunctions.logInfo("Deleted Contact card:"+deletedCard.toString(),2);
 			if (this.contacts[deletedCard.getAttributeByTag("t:ItemId", "Id")]) {
 				MailServices.ab.notifyDirectoryItemDeleted(this, this.contacts[deletedCard.getAttributeByTag("t:ItemId", "Id")]);
+				MailServices.ab.notifyDirectoryDeleted(this, this.contacts[deletedCard.getAttributeByTag("t:ItemId", "Id")]);
 				delete this.contacts[deletedCard.getAttributeByTag("t:ItemId", "Id")];
 			}
 		}
@@ -1263,7 +1264,7 @@ catch(err) {
 			}
 			
 			if (oldDistList) {
-				var newUri = this.childNodeURI+"id="+encodeURIComponent(updatedDistList.Id)+"&changeKey="+encodeURIComponent(updatedDistList.ChangeKey)+"&name="+encodeURIComponent(updatedDistList.name)+"&parentId="+this.uuid+"&type=PrivateDL";
+				var newUri = this.childNodeURI+"id="+encodeURIComponent(updatedDistList.Id)+"&name="+encodeURIComponent(updatedDistList.name)+"&parentId="+this.uuid+"&type=PrivateDL";
 				oldDistList.init(newUri);
 			}
 			else {

@@ -480,51 +480,39 @@ exchangeAbDistListDirectory.prototype = {
 
 			var tmpStr = aURI.substr(aURI.indexOf("://")+3);
 			var params = exchWebService.commonAbFunctions.paramsToArray(tmpStr,"&");
-			var changeKey;
-			if (params.changeKey) {
-				changeKey = decodeURIComponent(params.changeKey);
-			}
 
-			if (aURI != this._URI) {
+			if (aURI == this._URI) {
 				if (decodeURIComponent(params.id) == this.uuid) {
-					if (changeKey == this.changeKey) {
-						exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' aURI changed, id is the same but changeKey is the same. Going to do nothing.");
-						return;
-					}
-					else {
-						exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' aURI changed, id is the same and changKey is different. Going to reset/reload.");
+					exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' aURI unchanged, id is the same and changKey is different. Going to reset/reload.");
 
-						// We could do this more clever by finding out the differences and only update those. 
-						// But how deep will a distlist go and how many cards will be in a distlist.!!??
-						// For now we clean this distlist and re add everything.
+					// We could do this more clever by finding out the differences and only update those. 
+					// But how deep will a distlist go and how many cards will be in a distlist.!!??
+					// For now we clean this distlist and re add everything.
 
-						// Remove cards.
-						var oldList = this.contacts;
-						this.contacts = {};
-						for each(var contact in oldList) {
-							exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' removed contact:"+contact.getProperty("DisplayName", ""));
-							MailServices.ab.notifyDirectoryItemDeleted(this, contact);
-						}		
+					// Remove cards.
+					var oldList = this.contacts;
+					this.contacts = {};
+					for each(var contact in oldList) {
+						exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' removed contact:"+contact.getProperty("DisplayName", ""));
+						MailServices.ab.notifyDirectoryItemDeleted(this, contact);
+						MailServices.ab.notifyDirectoryDeleted(this, contact);
+					}		
 
-						// Remove distLists.
-						var oldList = this.distLists;
-						this.distLists = new Array();
-						for each(var distList in oldList) {
-							exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' removed distList:"+distList.dirName);
-							MailServices.ab.notifyDirectoryDeleted(this, distList);
-						}
-
-						//return;		
-
+					// Remove distLists.
+					var oldList = this.distLists;
+					this.distLists = new Array();
+					for each(var distList in oldList) {
+						exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' removed distList:"+distList.dirName);
+						MailServices.ab.notifyDirectoryDeleted(this, distList);
 					}
 				}
 				else {
-					exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' aURI changed but id is different. Not allowed. Going to do nothing.");
+					exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' aURI unchanged but id is different. Not allowed. Going to do nothing.");
 					return;
 				}
 			}
 			else {
-				exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' aURI did not change. Going to do nothing.");
+				exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' aURI changed. Going to do nothing.");
 				return;
 			}
 		}
@@ -555,13 +543,6 @@ exchangeAbDistListDirectory.prototype = {
 
 			this.isMailList = true;
 
-			if (params.changeKey) {
-				this._changeKey = decodeURIComponent(params.changeKey);
-			}
-			else {
-				this._changeKey = null;
-			}
-
 			if (params.name) {
 				this._dirName = decodeURIComponent(params.name);
 			}
@@ -576,10 +557,10 @@ exchangeAbDistListDirectory.prototype = {
 				this.parentId = null;
 			}
 
-			exchWebService.commonAbFunctions.logInfo("D: init: uuid:"+this.uuid+", type:"+this.type+", changeKey:"+this.changeKey+", name:"+this.dirName);
+			exchWebService.commonAbFunctions.logInfo("D: init: uuid:"+this.uuid+", type:"+this.type+", name:"+this.dirName);
 
 			if (this._searchQuery) {
-				var dirName = this._Schema+"://"+"id="+encodeURIComponent(this._UUID)+"&changeKey="+encodeURIComponent(this.changeKey)+"&name="+encodeURIComponent(this.dirName)+"&parentId="+this.parentId+"&type="+this.type;
+				var dirName = this._Schema+"://"+"id="+encodeURIComponent(this._UUID)+"&name="+encodeURIComponent(this.dirName)+"&parentId="+this.parentId+"&type="+this.type;
 
 				exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: this._searchQuery:"+this._searchQuery+", dirName:"+dirName);
 				
@@ -1060,19 +1041,10 @@ exchangeAbDistListDirectory.prototype = {
 	},
 
 	get changeKey() {
-		if (this.isMailList) {
-			return this._changeKey;
-		}
-
 		return exchWebService.commonFunctions.safeGetCharPref(this.prefs, "changekey", null);
 	},
 
 	set changeKey(aValue) {
-		if (this.isMailList) {
-			// Cannot be changed for a distlist.
-			return;
-		}
-
 		this.prefs.setCharPref("changekey", aValue);
 	},
 
@@ -1094,7 +1066,6 @@ exchangeAbDistListDirectory.prototype = {
 						 serverUrl: this.serverUrl,
 				 		 actionStart: Date.now(),
 						 itemId: { id: this.id} },
-//						 itemId: { id: this.id, changeKey: this.changeKey} },
 						function(erExpandDLRequest, aMailboxes) { self.distListExpandOk(erExpandDLRequest, aMailboxes);}, 
 						function(erExpandDLRequest, aCode, aMsg) { self.distListExpandError(erExpandDLRequest, aCode, aMsg);},
 						null);
@@ -1228,7 +1199,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 						// It is a private store distList.
 						exchWebService.commonAbFunctions.logInfo("distListLoadOk: new Private distList:"+calMailbox.name+" in dir:"+this.dirName);
 
-						var dirName = this.childNodeURI+"id="+encodeURIComponent(calMailbox.itemId.id)+"&changeKey="+encodeURIComponent(calMailbox.itemId.changeKey)+"&name="+encodeURIComponent(calMailbox.name)+"&parentId="+this.parentId+"&type=PrivateDL";
+						var dirName = this.childNodeURI+"id="+encodeURIComponent(calMailbox.itemId.id)+"&name="+encodeURIComponent(calMailbox.name)+"&parentId="+this.parentId+"&type=PrivateDL";
 
 						try {
 							var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
