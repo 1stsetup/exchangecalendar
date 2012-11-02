@@ -305,10 +305,44 @@ mivExchangeAbCard.prototype = {
 		return this._mailboxType;
 	},
 
+	paramsToArray: function _paramsToArray(aParams, aSplitcharacter)
+	{
+		var tmpList = aParams.split(aSplitcharacter);
+		var result = {};
+		for (var index in tmpList) {
+			var tmpParam = tmpList[index].substr(0, tmpList[index].indexOf("="));
+			var tmpValue = tmpList[index].substr(tmpList[index].indexOf("=")+1);
+			result[tmpParam] = tmpValue;
+		}
+		return result;
+	},
+
+	//	void convertExchangeDistListToCard(in jsval aParent, in AUTF8String aName, in AUTF8String aURI);  
+	convertExchangeDistListToCard: function _convertExchangeDistListToCard(aParent, aURI)
+	{
+		this.logInfo("convertExchangeDistListToCard: aURI:"+aURI);
+
+		this.isMailList = true;
+		this.directoryId = aParent.uuid;
+
+		var tmpStr = aURI.substr(aURI.indexOf("://")+3);
+		if (tmpStr.indexOf("?") > -1) {
+			tmpStr = tmpStr.substr(0,tmpStr.indexOf("?")); 
+		}
+
+		var params = this.paramsToArray(tmpStr,"&");
+
+		this.mailListURI = aURI;
+		this._type = Ci.mivExchangeAbCard.CARD_TYPE_MAILLIST;
+		this.localId = decodeURIComponent(params.id);
+		this.setProperty("DisplayName", decodeURIComponent(params.name));
+
+	},
+
 	//	void convertExchangeContactToCard(in jsval aExchangeContact);
 	convertExchangeContactToCard: function _convertExchangeContactToCard(aParent, aExchangeContact)
 	{
-		this.logInfo("convertExchangeContactToCard: "+aExchangeContact.toString());
+		//this.logInfo("convertExchangeContactToCard: "+aExchangeContact.toString());
 
 		this.isMailList = false;
 		this.directoryId = aParent.uuid;

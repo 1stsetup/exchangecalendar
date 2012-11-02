@@ -97,11 +97,9 @@ exchangeAbFolderDirectory.prototype = {
 
 	// void getInterfaces(out PRUint32 count, [array, size_is(count), retval] out nsIIDPtr array);
 	QueryInterface: XPCOMUtils.generateQI([Ci.nsIAbDirectory,
-						Ci.nsIAbItem,
 						Ci.nsIAbCollection,
+						Ci.nsIAbItem,
 						Ci.nsISupports]),
-//                                        Ci.nsIAbDirSearchListener,
-//                                        Ci.nsIAbDirectorySearch]),
 
   /**
    * A universally-unique identifier for this item.
@@ -438,7 +436,7 @@ exchangeAbFolderDirectory.prototype = {
   //readonly attribute nsISimpleEnumerator childCards;
 	get childCards()
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: get childCards:"+ this.dirName);
+		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: get childCards:"+ this.dirName+", uri:"+this.URI);
 		return exchWebService.commonFunctions.CreateSimpleObjectEnumerator(this.contacts);
 	},
 
@@ -483,49 +481,52 @@ exchangeAbFolderDirectory.prototype = {
 
 			var tmpStr = aURI.substr(aURI.indexOf("://")+3);
 
+			this._searchQuery = null;
+			if (tmpStr.indexOf("?") > -1) {
+				this._searchQuery = tmpStr.substr(tmpStr.indexOf("?")+1);
+				tmpStr = tmpStr.substr(0,tmpStr.indexOf("?")); 
+			}
+
 			var params = exchWebService.commonAbFunctions.paramsToArray(tmpStr,"&");
 
 			this._UUID = decodeURIComponent(params.id);
 			this._type = decodeURIComponent(params.type);
 
-			if (params.changeKey) {
-				this._changeKey = decodeURIComponent(params.changeKey);
-			}
-			else {
-				this._changeKey = null;
-			}
+			if (this._searchQuery) {
+				var dirName = this._Schema+"://"+"id="+encodeURIComponent(this._UUID)+"&type="+this.type;
 
-			if (params.name) {
-				this._dirName = decodeURIComponent(params.name);
-			}
-			else {
-				this._dirName = null;
-			}
-
-			if (params.parentId) {
-				this.parentId = decodeURIComponent(params.parentId);
-			}
-			else {
-				this.parentId = null;
-			}
-
-			if (this._UUID.indexOf("?") > -1) {
-
-				this._searchQuery = this._UUID.substr(this._UUID.indexOf("?")+1);
+				exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: this._searchQuery:"+this._searchQuery+", dirName:"+dirName);
 				
-				this._UUID = this._UUID.substr(0, this._UUID.indexOf("?"));
-
-				exchWebService.commonAbFunctions.logInfo("Going to get children of '"+this._Schema+"://"+this._UUID+"'");
-
-				var dir = MailServices.ab.getDirectory(this._Schema+"://"+this._UUID);
+				var dir = MailServices.ab.getDirectory(dirName);
 				if (dir) {
+					exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Going to get children of '"+dirName+"'");
+
 					this.contacts = exchWebService.commonAbFunctions.filterCardsOnQuery(this._searchQuery, dir.childCards);
+					exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Got children of '"+dirName+"'");
 					for each(var contact in this.contacts) {
+						exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Adding sub child A '"+contact.displayName+"' to contacts. dirName:"+this.dirName);
 						MailServices.ab.notifyDirectoryItemAdded(this, contact);
+					}
+
+					exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Going to get children of distList.");
+					// Get contact in childNodes (distLists)
+					var childNodes = dir.childNodes;
+					while (childNodes.hasMoreElements()) {
+						var childNode = childNodes.getNext();
+						exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Going to get children of distList '"+childNode.dirName+"':'"+childNode.URI+"' dirName:"+this.dirName);
+						var tmpDir = MailServices.ab.getDirectory(childNode.URI+"?"+this._searchQuery);
+						var childContacts = tmpDir.childCards;
+						exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Got children of distList '"+childNode.dirName);
+						while (childContacts.hasMoreElements()) {
+							var contact = childContacts.getNext().QueryInterface(Ci.nsIAbCard);
+							exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: == contact:"+contact);
+							exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Adding sub child B '"+contact.localId+"':'"+contact.displayName+"' to contacts. dirName:"+this.dirName);				
+							this.contacts[contact.localId] = contact;
+						}
 					}
 				}
 				else {
-					exchWebService.commonAbFunctions.logInfo("ERROR Folderdirectory '"+this._Schema+"://"+this._UUID+"' does not exist.");
+					exchWebService.commonAbFunctions.logInfo("ERROR Folderdirectory '"+dirName+"' does not exist.");
 				}
 
 			}
@@ -1011,72 +1012,80 @@ exchangeAbFolderDirectory.prototype = {
 
 	ecUpdateCard: function _ecUpdateCard(contact)
 	{
-			var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
-				.createInstance(Ci.mivExchangeAbCard);
-			newCard.convertExchangeContactToCard(this, contact);
+		var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
+			.createInstance(Ci.mivExchangeAbCard);
+		newCard.convertExchangeContactToCard(this, contact);
+		this.updateList(newCard);
+	},
 
-			if (this.contacts[newCard.localId]) {
-				exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory:  == We allready know this card. Lets see what has changed");
+	updateList: function _updateList(newCard)
+	{
+		if (!newCard) {
+			return;
+		}
 
-				// Check which properties changed.
-				for (var cardProperty in fixIterator(newCard.properties, Ci.nsIProperty)) {
-					if (cardProperty.name) {
-						try {
-							var oldValue = this.contacts[newCard.localId].getProperty(cardProperty.name, "");
-							var newValue = cardProperty.value;
-							if ( oldValue != newValue) {
-								// And existing property has changed.
-								exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: --Property Changed name:"+cardProperty.name+", oldvalue:"+oldValue+", newValue:"+newValue);
-								this.contacts[newCard.localId].setProperty(cardProperty.name, newValue);
-								MailServices.ab.notifyItemPropertyChanged(this.contacts[newCard.localId],
-				                                 cardProperty.name,
-				                                 oldValue,
-				                                 newValue);
-							}
-						}
-						catch(err) {
-							// We have a new property which was not set in the previous state. Add it
-							exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory:  == Err:"+err);
-							exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: --Property added name:"+cardProperty.name+", value:"+cardProperty.value);
-							this.contacts[newCard.localId].setProperty(cardProperty.name, cardProperty.value);
-							MailServices.ab.notifyItemPropertyChanged(this.contacts[newCard.localId],
-			                                 cardProperty.name,
-			                                 null,
-			                                 newValue);
-						}
-					}
-				}
+		if (this.contacts[newCard.localId]) {
+			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory:  == We allready know this card. Lets see what has changed");
 
-				// We check if properties were removed.
-				for (var cardProperty in fixIterator(this.contacts[newCard.localId].properties, Ci.nsIProperty)) {
-					if (cardProperty.name) {
-						var oldValue = cardProperty.value; 
-						try {
-							var newValue = newCard.getProperty(cardProperty.name, "");
-							
-							if ( oldValue != newValue) {
-								// If we get here something went wrong before this call.
-							}
-						}
-						catch(err) {
-							// Property is not available in new state. We have to remove it.
-							exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: --Property removed name:"+cardProperty.name+", value:"+cardProperty.value);
-							this.contacts[newCard.localId].deleteProperty(cardProperty.name);
+			// Check which properties changed.
+			for (var cardProperty in fixIterator(newCard.properties, Ci.nsIProperty)) {
+				if (cardProperty.name) {
+					try {
+						var oldValue = this.contacts[newCard.localId].getProperty(cardProperty.name, "");
+						var newValue = cardProperty.value;
+						if ( oldValue != newValue) {
+							// And existing property has changed.
+							exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: --Property Changed name:"+cardProperty.name+", oldvalue:"+oldValue+", newValue:"+newValue);
+							this.contacts[newCard.localId].setProperty(cardProperty.name, newValue);
 							MailServices.ab.notifyItemPropertyChanged(this.contacts[newCard.localId],
 			                                 cardProperty.name,
 			                                 oldValue,
-			                                 null);
+			                                 newValue);
 						}
+					}
+					catch(err) {
+						// We have a new property which was not set in the previous state. Add it
+						exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory:  == Err:"+err);
+						exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: --Property added name:"+cardProperty.name+", value:"+cardProperty.value);
+						this.contacts[newCard.localId].setProperty(cardProperty.name, cardProperty.value);
+						MailServices.ab.notifyItemPropertyChanged(this.contacts[newCard.localId],
+		                                 cardProperty.name,
+		                                 null,
+		                                 newValue);
 					}
 				}
 			}
-			else {
-				exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory:  || This card is new. We do not know it yet.");
-				this.contacts[newCard.localId] = newCard;
-				MailServices.ab.notifyDirectoryItemAdded(this, newCard);
+
+			// We check if properties were removed.
+			for (var cardProperty in fixIterator(this.contacts[newCard.localId].properties, Ci.nsIProperty)) {
+				if (cardProperty.name) {
+					var oldValue = cardProperty.value; 
+					try {
+						var newValue = newCard.getProperty(cardProperty.name, "");
+						
+						if ( oldValue != newValue) {
+							// If we get here something went wrong before this call.
+						}
+					}
+					catch(err) {
+						// Property is not available in new state. We have to remove it.
+						exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: --Property removed name:"+cardProperty.name+", value:"+cardProperty.value);
+						this.contacts[newCard.localId].deleteProperty(cardProperty.name);
+						MailServices.ab.notifyItemPropertyChanged(this.contacts[newCard.localId],
+		                                 cardProperty.name,
+		                                 oldValue,
+		                                 null);
+					}
+				}
 			}
-	
-			exchWebService.commonAbFunctions.logInfo(this.uuid+": newCard.localId:"+newCard.localId);		
+		}
+		else {
+			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory:  || This card is new. We do not know it yet.");
+			this.contacts[newCard.localId] = newCard;
+			MailServices.ab.notifyDirectoryItemAdded(this, newCard);
+		}
+
+		exchWebService.commonAbFunctions.logInfo(this.uuid+": newCard.localId:"+newCard.localId);		
 	},
 
 	contactsFoundOk: function _contactsFoundOk(erFindContactsRequest, aContacts, aDistLists)
@@ -1112,14 +1121,13 @@ exchangeAbFolderDirectory.prototype = {
 	{
 		exchWebService.commonAbFunctions.logInfo("distListLoadOk: new distList:"+aDistList.name);
 
-/*		this.distLists.push({ id: aDistList.Id,
-					changeKey: aDistList.ChangeKey,
-					name: aDistList.name,
-					type: "PrivateDL" } );*/
-
 		var dirName = this.childNodeURI+"id="+encodeURIComponent(aDistList.Id)+"&changeKey="+encodeURIComponent(aDistList.ChangeKey)+"&name="+encodeURIComponent(aDistList.name)+"&parentId="+this.uuid+"&type=PrivateDL";
 
 		try {
+			var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
+				.createInstance(Ci.mivExchangeAbCard);
+			newCard.convertExchangeDistListToCard(this, dirName);
+			this.updateList(newCard);
 			var dir = MailServices.ab.getDirectory(dirName);
 			if (dir) {
 				this.distLists.push(dir);
@@ -1141,7 +1149,7 @@ exchangeAbFolderDirectory.prototype = {
 		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: contactsLoadOk: contacts:"+aContacts.length);
 
 		for each(var contact in aContacts) {
-			exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString(),2);
+			//exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString(),2);
 			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: new childCards:"+contact.getTagValue("t:DisplayName"));
 			this.ecUpdateCard(contact);
 
@@ -1199,12 +1207,12 @@ catch(err) {
 
 		var newCards = [];
 		for each(var newCard in creations.contacts) {
-			exchWebService.commonAbFunctions.logInfo("New Contact card:"+newCard.toString(),2);
+			//exchWebService.commonAbFunctions.logInfo("New Contact card:"+newCard.toString(),2);
 			newCards.push(newCard)
 		}
 
 		for each(var updatedCard in updates.contacts) {
-			exchWebService.commonAbFunctions.logInfo("Updated Contact card:"+updatedCard.toString(),2);
+			//exchWebService.commonAbFunctions.logInfo("Updated Contact card:"+updatedCard.toString(),2);
 			newCards.push(updatedCard)
 		}
 		
@@ -1225,7 +1233,7 @@ catch(err) {
 		}
 	
 		for each(var deletedCard in deletions.contacts) {
-			exchWebService.commonAbFunctions.logInfo("Deleted Contact card:"+deletedCard.toString(),2);
+			//exchWebService.commonAbFunctions.logInfo("Deleted Contact card:"+deletedCard.toString(),2);
 			if (this.contacts[deletedCard.getAttributeByTag("t:ItemId", "Id")]) {
 				MailServices.ab.notifyDirectoryItemDeleted(this, this.contacts[deletedCard.getAttributeByTag("t:ItemId", "Id")]);
 				delete this.contacts[deletedCard.getAttributeByTag("t:ItemId", "Id")];
@@ -1281,7 +1289,7 @@ catch(err) {
 		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: contactsLoadOk2: contacts:"+aContacts.length);
 
 		for each(var contact in aContacts) {
-			exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString(),2);
+			//exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString(),2);
 			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: new childCards:"+contact.getTagValue("t:DisplayName"));
 			this.ecUpdateCard(contact);
 

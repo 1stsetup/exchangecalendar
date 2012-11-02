@@ -62,11 +62,9 @@ exchangeAbRootDirectory.prototype = {
 
 	// void getInterfaces(out PRUint32 count, [array, size_is(count), retval] out nsIIDPtr array);
 	QueryInterface: XPCOMUtils.generateQI([Ci.nsIAbDirectory,
-						Ci.nsIAbItem,
 						Ci.nsIAbCollection,
+						Ci.nsIAbItem,
 						Ci.nsISupports]),
-//                                        Ci.nsIAbDirSearchListener,
-//                                        Ci.nsIAbDirectorySearch]),
 
   /**
    * A universally-unique identifier for this item.
@@ -402,17 +400,6 @@ exchangeAbRootDirectory.prototype = {
 		if (this._searchQuery) {
 			result = this.contacts;
 		}
-		else {
-			// Loop through the childDirs and get their childCards.
-			for each( var childDir in this.childDirs) {
-				exchWebService.commonAbFunctions.logInfo("exchangeAbRootDirectory: >>");
-				if (childDir) {
-					for (var card in fixIterator(childDir.childCards, Ci.nsIAbCard)) {
-						result[card.localId] = card;
-					}
-				}
-			}
-		}
 
 		return exchWebService.commonFunctions.CreateSimpleObjectEnumerator(result);
 
@@ -454,15 +441,28 @@ exchangeAbRootDirectory.prototype = {
 
 		if (aURI.indexOf("?") > -1) {
 			this._searchQuery = aURI.substr(aURI.indexOf("?")+1);
-			var schema = aURI.substr(0, aURI.indexOf("://")+3);
-				
-		exchWebService.commonAbFunctions.logInfo("Going to get children of '"+schema+"'");
+			this.contacts = {};
 
+			var schema = aURI.substr(0, aURI.indexOf("://")+3);
+
+			exchWebService.commonAbFunctions.logInfo("exchangeAbRootDirectory: this._searchQuery:"+this._searchQuery+", dirName:"+schema);
+				
 			var dir = MailServices.ab.getDirectory(schema);
 			if (dir) {
-				this.contacts = exchWebService.commonAbFunctions.filterCardsOnQuery(this._searchQuery, dir.childCards);
-				for each(var contact in this.contacts) {
-					MailServices.ab.notifyDirectoryItemAdded(this, contact);
+				exchWebService.commonAbFunctions.logInfo("exchangeAbRootDirectory: Going to get children of '"+schema+"'");
+
+				// Get contact in childNodes (distLists)
+				var childNodes = dir.childNodes;
+				while (childNodes.hasMoreElements()) {
+					var childNode = childNodes.getNext();
+					exchWebService.commonAbFunctions.logInfo("exchangeAbRootDirectory: Going to get children of distList '"+childNode.dirName+"':'"+childNode.URI+"' dirName:"+this.dirName);
+					var tmpDir = MailServices.ab.getDirectory(childNode.URI+"?"+this._searchQuery);
+					var childContacts = tmpDir.childCards;
+					while (childContacts.hasMoreElements()) {
+						var contact = childContacts.getNext().QueryInterface(Ci.nsIAbCard);
+						exchWebService.commonAbFunctions.logInfo("exchangeAbRootDirectory: Adding sub child '"+contact.displayName+"' to contacts.");
+						this.contacts[contact.localId] = contact;
+					}
 				}
 			}
 			else {

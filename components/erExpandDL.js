@@ -88,7 +88,7 @@ erExpandDLRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erExpandDLRequest.onSendOk:"+String(aResp));
+		exchWebService.commonFunctions.LOG("erExpandDLRequest.onSendOk:"+String(aResp));
 
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:ExpandDLResponse/m:ResponseMessages/m:ExpandDLResponseMessage[@ResponseClass='Success' and m:ResponseCode = 'NoError']");
 

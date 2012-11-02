@@ -252,10 +252,10 @@ this.logInfo("cardMatchesQuery: aQuery="+aQuery);
 
 	},
 
-	filterCardsOnQuery: function _filterCarsOnQuery(aQuery, aCards)
+	filterCardsOnQuery: function _filterCarsOnQuery(aQuery, aCards, aDirectory)
 	{
 		var result = {};
-		for (var card in fixIterator(aCards, Ci.nsIAbCard)) {
+		for (var card in fixIterator(aCards, Ci.mivExchangeAbCard)) {
 			if (exchWebService.commonAbFunctions.cardMatchesQuery(aQuery, card)) {
 				result[card.localId] = card;
 			}

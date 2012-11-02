@@ -68,6 +68,7 @@ function exchangeAbDistListDirectory() {
 	this._UUID = "";
 	this._type = "unknown";
 	this._schema = null;
+	this._description = "";
 
 	this.prefs = null;
 	this.isLoading = false;
@@ -77,6 +78,9 @@ function exchangeAbDistListDirectory() {
 	this.contacts = {};
 	this.distLists = new Array();
 	this.childDirs = {};
+
+	this._addressLists = Cc["@mozilla.org/array;1"]
+			.createInstance(Ci.nsIMutableArray);
 
 	this._isInitialized = false;
 
@@ -91,11 +95,9 @@ exchangeAbDistListDirectory.prototype = {
 
 	// void getInterfaces(out PRUint32 count, [array, size_is(count), retval] out nsIIDPtr array);
 	QueryInterface: XPCOMUtils.generateQI([Ci.nsIAbDirectory,
-						Ci.nsIAbItem,
 						Ci.nsIAbCollection,
+						Ci.nsIAbItem,
 						Ci.nsISupports]),
-//                                        Ci.nsIAbDirSearchListener,
-//                                        Ci.nsIAbDirectorySearch]),
 
   /**
    * A universally-unique identifier for this item.
@@ -115,7 +117,7 @@ exchangeAbDistListDirectory.prototype = {
   //readonly attribute AUTF8String uuid;
 	get uuid()
 	{
-		//exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: uuid\n");
+		//exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: uuid");
 		if (this._UUID) {
 			return this._UUID;
 		}
@@ -167,7 +169,7 @@ exchangeAbDistListDirectory.prototype = {
   //                     [optional] in nsIStringBundle aBundle);
 	generateName: function _generateName(aGenerateFormat, aBundle)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: generateName\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: generateName");
 		return "generateName";
 	},
 
@@ -195,7 +197,7 @@ exchangeAbDistListDirectory.prototype = {
   //                               [optional] in nsIMsgHeaderParser aHeaderParser);
 	generateFormattedEmail: function _generateFormattedEmail( aExpandList, aAsGroupMailLists, aHeaderParser)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: generateFormattedEmail\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: generateFormattedEmail");
 		return "";
 	},
 
@@ -205,7 +207,7 @@ exchangeAbDistListDirectory.prototype = {
   //readonly attribute boolean readOnly;
 	get readOnly()
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: readOnly\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: readOnly");
 		return true;
 	},
 
@@ -215,7 +217,7 @@ exchangeAbDistListDirectory.prototype = {
   //readonly attribute boolean isRemote;
 	get isRemote()
 	{
-		//exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: isRemote\n");
+		//exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: isRemote");
 		return true;
 	},
 
@@ -228,7 +230,7 @@ exchangeAbDistListDirectory.prototype = {
   //readonly attribute boolean isSecure;
 	get isSecure()
 	{
-		//exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: isSecure\n");
+		//exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: isSecure");
 		return true;
 	},
 
@@ -340,13 +342,13 @@ exchangeAbDistListDirectory.prototype = {
 			return this._dirName;
 		}
 
-		//exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get dirName\n");
+		//exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get dirName");
 		return exchWebService.commonAbFunctions.getDescription(this.uuid);
 	},
 
 	set dirName(aValue)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: set dirName\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: set dirName");
 		if (this.isMailList) {
 			return; // Currently not allowed.
 		}
@@ -358,8 +360,8 @@ exchangeAbDistListDirectory.prototype = {
   //readonly attribute long dirType;
 	get dirType()
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get dirType\n");
-		return 2;
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get dirType");
+		return 0;
 	},
 
   // eliminated a bit more.
@@ -368,7 +370,7 @@ exchangeAbDistListDirectory.prototype = {
   //readonly attribute ACString fileName;
 	get fileName()
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get fileName\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get fileName");
 		return "filename";
 	},
 
@@ -384,7 +386,7 @@ exchangeAbDistListDirectory.prototype = {
   //readonly attribute long position;
 	get position()
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get position\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get position");
 		return 2;
 	},
 
@@ -392,13 +394,13 @@ exchangeAbDistListDirectory.prototype = {
   //attribute unsigned long lastModifiedDate;
 	get lastModifiedDate()
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get lastModifiedDate\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get lastModifiedDate");
 		return this._lastModifiedDate;
 	},
 
 	set lastModifiedDate(aValue)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: set lastModifiedDate\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: set lastModifiedDate");
 		this._lastModifiedDate = aValue;
 	},
 
@@ -407,7 +409,7 @@ exchangeAbDistListDirectory.prototype = {
   //attribute boolean isMailList;
 	get isMailList()
 	{
-		//exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get isMailList\n");
+		//exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get isMailList");
 		if (this._isMailList) {
 			return this._isMailList;
 		}
@@ -417,7 +419,7 @@ exchangeAbDistListDirectory.prototype = {
 
 	set isMailList(aValue)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: set isMailList\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: set isMailList");
 		this._isMailList = aValue;
 	},
 
@@ -442,7 +444,10 @@ exchangeAbDistListDirectory.prototype = {
   //readonly attribute nsISimpleEnumerator childCards;
 	get childCards()
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: 1 get childCards:"+ this.dirName);
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: 1 get childCards:"+ this.dirName+", uri:"+this.URI);
+		for (var index in this.contacts) {
+			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: 2 get childCards:"+ index+":"+this.contacts[index].displayName);
+		}
 		return exchWebService.commonFunctions.CreateSimpleObjectEnumerator(this.contacts);
 	},
 
@@ -468,7 +473,7 @@ exchangeAbDistListDirectory.prototype = {
   //void init(in string aURI);
 	init: function _init(aURI)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: init. aURI:"+aURI+"\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: init. aURI:"+aURI+"");
 
 		if (this._isInitialized) {
 			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: '"+this.dirName+"' is allready initialized");
@@ -509,7 +514,7 @@ exchangeAbDistListDirectory.prototype = {
 							MailServices.ab.notifyDirectoryDeleted(this, distList);
 						}
 
-						return;		
+						//return;		
 
 					}
 				}
@@ -536,6 +541,12 @@ exchangeAbDistListDirectory.prototype = {
 			this._Schema = aURI.substr(0, aURI.indexOf("://"));
 
 			var tmpStr = aURI.substr(aURI.indexOf("://")+3);
+
+			this._searchQuery = null;
+			if (tmpStr.indexOf("?") > -1) {
+				this._searchQuery = tmpStr.substr(tmpStr.indexOf("?")+1);
+				tmpStr = tmpStr.substr(0,tmpStr.indexOf("?")); 
+			}
 
 			var params = exchWebService.commonAbFunctions.paramsToArray(tmpStr,"&");
 
@@ -567,24 +578,41 @@ exchangeAbDistListDirectory.prototype = {
 
 			exchWebService.commonAbFunctions.logInfo("D: init: uuid:"+this.uuid+", type:"+this.type+", changeKey:"+this.changeKey+", name:"+this.dirName);
 
-			if (this._UUID.indexOf("?") > -1) {
+			if (this._searchQuery) {
+				var dirName = this._Schema+"://"+"id="+encodeURIComponent(this._UUID)+"&changeKey="+encodeURIComponent(this.changeKey)+"&name="+encodeURIComponent(this.dirName)+"&parentId="+this.parentId+"&type="+this.type;
 
-				this._searchQuery = this._UUID.substr(this._UUID.indexOf("?")+1);
+				exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: this._searchQuery:"+this._searchQuery+", dirName:"+dirName);
 				
-				this._UUID = this._UUID.substr(0, this._UUID.indexOf("?"));
 
-				exchWebService.commonAbFunctions.logInfo("Going to get children of '"+this._Schema+"://"+this._UUID+"'");
-
-				var dir = MailServices.ab.getDirectory(this._Schema+"://"+this._UUID);
+				var dir = MailServices.ab.getDirectory(dirName);
 				if (dir) {
-exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
+					exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: Going to get children of '"+dirName+"'");
+
 					this.contacts = exchWebService.commonAbFunctions.filterCardsOnQuery(this._searchQuery, dir.childCards);
+					exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: Got children of '"+dirName+"'");
 					for each(var contact in this.contacts) {
+						exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: Adding sub child A '"+contact.displayName+"' to contacts. dirName:"+this.dirName);
 						MailServices.ab.notifyDirectoryItemAdded(this, contact);
+					}
+
+					exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: Going to get children of distList.");
+					// Get contact in childNodes (distLists)
+					var childNodes = dir.childNodes;
+					while (childNodes.hasMoreElements()) {
+						var childNode = childNodes.getNext();
+						exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: Going to get children of distList '"+childNode.dirName+"':'"+childNode.URI+"' dirName:"+this.dirName);
+						var tmpDir = MailServices.ab.getDirectory(childNode.URI+"?"+this._searchQuery);
+						var childContacts = tmpDir.childCards;
+						while (childContacts.hasMoreElements()) {
+							var contact = childContacts.getNext().QueryInterface(Ci.nsIAbCard);
+							exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: ++ contact:"+contact);
+							exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: Adding sub child B '"+contact.localId+"':'"+contact.displayName+"' to contacts. dirName:"+this.dirName);
+							this.contacts[contact.localId] = contact;
+						}
 					}
 				}
 				else {
-					exchWebService.commonAbFunctions.logInfo("ERROR Folderdirectory '"+this._Schema+"://"+this._UUID+"' does not exist.");
+					exchWebService.commonAbFunctions.logInfo("ERROR Folderdirectory '"+dirName+"' does not exist.");
 				}
 
 			}
@@ -620,9 +648,9 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
 	deleteDirectory: function _deleteDirectory(directory)
 	{
 		// We cannot remove the root.
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: deleteDirectory this:"+this.URI+", directory:"+directory.URI+"\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: deleteDirectory this:"+this.URI+", directory:"+directory.URI+"");
 
-		//exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: deleteDirectory uri:"+directory.URI+"\n");
+		//exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: deleteDirectory uri:"+directory.URI+"");
 	},
 
   // Check if directory contains card
@@ -634,7 +662,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //boolean hasCard(in nsIAbCard cards);
 	hasCard: function _hasCard(cards)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: hasCard\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: hasCard");
 		return false;
 	},
 
@@ -643,7 +671,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //boolean hasDirectory(in nsIAbDirectory dir);
 	hasDirectory: function _hasDirectory(dir)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: hasDirectory\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: hasDirectory");
 
 		return false;
 	},
@@ -660,7 +688,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //nsIAbCard addCard(in nsIAbCard card);
 	addCard: function _addCard(card)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: addCard\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: addCard");
 		return null;
 	},
 
@@ -670,7 +698,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //void modifyCard(in nsIAbCard modifiedCard);
 	modifyCard: function _modifyCard(modifiedCard)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: modifyCard\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: modifyCard");
 	},
 
   /**
@@ -681,13 +709,13 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //void deleteCards(in nsIArray aCards);
 	deleteCards: function _deleteCards(aCards)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: deleteCards\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: deleteCards");
 	},
 
   //void dropCard(in nsIAbCard card, in boolean needToCopyCard);
 	dropCard: function _dropCard(Card, needToCopyCard)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: dropCard\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: dropCard");
 	},
 
   /**
@@ -705,7 +733,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //boolean useForAutocomplete(in ACString aIdentityKey);
 	useForAutocomplete: function _useForAutocomplete(aIdentityKey)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: useForAutocomplete\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: useForAutocomplete");
 
 		return true;
 
@@ -721,7 +749,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //readonly attribute boolean supportsMailingLists;
 	get supportsMailingLists()
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get supportsMailingLists\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get supportsMailingLists");
 		return true;
 	},
 
@@ -735,13 +763,14 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //attribute nsIMutableArray addressLists
 	get addressLists()
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get addressLists\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get addressLists");
+	
 		return this._addressLists;
 	},
 
 	set addressLists(aValue)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: set addressLists\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: set addressLists");
 		this._addressLists = aValue;
 	},
 
@@ -757,7 +786,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //nsIAbDirectory addMailList(in nsIAbDirectory list);
 	addMailList: function _addMailList(list)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: addMailList\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: addMailList");
 		return list;
 	},
 
@@ -768,13 +797,13 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //attribute AString listNickName;
 	get listNickName()
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get listNickName\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get listNickName");
 		return this._listNickName;
 	},
 
 	set listNickName(aValue)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: set listNickName\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: set listNickName");
 		this._listNickName = aValue;
 	},
 
@@ -785,13 +814,13 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //attribute AString description;
 	get description()
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get description\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: get description");
 		return this._description;
 	},
 
 	set description(aValue)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: set description\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: set description");
 		this._description = aValue;
 	},
 
@@ -806,14 +835,14 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //void editMailListToDatabase(in nsIAbCard listCard);
 	editMailListToDatabase: function _editMailListToDatabase(listCard)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: editMailListToDatabase\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: editMailListToDatabase");
 	},
 
   // Copies mail list properties from the srcList
   //void copyMailList(in nsIAbDirectory srcList);
 	copyMailList: function _copyMailList(srcList)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: copyMailList\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: copyMailList");
 	},
 
 
@@ -834,7 +863,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //                            in unsigned long aType, in ACString aPrefName);
 	createNewDirectory: function _createNewDirectory(aDirName, aURI, aType, aPrefName)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: createNewDirectory uuid:"+this.uuid+"\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: createNewDirectory uuid:"+this.uuid+"");
 		return "createNewDirectory";
 	},
 
@@ -843,7 +872,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //void createDirectoryByURI(in AString displayName, in ACString aURI);
 	createDirectoryByURI: function _createDirectoryByURI(displayName, aURI)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: createDirectoryByURI uuid:"+this.uuid+"\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: createDirectoryByURI uuid:"+this.uuid+"");
 	},
   /**
    * The id of the directory used in prefs e.g. "ldap_2.servers.pab"
@@ -858,7 +887,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
 
 	set dirPrefId(aValue)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: set dirPrefId\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: set dirPrefId");
 		this._dirPrefId = aValue;
 	},
   /**
@@ -882,28 +911,28 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //long getIntValue(in string aName, in long aDefaultValue);
 	getIntValue: function _getIntValue(aName, aDefaultValue)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: getIntValue\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: getIntValue");
 		return aDefaultValue;
 	},
 
   //boolean getBoolValue(in string aName, in boolean aDefaultValue);
 	getBoolValue: function _getBoolValue(aName, aDefaultValue)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: getBoolValue\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: getBoolValue");
 		return aDefaultValue;
 	},
 
   //ACString getStringValue(in string aName, in ACString aDefaultValue);
 	getStringValue: function _getStringValue(aName, aDefaultValue)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: getStringValue\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: getStringValue");
 		return aDefaultValue;
 	},
 
   //AUTF8String getLocalizedStringValue(in string aName, in AUTF8String aDefaultValue);
 	getLocalizedStringValue: function _getLocalizedStringValue(aName, aDefaultValue)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: getLocalizedStringValue\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: getLocalizedStringValue");
 		return aDefaultValue;
 	},
 
@@ -935,25 +964,25 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
   //void setIntValue(in string aName, in long aValue);
 	setIntValue: function _setIntValue(aName, aValue)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: setIntValue\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: setIntValue");
 	},
 
   //void setBoolValue(in string aName, in boolean aValue);
 	setBoolValue: function _setBoolValue(aName, aValue)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: setBoolValue\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: setBoolValue");
 	},
 
   //void setStringValue(in string aName, in ACString aValue);
 	setStringValue: function _setStringValue(aName, aValue)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: setStringValue\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: setStringValue");
 	},
 
   //void setLocalizedStringValue(in string aName, in AUTF8String aValue);
 	setLocalizedStringValue: function _setLocalizedStringValue(aName, aValue)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: setLocalizedStringValue\n");
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: setLocalizedStringValue");
 	},
 
   //@}
@@ -1074,75 +1103,87 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep1:"+this.dirName);
 
 	ecUpdateCard: function _ecUpdateCard(contact)
 	{
-			var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
-				.createInstance(Ci.mivExchangeAbCard);
-			newCard.convertExchangeContactToCard(this, contact);
+		var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
+			.createInstance(Ci.mivExchangeAbCard);
+		newCard.convertExchangeContactToCard(this, contact);
+		this.updateList(newCard);
+	},
 
-			if (this.contacts[newCard.localId]) {
-				exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  == We allready know this card. Lets see what has changed:"+newCard.localId);
+	updateList: function _updateList(newCard)
+	{
+		if (!newCard) {
+			return;
+		}
 
-				// Check which properties changed.
-				for (var cardProperty in fixIterator(newCard.properties, Ci.nsIProperty)) {
-					if (cardProperty.name) {
-						try {
-							var oldValue = this.contacts[newCard.localId].getProperty(cardProperty.name, "");
-							var newValue = cardProperty.value;
-							if ( oldValue != newValue) {
-								// And existing property has changed.
-								exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: --Property Changed name:"+cardProperty.name+", oldvalue:"+oldValue+", newValue:"+newValue);
-								this.contacts[newCard.localId].setProperty(cardProperty.name, newValue);
-								MailServices.ab.notifyItemPropertyChanged(this.contacts[newCard.localId],
-				                                 cardProperty.name,
-				                                 oldValue,
-				                                 newValue);
-							}
-						}
-						catch(err) {
-							// We have a new property which was not set in the previous state. Add it
-							exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  == Err:"+err);
-							exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: --Property added name:"+cardProperty.name+", value:"+cardProperty.value);
-							this.contacts[newCard.localId].setProperty(cardProperty.name, cardProperty.value);
-							MailServices.ab.notifyItemPropertyChanged(this.contacts[newCard.localId],
-			                                 cardProperty.name,
-			                                 null,
-			                                 newValue);
-						}
-					}
-				}
+		if (this.contacts[newCard.localId]) {
+			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  == We allready know this card. Lets see what has changed:"+newCard.localId);
 
-				// We check if properties were removed.
-				for (var cardProperty in fixIterator(this.contacts[newCard.localId].properties, Ci.nsIProperty)) {
-					if (cardProperty.name) {
-						var oldValue = cardProperty.value; 
-						try {
-							var newValue = newCard.getProperty(cardProperty.name, "");
-							
-							if ( oldValue != newValue) {
-								// If we get here something went wrong before this call.
-							}
-						}
-						catch(err) {
-							// Property is not available in new state. We have to remove it.
-							exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: --Property removed name:"+cardProperty.name+", value:"+cardProperty.value);
-							this.contacts[newCard.localId].deleteProperty(cardProperty.name);
+			// Check which properties changed.
+			for (var cardProperty in fixIterator(newCard.properties, Ci.nsIProperty)) {
+				if (cardProperty.name) {
+					try {
+						var oldValue = this.contacts[newCard.localId].getProperty(cardProperty.name, "");
+						var newValue = cardProperty.value;
+						if ( oldValue != newValue) {
+							// And existing property has changed.
+							exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: --Property Changed name:"+cardProperty.name+", oldvalue:"+oldValue+", newValue:"+newValue);
+							this.contacts[newCard.localId].setProperty(cardProperty.name, newValue);
 							MailServices.ab.notifyItemPropertyChanged(this.contacts[newCard.localId],
 			                                 cardProperty.name,
 			                                 oldValue,
-			                                 null);
+			                                 newValue);
 						}
+					}
+					catch(err) {
+						// We have a new property which was not set in the previous state. Add it
+						exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  == Err:"+err);
+						exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: --Property added name:"+cardProperty.name+", value:"+cardProperty.value);
+						this.contacts[newCard.localId].setProperty(cardProperty.name, cardProperty.value);
+						MailServices.ab.notifyItemPropertyChanged(this.contacts[newCard.localId],
+		                                 cardProperty.name,
+		                                 null,
+		                                 newValue);
 					}
 				}
 			}
-			else {
-				exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  || This card is new. We do not know it yet.");
-exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
-				this.contacts[newCard.localId] = newCard;
-				MailServices.ab.notifyDirectoryItemAdded(this, newCard);
+
+			// We check if properties were removed.
+			for (var cardProperty in fixIterator(this.contacts[newCard.localId].properties, Ci.nsIProperty)) {
+				if (cardProperty.name) {
+					var oldValue = cardProperty.value; 
+					try {
+						var newValue = newCard.getProperty(cardProperty.name, "");
+						
+						if ( oldValue != newValue) {
+							// If we get here something went wrong before this call.
+						}
+					}
+					catch(err) {
+						// Property is not available in new state. We have to remove it.
+						exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: --Property removed name:"+cardProperty.name+", value:"+cardProperty.value);
+						this.contacts[newCard.localId].deleteProperty(cardProperty.name);
+						MailServices.ab.notifyItemPropertyChanged(this.contacts[newCard.localId],
+		                                 cardProperty.name,
+		                                 oldValue,
+		                                 null);
+					}
+				}
 			}
-	
-			exchWebService.commonAbFunctions.logInfo(this.uuid+": directory:"+this.dirName+", before");		
-			this.childCards;
-			exchWebService.commonAbFunctions.logInfo(this.uuid+": directory:"+this.dirName+", newCard.localId:"+newCard.localId);		
+		}
+		else {
+			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  || This card is new. We do not know it yet.");
+exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
+			this.contacts[newCard.localId] = newCard;
+			MailServices.ab.notifyDirectoryItemAdded(this, newCard);
+		}
+
+		// This will eat performance when the list is long.
+		this._addressLists.clear();
+		for each(var contact in this.contacts) {
+			this._addressLists.appendElement(contact, false);
+		}
+
+		exchWebService.commonAbFunctions.logInfo(this.uuid+": newCard.localId:"+newCard.localId);		
 	},
 
 	convertExchangeMailbox: function _convertExchangeMailbox(aMailbox)
@@ -1190,6 +1231,10 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 						var dirName = this.childNodeURI+"id="+encodeURIComponent(calMailbox.itemId.id)+"&changeKey="+encodeURIComponent(calMailbox.itemId.changeKey)+"&name="+encodeURIComponent(calMailbox.name)+"&parentId="+this.parentId+"&type=PrivateDL";
 
 						try {
+							var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
+								.createInstance(Ci.mivExchangeAbCard);
+							newCard.convertExchangeDistListToCard(this, dirName);
+							this.updateList(newCard);
 							var dir = MailServices.ab.getDirectory(dirName);
 							if (dir) {
 								this.distLists.push(dir);
@@ -1264,7 +1309,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: contactsLoadOk: contacts:"+aContacts.length);
 
 		for each(var contact in aContacts) {
-			exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString(),2);
+			//exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString(),2);
 			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: new childCards:"+contact.getTagValue("t:DisplayName"));
 			this.ecUpdateCard(contact);
 
@@ -1279,7 +1324,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: mailboxLoadOk: contacts:"+aContacts.length);
 
 		for each(var contact in aContacts) {
-			exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString());
+			//exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString());
 			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  mailboxLoadOk: new childCards:"+contact.getTagValue("t:DisplayName"));
 			this.ecUpdateCard(contact);
 
