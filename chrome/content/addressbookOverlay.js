@@ -74,6 +74,7 @@ exchWebService.addressbookOverlay = {
 			    	.getBranch("extensions.exchangecontacts@extensions.1st-setup.nl.account."+newUUID+".");
 
 			this.prefs.setIntPref("pollinterval", input.newAccountObject.pollinterval);
+			this.prefs.setBoolPref("globalAddressList", input.newAccountObject.addGlobalAddressList);
 
 
 			var theParentDirectory = MailServices.ab.getDirectory("exchWebService-contactRoot-directory://")

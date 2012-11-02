@@ -52,6 +52,7 @@ function erResolveNames(aArgument, aCbOk, aCbError, aListener)
 	this.listener = aListener;
 
 	this.ids = aArgument.ids;
+	this.searchScope = aArgument.searchScope;
 
 	this.isRunning = true;
 	this.execute();
@@ -66,7 +67,12 @@ erResolveNames.prototype = {
 		// http://msdn.microsoft.com/en-us/library/exchange/aa565329%28v=exchg.140%29.aspx
 		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ResolveNames xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 		req.setAttribute("ReturnFullContactData", "true");
-		req.setAttribute("SearchScope", "ContactsActiveDirectory");
+		if (this.searchScope) {
+			req.setAttribute("SearchScope", this.searchScope);
+		}
+		else {
+			req.setAttribute("SearchScope", "ContactsActiveDirectory");
+		}
 
 //		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
 //		req.addChildTagObject(parentFolder);
@@ -82,33 +88,33 @@ erResolveNames.prototype = {
 
 		this.parent.xml2jxon = true;
 
-		//exchWebService.commonFunctions.LOG("erResolveNames.execute:"+String(this.parent.makeSoapMessage(req)));
+		exchWebService.commonFunctions.LOG("erResolveNames.execute:"+String(this.parent.makeSoapMessage(req)));
 
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erResolveNames.onSendOk:"+String(aResp));
+		exchWebService.commonFunctions.LOG("erResolveNames.onSendOk:"+String(aResp));
 
-		var rm = aResp.XPath("/s:Envelope/s:Body/m:ResolveNamesResponse/m:ResponseMessages/m:ResolveNamesResponseMessage[@ResponseClass='Success' and m:ResponseCode = 'NoError']");
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:ResolveNamesResponse/m:ResponseMessages/m:ResolveNamesResponseMessage[@ResponseClass='Success' or @ResponseClass='Warning']");
 
 		if (rm.length == 0) {
 
 			rm = aResp.XPath("/s:Envelope/s:Body/m:ResolveNamesResponse/m:ResponseMessages/m:ResolveNamesResponseMessage[@ResponseClass='Error' and m:ResponseCode = 'ErrorNameResolutionNoResults']");
 			if (rm.length > 0) {
 				this.onSendError(aExchangeRequest, 0, "ErrorNameResolutionNoResults");
-				return;
 			}
 			else {
 				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
-				return;
 			}
+			return;
 		}
 		else {
 			var resolutionsSets = rm[0].getTags("m:ResolutionSet");
 
 			var allContacts = new Array();
+			var allMailboxes = new Array();
 			for each(var resolutionsSet in resolutionsSets) {
 
 				var totalItemsInView = resolutionsSet.getAttribute("TotalItemsInView", 0);
@@ -122,6 +128,15 @@ erResolveNames.prototype = {
 					allContacts.push(contacts[index]);
 				}
 				contacts = null;
+
+				var mailboxes = resolutionsSet.XPath("/t:Resolution/t:Mailbox");
+				for (var index in mailboxes) {
+					var itemId = mailboxes[index].addChildTag("ItemId", "t", null); 
+					itemId.setAttribute("Id", this.itemId.id);
+					itemId.setAttribute("ChangeKey", this.itemId.changeKey);
+					allMailboxes.push(mailboxes[index]);
+				}
+				mailboxes = null;
 		
 			}
 			resolutionsSets = null;
@@ -129,7 +144,7 @@ erResolveNames.prototype = {
 		rm = null;
 
 		if (this.mCbOk) {
-			this.mCbOk(this, allContacts);
+			this.mCbOk(this, allContacts, allMailboxes);
 		}
 		this.isRunning = false;
 	},

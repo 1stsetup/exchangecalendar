@@ -38,6 +38,10 @@ Cu.import("resource:///modules/iteratorUtils.jsm");
 Cu.import("resource://exchangecalendar/erFindContacts.js");
 Cu.import("resource://exchangecalendar/erGetContacts.js");
 Cu.import("resource://exchangecalendar/erSyncContactsFolder.js");
+Cu.import("resource://exchangecalendar/erExpandDL.js");
+Cu.import("resource://exchangecalendar/erResolveNames.js");
+
+//Cu.import("resource://exchangecalendar/exchangeAbDistListDirectory.js");
 
 Cu.import("resource://exchangecalendar/exchangeAbFunctions.js");
 
@@ -76,7 +80,7 @@ function exchangeAbFolderDirectory() {
 					.createInstance(Ci.nsITimer);
 
 	this.contacts = {};
-	this.distLists = {};
+	this.distLists = new Array();
 	this.childDirs = {};
 
 	this.syncState = null;
@@ -338,7 +342,11 @@ exchangeAbFolderDirectory.prototype = {
 	get dirName()
 	{
 		//exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: get dirName\n");
-		return exchWebService.commonAbFunctions.getDescription(this.uuid);
+		var result = exchWebService.commonAbFunctions.getDescription(this.uuid);
+		if (this.useGAL) {
+			result = result + " (+GAL)";
+		}
+		return result;
 	},
 
 	set dirName(aValue)
@@ -455,6 +463,197 @@ exchangeAbFolderDirectory.prototype = {
 		return false;
 	},
 
+	searchGAL: function _searchGAL(aQuery)
+	{
+		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory:searchGAL: Going to search Global Address List also for url:"+this.serverUrl);
+		//(PrimaryEmail,c,wezel)(DisplayName,c,wezel)(FirstName,c,wezel)(LastName,c,wezel)
+
+		var wordToSearch;
+		if (aQuery.indexOf("(PrimaryEmail,") > -1) {
+			wordToSearch = aQuery.substr(aQuery.indexOf("(PrimaryEmail,")+14);
+		}
+
+		if ((!wordToSearch) && (aQuery.indexOf("(DisplayName,") > -1)) {
+			wordToSearch = aQuery.substr(aQuery.indexOf("(DisplayName,")+13);
+		}
+
+		if ((!wordToSearch) && (aQuery.indexOf("(FirstName,") > -1)) {
+			wordToSearch = aQuery.substr(aQuery.indexOf("(FirstName,")+11);
+		}
+
+		if ((!wordToSearch) && (aQuery.indexOf("(LastName,") > -1)) {
+			wordToSearch = aQuery.substr(aQuery.indexOf("(LastName,")+10);
+		}
+
+		if (!wordToSearch) {
+			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory:searchGAL: Could not determine word to search for.");
+		}
+
+		wordToSearch = wordToSearch.substr(wordToSearch.indexOf(",")+1);
+		wordToSearch = wordToSearch.substr(0, wordToSearch.indexOf(")"));
+		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory:searchGAL 3: Going to search the Global Address List with the word '"+wordToSearch+"'.");
+
+		// Launch the query for exchange
+
+		var self = this;
+		this.addToQueue( erResolveNames,
+					{user: this.user, 
+					 mailbox: this.mailbox,
+					 folderBase: this.folderBase,
+					 serverUrl: this.serverUrl,
+					 folderID: this.folderID,
+					 changeKey: this.changeKey,
+					 ids: { name: wordToSearch },
+					 searchScope: "ActiveDirectory",
+			 		 actionStart: Date.now()},
+					function(erResolveNames, aContacts, aMailboxes) { self.resolveNamesOk(erResolveNames, aContacts, aMailboxes);}, 
+					function(erResolveNames, aCode, aMsg) { self.resolveNamesError(erResolveNames, aCode, aMsg);},
+					null);
+		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory:searchGAL 4: Send request for the Global Address List with the word '"+wordToSearch+"'.");
+	},
+
+	convertExchangeMailbox: function _convertExchangeMailbox(aMailbox)
+	{
+		//exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: convertExchangeMailbox: Mailboxes:"+aMailbox.toString());
+		
+		var result = {
+			name: aMailbox.getTagValue("t:Name"),
+			emailAddress: aMailbox.getTagValue("t:EmailAddress"),
+			routingType: aMailbox.getTagValue("t:RoutingType"),
+			mailboxType: aMailbox.getTagValue("t:MailboxType"),
+			itemId: {	id: aMailbox.getAttributeByTag("t:ItemId", "Id"), 
+					changeKey:aMailbox.getAttributeByTag("t:ItemId", "ChangeKey")
+				},
+			mailbox: aMailbox
+		};
+
+		return result;		
+	},
+
+	resolveNamesOk: function _resolveNamesOk(erResolveNames, aContacts, aMailboxes)
+	{
+		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: resolveNamesOk: contacts:"+aContacts.length);
+
+		for each(var contact in aContacts) {
+			//exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString());
+			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory:  resolveNamesOk: new childCards:"+contact.getTagValue("t:DisplayName"));
+			this.ecUpdateCard(contact);
+
+		}
+
+		if (aMailboxes.length > 0) {
+			var aStoreContacts = new Array();
+			var aADContacts = new Array();
+			this.distLists = new Array()
+			for each(var mailbox in aMailboxes) {
+				var calMailbox = this.convertExchangeMailbox(mailbox);
+
+				switch (calMailbox.mailboxType) {
+				case "Contact": // A normal in store or AD contact
+					exchWebService.commonAbFunctions.logInfo("distListLoadOk: new Contact:"+calMailbox.name);
+					if (calMailbox.itemId.id) {
+						// It is a private store contact.
+						aStoreContacts.push({ Id: calMailbox.itemId.id });
+					}
+					break;
+				case "PrivateDL": // Private Store distribution list.
+					// Will not happen in the GAL
+					break;
+				case "PublicDL": // An Active Directory distribution list.
+					if (calMailbox.itemId.id) {
+						// It is a private store distList.
+						exchWebService.commonAbFunctions.logInfo("resolveNamesOk: new Public distList:"+calMailbox.name+" in GAL of "+this.serverUrl);
+
+						var dirName = this.childNodeURI+"id="+encodeURIComponent(calMailbox.routingType+":"+calMailbox.emailAddress)+"&name="+encodeURIComponent(calMailbox.name)+"&parentId="+this.uuid+"&type=PublicDL";
+
+						try {
+							var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
+								.createInstance(Ci.mivExchangeAbCard);
+							newCard.convertExchangeDistListToCard(this, dirName);
+							this.updateList(newCard);
+						}
+						catch(err) {
+							exchWebService.commonAbFunctions.logInfo("resolveNamesOk: Error adding dislist card '"+dirName+"' Error:"+err);
+						}
+/*						try {
+							var dir = MailServices.ab.getDirectory(dirName);
+							if (dir) {
+								this.distLists.push(dir);
+								MailServices.ab.notifyDirectoryItemAdded(this, dir);
+							}
+						}
+						catch(err) {
+							exchWebService.commonAbFunctions.logInfo("resolveNamesOk: Error adding dislist '"+dirName+"' Error:"+err);
+						}*/ // This is not allowed for a search query.
+					}
+					break; 
+/*				case "Mailbox": // An Active Directory mailbox
+					exchWebService.commonAbFunctions.logInfo("distListLoadOk: new Mailbox:"+calMailbox.name);
+					aADContacts.push(calMailbox);
+					break;*/
+				default:
+					 exchWebService.commonAbFunctions.logInfo("distListExpandOk: Unknown mailboxtype:"+calMailbox.mailboxType);
+				}
+			}
+
+			var self = this;
+			if (aStoreContacts.length > 0) {
+				this.addToQueue( erGetContactsRequest,
+								{user: this.user, 
+								 mailbox: this.mailbox,
+								 folderBase: this.folderBase,
+								 serverUrl: this.serverUrl,
+								 folderID: this.folderID,
+								 changeKey: this.changeKey,
+								 ids: aStoreContacts,
+						 		 actionStart: Date.now()},
+								function(erGetContactsRequest, aContacts) { self.contactsLoadOk(erGetContactsRequest, aContacts);}, 
+								function(erGetContactsRequest, aCode, aMsg) { self.distListExpandError(erGetContactsRequest, aCode, aMsg);},
+								null);
+			}
+
+/*			for (var index in aADContacts) { 
+				this.addToQueue( erResolveNames,
+							{user: this.user, 
+							 mailbox: this.mailbox,
+							 folderBase: this.folderBase,
+							 serverUrl: this.serverUrl,
+							 folderID: this.folderID,
+							 changeKey: this.changeKey,
+							 ids: aADContacts[index],
+					 		 actionStart: Date.now()},
+							function(erGetContactsRequest, aContacts, aMailboxes) { self.mailboxLoadOk(erGetContactsRequest, aContacts, aMailboxes);}, 
+							function(erGetContactsRequest, aCode, aMsg) { self.distListExpandError(erGetContactsRequest, aCode, aMsg);},
+							null);
+			}*/
+		}
+	},
+
+	resolveNamesError: function _resolveNamesError(erResolveNames, aCode, aMsg)
+	{
+		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: resolveNamesError: aCode:"+aCode+", aMsg:"+aMsg);
+		this.isLoading = false;
+
+		if ((aCode == 0) && (aMsg == "ErrorNameResolutionNoResults")) {
+			// Name could not be resolved we use the mailbox element instead of the contacts.
+			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Could not resolve name.");
+			//this.ecUpdateCard(erResolveNames.ids.mailbox);
+		}
+	},
+
+	distListExpandError: function _distListExpandError(erExpandDLRequest, aCode, aMsg)
+	{
+		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: distListExpandError: aCode:"+aCode+", aMsg:"+aMsg);
+		this.isLoading = false;
+
+		if ((aCode == 0) && (aMsg == "ErrorNameResolutionNoResults")) {
+			// Name could not be resolved we use the mailbox element instead of the contacts.
+			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Could not resolve mailbox. Going to use mailbox details for card");
+			this.ecUpdateCard(erExpandDLRequest.ids.mailbox);
+		}
+	},
+
+
   /**
    * Initializes a directory, pointing to a particular
    * URI
@@ -492,6 +691,10 @@ exchangeAbFolderDirectory.prototype = {
 			this._UUID = decodeURIComponent(params.id);
 			this._type = decodeURIComponent(params.type);
 
+			this.prefs = Cc["@mozilla.org/preferences-service;1"]
+			    	.getService(Ci.nsIPrefService)
+			    	.getBranch("extensions.exchangecontacts@extensions.1st-setup.nl.account."+this._UUID+".");
+
 			if (this._searchQuery) {
 				var dirName = this._Schema+"://"+"id="+encodeURIComponent(this._UUID)+"&type="+this.type;
 
@@ -499,6 +702,11 @@ exchangeAbFolderDirectory.prototype = {
 				
 				var dir = MailServices.ab.getDirectory(dirName);
 				if (dir) {
+
+					if (this.useGAL) {
+						this.searchGAL(this._searchQuery);
+					}
+
 					exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Going to get children of '"+dirName+"'");
 
 					this.contacts = exchWebService.commonAbFunctions.filterCardsOnQuery(this._searchQuery, dir.childCards);
@@ -532,17 +740,6 @@ exchangeAbFolderDirectory.prototype = {
 			}
 			else {
 				// Non query directories we set the refresh timer for
-				if (this.parentId) {
-					this.prefs = Cc["@mozilla.org/preferences-service;1"]
-					    	.getService(Ci.nsIPrefService)
-					    	.getBranch("extensions.exchangecontacts@extensions.1st-setup.nl.account."+this.parentId+".");
-				}
-				else {
-					this.prefs = Cc["@mozilla.org/preferences-service;1"]
-					    	.getService(Ci.nsIPrefService)
-					    	.getBranch("extensions.exchangecontacts@extensions.1st-setup.nl.account."+this._UUID+".");
-				}
-
 				exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: init. Going to do first sync. aURI:"+aURI+"\n");
 				this.syncFolder();  // First sync to initialize.
 
@@ -928,6 +1125,13 @@ exchangeAbFolderDirectory.prototype = {
 	get name()
 	{
 		return this.dirName;
+	},
+
+	get useGAL() {
+		var result = exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "globalAddressList", false);
+		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: useGAL:"+result);
+
+		return result;
 	},
 
 	get user() {

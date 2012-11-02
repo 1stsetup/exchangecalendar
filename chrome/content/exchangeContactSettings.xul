@@ -56,6 +56,8 @@
 			increment="1" min="1" type="number"/>
 	    </hbox>
 
+	<checkbox label="&exchWebService.add.globaladdresslist.label;" id="exchWebService-add-globaladdresslist"/>
+
 	<vbox id="exchWebService-exchange-settings">
 	</vbox>
 

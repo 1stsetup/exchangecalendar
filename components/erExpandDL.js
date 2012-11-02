@@ -81,7 +81,7 @@ erExpandDLRequest.prototype = {
 
 		this.parent.xml2jxon = true;
 
-		//exchWebService.commonFunctions.LOG("erExpandDLRequest.execute:"+String(this.parent.makeSoapMessage(req)));
+		exchWebService.commonFunctions.LOG("erExpandDLRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},

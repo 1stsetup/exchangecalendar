@@ -376,7 +376,7 @@ mivExchangeAbCard.prototype = {
 		}
 		else {
 			this._type = Ci.mivExchangeAbCard.CARD_TYPE_CONTACT;
-			this.localId = aExchangeContact.getAttributeByTag("t:ItemId", "Id");
+			this.localId = aExchangeContact.getAttributeByTag("t:ItemId", "Id", null);
 			this.setProperty("X-ChangeKey", aExchangeContact.getAttributeByTag("t:ItemId", "ChangeKey", ""));
 			this.setProperty("X-ContactSource", aExchangeContact.getTagValue("t:ContactSource", ""));
 			this.setProperty("DisplayName", aExchangeContact.getTagValue("t:DisplayName", ""));
@@ -403,6 +403,9 @@ mivExchangeAbCard.prototype = {
 				}
 			}
 
+			if (!this.localId) {
+				this.localId = aExchangeContact.getTagValue("t:ContactSource", "")+":"+primaryEmail;
+			}
 			this.setProperty("PrimaryEmail", primaryEmail);
 			this.setProperty("SecondEmail", secondEmail);
 

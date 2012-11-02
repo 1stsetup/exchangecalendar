@@ -65,6 +65,7 @@ exchWebService.exchangeContactSettings = {
 			document.getElementById("exchWebService_folderbase").selectedIndex = 7;
 			exchWebServicesgFolderBase = "contacts";
 			document.getElementById("exchangeWebService_preference_contacts_pollinterval").value = 300;
+			document.getElementById("exchWebService-add-globaladdresslist").checked = false;
 		}
 		else {
 			this.isNewDirectory = false;
@@ -76,6 +77,7 @@ exchWebService.exchangeContactSettings = {
 			    	.getBranch("extensions.exchangecontacts@extensions.1st-setup.nl.account."+this.dirUUID+".");
 
 			document.getElementById("exchangeWebService_preference_contacts_pollinterval").value = exchWebService.commonFunctions.safeGetIntPref(this.prefs, "pollinterval", 300, true);
+			document.getElementById("exchWebService-add-globaladdresslist").checked = exchWebService.commonFunctions.safeGetBoolPref(this.prefs, "globalAddressList", false, true);
 
 			// load preferences of current directory.
 			exchWebServicesLoadExchangeSettingsByContactUUID(directory.uuid);
@@ -89,6 +91,7 @@ exchWebService.exchangeContactSettings = {
 		window.arguments[0].newAccountObject = exchWebServicesSaveExchangeSettingsByContactUUID(this.isNewDirectory, this.dirUUID);
 
 		window.arguments[0].newAccountObject.pollinterval = document.getElementById("exchangeWebService_preference_contacts_pollinterval").value;
+		window.arguments[0].newAccountObject.addGlobalAddressList = document.getElementById("exchWebService-add-globaladdresslist").checked;
 
 		window.arguments[0].answer = "saved";
 
@@ -99,6 +102,7 @@ exchWebService.exchangeContactSettings = {
 			    	.getBranch("extensions.exchangecontacts@extensions.1st-setup.nl.account."+this.dirUUID+".");
 
 			this.prefs.setIntPref("pollinterval", window.arguments[0].newAccountObject.pollinterval);
+			this.prefs.setBoolPref("globalAddressList", window.arguments[0].newAccountObject.addGlobalAddressList);
 
 			var observerService = Cc["@mozilla.org/observer-service;1"]  
 				                  .getService(Ci.nsIObserverService);  

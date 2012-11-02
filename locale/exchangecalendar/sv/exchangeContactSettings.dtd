@@ -6,3 +6,6 @@
 
 <!ENTITY label.ecExchangeSettings.title "Namn i listan:">
 <!ENTITY exchangeWebService.preference.contacts.pollinterval "Uppdateringsintervall i sekunder:">
+
+<!ENTITY exchWebService.add.globaladdresslist.label "Add global address list to search results.">
+

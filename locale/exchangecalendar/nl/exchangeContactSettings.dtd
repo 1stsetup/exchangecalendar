@@ -7,4 +7,5 @@
 <!ENTITY label.ecExchangeSettings.title "Naam in lijst:">
 <!ENTITY exchangeWebService.preference.contacts.pollinterval "Ververs interval in seconden:">
 
+<!ENTITY exchWebService.add.globaladdresslist.label "Voeg de globale adres lijst toe aan de zoek resultaten.">
 

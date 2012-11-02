@@ -1061,15 +1061,30 @@ exchangeAbDistListDirectory.prototype = {
 		var self = this;
 
 		// changekey set to null because the same dislist can have different changeKey when it is also added as a member of another distlist.
-		this.addToQueue( erExpandDLRequest,
-						{user: this.user, 
-						 serverUrl: this.serverUrl,
-				 		 actionStart: Date.now(),
-						 itemId: { id: this.id} },
-						function(erExpandDLRequest, aMailboxes) { self.distListExpandOk(erExpandDLRequest, aMailboxes);}, 
-						function(erExpandDLRequest, aCode, aMsg) { self.distListExpandError(erExpandDLRequest, aCode, aMsg);},
-						null);
 
+		if (this._type == "PrivateDL") {
+			this.addToQueue( erExpandDLRequest,
+							{user: this.user, 
+							 serverUrl: this.serverUrl,
+					 		 actionStart: Date.now(),
+							 itemId: { id: this.id} },
+							function(erExpandDLRequest, aMailboxes) { self.distListExpandOk(erExpandDLRequest, aMailboxes);}, 
+							function(erExpandDLRequest, aCode, aMsg) { self.distListExpandError(erExpandDLRequest, aCode, aMsg);},
+							null);
+		}
+		else {
+			if (this._type == "PublicDL") {
+				var emailAddress = this.id.substr(this.id.indexOf(":")+1);
+				this.addToQueue( erExpandDLRequest,
+								{user: this.user, 
+								 serverUrl: this.serverUrl,
+						 		 actionStart: Date.now(),
+								 emailAddress: emailAddress },
+								function(erExpandDLRequest, aMailboxes) { self.distListExpandOk(erExpandDLRequest, aMailboxes);}, 
+								function(erExpandDLRequest, aCode, aMsg) { self.distListExpandError(erExpandDLRequest, aCode, aMsg);},
+								null);
+			}
+		}
 	},
 
 	ecUpdateCard: function _ecUpdateCard(contact)
@@ -1255,7 +1270,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 							 changeKey: this.changeKey,
 							 ids: aADContacts[index],
 					 		 actionStart: Date.now()},
-							function(erGetContactsRequest, aContacts) { self.mailboxLoadOk(erGetContactsRequest, aContacts);}, 
+							function(erGetContactsRequest, aContacts, aMailboxes) { self.mailboxLoadOk(erGetContactsRequest, aContacts, aMailboxes);}, 
 							function(erGetContactsRequest, aCode, aMsg) { self.distListExpandError(erGetContactsRequest, aCode, aMsg);},
 							null);
 			}
@@ -1290,7 +1305,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 
 	},
 
-	mailboxLoadOk: function _contactsLoadOk(erGetContactsRequest, aContacts)
+	mailboxLoadOk: function _contactsLoadOk(erGetContactsRequest, aContacts, aMailboxes)
 	{
 		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: mailboxLoadOk: contacts:"+aContacts.length);
 
@@ -1298,6 +1313,13 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 			//exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString());
 			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  mailboxLoadOk: new childCards:"+contact.getTagValue("t:DisplayName"));
 			this.ecUpdateCard(contact);
+
+		}
+
+		for each(var mailbox in aMailboxes) {
+			//exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString());
+			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  mailboxLoadOk: new childCards:"+mailbox.getTagValue("t:Name"));
+			this.ecUpdateCard(mailbox);
 
 		}
 
