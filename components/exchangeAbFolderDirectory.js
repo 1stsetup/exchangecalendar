@@ -505,6 +505,7 @@ exchangeAbFolderDirectory.prototype = {
 					 changeKey: this.changeKey,
 					 ids: { name: wordToSearch },
 					 searchScope: "ActiveDirectory",
+ 					 GALQuery: true,
 			 		 actionStart: Date.now()},
 					function(erResolveNames, aContacts, aMailboxes) { self.resolveNamesOk(erResolveNames, aContacts, aMailboxes);}, 
 					function(erResolveNames, aCode, aMsg) { self.resolveNamesError(erResolveNames, aCode, aMsg);},
@@ -551,6 +552,16 @@ exchangeAbFolderDirectory.prototype = {
 				switch (calMailbox.mailboxType) {
 				case "Contact": // A normal in store or AD contact
 					exchWebService.commonAbFunctions.logInfo("distListLoadOk: new Contact:"+calMailbox.name);
+						try {
+							var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
+								.createInstance(Ci.mivExchangeAbCard);
+							newCard.convertExchangeDistListToCard(this, dirName);
+							this.updateList(newCard);
+						}
+						catch(err) {
+							exchWebService.commonAbFunctions.logInfo("resolveNamesOk: Error adding dislist card '"+dirName+"' Error:"+err);
+						}
+
 					if (calMailbox.itemId.id) {
 						// It is a private store contact.
 						aStoreContacts.push({ Id: calMailbox.itemId.id });
@@ -575,22 +586,11 @@ exchangeAbFolderDirectory.prototype = {
 						catch(err) {
 							exchWebService.commonAbFunctions.logInfo("resolveNamesOk: Error adding dislist card '"+dirName+"' Error:"+err);
 						}
-/*						try {
-							var dir = MailServices.ab.getDirectory(dirName);
-							if (dir) {
-								this.distLists.push(dir);
-								MailServices.ab.notifyDirectoryItemAdded(this, dir);
-							}
-						}
-						catch(err) {
-							exchWebService.commonAbFunctions.logInfo("resolveNamesOk: Error adding dislist '"+dirName+"' Error:"+err);
-						}*/ // This is not allowed for a search query.
 					}
 					break; 
-/*				case "Mailbox": // An Active Directory mailbox
-					exchWebService.commonAbFunctions.logInfo("distListLoadOk: new Mailbox:"+calMailbox.name);
-					aADContacts.push(calMailbox);
-					break;*/
+				case "Mailbox": // An Active Directory mailbox
+					// Will do not process them here
+					break;
 				default:
 					 exchWebService.commonAbFunctions.logInfo("distListExpandOk: Unknown mailboxtype:"+calMailbox.mailboxType);
 				}

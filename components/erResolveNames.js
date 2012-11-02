@@ -53,6 +53,7 @@ function erResolveNames(aArgument, aCbOk, aCbError, aListener)
 
 	this.ids = aArgument.ids;
 	this.searchScope = aArgument.searchScope;
+	this.GALQuery = aArgument.GALQuery;
 
 	this.isRunning = true;
 	this.execute();
@@ -122,9 +123,11 @@ erResolveNames.prototype = {
 
 				var contacts = resolutionsSet.XPath("/t:Resolution/t:Contact");
 				for (var index in contacts) {
-					var itemId = contacts[index].addChildTag("ItemId", "t", null); 
-					itemId.setAttribute("Id", this.itemId.id);
-					itemId.setAttribute("ChangeKey", this.itemId.changeKey);
+					var itemId = contacts[index].addChildTag("ItemId", "t", null);
+					if (!this.GALQuery) { 
+						itemId.setAttribute("Id", this.itemId.id);
+						itemId.setAttribute("ChangeKey", this.itemId.changeKey);
+					}
 					allContacts.push(contacts[index]);
 				}
 				contacts = null;
@@ -132,8 +135,10 @@ erResolveNames.prototype = {
 				var mailboxes = resolutionsSet.XPath("/t:Resolution/t:Mailbox");
 				for (var index in mailboxes) {
 					var itemId = mailboxes[index].addChildTag("ItemId", "t", null); 
-					itemId.setAttribute("Id", this.itemId.id);
-					itemId.setAttribute("ChangeKey", this.itemId.changeKey);
+					if (!this.GALQuery) { 
+						itemId.setAttribute("Id", this.itemId.id);
+						itemId.setAttribute("ChangeKey", this.itemId.changeKey);
+					}
 					allMailboxes.push(mailboxes[index]);
 				}
 				mailboxes = null;

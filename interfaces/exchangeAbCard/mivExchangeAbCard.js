@@ -322,6 +322,10 @@ mivExchangeAbCard.prototype = {
 	{
 		this.logInfo("convertExchangeDistListToCard: aURI:"+aURI);
 
+		if (!aURI) {
+			return;
+		}
+
 		this.isMailList = true;
 		this.directoryId = aParent.uuid;
 
