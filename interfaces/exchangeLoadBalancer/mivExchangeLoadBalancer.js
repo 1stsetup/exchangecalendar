@@ -104,6 +104,11 @@ mivExchangeLoadBalancer.prototype = {
 	addToQueue: function _addToQueue(aJob)
 	{
 
+		if (!aJob.arguments) {
+			this.logInfo("addToQueue: arguments is not defined!!!????:"+this.globalFunctions.STACK());
+			return;
+		}
+
 		if (!this.serverQueue[aJob.arguments.serverUrl]) {
 			this.serverQueue[aJob.arguments.serverUrl] = { currentCalendar: 0,
 									calendarList: new Array(),
@@ -234,24 +239,24 @@ mivExchangeLoadBalancer.prototype = {
 
 	onRequestOk: function _onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
 	{
-		this.logInfo("onRequestOk job to queue for server '"+arg1.argument.serverUrl+"' for calendar '"+arg1.argument.job.calendar.id+"'. We now have:"+this.serverQueue[arg1.argument.serverUrl].jobs[arg1.argument.calendar.id].length+" jobs in queue and "+this.serverQueue[arg1.argument.serverUrl].runningJobs.length+" jobs running.");
 
 		try{
+			this.logInfo("onRequestOk job to queue for server '"+arg1.argument.serverUrl+"' for calendar '"+arg1.argument.job.calendar.id+"'. We now have:"+this.serverQueue[arg1.argument.serverUrl].jobs[arg1.argument.calendar.id].length+" jobs in queue and "+this.serverQueue[arg1.argument.serverUrl].runningJobs.length+" jobs running.");
 			arg1.argument.cbOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 		}
 		catch(err) { 
-			this.globalFunctions.LOG("onRequestOk Error:"+err + " ("+this.globalFunctions.STACKshort()+")", -1);
+			this.globalFunctions.LOG("onRequestOk Error:"+err + " ("+this.globalFunctions.STACK()+")", -1);
 		}
 	},
 
 	onRequestError: function _onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
 	{
-		this.logInfo("onRequestError job to queue for server '"+arg1.argument.serverUrl+"' for calendar '"+arg1.argument.job.calendar.id+"'. We now have:"+this.serverQueue[arg1.argument.serverUrl].jobs[arg1.argument.calendar.id].length+" jobs in queue and "+this.serverQueue[arg1.argument.serverUrl].runningJobs.length+" jobs running.");
 		try{
+			this.logInfo("onRequestError job to queue for server '"+arg1.argument.serverUrl+"' for calendar '"+arg1.argument.job.calendar.id+"'. We now have:"+this.serverQueue[arg1.argument.serverUrl].jobs[arg1.argument.calendar.id].length+" jobs in queue and "+this.serverQueue[arg1.argument.serverUrl].runningJobs.length+" jobs running.");
 			arg1.argument.cbError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 		}
 		catch(err) { 
-			this.globalFunctions.LOG("onRequestError Error:"+err + " ("+this.globalFunctions.STACKshort()+")", -1);
+			this.globalFunctions.LOG("onRequestError Error:"+err + " ("+this.globalFunctions.STACK()+")", -1);
 		}
 	},
 
