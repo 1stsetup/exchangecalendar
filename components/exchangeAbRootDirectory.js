@@ -52,6 +52,33 @@ function exchangeAbRootDirectory() {
 	this._isInitialized = false;
 
 	this.childNodeURI = "exchWebService-contactFolder-directory://";
+
+	this.contacts = {};
+
+	var self = this;
+	var adBookListener = {
+		// nsIAbListener.idl
+		//  void onItemAdded(in nsISupports parentDir, in nsISupports item);
+		onItemAdded: function adBookListener_onItemAdded(aParentDir, aItem)
+		{
+			if ((aParentDir.uuid != this.uuid) && (aParentDir.isQuery)) {
+				var card = aItem.QueryInterface(Ci.mivExchangeAbCard);
+			exchWebService.commonAbFunctions.logInfo("exchangeAbRootDirectory: onItemAdded: Card:"+card.displayName);
+	try {
+			self.contacts[card.localId] = card;
+	}
+	catch(err) {
+			exchWebService.commonAbFunctions.logInfo("exchangeAbRootDirectory: onItemAdded: Error:"+err);
+	}
+				MailServices.ab.notifyDirectoryItemAdded(self, card);
+			
+			}
+		},
+
+	}
+
+	MailServices.ab.addAddressBookListener(adBookListener, Ci.nsIAbListener.itemAdded);
+
 }
 
 exchangeAbRootDirectory.prototype = {

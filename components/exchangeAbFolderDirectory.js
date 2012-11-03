@@ -560,14 +560,17 @@ try {
 						.createInstance(Ci.mivExchangeAbCard);
 					newCard.convertExchangeDistListToCard(this, mailbox[0], dirName);
 					this.updateList(newCard);
-					var dir = MailServices.ab.getDirectory(dirName);
-					if (dir) {
-						this.distLists.push(dir);
-						MailServices.ab.notifyDirectoryItemAdded(this, dir);
+
+					if (!this.isQuery) {
+						var dir = MailServices.ab.getDirectory(dirName);
+						if (dir) {
+							this.distLists.push(dir);
+							MailServices.ab.notifyDirectoryItemAdded(this, dir);
+						}
 					}
-} catch(err) {
-		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: resolveNamesOk: Foutje:"+err);
-}
+	} catch(err) {
+			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: resolveNamesOk: Foutje:"+err);
+	}
 					break;
 				case "PublicDL": // An Active Directory distribution list.
 					exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: resolveNamesOk: new Public distList:"+calMailbox.name+" in GAL of "+this.serverUrl);
