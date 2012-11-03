@@ -317,8 +317,8 @@ mivExchangeAbCard.prototype = {
 		return result;
 	},
 
-	//	void convertExchangeDistListToCard(in jsval aParent, in AUTF8String aName, in AUTF8String aURI);  
-	convertExchangeDistListToCard: function _convertExchangeDistListToCard(aParent, aURI)
+	//	void convertExchangeDistListToCard(in jsval aParent, in jsval aExchangeContact, in AUTF8String aURI);  
+	convertExchangeDistListToCard: function _convertExchangeDistListToCard(aParent, aExchangeContact, aURI)
 	{
 		this.logInfo("convertExchangeDistListToCard: aURI:"+aURI);
 
@@ -326,25 +326,27 @@ mivExchangeAbCard.prototype = {
 			return;
 		}
 
-		this.isMailList = true;
-		this.directoryId = aParent.uuid;
-
-		var tmpStr = aURI.substr(aURI.indexOf("://")+3);
-		if (tmpStr.indexOf("?") > -1) {
-			tmpStr = tmpStr.substr(0,tmpStr.indexOf("?")); 
+		if (aExchangeContact.tagName == "Contact") {
+			this.convertExchangeContactToCard(aParent, aExchangeContact);
+		}
+		else {
+			this.directoryId = aParent.uuid;
+			this.localId = aExchangeContact.getAttributeByTag("t:ItemId", "Id", null);
+			if (!this.localId) {
+				this.localId = aExchangeContact.getTagValue("t:RoutingType","SMTP")+":"+aExchangeContact.getTagValue("t:EmailAddress","");
+				this.setProperty("PrimaryEmail", aExchangeContact.getTagValue("t:EmailAddress", ""));
+			}
+			this.setProperty("DisplayName", decodeURIComponent(aExchangeContact.getTagValue("t:Name", "")));
 		}
 
-		var params = this.paramsToArray(tmpStr,"&");
-
+		this.isMailList = true;
 		this.mailListURI = aURI;
 		this._type = Ci.mivExchangeAbCard.CARD_TYPE_MAILLIST;
-		this.localId = decodeURIComponent(params.id);
-		this.setProperty("DisplayName", decodeURIComponent(params.name));
 
 	},
 
-	//	void convertExchangeContactToCard(in jsval aExchangeContact);
-	convertExchangeContactToCard: function _convertExchangeContactToCard(aParent, aExchangeContact)
+	//	void convertExchangeContactToCard(in jsval aParent, in jsval aExchangeContact, in AUTF8String aMailboxType);
+	convertExchangeContactToCard: function _convertExchangeContactToCard(aParent, aExchangeContact, aMailboxType)
 	{
 		//this.logInfo("convertExchangeContactToCard: "+aExchangeContact.toString());
 
@@ -379,7 +381,17 @@ mivExchangeAbCard.prototype = {
 			this._mailboxType = aExchangeContact.getTagValue("t:MailboxType");
 		}
 		else {
-			this._type = Ci.mivExchangeAbCard.CARD_TYPE_CONTACT;
+			switch (aMailboxType) {
+				case "Mailbox":
+					this._type = Ci.mivExchangeAbCard.CARD_TYPE_MAILBOX;
+					break;
+				case "Contact":
+					this._type = Ci.mivExchangeAbCard.CARD_TYPE_CONTACT;
+					break;
+				case "OneOff":
+					this._type = Ci.mivExchangeAbCard.CARD_TYPE_ONEOFF;
+					break;
+			}
 			this.localId = aExchangeContact.getAttributeByTag("t:ItemId", "Id", null);
 			this.setProperty("X-ChangeKey", aExchangeContact.getAttributeByTag("t:ItemId", "ChangeKey", ""));
 			this.setProperty("X-ContactSource", aExchangeContact.getTagValue("t:ContactSource", ""));

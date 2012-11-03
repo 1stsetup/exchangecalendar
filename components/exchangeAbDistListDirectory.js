@@ -1062,7 +1062,8 @@ exchangeAbDistListDirectory.prototype = {
 
 		// changekey set to null because the same dislist can have different changeKey when it is also added as a member of another distlist.
 
-		if (this._type == "PrivateDL") {
+		switch (this._type) {
+		case "PrivateDL":
 			this.addToQueue( erExpandDLRequest,
 							{user: this.user, 
 							 serverUrl: this.serverUrl,
@@ -1071,19 +1072,18 @@ exchangeAbDistListDirectory.prototype = {
 							function(erExpandDLRequest, aMailboxes) { self.distListExpandOk(erExpandDLRequest, aMailboxes);}, 
 							function(erExpandDLRequest, aCode, aMsg) { self.distListExpandError(erExpandDLRequest, aCode, aMsg);},
 							null);
-		}
-		else {
-			if (this._type == "PublicDL") {
-				var emailAddress = this.id.substr(this.id.indexOf(":")+1);
-				this.addToQueue( erExpandDLRequest,
-								{user: this.user, 
-								 serverUrl: this.serverUrl,
-						 		 actionStart: Date.now(),
-								 emailAddress: emailAddress },
-								function(erExpandDLRequest, aMailboxes) { self.distListExpandOk(erExpandDLRequest, aMailboxes);}, 
-								function(erExpandDLRequest, aCode, aMsg) { self.distListExpandError(erExpandDLRequest, aCode, aMsg);},
-								null);
-			}
+			break;
+		case "PublicDL":
+			var emailAddress = this.id.substr(this.id.indexOf(":")+1);
+			this.addToQueue( erExpandDLRequest,
+							{user: this.user, 
+							 serverUrl: this.serverUrl,
+					 		 actionStart: Date.now(),
+							 emailAddress: emailAddress },
+							function(erExpandDLRequest, aMailboxes) { self.distListExpandOk(erExpandDLRequest, aMailboxes);}, 
+							function(erExpandDLRequest, aCode, aMsg) { self.distListExpandError(erExpandDLRequest, aCode, aMsg);},
+							null);
+			break;
 		}
 	},
 
@@ -1181,11 +1181,14 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 			emailAddress: aMailbox.getTagValue("t:EmailAddress"),
 			routingType: aMailbox.getTagValue("t:RoutingType"),
 			mailboxType: aMailbox.getTagValue("t:MailboxType"),
-			itemId: {	id: aMailbox.getAttributeByTag("t:ItemId", "Id"), 
-					changeKey:aMailbox.getAttributeByTag("t:ItemId", "ChangeKey")
-				},
 			mailbox: aMailbox
 		};
+
+		if (aMailbox.getTags("t:ItemId").length > 0) {
+			result.itemId = {	id: aMailbox.getAttributeByTag("t:ItemId", "Id", null), 
+					changeKey:aMailbox.getAttributeByTag("t:ItemId", "ChangeKey", null)
+				};
+		}
 
 		return result;		
 	},
@@ -1204,13 +1207,13 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 				switch (calMailbox.mailboxType) {
 				case "Contact": // A normal in store or AD contact
 					exchWebService.commonAbFunctions.logInfo("distListLoadOk: new Contact:"+calMailbox.name);
-					if (calMailbox.itemId.id) {
+					if ((calMailbox.itemId) && (calMailbox.itemId.id)) {
 						// It is a private store contact.
 						aStoreContacts.push({ Id: calMailbox.itemId.id });
 					}
 					break;
 				case "PrivateDL": // Private Store distribution list.
-					if (calMailbox.itemId.id) {
+					if ((calMailbox.itemId) && (calMailbox.itemId.id)) {
 						// It is a private store distList.
 						exchWebService.commonAbFunctions.logInfo("distListLoadOk: new Private distList:"+calMailbox.name+" in dir:"+this.dirName);
 
@@ -1219,7 +1222,7 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 						try {
 							var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
 								.createInstance(Ci.mivExchangeAbCard);
-							newCard.convertExchangeDistListToCard(this, dirName);
+							newCard.convertExchangeDistListToCard(this, mailbox, dirName);
 							this.updateList(newCard);
 							var dir = MailServices.ab.getDirectory(dirName);
 							if (dir) {
@@ -1233,10 +1236,34 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 					}
 					break; 
 				case "PublicDL": // An Active Directory distribution list.
-					// Not yet supported.
+					exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: distListExpandOk: new Public distList:"+calMailbox.name+" in GAL of "+this.serverUrl);
+
+					var dirName = this.childNodeURI+"id="+encodeURIComponent(calMailbox.routingType+":"+calMailbox.emailAddress)+"&name="+encodeURIComponent(calMailbox.name)+"&parentId="+this.parentId+"&type=PublicDL";
+
+					// Make a card from the contact details.
+					var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
+						.createInstance(Ci.mivExchangeAbCard);
+					newCard.convertExchangeDistListToCard(this, mailbox, dirName);
+					this.updateList(newCard);
+					var dir = MailServices.ab.getDirectory(dirName);
+					if (dir) {
+						this.distLists.push(dir);
+						MailServices.ab.notifyDirectoryItemAdded(this, dir);
+					}
+
 					break; 
+				case "OneOff":
+					exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: distListExpandOk: new OneOff Contact:"+calMailbox.name+" in GAL of "+this.serverUrl);
+					
+					// Make a card from the contact details.
+					var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
+						.createInstance(Ci.mivExchangeAbCard);
+					newCard.convertExchangeContactToCard(this, mailbox, calMailbox.mailboxType);
+					this.updateList(newCard);
+
+					break;
 				case "Mailbox": // An Active Directory mailbox
-					exchWebService.commonAbFunctions.logInfo("distListLoadOk: new Mailbox:"+calMailbox.name);
+					exchWebService.commonAbFunctions.logInfo("distListExpandOk: new Mailbox:"+calMailbox.name);
 					aADContacts.push(calMailbox);
 					break;
 				default:
@@ -1270,8 +1297,8 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 							 changeKey: this.changeKey,
 							 ids: aADContacts[index],
 					 		 actionStart: Date.now()},
-							function(erGetContactsRequest, aContacts, aMailboxes) { self.mailboxLoadOk(erGetContactsRequest, aContacts, aMailboxes);}, 
-							function(erGetContactsRequest, aCode, aMsg) { self.distListExpandError(erGetContactsRequest, aCode, aMsg);},
+							function(erResolveNames, aResolutions) { self.resolveNamesOk(erResolveNames, aResolutions);}, 
+							function(erResolveNames, aCode, aMsg) { self.distListExpandError(erResolveNames, aCode, aMsg);},
 							null);
 			}
 		}
@@ -1305,22 +1332,74 @@ exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 
 	},
 
-	mailboxLoadOk: function _contactsLoadOk(erGetContactsRequest, aContacts, aMailboxes)
+	resolveNamesOk: function _resolveNamesOk(erResolveNames, aResolutions)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: mailboxLoadOk: contacts:"+aContacts.length);
 
-		for each(var contact in aContacts) {
-			//exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString());
-			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  mailboxLoadOk: new childCards:"+contact.getTagValue("t:DisplayName"));
-			this.ecUpdateCard(contact);
+		exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: resolveNamesOk: contacts:"+aResolutions.length);
 
-		}
+		for each(var resolution in aResolutions) {
+			exchWebService.commonAbFunctions.logInfo("resolution card:"+resolution.toString());
 
-		for each(var mailbox in aMailboxes) {
-			//exchWebService.commonAbFunctions.logInfo("Contact card:"+contact.toString());
-			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  mailboxLoadOk: new childCards:"+mailbox.getTagValue("t:Name"));
-			this.ecUpdateCard(mailbox);
+			var mailbox = resolution.getTags("t:Mailbox");
+			exchWebService.commonAbFunctions.logInfo("resolution mailbox card:"+mailbox[0].toString());
+			var contact = resolution.getTags("t:Contact");
+			if (contact.length > 0) {
+				exchWebService.commonAbFunctions.logInfo("resolution contact card:"+contact[0].toString());
+			}
+			var calMailbox;
+			if (mailbox.length > 0) {
+				calMailbox = this.convertExchangeMailbox(mailbox[0]);
 
+				switch (calMailbox.mailboxType) {
+				case "PrivateDL": // An Contact folder distribution list.
+try {
+					var dirName = this.childNodeURI+"id="+encodeURIComponent(calMailbox.itemId.id)+"&name="+encodeURIComponent(calMailbox.name)+"&parentId="+this.parentId+"&type=PrivateDL";
+
+					var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
+						.createInstance(Ci.mivExchangeAbCard);
+					newCard.convertExchangeDistListToCard(this, mailbox[0], dirName);
+					this.updateList(newCard);
+					var dir = MailServices.ab.getDirectory(dirName);
+					if (dir) {
+						this.distLists.push(dir);
+						MailServices.ab.notifyDirectoryItemAdded(this, dir);
+					}
+} catch(err) {
+		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: resolveNamesOk: Foutje:"+err);
+}
+					break;
+				case "PublicDL": // An Active Directory distribution list.
+					exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: resolveNamesOk: new Public distList:"+calMailbox.name+" in GAL of "+this.serverUrl);
+
+					var dirName = this.childNodeURI+"id="+encodeURIComponent(calMailbox.routingType+":"+calMailbox.emailAddress)+"&name="+encodeURIComponent(calMailbox.name)+"&parentId="+this.parentId+"&type=PublicDL";
+
+					// Make a card from the contact details.
+					var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
+						.createInstance(Ci.mivExchangeAbCard);
+					newCard.convertExchangeDistListToCard(this, contact[0], dirName);
+					this.updateList(newCard);
+					var dir = MailServices.ab.getDirectory(dirName);
+					if (dir) {
+						this.distLists.push(dir);
+						MailServices.ab.notifyDirectoryItemAdded(this, dir);
+					}
+
+					break; 
+				case "Contact":
+				case "Mailbox": // An Active Directory Contact Mailbox.
+					exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: resolveNamesOk: new Mailbox Contact:"+calMailbox.name+" in GAL of "+this.serverUrl);
+					
+					// Make a card from the contact details.
+					var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
+						.createInstance(Ci.mivExchangeAbCard);
+					newCard.convertExchangeContactToCard(this, contact[0], calMailbox.mailboxType);
+					this.updateList(newCard);
+
+					break;
+				default:
+					 exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: resolveNamesOk: Unknown mailboxtype:"+calMailbox.mailboxType);
+				}
+			}
 		}
 
 		this.isLoading = false;

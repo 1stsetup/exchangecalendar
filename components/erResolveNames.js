@@ -84,11 +84,9 @@ erResolveNames.prototype = {
 
 		if ((this.ids.routingType) && (this.ids.routingType == "SMTP")) {
 			req.addChildTag("UnresolvedEntry", "nsMessages", this.ids.emailAddress); 
-			this.itemId = { id: this.ids.emailAddress, changeKey: "SMTP" };
 		}
 		else {
 			req.addChildTag("UnresolvedEntry", "nsMessages", this.ids.name); 
-			this.itemId = { id: this.ids.name, changeKey: this.ids.routingType };
 		}
 
 		this.parent.xml2jxon = true;
@@ -104,6 +102,7 @@ erResolveNames.prototype = {
 
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:ResolveNamesResponse/m:ResponseMessages/m:ResolveNamesResponseMessage[@ResponseClass='Success' or @ResponseClass='Warning']");
 
+		var allResolutions = new Array();
 		if (rm.length == 0) {
 
 			rm = aResp.XPath("/s:Envelope/s:Body/m:ResolveNamesResponse/m:ResponseMessages/m:ResolveNamesResponseMessage[@ResponseClass='Error' and m:ResponseCode = 'ErrorNameResolutionNoResults']");
@@ -118,34 +117,15 @@ erResolveNames.prototype = {
 		else {
 			var resolutionsSets = rm[0].getTags("m:ResolutionSet");
 
-			var allContacts = new Array();
-			var allMailboxes = new Array();
 			for each(var resolutionsSet in resolutionsSets) {
 
 				var totalItemsInView = resolutionsSet.getAttribute("TotalItemsInView", 0);
 				var includesLastItem = resolutionsSet.getAttribute("IncludesLastItemInRange", "false");
 
-				var contacts = resolutionsSet.XPath("/t:Resolution/t:Contact");
-				for (var index in contacts) {
-					var itemId = contacts[index].addChildTag("ItemId", "t", null);
-/*					if (!this.GALQuery) { 
-						itemId.setAttribute("Id", this.itemId.id);
-						itemId.setAttribute("ChangeKey", this.itemId.changeKey);
-					}*/
-					allContacts.push(contacts[index]);
+				var resList = resolutionsSet.XPath("/t:Resolution");
+				for each(var resolution in resList) {
+					allResolutions.push(resolution);
 				}
-				contacts = null;
-
-				var mailboxes = resolutionsSet.XPath("/t:Resolution/t:Mailbox");
-				for (var index in mailboxes) {
-					var itemId = mailboxes[index].addChildTag("ItemId", "t", null); 
-/*					if (!this.GALQuery) { 
-						itemId.setAttribute("Id", this.itemId.id);
-						itemId.setAttribute("ChangeKey", this.itemId.changeKey);
-					}*/
-					allMailboxes.push(mailboxes[index]);
-				}
-				mailboxes = null;
 		
 			}
 			resolutionsSets = null;
@@ -153,7 +133,7 @@ erResolveNames.prototype = {
 		rm = null;
 
 		if (this.mCbOk) {
-			this.mCbOk(this, allContacts, allMailboxes);
+			this.mCbOk(this, allResolutions);
 		}
 		this.isRunning = false;
 	},

@@ -95,7 +95,7 @@ erFindContactsRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erFindContactsRequest.onSendOk:"+String(aResp));
+		exchWebService.commonFunctions.LOG("erFindContactsRequest.onSendOk:"+String(aResp));
 
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:ResponseCode");
 
