@@ -20,7 +20,11 @@
  *
  *
  * ***** BEGIN LICENSE BLOCK *****/
+var Cc = Components.classes;
+var Ci = Components.interfaces;
 var Cu = Components.utils;
+var Cr = Components.results;
+var components = Components;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
@@ -124,10 +128,10 @@ erResolveNames.prototype = {
 				var contacts = resolutionsSet.XPath("/t:Resolution/t:Contact");
 				for (var index in contacts) {
 					var itemId = contacts[index].addChildTag("ItemId", "t", null);
-					if (!this.GALQuery) { 
+/*					if (!this.GALQuery) { 
 						itemId.setAttribute("Id", this.itemId.id);
 						itemId.setAttribute("ChangeKey", this.itemId.changeKey);
-					}
+					}*/
 					allContacts.push(contacts[index]);
 				}
 				contacts = null;
@@ -135,10 +139,10 @@ erResolveNames.prototype = {
 				var mailboxes = resolutionsSet.XPath("/t:Resolution/t:Mailbox");
 				for (var index in mailboxes) {
 					var itemId = mailboxes[index].addChildTag("ItemId", "t", null); 
-					if (!this.GALQuery) { 
+/*					if (!this.GALQuery) { 
 						itemId.setAttribute("Id", this.itemId.id);
 						itemId.setAttribute("ChangeKey", this.itemId.changeKey);
-					}
+					}*/
 					allMailboxes.push(mailboxes[index]);
 				}
 				mailboxes = null;

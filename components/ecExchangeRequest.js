@@ -590,7 +590,7 @@ ExchangeRequest.prototype = {
 			try {
 				var serverVersion = resp.XPath("/s:Header/t:ServerVersionInfo");
 				if ((serverVersion.length > 0) && (serverVersion[0].getAttribute("Version") != "")) {
-					this.exchangeStatistics.setServerVersion(this.currentUrl, serverVersion[0].getAttribute("@Version"));
+					this.exchangeStatistics.setServerVersion(this.currentUrl, serverVersion[0].getAttribute("Version"));
 				}
 				serverVersion = null;
 			}

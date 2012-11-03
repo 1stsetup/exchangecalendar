@@ -1390,19 +1390,12 @@ exchangeAbFolderDirectory.prototype = {
 	{
 		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: syncFolderOK "+ this.dirName);
 
-try {
 		if (!this.syncState) {
 			exchWebService.commonAbFunctions.logInfo("syncFolderOK: First sync we are not going to use the data.");
 			this.syncState = syncState;
 			this.weAreSyncing = false;
 			return;
 		}
-}
-catch(err) {
-			exchWebService.commonAbFunctions.logInfo("syncFolderOK: Err:"+err);
-	return;
-}
-		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: syncFolderOK "+ this.dirName);
 
 		if ((creations.contacts.length > 0) || (updates.contacts.length > 0) || (deletions.contacts.length > 0)) {
 			this.addActivity(exchWebService.commonFunctions.getString("ExchangeContacts","syncFolderEventMessage",[creations.contacts.length, updates.contacts.length, deletions.contacts.length, this.dirName],"exchangecalendar"), "", erSyncContactsFolderRequest.argument.actionStart, Date.now())
