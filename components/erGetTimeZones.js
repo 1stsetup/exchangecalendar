@@ -34,7 +34,11 @@
  *
  * ***** BEGIN LICENSE BLOCK *****/
 
+var Cc = Components.classes;
+var Ci = Components.interfaces;
 var Cu = Components.utils;
+var Cr = Components.results;
+var components = Components;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
@@ -69,7 +73,13 @@ function erGetTimeZonesRequest(aArgument, aCbOk, aCbError, aListener)
 		function(aExchangeRequest, aCode, aMsg) { self.onSendError(aExchangeRequest, aCode, aMsg);},
 		aListener);
 
+	this.argument = aArgument;
+	this.mailbox = aArgument.mailbox;
 	this.serverUrl = aArgument.serverUrl;
+	this.folderID = aArgument.folderID;
+	this.folderBase = aArgument.folderBase;
+	this.changeKey = aArgument.changeKey;
+	this.listener = aListener;
 
 	this.isRunning = true;
 	this.execute();
