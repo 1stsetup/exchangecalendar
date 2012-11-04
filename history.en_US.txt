@@ -1,3 +1,13 @@
+Version 3.1.99:
+- Fixes Bug 212 - version >= 3.x leaks memory
+- Fixes Bug 211 - 3.1.2 breaks login (3.1.1 working)
+- Fixes Bug 188 - Adding a new Exchange 2010 EWS Calendar via add-on goes into an infinite password prompt loop
+- Fixes Bug 173 - Exchange 2007/2010 Calendar and Tasks Provider deletes Outlook Calendar entries
+- Fixes Bug 164 - Can not Connect to server
+- Fixes Bug 159 - Thunderbird freezes
+- Fixes Bug 157 - Infinity Loope for Password/Username
+- Fixes Bug 143 - The adding uses wrong folder and does not fetch contacts
+
 Version 3.1.2:
 - Fixed bug 175: After 10 calendars the jobs will hang up
 - Fixed bug 201: Number of Jobs displayed in status bar is negative

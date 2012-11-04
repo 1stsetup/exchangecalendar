@@ -67,7 +67,6 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 	this.itemCount = 0;
 	this.messageLength = 0;
 	this.closed = false;
-	this.parentTag = null;
 	this.nameSpaces = {};
 	this.tags = {};
 	this.attr = {};
@@ -263,14 +262,7 @@ mivIxml2jxon.prototype = {
 			return this.nameSpaces[aAlias];
 		}
 
-		// Request our parent.
-		if (this.parentTag) {
-			return this.parentTag.getNameSpace(aAlias);
-		}
-		else {
-			// We reached the top  and no match.
-			return null;
-		}
+		return null;
 	},
 
 	addNameSpace: function _addNameSpace(aAlias, aValue)
@@ -279,13 +271,17 @@ mivIxml2jxon.prototype = {
 			this.nameSpaces = {};
 		}
 
+		var index = aAlias;
 		if ((aAlias == "") || (aAlias === undefined)) {
-			//this.logInfo("addNameSpace: aAlias:_default_, aValue:"+aValue+" to tag:"+this.tagName, 1);
-			this.nameSpaces["_default_"] = aValue;
+			index = "_default_";
 		}
-		else {
-			//this.logInfo("addNameSpace: aAlias:"+aAlias+", aValue:"+aValue+" to tag:"+this.tagName, 1);
-			this.nameSpaces[aAlias] = aValue;
+
+		this.logInfo("addNameSpace: aAlias:"+index+", aValue:"+aValue+" to tag:"+this.tagName, 1);
+		this.nameSpaces[index] = aValue;
+
+		// Add new namespace to children.
+		for each(var child in this.tags) {
+			child.addNameSpace(index, aValue);
 		}
 	},
 
@@ -408,9 +404,15 @@ mivIxml2jxon.prototype = {
 		return result;
 	},
 
-	setParentTag: function _setParentTag(aNewParent)
+	addParentNameSpaces: function _addParentNameSpaces(aParent)
 	{
-		this.parentTag = aNewParent;
+		if (!this.nameSpaces) {
+			this.nameSpaces = {};
+		}
+
+		for (var index in aParent.nameSpaces) {
+			this.nameSpaces[index] = aParent.nameSpaces[index];
+		}
 	},
 
 	addChildTagObject: function _addChildTagObject(aObject)
@@ -420,7 +422,7 @@ mivIxml2jxon.prototype = {
 		}
 
 		if (aObject.uuid != this.uuid) {
-			aObject.setParentTag(this);
+			aObject.addParentNameSpaces(this);
 		}
 
 		var aNameSpace = aObject.nameSpace;

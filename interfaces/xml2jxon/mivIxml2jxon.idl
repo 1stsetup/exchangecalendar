@@ -43,7 +43,7 @@ interface mivIxml2jxon : nsISupports
   attribute jsval nameSpaces;
 
 //  void addToContent(in jsval aValue);
-  void setParentTag(in jsval aNewParent);
+//  void setParentTag(in jsval aNewParent);
   void correctNameSpace();
   void processXMLString(in AUTF8String aString, in long aStartPos, in mivIxml2jxon aParent);
   jsval XPath(in AUTF8String aString);
@@ -64,6 +64,7 @@ interface mivIxml2jxon : nsISupports
   AUTF8String addNameSpace(in AUTF8String aAlias, in AUTF8String aValue);
   AUTF8String deleteNameSpace(in AUTF8String aAlias);
 
+  void addParentNameSpaces(in mivIxml2jxon aParent);
   jsval addChildTagObject(in jsval aObject);
   jsval addChildTag(in AUTF8String aTagName, in AUTF8String aNameSpace, in AUTF8String aValue);
 

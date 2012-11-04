@@ -1158,7 +1158,6 @@ exchangeAbDistListDirectory.prototype = {
 		}
 		else {
 			exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory:  || This card is new. We do not know it yet.");
-exchWebService.commonAbFunctions.logInfo("BliepBliep4:"+this.dirName);
 			this.contacts[newCard.localId] = newCard;
 			MailServices.ab.notifyDirectoryItemAdded(this, newCard);
 		}
