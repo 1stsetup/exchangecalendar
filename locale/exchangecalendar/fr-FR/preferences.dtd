@@ -31,12 +31,12 @@
 <!ENTITY exchangeWebService.preference.others.prefs.label "Préférences de communication:">
 <!ENTITY exchangeWebService.preference.others.prefs.retryCount.label "Nombre maximum de tentatives pour l'échange de communication:">
 
-<!ENTITY exchangeWebService.preference.updateFunction.label "Addon update function:">
-<!ENTITY exchangeWebService.preference.checkForUpdates.label "Automatically check for a new addon version online when starting Thunderbird.">
-<!ENTITY exchangeWebService.preference.warnForUpdates.label "Show warning when a new version is available. So you can easily install it.">
+<!ENTITY exchangeWebService.preference.updateFunction.label "Mise à jour de l'Addon:">
+<!ENTITY exchangeWebService.preference.checkForUpdates.label "Vérifier automatiquement la disponibilité d'une nouvelle version de l'addon version au démarrage de Thunderbird ou Seamonkey.">
+<!ENTITY exchangeWebService.preference.warnForUpdates.label "Message d'avertissement de la présence d'une nouvelle version, pour choisir de l'installer.">
 
 <!ENTITY exchangeWebService.preference.loadbalancer.debug.caption "Loadbalancer:">
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.label "Loadbalancer:">
-<!ENTITY exchangeWebService.preference.loadbalancer.prefs.maxJobs.label "Maximum number of simultanious request to exchange server:">
-<!ENTITY exchangeWebService.preference.loadbalancer.prefs.sleepBetweenJobs.label "Minimum time, to wait, between request to exchange server:">
+<!ENTITY exchangeWebService.preference.loadbalancer.prefs.maxJobs.label "Nombre Max de connexions simultanées vers le serveur Exchange:">
+<!ENTITY exchangeWebService.preference.loadbalancer.prefs.sleepBetweenJobs.label "Temps minimum entre les requètes vers le serveur Exchange:">
 
