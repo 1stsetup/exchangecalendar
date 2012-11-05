@@ -7,5 +7,5 @@
 <!ENTITY label.ecExchangeSettings.title "Noms dans la liste:">
 <!ENTITY exchangeWebService.preference.contacts.pollinterval "Intervalle de rafraichissement en secondes:">
 
-<!ENTITY exchWebService.add.globaladdresslist.label "Add global address list to search results.">
+<!ENTITY exchWebService.add.globaladdresslist.label "Ajouter la liste globale d'adresses aux résultats de recherche.">
 
