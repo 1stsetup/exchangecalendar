@@ -133,7 +133,7 @@ mivExchangeAuthPrompt2.prototype = {
 		}
 		this.logInfo("getPassword: password(2)="+password);
 
-		if (password) && ((aChannel.URI.password) && (aChannel.URI.password != "")) {
+		if ((password) && (aChannel) && (aChannel.URI.password) && (aChannel.URI.password != "")) {
 			this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. Going to see if they are the same.");
 			if (password == aChannel.URI.password) {
 				this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are the same. Going to ask user to provide a new password.");
@@ -560,7 +560,7 @@ try {
 		var aText = this.globalFunctions.getString("commonDialogs", "EnterPasswordFor", [aUsername, aURL], "global");
 
 		var aPassword = { value: null };
-		var aSavePassword = { value: true };
+		var aSavePassword = { value: false };
 
 		var result = prompter.promptPassword( aTitle,
 						aText,
