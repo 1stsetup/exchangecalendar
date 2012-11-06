@@ -101,36 +101,51 @@ mivExchangeAuthPrompt2.prototype = {
 			this.logInfo("getPassword: Set realm to:"+realm);
 		}
 
-		var password;
-		var channelPassword;
-		if (aChannel) {
-			this.logInfo("getPassword: Going to check if password is in URI.");
-			channelPassword = aChannel.URI.password;
-			if (channelPassword) {
-				channelPassword = this.globalFunctions.trim(decodeURI(aChannel.URI.password));
-			}
-		}
-		this.logInfo("getPassword: channelPassword(1)="+channelPassword);
-		if ((!password) || (password == "")) {
-			this.logInfo("getPassword: password is not specified. Going to ask passwordManager if it has been saved before.");
-			var savedPassword = this.passwordManagerGet(username, aURL, realm);
+/* If we get here it means that we did not yet have a password or we had a password in the channel.
+	So first we going to see if there is a password in cache. If so we use it.
+	If there is no password in cache we going to query the password manager and use it when available.
 
+	if we have password from cache or manager, and we have a password in the channel. We are going to match them.
+	Because when they are equal then the cached and stored password were wrong. Otherwise we did not get here.
+
+	When no password at al always ask. */
+
+		var password;
+		if (this.passwordCache[username+"|"+aURL+"|"+realm]) {
+			this.logInfo("getPassword: There is a password in the passwordCache["+username+"|"+aURL+"|"+realm+"]");
+			password = this.passwordCache[username+"|"+aURL+"|"+realm];
+		}
+		else {
+			this.logInfo("getPassword: There is no password in the passwordCache["+username+"|"+aURL+"|"+realm+"]");
+		}
+		this.logInfo("getPassword: password(1)="+password);
+
+		if (!password) {
+			this.logInfo("getPassword: There is no password in the cache. Going to see if there is one in the passwordManager.");
+			var savedPassword = this.passwordManagerGet(username, aURL, realm);
 			if (savedPassword.result) {
+				this.logInfo("getPassword: There is a password stored in the passwordManager.");
 				password = savedPassword.password;
+			}
+			else {
+				this.logInfo("getPassword: There is no password stored in the passwordManager.");
 			}
 		}
 		this.logInfo("getPassword: password(2)="+password);
 
-		if ((!password) || (password == "")) {
-			this.logInfo("getPassword: password is not specified and not found in passwordManager. Going to search cache.");
-			if (this.passwordCache[username+"|"+aURL+"|"+realm]) {
-				password = this.passwordCache[username+"|"+aURL+"|"+realm];
+		if (password) && ((aChannel.URI.password) && (aChannel.URI.password != "")) {
+			this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. Going to see if they are the same.");
+			if (password == aChannel.URI.password) {
+				this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are the same. Going to ask user to provide a new password.");
+				password = null;
+			}
+			else {
+				this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are NOT the same. Going to ask use cached/stored password.");
 			}
 		}
-		this.logInfo("getPassword: password(3)="+password);
 
 try {
-		if ((!password) || (password == "") || ((password) && (channelPassword) && (password == channelPassword))) {
+		if (!password) {
 
 			if (!this.details[aURL]) this.details[aURL] = { 
 							showing: true, 
@@ -138,7 +153,7 @@ try {
 							queue: new Array()
 						};
 
-			this.logInfo("getPassword: password is not specified and not found in passwordManager and not found in cache. Going to ask user to provide one.");
+			this.logInfo("getPassword: Going to ask user to provide a new password.");
 
 			var answer = this.getCredentials(username, aURL);
 
@@ -161,11 +176,8 @@ try {
 				throw "getPassword: User canceled entering a password.";
 			}
 		}
-		else {
-			if (channelPassword != password) {
-			}
-			this.logInfo("getPassword: We have a password:"+password);
-		}
+
+		this.logInfo("getPassword: We have a password:"+password);
 
 } catch(err) { this.logInfo("getPassword: Error:"+err); }
 		return password;
