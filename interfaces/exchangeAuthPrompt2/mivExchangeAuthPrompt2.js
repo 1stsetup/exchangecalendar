@@ -141,7 +141,13 @@ mivExchangeAuthPrompt2.prototype = {
 			this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. Going to see if they are the same.");
 			if (password == aChannel.URI.password) {
 				this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are the same. Going to ask user to provide a new password.");
-				password = null;
+				if ((this.details[aURL]) && (this.details[aURL].ntlmCount == 1)) {
+					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are the same. But it is a first pass on an NTLM authentication. Using stored password and going to see if it can be used.");
+				}
+				else {
+					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are the same. Going to ask user to provide a new password.");
+					password = null;
+				}
 			}
 			else {
 				this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are NOT the same. Going to use cached/stored password.");
@@ -154,11 +160,13 @@ try {
 			if (!this.details[aURL]) this.details[aURL] = { 
 							showing: true, 
 							canceled: false,
-							queue: new Array()
+							queue: new Array(),
+							ntlmCount: 0
 						};
 
 			this.logInfo("getPassword: Going to ask user to provide a new password.");
 
+			this.details[aURL].ntlmCount = 0;
 			var answer = this.getCredentials(username, aURL);
 
 			if (answer.result) {
@@ -342,14 +350,6 @@ try {
 		this.logInfo("asyncPromptAuth: channel.responseStatusText="+channel.responseStatusText);
 
 
-		try {
-			var offeredAuthentications = channel.getRequestHeader("Authorization");
-			this.logInfo("asyncPromptAuth: Authorization:"+offeredAuthentications);
-		}
-		catch(err) {
-				this.logInfo("asyncPromptAuth: NO Authorization in request header!?");
-		}
-
 		var URL = decodeURI(aChannel.URI.scheme+"://"+aChannel.URI.hostPort+aChannel.URI.path);
 		this.logInfo("asyncPromptAuth: aChannel.URL="+this.URL+", username="+aChannel.URI.username+", password="+aChannel.URI.password);
 
@@ -358,8 +358,22 @@ try {
 		if (!this.details[URL]) this.details[URL] = { 
 						showing: false, 
 						canceled: false,
-						queue: new Array()
+						queue: new Array(),
+						ntlmCount: 0,
 					};
+
+		try {
+			var offeredAuthentications = channel.getRequestHeader("Authorization");
+			this.logInfo("asyncPromptAuth: Authorization:"+offeredAuthentications);
+			if (offeredAuthentications.indexOf("NTLM ") > -1) {
+				this.details[URL].ntlmCount++;
+			}
+			
+		}
+		catch(err) {
+				this.logInfo("asyncPromptAuth: NO Authorization in request header!?");
+		}
+
 
 		this.details[URL].queue.push( {
 			uuid: uuid,
