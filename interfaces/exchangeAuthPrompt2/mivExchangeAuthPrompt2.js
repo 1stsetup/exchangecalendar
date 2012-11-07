@@ -91,7 +91,8 @@ mivExchangeAuthPrompt2.prototype = {
 			return null;
 		}
 
-		var realm = aRealm;
+//		var realm = aRealm;
+		var realm = "Exchange Web Service";
 
 		if (!realm) {
 			this.logInfo("getPassword: No realm specified. Trying to get it from the URL.");
@@ -99,6 +100,9 @@ mivExchangeAuthPrompt2.prototype = {
 			var tmpURI = ioService.newURI(aURL, null, null);
 			realm = tmpURI.host;
 			this.logInfo("getPassword: Set realm to:"+realm);
+		}
+		else {
+			this.logInfo("getPassword: A realm was specified:"+realm);
 		}
 
 /* If we get here it means that we did not yet have a password or we had a password in the channel.
@@ -140,7 +144,7 @@ mivExchangeAuthPrompt2.prototype = {
 				password = null;
 			}
 			else {
-				this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are NOT the same. Going to ask use cached/stored password.");
+				this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are NOT the same. Going to use cached/stored password.");
 			}
 		}
 
@@ -268,6 +272,9 @@ try {
 
 					if ((!password) || (password == null)) {
 						error = true;
+					}
+					else {
+						aChannel.URI.password = password;
 					}
 				}
 			}
