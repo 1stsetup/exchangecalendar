@@ -157,12 +157,17 @@ mivExchangeAuthPrompt2.prototype = {
 try {
 		if (!password) {
 
-			if (!this.details[aURL]) this.details[aURL] = { 
+			if (!this.details[aURL]) { 
+				this.logInfo("getPassword: First request for a password. Not going to ask user for it because we want to see if we need a password. For Kerberos for example we do not need a password.");
+				return null;
+			}
+
+/*			if (!this.details[aURL]) this.details[aURL] = { 
 							showing: true, 
 							canceled: false,
 							queue: new Array(),
 							ntlmCount: 0
-						};
+						};*/
 
 			this.logInfo("getPassword: Going to ask user to provide a new password.");
 
