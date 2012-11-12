@@ -1,0 +1,5 @@
+interfaces mivExchangeBadCertListener2.xpt
+component {33242776-0e06-4c30-afc1-bd68f3bb2417} mivExchangeBadCertListener2.js
+contract @1st-setup.nl/exchange/badcertlistener2;1 {33242776-0e06-4c30-afc1-bd68f3bb2417}
+
+

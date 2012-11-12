@@ -71,8 +71,6 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 	this.urllist = [];
 	this.currentUrl = "";
 	this.listener = aListener;
-	this.e4x = true;
-	this.xml2jxon = false;
 	this.retryCount = 0;
 
 	this.mAuthFail = 0;
@@ -336,6 +334,7 @@ catch(err) {
 		if (this.debug) this.logInfo(": ExchangeRequest.error :"+evt.type+", readyState:"+xmlReq.readyState+", status:"+xmlReq.status+", lastStatus:"+this._notificationCallbacks.lastStatus);
 
 		if ((!this.shutdown) && (this.badCert)) {
+			this.logInfo(": ExchangeRequest.error : badCert");
 			// On this connection a bad certificate was seen. Wait until it resets.
 			//this.sendRequest(this.mData, this.currentUrl);
 			return;
@@ -940,7 +939,9 @@ ecnsIAuthPrompt2.prototype = {
 	// nsIBadCertListener2
 	notifyCertProblem: function _nsIBadCertListener2_notifyCertProblem(socketInfo, status, targetSite) 
 	{
-		this.logInfo("ecnsIAuthPrompt2.notifyCertProblem: status:"+status);
+		this.logInfo("ecnsIAuthPrompt2.notifyCertProblem: targetSite:"+targetSite);
+//		this.logInfo("ecnsIAuthPrompt2.notifyCertProblem: status.cipherName:"+status.cipherName);
+		this.logInfo("ecnsIAuthPrompt2.notifyCertProblem: status.serverCert.windowTitle:"+status.serverCert.windowTitle);
 		if (!status) {
 			return true;
 		}
