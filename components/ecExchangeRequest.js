@@ -242,6 +242,7 @@ ExchangeRequest.prototype = {
 
 		try {
 
+//				this.xmlReq.open("POST", this.currentUrl, true);
 			if (password) {
 				if (this.debug) this.logInfo("We have a prePassword: *******");
 				this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user, password);
@@ -299,6 +300,12 @@ ExchangeRequest.prototype = {
 
 		// XXX we want to preserve POST across 302 redirects TODO: This might go away because header params are copyied right now.
 		httpChannel.redirectionLimit = 0;
+try{
+		httpChannel.allowPipelining = false;
+}
+catch(err) {
+		this.logInfo("sendRequest: ERROR on httpChannel.allowPipelining to err:"+err); 
+}
 
 		if (this.debug) this.logInfo(": sendRequest Sending: " + this.mData+"\n", 2);
 

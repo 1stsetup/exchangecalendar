@@ -137,9 +137,9 @@ mivExchangeAuthPrompt2.prototype = {
 		}
 		this.logInfo("getPassword: password(2)="+password);
 
-		if ((password) && (aChannel) && (aChannel.URI.password) && (aChannel.URI.password != "")) {
+		if ((password) && (aChannel) && (aChannel.URI.password) && (decodeURIComponent(aChannel.URI.password) != "")) {
 			this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. Going to see if they are the same.");
-			if (password == aChannel.URI.password) {
+			if (password == decodeURIComponent(aChannel.URI.password)) {
 				this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are the same. Going to ask user to provide a new password.");
 				if ((this.details[aURL]) && (this.details[aURL].ntlmCount == 1)) {
 					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are the same. But it is a first pass on an NTLM authentication. Using stored password and going to see if it can be used.");
@@ -151,6 +151,7 @@ mivExchangeAuthPrompt2.prototype = {
 			}
 			else {
 				this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are NOT the same. Going to use cached/stored password.");
+				this.logInfo("getPassword: cached/store='"+password+"', on channel='"+decodeURIComponent(aChannel.URI.password)+"'.");
 			}
 		}
 
@@ -239,9 +240,9 @@ try {
 			}
 			else {
 				this.logInfo("asyncPromptAuthNotifyCallback: Trying to detect username.");
-				username = aChannel.URI.username;
+				username = decodeURIComponent(aChannel.URI.username);
 				if (username) {
-					username = this.globalFunctions.trim(decodeURI(aChannel.URI.username));
+					username = this.globalFunctions.trim(decodeURIComponent(aChannel.URI.username));
 				}
 
 				if (username == "") {
@@ -279,6 +280,7 @@ try {
 						password = this.getPassword(aChannel, username, aURL, realm, true);
 					}
 					catch(err) {
+						this.logInfo("asyncPromptAuthNotifyCallback: getPassword exception. err:"+err);
 						aCallback.onAuthCancelled(aContext, true);
 						error = true;
 					}
@@ -287,7 +289,7 @@ try {
 						error = true;
 					}
 					else {
-						aChannel.URI.password = password;
+						aChannel.URI.password = encodeURIComponent(password);
 					}
 				}
 			}
@@ -295,23 +297,38 @@ try {
 			if (!error) {
 				// Return credentials we have obtained
 				if (!(authInfo.flags & Ci.nsIAuthInformation.ONLY_PASSWORD)) {
+					this.logInfo("asyncPromptAuthNotifyCallback: authInfo wants username and password and possibly domainname.");
 					if (authInfo.flags & Ci.nsIAuthInformation.NEED_DOMAIN) {
+						this.logInfo("asyncPromptAuthNotifyCallback: authInfo also wants domainname.");
+//						authInfo.domain = "";
 						if (username.indexOf("\\") > -1) {
 							authInfo.domain = username.substr(0,username.indexOf("\\"));
 							authInfo.username = username.substr(username.indexOf("\\")+1);
+							this.logInfo("asyncPromptAuthNotifyCallback: We have a domainname part in the username. Going to use it. domain="+authInfo.domain);
 						}
 						else {
-							authInfo.domain = "";
-							authInfo.username = username;
+							if (username.indexOf("@") > -1) {
+								authInfo.username = username.substr(0,username.indexOf("@"));
+								authInfo.domain = username.substr(username.indexOf("@")+1);
+								this.logInfo("asyncPromptAuthNotifyCallback: We have a domainname part in the username. Going to use it. domain="+authInfo.domain);
+							}
+							else {
+								this.logInfo("asyncPromptAuthNotifyCallback: We do not have a domainname part in the username. Specifying empty one.");
+								authInfo.username = username;
+							}
 						}
 					}
 					else {
 						authInfo.username = username;
 					}
 				}
+				else {
+					this.logInfo("asyncPromptAuthNotifyCallback: authInfo only wants a password.");
+				}
 				authInfo.password = password;
-				//this.logInfo(" USING password for connection:["+password+"]");
+				this.logInfo("asyncPromptAuthNotifyCallback: authInfo{ password:"+authInfo.password+", username:"+authInfo.username+", domain:"+authInfo.domain+"}");
 				try {
+					this.logInfo("asyncPromptAuthNotifyCallback: Sending authInfo to callback function.");
 					aCallback.onAuthAvailable(aContext, authInfo);
 				}
 				catch(err) {
@@ -350,13 +367,25 @@ try {
 
 		var channel = aChannel.QueryInterface(Ci.nsIHttpChannel);
 		this.logInfo("asyncPromptAuth: level="+level);
+		this.logInfo("asyncPromptAuth: channel.status="+channel.status);
 
 		this.logInfo("asyncPromptAuth: channel.responseStatus="+channel.responseStatus);
 		this.logInfo("asyncPromptAuth: channel.responseStatusText="+channel.responseStatusText);
 
+		this.logInfo("asyncPromptAuth: authInfo.authenticationScheme="+authInfo.authenticationScheme);
+		this.logInfo("asyncPromptAuth: authInfo.realm="+authInfo.realm);
+		this.logInfo("asyncPromptAuth: authInfo.username="+authInfo.username);
+		this.logInfo("asyncPromptAuth: authInfo.password="+authInfo.password);
+		this.logInfo("asyncPromptAuth: authInfo.domain="+authInfo.domain);
 
-		var URL = decodeURI(aChannel.URI.scheme+"://"+aChannel.URI.hostPort+aChannel.URI.path);
-		this.logInfo("asyncPromptAuth: aChannel.URL="+this.URL+", username="+aChannel.URI.username+", password="+aChannel.URI.password);
+		if (authInfo.flags & Ci.nsIAuthInformation.ONLY_PASSWORD) this.logInfo("asyncPromptAuth: authInfo.flags & ONLY_PASSWORD");
+		if (authInfo.flags & Ci.nsIAuthInformation.AUTH_HOST) this.logInfo("asyncPromptAuth: authInfo.flags & AUTH_HOST");
+		if (authInfo.flags & Ci.nsIAuthInformation.AUTH_PROXY) this.logInfo("asyncPromptAuth: authInfo.flags & AUTH_PROXY");
+		if (authInfo.flags & Ci.nsIAuthInformation.NEED_DOMAIN) this.logInfo("asyncPromptAuth: authInfo.flags & NEED_DOMAIN");
+		if (authInfo.flags & Ci.nsIAuthInformation.PREVIOUS_FAILED) this.logInfo("asyncPromptAuth: authInfo.flags & PREVIOUS_FAILED");
+
+		var URL = decodeURIComponent(aChannel.URI.scheme+"://"+aChannel.URI.hostPort+aChannel.URI.path);
+		this.logInfo("asyncPromptAuth: aChannel.URL="+URL+", username="+decodeURIComponent(aChannel.URI.username)+", password="+decodeURIComponent(aChannel.URI.password));
 
 		var uuid = this.globalFunctions.getUUID();
 
@@ -411,7 +440,7 @@ try {
 
 		var error = false;
 
-		var URL = decodeURI(aChannel.URI.scheme+aChannel.URI.hostPort+aChannel.URI.path);
+		var URL = decodeURIComponent(aChannel.URI.scheme+aChannel.URI.hostPort+aChannel.URI.path);
 		var password;
 		var username;
 
@@ -420,9 +449,9 @@ try {
 			return false;
 		}
 		else {
-			username = aChannel.URI.username;
+			username = decodeURIComponent(aChannel.URI.username);
 			if (username) {
-				username = this.globalFunctions.trim(decodeURI(aChannel.URI.username));
+				username = this.globalFunctions.trim(decodeURIComponent(aChannel.URI.username));
 			}
 
 			if (username == "") {
