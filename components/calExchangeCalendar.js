@@ -6449,7 +6449,9 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment:"+String(aCalendarItem), 2);
 
 
-		var item = createEvent();
+		//var item = createEvent();
+		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
+				.createInstance(Ci.mivExchangeEvent);
 		item.calendar = this.superCalendar;
 
 		if (!doNotify) {
@@ -7048,7 +7050,9 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			return null;
 		}
 
-		var item = createEvent();
+		//var item = createEvent();
+		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
+				.createInstance(Ci.mivExchangeEvent);
 		item.calendar = this.superCalendar;
 
 		item.id = this.md5(aCalendarEvent.toString());

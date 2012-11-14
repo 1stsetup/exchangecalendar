@@ -1,0 +1,5 @@
+interfaces mivExchangeEvent.xpt
+component {4cd0469e-093f-4f7c-8ace-68f6ec76b36e} mivExchangeEvent.js
+contract @1st-setup.nl/exchange/calendarevent;1 {4cd0469e-093f-4f7c-8ace-68f6ec76b36e}
+
+
