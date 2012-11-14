@@ -24,4 +24,7 @@
 [scriptable, uuid(33242776-0e06-4c30-afc1-bd68f3bb2417)]
 interface mivExchangeBadCertListener2 : nsIBadCertListener2
 {
+	boolean checkCertProblem(in AUTF8String targetSite); 
+	jsval checkAndSolveCertProblem(in AUTF8String targetSite); 
+	boolean userCanceledCertProblem(in AUTF8String targetSite); 
 };

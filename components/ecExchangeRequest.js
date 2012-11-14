@@ -92,6 +92,9 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 	this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
 			.getService(Ci.mivExchangeStatistics);
 
+	this.exchangeBadCertListener2 = Cc["@1st-setup.nl/exchange/badcertlistener2;1"]
+			.getService(Ci.mivExchangeBadCertListener2);
+
 }
 
 ExchangeRequest.prototype = {
@@ -201,6 +204,11 @@ ExchangeRequest.prototype = {
 		}
 
 		this.currentUrl = aUrl;
+
+		if (this.exchangeBadCertListener2.userCanceledCertProblem(this.currentUrl)) {
+			this.fail(this.ER_ERROR_USER_ABORT_AUTHENTICATION, "User canceled adding server certificate for url="+this.currentUrl+". Aborting this request.");
+			return;
+		}
 
 		var myAuthPrompt2 = Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
 		if (myAuthPrompt2.getUserCanceled(this.currentUrl)) {
@@ -333,11 +341,27 @@ catch(err) {
 
 		if (this.debug) this.logInfo(": ExchangeRequest.error :"+evt.type+", readyState:"+xmlReq.readyState+", status:"+xmlReq.status+", lastStatus:"+this._notificationCallbacks.lastStatus);
 
-		if ((!this.shutdown) && (this.badCert)) {
-			this.logInfo(": ExchangeRequest.error : badCert");
-			// On this connection a bad certificate was seen. Wait until it resets.
-			//this.sendRequest(this.mData, this.currentUrl);
-			return;
+		if ((!this.shutdown) && (xmlReq.readyState == 4) && (xmlReq.status == 0)) {
+			this.logInfo(": ExchangeRequest.error : badCert going to check if it is a cert problem.");
+try {
+			var result = this.exchangeBadCertListener2.checkAndSolveCertProblem(this.currentUrl);
+}
+catch(err){
+			this.logInfo(": ExchangeRequest.error : this.exchangeBadCertListener2.checkAndSolveCertProblem Error:"+err);
+}
+			if (result.hadProblem) {
+				if (result.solved) {
+					this.logInfo(": ExchangeRequest.error : badCert problem but solved. going to retry url.");
+					this.retryCurrentUrl();
+					return;
+				}
+				else {
+					this.logInfo(": ExchangeRequest.error : badCert problem and NOT solved. going to fail.");
+				}
+			}
+			else {
+				this.logInfo(": ExchangeRequest.error : badCert no problem.");
+			}
 		}
 
 		if (this.isHTTPRedirect(evt)) return;
@@ -885,9 +909,7 @@ ecnsIAuthPrompt2.prototype = {
 
 		if ((Ci.nsIBadCertListener2) && (iid.equals(Ci.nsIBadCertListener2))) {
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIBadCertListener2");
-			if (!this.exchangeRequest.badCert) {
-	        		return this;
-			}
+        		return Cc["@1st-setup.nl/exchange/badcertlistener2;1"].getService(Ci.mivExchangeBadCertListener2);
 		} 
 
 		if ((Ci.nsIProgressEventSink) && (iid.equals(Ci.nsIProgressEventSink))) {   // iid == d974c99e-4148-4df9-8d98-de834a2f6462
@@ -936,9 +958,10 @@ ecnsIAuthPrompt2.prototype = {
 		throw Cr.NS_NOINTERFACE;
 	},
 
-	// nsIBadCertListener2
+/*	// nsIBadCertListener2
 	notifyCertProblem: function _nsIBadCertListener2_notifyCertProblem(socketInfo, status, targetSite) 
 	{
+		this.logInfo("ecnsIAuthPrompt2.notifyCertProblem: socketInfo:"+socketInfo);
 		this.logInfo("ecnsIAuthPrompt2.notifyCertProblem: targetSite:"+targetSite);
 //		this.logInfo("ecnsIAuthPrompt2.notifyCertProblem: status.cipherName:"+status.cipherName);
 		this.logInfo("ecnsIAuthPrompt2.notifyCertProblem: status.serverCert.windowTitle:"+status.serverCert.windowTitle);
@@ -982,7 +1005,7 @@ ecnsIAuthPrompt2.prototype = {
 		timer.initWithCallback(timerCallback, 0,
 				Components.interfaces.nsITimer.TYPE_ONE_SHOT);
 		return true;
-	},
+	}, */
 
 	// nsIProgressEventSink
 	onProgress: function _nsIProgressEventSink_onProgress(aRequest, aContext, aProgress, aProgressMax)

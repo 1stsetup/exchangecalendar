@@ -50,6 +50,7 @@ overlay chrome://messenger/content/addressbook/addressbook.xul chrome://exchange
 
 
 manifest interfaces/exchangeStatistics/mivExchangeStatistics.manifest
+manifest interfaces/exchangeBadCertListener2/mivExchangeBadCertListener2.manifest
 manifest interfaces/global/mivFunctions.manifest
 manifest interfaces/xml2jxon/mivIxml2jxon.manifest
 manifest interfaces/updater/mivUpdater.manifest
