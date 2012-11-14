@@ -30,6 +30,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 function mivExchangeBadCertListener2() {
 
 	this.targetSites = {};
+	this.requests = {};
 
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
@@ -77,10 +78,6 @@ mivExchangeBadCertListener2.prototype = {
 		// we'll just take the first available calendar window. We also need to
 		// do this on a timer so that the modal window doesn't block the
 		// network request.
-		let wm = Cc["@mozilla.org/appshell/window-mediator;1"]
-      	                    .getService(Ci.nsIWindowMediator);
-		let calWindow = wm.getMostRecentWindow("mail:3pane") ;
-
 		var self = this;
 		let timerCallback = {
 			notify: function notifyCertProblem_notify(targetSite) {
@@ -94,25 +91,35 @@ mivExchangeBadCertListener2.prototype = {
 		return true;
 	},
 	
+	addRequest: function _addRequest(aRequest)
+	{
+		
+	},
+
 	// Internal methods.
-	notify: function _notify(targetSite) {
-		let params = { exceptionAdded: false,
+	notify: function _notify(targetSite) 
+	{
+		var params = { exceptionAdded: false,
 				prefetchCert: true,
 				location: targetSite };
+
+		var wm = Cc["@mozilla.org/appshell/window-mediator;1"]
+      	                    .getService(Ci.nsIWindowMediator);
+		var calWindow = wm.getMostRecentWindow("mail:3pane") ;
+
 		calWindow.openDialog("chrome://pippki/content/exceptionDialog.xul",
 				"",
 				"chrome,centerscreen,modal",
 				params);
 
 		if (params.exceptionAdded) {
-			self.targetSites[targetSite] = false;
+			this.targetSites[targetSite] = false;
 			self.exchangeRequest.retryCurrentUrl();
 		}
 		else {
 			self.exchangeRequest.onUserStop(this.exchangeRequest.ER_ERROR_USER_ABORT_ADD_CERTIFICATE, "User did not add needed certificate.");
 		}
-		} // function(timer)
-	};
+	},
 
 	logInfo: function _logInfo(aMsg, aDebugLevel) 
 	{
