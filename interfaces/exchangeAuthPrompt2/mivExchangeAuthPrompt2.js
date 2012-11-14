@@ -608,21 +608,20 @@ try {
 		var prompter = watcher.getNewPrompter(null);
 
 	// Only show the save password box if we are supposed to.
-		var savepassword = this.globalFunctions.getString("passwordmgr", "rememberPassword", null, "passwordmgr");
+		var savepasswordMsg = this.globalFunctions.getString("passwordmgr", "rememberPassword", null, "passwordmgr");
 
 		var aTitle = "Microsoft Exchange EWS: Password request.";
 
 		var aText = this.globalFunctions.getString("commonDialogs", "EnterPasswordFor", [aUsername, aURL], "global");
 
-		var aPassword = { value: null };
+		var aPassword = { value: "" };
 		var aSavePassword = { value: false };
 
-		var result = prompter.promptPassword( aTitle,
+		var result = prompter.promptPassword(aTitle,
 						aText,
 						aPassword,
-						savepassword,
+						savepasswordMsg,
 						aSavePassword);
-
 		return { result: result, password: aPassword.value, save: aSavePassword.value };
 	},
 
