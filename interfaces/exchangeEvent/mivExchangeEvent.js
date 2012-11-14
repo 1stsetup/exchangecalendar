@@ -32,6 +32,8 @@ function mivExchangeEvent() {
 	this._calEvent = Cc["@mozilla.org/calendar/event;1"]
 				.createInstance(Ci.calIEvent);
 
+	this._exchangeCalendarItem;
+
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
 
@@ -727,7 +729,26 @@ mivExchangeEvent.prototype = {
 		return this._calEvent.duration;
 	},
 
+	// New external methods
+	//void init(in mivIxml2jxon aExchangeCalendarItem); 
+	convertFromExchange: function _convertFromExchange(aExchangeCalendarItem) 
+	{
+		this.initialize();
+		this._exchangeCalendarItem = aExchangeCalendarItem;
+	},
+
+	convertToExchange: function _convertToExchange() 
+	{
+	},
+
 	// Internal methods.
+	initialize: function _initialize()
+	{
+		this._calEvent = null;
+		this._calEvent = Cc["@mozilla.org/calendar/event;1"]
+					.createInstance(Ci.calIEvent);
+	},
+
 	logInfo: function _logInfo(aMsg, aDebugLevel) 
 	{
 		var prefB = Cc["@mozilla.org/preferences-service;1"]
