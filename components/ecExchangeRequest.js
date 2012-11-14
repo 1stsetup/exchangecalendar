@@ -958,55 +958,6 @@ ecnsIAuthPrompt2.prototype = {
 		throw Cr.NS_NOINTERFACE;
 	},
 
-/*	// nsIBadCertListener2
-	notifyCertProblem: function _nsIBadCertListener2_notifyCertProblem(socketInfo, status, targetSite) 
-	{
-		this.logInfo("ecnsIAuthPrompt2.notifyCertProblem: socketInfo:"+socketInfo);
-		this.logInfo("ecnsIAuthPrompt2.notifyCertProblem: targetSite:"+targetSite);
-//		this.logInfo("ecnsIAuthPrompt2.notifyCertProblem: status.cipherName:"+status.cipherName);
-		this.logInfo("ecnsIAuthPrompt2.notifyCertProblem: status.serverCert.windowTitle:"+status.serverCert.windowTitle);
-		if (!status) {
-			return true;
-		}
-
-		this.exchangeRequest.badCert = true;
-
-		// Unfortunately we can't pass js objects using the window watcher, so
-		// we'll just take the first available calendar window. We also need to
-		// do this on a timer so that the modal window doesn't block the
-		// network request.
-		let wm = Cc["@mozilla.org/appshell/window-mediator;1"]
-      	                    .getService(Ci.nsIWindowMediator);
-		let calWindow = wm.getMostRecentWindow("mail:3pane") ;
-
-		let timerCallback = {
-			exchangeRequest: this.exchangeRequest,
-			notify: function(timer) {
-				let params = { exceptionAdded: false,
-						prefetchCert: true,
-						location: targetSite };
-				calWindow.openDialog("chrome://pippki/content/exceptionDialog.xul",
-						"",
-						"chrome,centerscreen,modal",
-						params);
-
-				if (params.exceptionAdded) {
-					this.exchangeRequest.badCert = false;
-					this.exchangeRequest.retryCurrentUrl();
-				}
-				else {
-					this.exchangeRequest.onUserStop(this.exchangeRequest.ER_ERROR_USER_ABORT_ADD_CERTIFICATE, "User did not add needed certificate.");
-				}
-				} // function(timer)
-			};
-
-		let timer = Components.classes["@mozilla.org/timer;1"]
-				.createInstance(Components.interfaces.nsITimer);
-		timer.initWithCallback(timerCallback, 0,
-				Components.interfaces.nsITimer.TYPE_ONE_SHOT);
-		return true;
-	}, */
-
 	// nsIProgressEventSink
 	onProgress: function _nsIProgressEventSink_onProgress(aRequest, aContext, aProgress, aProgressMax)
 	{
