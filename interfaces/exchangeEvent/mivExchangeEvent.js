@@ -27,12 +27,16 @@ var components = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
+Cu.import("resource://calendar/modules/calProviderUtils.jsm");
+
 function mivExchangeEvent() {
 
 	this._calEvent = Cc["@mozilla.org/calendar/event;1"]
 				.createInstance(Ci.calIEvent);
 
 	this._exchangeCalendarItem;
+	this.updatedItem = {};
+	this.newItem = {};
 
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
@@ -152,7 +156,10 @@ mivExchangeEvent.prototype = {
 	//readonly attribute calIDateTime lastModifiedTime;
 	get lastModifiedTime()
 	{
-		return this._calEvent.lastModifiedTime;
+		if (!this._lastModifiedTime) {
+			this._lastModifiedTime = this.tryToSetDateValueUTC(this.getTagValue("t:LastModifiedTime", null), null);
+		}
+		return this._lastModifiedTime;
 	},
 
 	// last time a "significant change" was made to this item
@@ -178,11 +185,16 @@ mivExchangeEvent.prototype = {
 	//attribute AUTF8String id;
 	get id()
 	{
+		if (!this._id) {
+			this._id = this.getAttributeByTag("t:ItemId", "Id", null);
+			if (this._id) this._calEvent.id = this._id;
+		}
 		return this._calEvent.id;
 	},
 
-	set id(aValue)
+	set id(aValue) // Should never be done by any external app.
 	{
+		this._newId = aValue;
 		this._calEvent.id = aValue;
 	},
 
@@ -190,35 +202,96 @@ mivExchangeEvent.prototype = {
 	//attribute AUTF8String title;
 	get title()
 	{
+		if (!this._title) {
+			this._title = this.getTagValue("t:Subject", null);
+			if (this._title) this._calEvent.title = this._title;
+		}
 		return this._calEvent.title;
 	},
 
 	set title(aValue)
 	{
-		this._calEvent.title = aValue;
+		if (aValue != this.title) {
+			this._newTitle = aValue;
+			this._calEvent.title = aValue;
+		}
 	},
 
 	// event priority
 	//attribute short priority;
 	get priority()
 	{
+		if (!this._priority) {
+			this._priority = this.getTagValue("t:Importance");
+			switch(this._priority) {
+				case "Low" : 
+					this._calEvent.priority = 9;
+					break;
+				case "Normal" : 
+					this._calEvent.priority = 5;
+					break;
+				case "High" : 
+					this._calEvent.priority = 1;
+					break;
+			}
+		}
 		return this._calEvent.priority;
 	},
 
 	set priority(aValue)
 	{
-		this._calEvent.priority = aValue;
+		if (aValue != this.priority) {
+			if (aValue > 5) {
+				this._newPriority = "Low";
+			}
+			if (aValue == 5) {
+				this._newPriority = "Normal";
+			}
+			if (aValue < 5) {
+				this._newPriority = "High";
+			}
+			if (aValue == 0) {
+				this._newPriority = "Normal";
+			}
+			this._calEvent.priority = aValue;
+		}
 	},
 
 	//attribute AUTF8String privacy;
 	get privacy()
 	{
+		if (!this._privacy) {
+			this._privacy = this.getTagValue("t:Sensitivity");
+			switch(this._privacy) {
+				case "Normal" : 
+					this._calEvent.privacy = "PUBLIC";
+					break;
+				case "Confidential" : 
+					this._calEvent.privacy = "CONFIDENTIAL";
+					break;
+				case "Personal" : 
+					this._calEvent.privacy = "PRIVATE";
+					break;
+				case "Private" : 
+					this._calEvent.privacy = "PRIVATE";
+					break;
+				default :
+					this._calEvent.privacy = "PUBLIC";
+			}
+		}
 		return this._calEvent.privacy;
 	},
 
 	set privacy(aValue)
 	{
-		this._calEvent.privacy = aValue;
+		if (aValue != this.privacy) {
+			const privacies = { "PUBLIC": "Normal",
+					"CONFIDENTIAL": "Confidential", 
+					"PRIVATE" : "Private",
+					null: "Normal" };
+			this._newPrivacy = privacies[aValue];
+			this._calEvent.privacy = aValue;
+		}
 	},
 
 	// status of the event
@@ -391,6 +464,72 @@ mivExchangeEvent.prototype = {
 	//nsIVariant getProperty(in AString name);
 	getProperty: function _getProperty(name)
 	{
+		switch (name) {
+		case "DESCRIPTION": 
+			if (!this._body) {
+				this._body = this.getTagValue("t:Body", null);
+				if (this._body) this._calEvent.setProperty(name, this._body);
+			}
+			break;
+		case "LOCATION": 
+			if (!this._location) {
+				this._location = this.getTagValue("t:Location", null);
+				if (this._location) this._calEvent.setProperty(name, this._location);
+			}
+			break;
+		case "TRANSP": 
+			if (!this._legacyFreeBusyStatus) {
+				this._legacyFreeBusyStatus = this.getTagValue("t:LegacyFreeBusyStatus", null);
+				switch (this._legacyFreeBusyStatus) {
+				case "Free" : 
+					this._calEvent.setProperty(name, "TRANSPARENT");
+					break;
+				case "Busy" : 
+				case "Tentative" : 
+				case "OOF" : 
+					this._calEvent.setProperty(name, "OPAQUE");
+					break;
+				}
+			}
+			break;
+		case "STATUS": 
+			if (!this._myResponseType) {
+				this._myResponseType = this.getTagValue("t:MyResponseType", null);
+				switch (this._myResponseType) {
+				case "Unknown" : 
+					this._calEvent.setProperty(name, "NONE");
+					break;
+				case "Organizer" : 
+					this._calEvent.setProperty(name, "CONFIRMED");
+					break;
+				case "Tentative" : 
+					this._calEvent.setProperty(name, "TENTATIVE");
+					break;
+				case "Accept" : 
+					this._calEvent.setProperty(name, "CONFIRMED");
+					break;
+				case "Decline" : 
+					this._calEvent.setProperty(name, "CANCELLED");
+					break;
+				case "NoResponseReceived" : 
+					this._calEvent.setProperty(name, "NONE");
+					break;
+				default:
+					this._calEvent.setProperty(name, "NONE");
+					break;
+				}
+			}
+			break;
+			case "X-MOZ-SEND-INVITATIONS": 
+				if ((this.responseObjects.acceptItem) ||
+				    (this.responseObjects.tentativelyAcceptItem) ||
+				    (this.responseObjects.declineItem)) {
+					this._calEvent.setProperty(name, true);
+				}
+				break;
+
+		}
+
 		return this._calEvent.getProperty(name);
 	},
 
@@ -406,6 +545,55 @@ mivExchangeEvent.prototype = {
 	//void setProperty(in AString name, in nsIVariant value);
 	setProperty: function _setProperty(name, value)
 	{
+		switch (name) {
+		case "DESCRIPTION": 
+			if (value != this.getProperty(name)) {
+				this._newBody = value;
+			}
+			break;
+		case "LOCATION": 
+			if (value != this.getProperty(name)) {
+				this._newLocation = value;
+			}
+			break;
+		case "TRANSP": 
+			if (value != this.getProperty(name)) {
+				switch (value) {
+				case "TRANSPARENT":
+					this._newLegacyFreeBusyStatus = "Free";
+					break;
+				case "OPAQUE":		
+					this._newLegacyFreeBusyStatus = "Busy";
+					break;
+				default		
+					this._newLegacyFreeBusyStatus = "Busy";
+					break;
+				}
+			}
+			break;
+		case "STATUS": 
+			if (value != this.getProperty(name)) {
+				switch (value) {
+				case "NONE"
+					this._newMyResponseType = "Unknown";
+					break;
+				case "CONFIRMED"
+					this._newMyResponseType = "Accept";
+					break;
+				case "TENTATIVE"
+					this._newMyResponseType = "Tentative";
+					break;
+				case "CANCELLED"
+					this._newMyResponseType = "Decline";
+					break;
+				default:
+					this._newMyResponseType = "Unknown";
+					break;
+				}
+			}
+			break;
+		}
+
 		this._calEvent.setProperty(name, value);
 	},
 
@@ -413,6 +601,21 @@ mivExchangeEvent.prototype = {
 	//void deleteProperty(in AString name);
 	deleteProperty: function _deleteProperty(name)
 	{
+		switch (name) {
+		case "DESCRIPTION": 
+			this._newBody = "";
+			break;
+		case "LOCATION": 
+			this._newLocation = "";
+			break;
+		case "TRANSP": 
+			this._newLegacyFreeBusyStatus = "";
+			break;
+		case "STATUS": 
+			this._newMyResponseType = "";
+			break;
+		}
+
 		this._calEvent.deleteProperty(name);
 	},
 
@@ -546,24 +749,56 @@ mivExchangeEvent.prototype = {
 	//	      [array,size_is(count),retval] out calIAttachment attachments);
 	getAttachments: function _getAttachments(count)
 	{
+		if (!this._attachments) {
+			this._attachments = [];
+			if (this.getTagValue("t:HasAttachments") == "true") {
+	//			if (this.debug) this.logInfo("Title:"+aItem.title+"Attachments:"+aExchangeItem.getTagValue("Attachments"));
+				var fileAttachments = this._exchangeCalendarItem.XPath("/t:Attachments/t:FileAttachment");
+				for each(var fileAttachment in fileAttachments) {
+	//				if (this.debug) this.logInfo(" -- Attachment: name="+fileAttachment.getTagValue("t:Name"));
+
+					var newAttachment = createAttachment();
+					newAttachment.setParameter("X-AttachmentId",fileAttachment.getAttributeByTag("t:AttachmentId","Id")); 
+//					newAttachment.uri = makeURL(this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
+					newAttachment.uri = makeURL(this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent("xx"));
+
+					//if (this.debug) this.logInfo("New attachment URI:"+this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
+
+					this._attachments.push(newAttachment);
+					this._calEvent.addAttachment(newAttachment);
+				}
+				fileAttachments = null;
+			} 
+		}
 		return this._calEvent.getAttachments(count);
 	},
 
 	//void addAttachment(in calIAttachment attachment);
 	addAttachment: function _addAttachment(attachment)
 	{
+		if (!this._newAttachments) this._newAttachments = [];
+		this._newAttachments.push(attachment);
 		this._calEvent.addAttachment(attachment);
 	},
 
 	//void removeAttachment(in calIAttachment attachment);
 	removeAttachment: function _removeAttachment(attachment)
 	{
+		var oldAttachments = this._newAttachments;
+		this._newAttachments = [];
+		for (var index in this._newAttachments) {
+			if (this._newAttachments[index].hashId != attachment.hashId) {
+				this._newAttachments.push(attachment);
+			}
+		}
 		this._calEvent.removeAttachment(attachment);
 	},
 
 	//void removeAllAttachments();
 	removeAllAttachments: function _removeAllAttachments()
 	{
+		this._newAttachments = null;
+		this._newAttachments = new Array();
 		this._calEvent.removeAllAttachments();
 	},
 
@@ -578,6 +813,17 @@ mivExchangeEvent.prototype = {
 	//	     [array, size_is(aCount), retval] out wstring aCategories);
 	getCategories: function _getCategories(aCount)
 	{
+		if (!this._categories) {
+			this._categories = [];
+			if (this._exchangeCalendarItem) {
+				var strings = this._exchangeCalendarItem.XPath("/t:Categories/t:String");
+				for each (var cat in strings) {
+					this._categories.push(cat.value);
+				}
+				strings = null;
+			}
+			this._calEvent.setCategories(this._categories.length, this._categories);
+		}
 		return this._calEvent.getCategories(aCount);
 	},
 
@@ -588,7 +834,31 @@ mivExchangeEvent.prototype = {
 	//	     [array, size_is(aCount)] in wstring aCategories);
 	setCategories: function _setCategories(aCount, aCategories)
 	{
-		this._calEvent.setCategories(aCount, aCategories);
+		var currentCategories = this.getCategories;
+		// We are going to check if something changed.
+		var changed = false;
+		if (aCount != currentCategories.length) changed = true;
+		var counter = 0;
+		while ((!changed) && (counter < aCount)) {
+			var counter2 = 0;
+			var found = false;
+			while ((!found) && (counter2 < currentCategories.length)) {
+				if (currentCategories[counter2] == aCategories[counter]) {
+					found = true;
+				}
+				counter2++;
+			}
+			if (!found) changed = true;
+			counter++;
+		}
+
+		if (changed) {
+			this._newCategories = [];
+			for (var index in aCategories) {
+				this._newCategories.push(aCategories[index]);
+			}
+			this._calEvent.setCategories(aCount, aCategories);
+		}
 	},
 
 	//
@@ -694,12 +964,19 @@ mivExchangeEvent.prototype = {
 	//attribute calIDateTime startDate;
 	get startDate()
 	{
+		if (!this._startDate) {
+			this._startDate = this.tryToSetDateValue(this.getTagValue("t:Start", null), this._calEvent.startDate);
+			if (this._startDate) this._calEvent.startDate = this._startDate;
+		}
 		return this._calEvent.startDate;
 	},
 
 	set startDate(aValue)
 	{
-		this._calEvent.startDate = aValue;
+		if (aValue != this.startDate) {
+			this._newStartDate = aValue;
+			this._calEvent.startDate = aValue;
+		}
 	},
 
 	/**
@@ -711,12 +988,19 @@ mivExchangeEvent.prototype = {
 	//attribute calIDateTime endDate;
 	get endDate()
 	{
+		if (!this._endDate) {
+			this._endDate = this.tryToSetDateValue(this.getTagValue("t:End", null), this._calEvent.endDate);
+			if (this._endDate) this._calEvent.endDate = this._endDate;
+		}
 		return this._calEvent.endDate;
 	},
 
 	set endDate(aValue)
 	{
-		this._calEvent.endDate = aValue;
+		if (aValue != this.endDate) {
+			this._newEndDate = aValue;
+			this._calEvent.endDate = aValue;
+		}
 	},
 
 	/**
@@ -730,6 +1014,120 @@ mivExchangeEvent.prototype = {
 	},
 
 	// New external methods
+	// the exchange changeKey of this event
+	//readonly attribute AUTF8String changeKey;
+	get changeKey()
+	{
+		if (!this._changeKey) {
+			this._changeKey = this.getAttributeByTag("t:ItemId", "ChangeKey", null);
+		}
+		return this._changeKey;
+	},
+
+	// the exchange UID of this event
+	//readonly attribute AUTF8String uid;
+	get uid()
+	{
+		if (!this._uid) {
+			this._uid = this.getAttributeByTag("t:UID", null);
+		}
+		return this._uid;
+	},
+
+	// the exchange calendarItemType of this event
+	//readonly attribute AUTF8String calendarItemType;
+	get calendarItemType()
+	{
+		if (!this._calendarItemType) {
+			this._calendarItemType = this.getAttributeByTag("t:CalendarItemType", null);
+		}
+		return this._calendarItemType;
+	},
+
+	// the exchange ItemClass of this event
+	//readonly attribute AUTF8String itemClass;
+	get itemClass()
+	{
+		if (!this._itemClass) {
+			this._itemClass = this.getAttributeByTag("t:ItemClass", null);
+		}
+		return this._itemClass;
+	},
+
+	// the exchange isCancelled of this event
+	//readonly attribute boolean isCancelled;
+	get isCancelled()
+	{
+		if (!this._isCancelled) {
+			this._isCancelled = this.getAttributeByTag("t:IsCancelled", false);
+		}
+		return this._isCancelled;
+	},
+
+	// the exchange isMeeting of this event
+	//readonly attribute boolean isMeeting;
+	get isMeeting()
+	{
+		if (!this._isMeeting) {
+			this._isMeeting = this.getAttributeByTag("t:IsMeeting", false);
+		}
+		return this._isMeeting;
+	},
+
+	// the exchange responseObjects of this event
+	//readonly attribute jsval responseObjects;
+
+	/*
+	  <t:ResponseObjects>
+	    <t:AcceptItem/>
+	    <t:TentativelyAcceptItem/>
+	    <t:DeclineItem/>
+	    <t:ReplyToItem/>
+	    <t:ReplyAllToItem/>
+	    <t:ForwardItem/>
+	    <t:CancelCalendarItem/>  // part of my own items.
+	  </t:ResponseObjects>
+
+	*/
+	get responseObjects()
+	{
+		if (!this._responseObjects) {
+			this._responseObjects = {};
+
+			if (this._exchangeCalendarItem) {
+				var responseObjects = this._exchangeCalendarItem.XPath("/t:ResponseObjects/*");
+				for each (var prop in responseObjects) {
+					switch (prop.tagName) {
+						case "AcceptItem":
+							this._responseObjects.acceptItem = true;
+							break;
+						case "TentativelyAcceptItem":
+							this._responseObjects.tentativelyAcceptItem = true;
+							break;
+						case "DeclineItem":
+							this._responseObjects.declineItem = true;
+							break;
+						case "ReplyToItem":
+							this._responseObjects.replyToItem = true;
+							break;
+						case "ReplyAllToItem":
+							this._responseObjects.replyAllToItem = true;
+							break;
+						case "ForwardItem":
+							this._responseObjects.forwardItem = true;
+							break;
+						case "CancelCalendarItem":
+							this._responseObjects.cancelCalendarItem = true;
+							break;
+					}
+				}
+				responseObjects = null;
+			}
+		}
+
+		return this._responseObjects;
+	},
+
 	//void init(in mivIxml2jxon aExchangeCalendarItem); 
 	convertFromExchange: function _convertFromExchange(aExchangeCalendarItem) 
 	{
@@ -742,6 +1140,24 @@ mivExchangeEvent.prototype = {
 	},
 
 	// Internal methods.
+	tryToSetDateValueUTC: function _tryToSetDateValueUTC(ewsvalue, aDefault)
+	{
+		if ((ewsvalue) && (ewsvalue.toString().length)) {
+			return cal.fromRFC3339(ewsvalue, this.globalFunctions.ecTZService().UTC);
+		}
+
+		return aDefault;
+	},
+
+	tryToSetDateValue: function _TryToSetDateValue(ewsvalue, aDefault)
+	{
+		if ((ewsvalue) && (ewsvalue.toString().length)) {
+			return cal.fromRFC3339(ewsvalue, this.globalFunctions.ecTZService().UTC).getInTimezone(this.globalFunctions.ecDefaultTimeZone());
+		}
+
+		return aDefault;
+	},
+
 	getTags: function _getTags(aTagName)
 	{
 		if (this._exchangeCalendarItem) {

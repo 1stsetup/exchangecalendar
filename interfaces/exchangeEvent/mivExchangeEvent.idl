@@ -26,6 +26,15 @@ interface mivIxml2jxon;
 [scriptable, uuid(4cd0469e-093f-4f7c-8ace-68f6ec76b36e)]
 interface mivExchangeEvent : calIEvent
 {
+	readonly attribute AUTF8String changeKey;
+	readonly attribute AUTF8String uid;
+	readonly attribute AUTF8String calendarItemType;
+	readonly attribute AUTF8String itemClass;
+	readonly attribute boolean isCancelled;
+	readonly attribute boolean isMeeting;
+
+	readonly attribute jsval responseObjects;
+
 	void convertFromExchange(in mivIxml2jxon aExchangeCalendarItem); 
 	mivIxml2jxon convertToExchange(); 
 };
