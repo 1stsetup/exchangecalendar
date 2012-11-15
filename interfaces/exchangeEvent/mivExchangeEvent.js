@@ -271,9 +271,9 @@ mivExchangeEvent.prototype = {
 	* @param aAlarms     The array of calIAlarms
 	*/
 	//void getAlarms(out PRUint32 count, [array, size_is(count), retval] out calIAlarm aAlarms);
-	getAlarms: function _getAlarms(aAlarms)
+	getAlarms: function _getAlarms(count)
 	{
-		return this._calEvent.getAlarms(aAlarms);
+		return this._calEvent.getAlarms(count);
 	},
 
 	/**
@@ -505,9 +505,9 @@ mivExchangeEvent.prototype = {
 	// removeAttendee/addAttendee that follow the call to getAttendees.
 	//void getAttendees(out PRUint32 count,
 	//	    [array,size_is(count),retval] out calIAttendee attendees);
-	getAttendees: function _getAttendees(attendees)
+	getAttendees: function _getAttendees(count)
 	{
-		return this._calEvent.getAttendees(attendees);
+		return this._calEvent.getAttendees(count);
 	},
 
 	/**
@@ -544,9 +544,9 @@ mivExchangeEvent.prototype = {
 	//
 	//void getAttachments(out PRUint32 count,
 	//	      [array,size_is(count),retval] out calIAttachment attachments);
-	getAttachments: function _getAttachments(attachments)
+	getAttachments: function _getAttachments(count)
 	{
-		return this._calEvent.getAttachments(attachments);
+		return this._calEvent.getAttachments(count);
 	},
 
 	//void addAttachment(in calIAttachment attachment);
@@ -576,9 +576,9 @@ mivExchangeEvent.prototype = {
 	*/
 	//void getCategories(out PRUint32 aCount,
 	//	     [array, size_is(aCount), retval] out wstring aCategories);
-	getCategories: function _getCategories(aCategories)
+	getCategories: function _getCategories(aCount)
 	{
-		return this._calEvent.getCategories(aCategories);
+		return this._calEvent.getCategories(aCount);
 	},
 
 	/**
@@ -601,9 +601,9 @@ mivExchangeEvent.prototype = {
 	*/
 	//void getRelations(out PRUint32 count,
 	//	    [array,size_is(count),retval] out calIRelation relations);
-	getRelations: function _getRelations(relations)
+	getRelations: function _getRelations(count)
 	{
-		return this._calEvent.getRelations(relations);
+		return this._calEvent.getRelations(count);
 	},
 
 	/**
@@ -643,9 +643,9 @@ mivExchangeEvent.prototype = {
 	//void getOccurrencesBetween (in calIDateTime aStartDate, in calIDateTime aEndDate,
 	//	              out PRUint32 aCount,
 	//	              [array,size_is(aCount),retval] out calIItemBase aOccurrences);
-	getOccurrencesBetween: function _getOccurrencesBetween(aStartDate, aEndDate, aOccurrences)
+	getOccurrencesBetween: function _getOccurrencesBetween(aStartDate, aEndDate, aCount)
 	{
-		return this._calEvent.getOccurrencesBetween(aStartDate, aEndDate, aOccurrences);
+		return this._calEvent.getOccurrencesBetween(aStartDate, aEndDate, aCount);
 	},
 
 	/**
@@ -742,6 +742,33 @@ mivExchangeEvent.prototype = {
 	},
 
 	// Internal methods.
+	getTags: function _getTags(aTagName)
+	{
+		if (this._exchangeCalendarItem) {
+			return this._exchangeCalendarItem.getTags(aTagName);
+		}
+
+		return null;
+	},
+
+	getTagValue: function _getTagValue(aTagName, aDefaultValue)
+	{
+		if (this._exchangeCalendarItem) {
+			return this._exchangeCalendarItem.getTagValue(aTagName, aDefaultValue);
+		}
+
+		return aDefaultValue;
+	},
+
+	getAttributeByTag: function _getAttributeByTag(aTagName, aAttribute, aDefaultValue)
+	{
+		if (this._exchangeCalendarItem) {
+			return this._exchangeCalendarItem.getAttributeByTag(aTagName, aAttribute, aDefaultValue);
+		}
+
+		return aDefaultValue;
+	},
+
 	initialize: function _initialize()
 	{
 		this._calEvent = null;
