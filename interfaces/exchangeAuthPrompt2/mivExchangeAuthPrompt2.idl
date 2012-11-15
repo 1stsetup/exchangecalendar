@@ -27,7 +27,7 @@ interface mivExchangeAuthPrompt2 : nsIAuthPrompt2
 
 	const unsigned long ERR_USER_CANCEL = 1;
 
-	AUTF8String getPassword(in jsval aChannel, in AUTF8String username, in AUTF8String aURL, [optional] in AUTF8String realm, [optional] in boolean alwaysGetPassword);
+	AUTF8String getPassword(in jsval aChannel, in AUTF8String username, in AUTF8String aURL, [optional] in AUTF8String realm, [optional] in boolean alwaysGetPassword,[optional] in boolean useCached);
 
 	boolean getUserCanceled(in AUTF8String aURL);
 

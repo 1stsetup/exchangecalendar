@@ -79,7 +79,7 @@ mivExchangeAuthPrompt2.prototype = {
 		}
 	},
 
-	getPassword: function _getPassword(aChannel, username, aURL, aRealm, alwaysGetPassword)
+	getPassword: function _getPassword(aChannel, username, aURL, aRealm, alwaysGetPassword, useCached)
 	{
 		if ((!username) || (!aURL)) {
 			this.logInfo("getPassword: No username or URL specified. Aborting.");
@@ -93,6 +93,8 @@ mivExchangeAuthPrompt2.prototype = {
 
 //		var realm = aRealm;
 		var realm = "Exchange Web Service";
+
+		//this.logInfo("getPassword: useCached:"+useCached);
 
 		if (!realm) {
 			this.logInfo("getPassword: No realm specified. Trying to get it from the URL.");
@@ -139,7 +141,7 @@ mivExchangeAuthPrompt2.prototype = {
 
 		if ((password) && (aChannel) && (aChannel.URI.password) && (decodeURIComponent(aChannel.URI.password) != "")) {
 			this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. Going to see if they are the same.");
-			if (password == decodeURIComponent(aChannel.URI.password)) {
+			if ((password == decodeURIComponent(aChannel.URI.password)) && (!useCached)) {
 				this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are the same. Going to ask user to provide a new password.");
 				if ((this.details[aURL]) && (this.details[aURL].ntlmCount == 1)) {
 					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are the same. But it is a first pass on an NTLM authentication. Using stored password and going to see if it can be used.");
@@ -150,7 +152,12 @@ mivExchangeAuthPrompt2.prototype = {
 				}
 			}
 			else {
-				this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are NOT the same. Going to use cached/stored password.");
+				if (!useCached) {
+					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are NOT the same. Going to use cached/stored password.");
+				}
+				else {
+					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And useCached specified.");
+				}
 				this.logInfo("getPassword: cached/store='"+password+"', on channel='"+decodeURIComponent(aChannel.URI.password)+"'.");
 			}
 		}
@@ -277,7 +284,7 @@ try {
 
 					// try to get password.
 					try {
-						password = this.getPassword(aChannel, username, aURL, realm, true);
+						password = this.getPassword(aChannel, username, aURL, realm, true, !(authInfo.flags & Ci.nsIAuthInformation.PREVIOUS_FAILED));
 					}
 					catch(err) {
 						this.logInfo("asyncPromptAuthNotifyCallback: getPassword exception. err:"+err);

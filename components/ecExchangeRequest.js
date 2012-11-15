@@ -210,6 +210,12 @@ ExchangeRequest.prototype = {
 			return;
 		}
 
+		// remove domain part in xmlhttprequest.open call
+		var openUser = this.mArgument.user;
+/*		if (openUser.indexOf("\\") > -1) {
+			openUser = openUser.substr(openUser.indexOf("\\")+1);
+		}*/
+
 		var myAuthPrompt2 = Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
 		if (myAuthPrompt2.getUserCanceled(this.currentUrl)) {
 			
@@ -218,7 +224,8 @@ ExchangeRequest.prototype = {
 		}
 
 		try {
-			var password = myAuthPrompt2.getPassword(null, this.mArgument.user, this.currentUrl);
+			var password = myAuthPrompt2.getPassword(null, openUser, this.currentUrl);
+//			var password = myAuthPrompt2.getPassword(null, this.mArgument.user, this.currentUrl);
 		}
 		catch(err) {
 			this.logInfo(err);
@@ -241,7 +248,6 @@ ExchangeRequest.prototype = {
 		this.xmlReq.addEventListener("load", function(evt) { tmp.onLoad(evt); }, false);
 		this.xmlReq.addEventListener("loadend", function(evt) { tmp.loadend(evt); }, false);
 
-		// remove domain part in xmlhttprequest.open call
 		if (this.debug) this.logInfo(": 1 ExchangeRequest.sendRequest : user="+this.mArgument.user+", url="+this.currentUrl);
 
 		this._notificationCallbacks = new ecnsIAuthPrompt2(this);
@@ -251,33 +257,13 @@ ExchangeRequest.prototype = {
 //				this.xmlReq.open("POST", this.currentUrl, true);
 			if (password) {
 				if (this.debug) this.logInfo("We have a prePassword: *******");
-				this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user, password);
+				this.xmlReq.open("POST", this.currentUrl, true, openUser, password);
+				//this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user, password);
 			}
 			else {
-				this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user);
+				this.xmlReq.open("POST", this.currentUrl, true, openUser);
+				//this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user);
 			}
-
-/*			if (this.prePassword == "") {
-				this.xmlReq.open("POST", this.currentUrl, true);
-			}
-			else {
-				this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user, this.prePassword);
-			}
-
-			if (!this.kerberos) {
-				var basicAuthPw = this.getPrePassword(this.currentUrl, this.mArgument.user);
-				if (basicAuthPw) {
-					var auth = this.make_basic_auth(this.mArgument.user,basicAuthPw);
-					this.xmlReq.setRequestHeader('Authorization', auth);
-				}
-				else {
-					this.onUserStop(this.ER_ERROR_USER_ABORT_AUTHENTICATION, "ExchangeRequest.sendRequest: User cancelation or error.");
-					return;
-				}
-			}
-			else {
-				if (this.debug) this.logInfo("We leave the basic auth details out of the request because we are trying for Kerberos Authentication.");
-			}*/
 
 		}
 		catch(err) {
