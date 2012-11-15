@@ -457,11 +457,11 @@ mivExchangeAbCard.prototype = {
 
 			var otherDetails = aExchangeContact.XPath('/t:PhysicalAddresses/t:Entry[@Key="Other"]');
 			if (otherDetails.length > 0) {
-				this.setProperty("OtherAddress", workDetails[0].getTagValue('t:Street', ""));
-				this.setProperty("OtherCity", workDetails[0].getTagValue('t:City', ""));
-				this.setProperty("OtherState", workDetails[0].getTagValue('t:State', ""));
-				this.setProperty("OtherCountry", workDetails[0].getTagValue('t:CountryOrRegion', ""));
-				this.setProperty("OtherZipCode", workDetails[0].getTagValue('t:PostalCode', ""));
+				this.setProperty("OtherAddress", otherDetails[0].getTagValue('t:Street', ""));
+				this.setProperty("OtherCity", otherDetails[0].getTagValue('t:City', ""));
+				this.setProperty("OtherState", otherDetails[0].getTagValue('t:State', ""));
+				this.setProperty("OtherCountry", otherDetails[0].getTagValue('t:CountryOrRegion', ""));
+				this.setProperty("OtherZipCode", otherDetails[0].getTagValue('t:PostalCode', ""));
 			}
 
 			this.setProperty("_AimScreenName", aExchangeContact.getTagValueByXPath('/t:ImAddresses/t:Entry[@Key="ImAddress"]', ""));
