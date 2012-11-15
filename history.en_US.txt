@@ -1,3 +1,6 @@
+Version 3.1.102:
+- Fixes bug 226: No more than 20 contacts are shown.
+
 Version 3.1.99:
 - Fixes Bug 212 - version >= 3.x leaks memory
 - Fixes Bug 211 - 3.1.2 breaks login (3.1.1 working)
