@@ -5956,7 +5956,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 	createAttendee: function _createAttendee(aElement, aType, aMyResponseType) 
 	{
 		let mbox = aElement.getTag("t:Mailbox");
-		let attendee = cal.createAttendee();
+		let attendee = createAttendee();
 
 		if (!aType) {
 			aType = "REQ-PARTICIPANT";
@@ -6450,11 +6450,11 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 	{
 		if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment:"+String(aCalendarItem), 2);
 
-try{
-		//var item = createEvent();
-		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
+
+		var item = createEvent();
+		var item2 = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 				.createInstance(Ci.mivExchangeEvent);
-		item.exchangeData = aCalendarItem;
+		item2.exchangeData = aCalendarItem;
 
 		item.calendar = this.superCalendar;
 
@@ -6462,44 +6462,47 @@ try{
 			doNotify = false;
 		}
 
+		item.id = this.tryToSetValue(aCalendarItem.getAttributeByTag("t:ItemId", "Id"), item.id);
 		if (! item.id) {
-			this.logInfo("Item.id is missing. this is a required field.");
+			if (this.debug) this.logInfo("Item.id is missing. this is a required field.");
 			return null;
 		}
 
+		item.setProperty("X-ChangeKey", aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey"));
 		if ((erGetItemsRequest) && (erGetItemsRequest.argument.occurrenceIndexes) && (erGetItemsRequest.argument.occurrenceIndexes[item.id])) {
-			if (this.debug) this.logInfo(" Muriel:"+erGetItemsRequest.argument.occurrenceIndexes[item.id]+", title:"+item.subject);
+			if (this.debug) this.logInfo(" Muriel:"+erGetItemsRequest.argument.occurrenceIndexes[item.id]+", title:"+this.tryToSetValue(aCalendarItem.getTagValue("t:Subject")));
 			item.setProperty("X-OccurrenceIndex", erGetItemsRequest.argument.occurrenceIndexes[item.id]+"");
 		}
 		
-		var uid = item.uid;
+		var uid = aCalendarItem.getTagValue("t:UID");
 
 		if (this.itemCache[item.id]) {
-			if (this.itemCache[item.id].getProperty("X-ChangeKey") == item.changeKey) {
+			if (this.itemCache[item.id].getProperty("X-ChangeKey") == aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey")) {
 				//if (this.debug) this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
 				return null;
 			}
 		}
 		else {
 			if (this.recurringMasterCache[uid]) {
-				if ( (this.recurringMasterCache[uid].getProperty("X-ChangeKey") == item.changeKey) && (this.recurringMasterCache[uid].id == item.id)) {
+				if ( (this.recurringMasterCache[uid].getProperty("X-ChangeKey") == aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey")) && (this.recurringMasterCache[uid].id == item.id)) {
 					//if (this.debug) this.logInfo("Master item is allready in cache and the id and changeKey are the same. Skipping it.");
 					return null;
 				}
 			}
 		}
 
-		item.setProperty("X-CalendarItemType", item.calendarItemType);
-		item.setProperty("X-ItemClass", item.itemClass);
+		item.setProperty("X-CalendarItemType", aCalendarItem.getTagValue("t:CalendarItemType"));
+		item.setProperty("X-ItemClass", aCalendarItem.getTagValue("t:ItemClass"));
 
 		item.setProperty("X-UID", uid);
 
+		item.title = this.tryToSetValue(aCalendarItem.getTagValue("t:Subject"), "");
 		if (! item.title) {
 			item.title = "";
 		}
 		//if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment: item.title:"+item.title);
 
-		item.setProperty("X-LastModifiedTime", item.lastModifiedTime);
+		item.setProperty("X-LastModifiedTime", aCalendarItem.getTagValue("t:LastModifiedTime"));
 		// Check if we allready have this item and if this one is newer.
 		if (!isMeetingRequest) {
 			if (this.itemCache[item.id]) {
@@ -6513,7 +6516,7 @@ try{
 			}
 			else {
 				// Check if we have a master.
-				if ((item.calendarItemType == "RecurringMaster") && (this.recurringMasterCache[uid])) {
+				if ((aCalendarItem.getTagValue("t:CalendarItemType") == "RecurringMaster") && (this.recurringMasterCache[uid])) {
 					// We allready have this master item.
 					var oldItem = this.recurringMasterCache[uid];
 					if ((oldItem.getProperty("X-LastModifiedTime")) && (item.getProperty("X-LastModifiedTime") <= oldItem.getProperty("X-LastModifiedTime"))) {
@@ -6525,25 +6528,27 @@ try{
 		}
 		
 
-		if (item.isCancelled) {
+		if (aCalendarItem.getTagValue("t:IsCancelled") == "true") {
 			item.setProperty("X-IsCancelled", true);
 		}
 		else {
 			item.setProperty("X-IsCancelled", false);
 		}
 
-		if (item.isMeeting) {
+		if (aCalendarItem.getTagValue("t:IsMeeting") == "true") {
 			item.setProperty("X-IsMeeting", true);
 		}
 		else {
 			item.setProperty("X-IsMeeting", false);
 		}
 
-//		this.setCommonValues(item, aCalendarItem);
+		item.setProperty("DESCRIPTION", aCalendarItem.getTagValue("t:Body"));
+
+		this.setCommonValues(item, aCalendarItem);
 
 		item.setProperty("X-IsInvitation", "false");
 		// Check what kind of item this is.
-/*		var responseObjects = aCalendarItem.XPath("/t:ResponseObjects/*");
+		var responseObjects = aCalendarItem.XPath("/t:ResponseObjects/*");
 		for each (var prop in responseObjects) {
 			switch (prop.tagName) {
 				case "AcceptItem":
@@ -6554,7 +6559,7 @@ try{
 					break
 			}
 		}
-		responseObjects = null;*/
+		responseObjects = null;
 
 /*
   <t:ResponseObjects>
@@ -6569,31 +6574,31 @@ try{
 
 */
 
-/*		var cats = [];
+		var cats = [];
 		var strings = aCalendarItem.XPath("/t:Categories/t:String");
 		for each (var cat in strings) {
 			cats.push(cat.value);
 		}
 		strings = null;
-		item.setCategories(cats.length, cats);*/
+		item.setCategories(cats.length, cats);
 
-		//item.startDate = this.tryToSetDateValue(aCalendarItem.getTagValue("t:Start"), item.startDate);
+		item.startDate = this.tryToSetDateValue(aCalendarItem.getTagValue("t:Start"), item.startDate);
 		if (! item.startDate) {
 			if (this.debug) this.logInfo("We have an empty startdate. Skipping this item.");
 			return null;
 		}
 
-		//item.endDate = this.tryToSetDateValue(aCalendarItem.getTagValue("t:End"), item.endDate);
+		item.endDate = this.tryToSetDateValue(aCalendarItem.getTagValue("t:End"), item.endDate);
 		if (! item.endDate) {
 			if (this.debug) this.logInfo("We have an empty enddate. Skipping this item.");
 			return null;
 		}
 
 		// Check for Attachments
-		//this.addExchangeAttachmentToCal(aCalendarItem, item);
+		this.addExchangeAttachmentToCal(aCalendarItem, item);
 
 		// Check if our custom fields are set
-/*		var extendedProperties = aCalendarItem.XPath("/t:ExtendedProperty");
+		var extendedProperties = aCalendarItem.XPath("/t:ExtendedProperty");
 		var doNotHandleOldAddon = false;
 		var pidLidReminderSet = false;
 		var pidLidReminderSignalTime = null;
@@ -6635,42 +6640,45 @@ try{
 
 		}
 		extendedProperties = null;
-*/
-/*		if (aCalendarItem.getTagValue("t:IsAllDayEvent") == "true") {
+
+		if (aCalendarItem.getTagValue("t:IsAllDayEvent") == "true") {
 			// Check if the time is 00:00:00
 			item.startDate.isDate = true;
 			item.endDate.isDate = true;
-		}*/
+		}
 
-		item.setProperty("DTSTAMP", item.dateTimeReceived);
-//		item.setProperty("LOCATION", aCalendarItem.getTagValue("t:Location"));
+		item.setProperty("DTSTAMP", this.tryToSetDateValue(aCalendarItem.getTagValue("t:DateTimeReceived")));
+		item.setProperty("LOCATION", aCalendarItem.getTagValue("t:Location"));
 
-		//var myResponseType = item.myResponseType;
+		var myResponseType = null;
+		if (aCalendarItem.getTagValue("t:MyResponseType", "") != "") {
+			myResponseType = aCalendarItem.getTagValue("t:MyResponseType");
+		}
 
-//		if (aCalendarItem.getTag("t:Organizer", "")) {
+		if (aCalendarItem.getTag("t:Organizer", "")) {
 			//if (this.debug) this.logInfo(" ==A ORGANIZER== title:"+item.title+", org:"+String(aCalendarItem.getTag("t:Organizer")));
-//			var org = this.createAttendee(aCalendarItem.getTag("t:Organizer"), "CHAIR");
+			var org = this.createAttendee(aCalendarItem.getTag("t:Organizer"), "CHAIR");
 
 /*			if (org.id.replace(/^mailto:/, '').toLowerCase() != this.mailbox.toLowerCase()) {
 				item.setProperty("X-IsInvitation", "true");
 				if (this.debug) this.logInfo("There is a organiser and I'm not it:"+org.id);
 			}*/
-//			org.isOrganizer = true;
-//			item.organizer = org;
-//		}
-//		else {
+			org.isOrganizer = true;
+			item.organizer = org;
+		}
+		else {
 //			item.setProperty("X-IsInvitation", "true");
 //			if (this.debug) this.logInfo("There is no organiser.");
-//		}
+		}
 
-		if (item.type == "MeetingRequest") {
+		if (aCalendarItem.tagName == "MeetingRequest") {
 			//if (this.debug) this.logInfo(" X-IsInvitation : MeetingRequest title="+item.title);
 			item.setProperty("X-IsInvitation", "true");
 			item.setProperty("X-MOZ-SEND-INVITATIONS", true);
 		}
 		else {
 			//if (this.debug) this.logInfo("                  MeetingItem title="+item.title);
-/*			var iAmInTheList = false;
+			var iAmInTheList = false;
 			var tmpAttendee;
 
 			var attendees = aCalendarItem.XPath("/t:RequiredAttendees/t:Attendee")
@@ -6694,19 +6702,19 @@ try{
 
 			if ((myResponseType) && (! iAmInTheList)) {
 				item.addAttendee(this.createMeAsAttendee(myResponseType));
-			}*/
+			}
 		}
 		
-//		item.recurrenceId = null;
+		item.recurrenceId = null;
 		if (!isMeetingRequest) {
 			//if (this.debug) this.logInfo(" == item.title:"+item.title+", calendarItemType:"+aCalendarItem.getTagValue("t:CalendarItemType"));
-			switch (item.calendarItemType) {
+			switch (aCalendarItem.getTagValue("t:CalendarItemType")) {
 				case "Exception" :
 					if (this.debug) this.logInfo("@1:"+item.startDate.toString()+":IsException");
 					item.setProperty("X-RecurringType", "RE");
-					//this.setAlarm(item, aCalendarItem);  
+					this.setAlarm(item, aCalendarItem);  
 					// Try to find master. If found add Exception and link recurrenceinfo.
-					//item.recurrenceId = this.tryToSetDateValue(aCalendarItem.getTagValue("t:RecurrenceId"), item.startDate);
+					item.recurrenceId = this.tryToSetDateValue(aCalendarItem.getTagValue("t:RecurrenceId"), item.startDate);
 					var master = this.recurringMasterCache[uid];
 					if (master) {
 						// We allready have a master in Cache.
@@ -6723,9 +6731,9 @@ try{
 				case "Occurrence" :
 					if (this.debug) this.logInfo("@1:"+item.startDate.toString()+":IsOccurrence");
 					item.setProperty("X-RecurringType", "RO");
-					//this.setAlarm(item, aCalendarItem);  
+					this.setAlarm(item, aCalendarItem);  
 					// This is a occurrence. Try to find the master and link recurrenceinfo.
-					//item.recurrenceId = this.tryToSetDateValue(aCalendarItem.getTagValue("t:RecurrenceId"), item.startDate);
+					item.recurrenceId = this.tryToSetDateValue(aCalendarItem.getTagValue("t:RecurrenceId"), item.startDate);
 					var master = this.recurringMasterCache[uid];
 					if (master) {
 						// We allready have a master in Cache.
@@ -6744,7 +6752,7 @@ try{
 					if (this.debug) this.logInfo("@1:"+item.startDate.toString()+":IsMaster");
 
 					// This is a master so create recurrenceInfo.
-					//item.recurrenceInfo = this.readRecurrence(item, aCalendarItem);
+					item.recurrenceInfo = this.readRecurrence(item, aCalendarItem);
 	
 					// Try to find occurrences of this master which have their parentItem not
 					// yet set to this one. Also set right recurrenceinfo for exceptions.
@@ -6790,7 +6798,7 @@ try{
 						loadChildren = true;
 					}
 
-					//this.setAlarm(item, aCalendarItem);  
+					this.setAlarm(item, aCalendarItem);  
 
 					this.addToOfflineCache(item, aCalendarItem);
 
@@ -6833,22 +6841,18 @@ try{
 
 					break;
 				default:
-					//this.setAlarm(item, aCalendarItem);  
+					this.setAlarm(item, aCalendarItem);  
 					this.setSnoozeTime(item, null);
 			}
 		}
 
 		item.setProperty("X-fromExchange", true);
 		return item;
-}
-catch(err){
-	dump(" --- ERROR ERROR:"+err+"\n");
-}
+
 	},
 
 	convertExchangeTaskToCalTask: function _convertExchangeTaskToCalTask(aTask, erGetItemsRequest)
 	{
-		dump("convertExchangeTaskToCalTask:\n");
 		if (this.debug) this.logInfo("convertExchangeTaskToCalTask:"+String(aTask), 2);
 		var item = createTodo();
 
@@ -7851,7 +7855,54 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 	convertDurationToSeconds: function _convertDurationToSeconds(aDuration)
 	{
-		return this.globalFunctions.convertDurationToSeconds(aDuration);
+		if (!aDuration) return null;
+
+		var tmpStr = aDuration;
+		var multiplier = 1;
+		if (tmpStr.substr(0,1) == "-") {
+			multiplier = -1;
+			tmpStr = tmpStr.substr(1);
+		}
+
+		var total = 0;
+		var subtotal = 0;
+
+		if (tmpStr.substr(0,2) == "PT") {
+			tmpStr = tmpStr.substr(2);
+
+			var counter = 0;
+			while (counter < tmpStr.length) {
+				if (isNaN(tmpStr.substr(counter, 1))) {
+					switch (tmpStr.substr(counter, 1).toUpperCase()) {
+						case "D":
+							subtotal = subtotal * 3600 * 24;
+							break;
+						case "H":
+							subtotal = subtotal * 3600;
+							break;
+						case "M":
+							subtotal = subtotal * 60;
+							break;
+						case "S":
+							subtotal = subtotal;
+							break;
+					}
+					total = total + subtotal;
+					subtotal = 0;
+					//if (this.debug) this.logInfo(" ++ total:"+total);
+				}
+				else {
+					subtotal = (subtotal * 10) + Number(tmpStr.substr(counter, 1));
+					//if (this.debug) this.logInfo(" ++ subtotal:"+subtotal);
+				}
+				counter = counter + 1;
+			}
+
+		}
+
+
+		return total * multiplier;
+		
 	},
 
 	getEWSTimeZoneId: function _getEWSTimeZoneId(aCalTimeZone)
