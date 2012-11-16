@@ -74,6 +74,8 @@ Cu.import("resource://exchangecalendar/erCreateAttachment.js");
 Cu.import("resource://exchangecalendar/erDeleteAttachment.js");
 //Cu.import("resource://interfaces/xml.js");
 
+//Cu.import("resource://interfaces/exchangeEvent/mivExchangeEvent.js");
+
 var globalStart = new Date().getTime();
 var global_ews_2010_timezonedefinitions;
 var globalTimeZoneDefinitions = {};
@@ -6450,8 +6452,10 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 
 		var item = createEvent();
-//		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
-//				.createInstance(Ci.mivExchangeEvent);
+		var item2 = Cc["@1st-setup.nl/exchange/calendarevent;1"]
+				.createInstance(Ci.mivExchangeEvent);
+		item2.exchangeData = aCalendarItem;
+
 		item.calendar = this.superCalendar;
 
 		if (!doNotify) {

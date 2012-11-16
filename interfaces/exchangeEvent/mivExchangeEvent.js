@@ -34,7 +34,7 @@ function mivExchangeEvent() {
 	this._calEvent = Cc["@mozilla.org/calendar/event;1"]
 				.createInstance(Ci.calIEvent);
 
-	this._exchangeCalendarItem;
+	this._exchangeData;
 	this.updatedItem = {};
 	this.newItem = {};
 
@@ -565,7 +565,7 @@ mivExchangeEvent.prototype = {
 				case "OPAQUE":		
 					this._newLegacyFreeBusyStatus = "Busy";
 					break;
-				default		
+				default	:	
 					this._newLegacyFreeBusyStatus = "Busy";
 					break;
 				}
@@ -574,16 +574,16 @@ mivExchangeEvent.prototype = {
 		case "STATUS": 
 			if (value != this.getProperty(name)) {
 				switch (value) {
-				case "NONE"
+				case "NONE":
 					this._newMyResponseType = "Unknown";
 					break;
-				case "CONFIRMED"
+				case "CONFIRMED":
 					this._newMyResponseType = "Accept";
 					break;
-				case "TENTATIVE"
+				case "TENTATIVE":
 					this._newMyResponseType = "Tentative";
 					break;
-				case "CANCELLED"
+				case "CANCELLED":
 					this._newMyResponseType = "Decline";
 					break;
 				default:
@@ -592,6 +592,8 @@ mivExchangeEvent.prototype = {
 				}
 			}
 			break;
+		default:
+			this._changedProperties[name] = value;
 		}
 
 		this._calEvent.setProperty(name, value);
@@ -614,6 +616,10 @@ mivExchangeEvent.prototype = {
 		case "STATUS": 
 			this._newMyResponseType = "";
 			break;
+		default:
+			if (this._newMyResponseType[name]) {
+				delete this._newMyResponseType[name];
+			}
 		}
 
 		this._calEvent.deleteProperty(name);
@@ -692,12 +698,20 @@ mivExchangeEvent.prototype = {
 	//attribute calIAttendee organizer;
 	get organizer()
 	{
+		if (!this._organizer) {
+			this._organizer = this.createAttendee(this.getTag("t:Organizer"), "CHAIR");
+			if (this._organizer) this._calEvent.organizer = this._organizer;
+		}
+
 		return this._calEvent.organizer;
 	},
 
 	set organizer(aValue)
 	{
-		this._calEvent.organizer = aValue;
+		if ((!this.organizer) || (aValue.toString() != this.organizer.toString())) {
+			this._newOrganizer = aValue.clone();
+			this._calEvent.organizer = aValue;
+		}
 	},
 
 	//
@@ -710,6 +724,25 @@ mivExchangeEvent.prototype = {
 	//	    [array,size_is(count),retval] out calIAttendee attendees);
 	getAttendees: function _getAttendees(count)
 	{
+		if (!this._attendees) {
+			this.attendees = new Array();
+			var tmpAttendee;
+
+			var attendees = this._exchangeData.XPath("/t:RequiredAttendees/t:Attendee")
+			for each (var at in attendees) {
+				tmpAttendee = this.createAttendee(at, "REQ-PARTICIPANT");
+				this._calEvent.addAttendee(tmpAttendee);
+				this.attendees.push(tmpAttendee.clone());
+			}
+			attendees = null;
+			attendees = this._exchangeData.XPath("/t:OptionalAttendees/t:Attendee")
+			for each (var at in attendees) {
+				tmpAttendee = this.createAttendee(at, "OPT-PARTICIPANT");
+				this._calEvent.addAttendee(tmpAttendee);
+				this.attendees.push(tmpAttendee.clone());
+			}
+			attendees = null;
+		}
 		return this._calEvent.getAttendees(count);
 	},
 
@@ -721,24 +754,36 @@ mivExchangeEvent.prototype = {
 	//calIAttendee getAttendeeById(in AUTF8String id);
 	getAttendeeById: function _getAttendeeById(id)
 	{
+		if (!this._attendees) this.getAttendees({});
+
 		return this._calEvent.getAttendeeById(id);
 	},
 
 	//void addAttendee(in calIAttendee attendee);
 	addAttendee: function _addAttendee(attendee)
 	{
+		if (!this._newAttendees) this._newAttendees = new Array();
+		this._newAttendees.push(attendee.clone());
 		this._calEvent.addAttendee(attendee);
 	},
 
 	//void removeAttendee(in calIAttendee attendee);
 	removeAttendee: function _removeAttendee(attendee)
 	{
+		if (!this._removedAttendees) this._removedAttendees = new Array();
+		this._removedAttendees.push(attendee.clone());
 		this._calEvent.removeAttendee(attendee);
 	},
 
 	//void removeAllAttendees();
 	removeAllAttendees: function _removeAllAttendees()
 	{
+		var allAttendees = this._calEvent.getAttendees({});
+		for each(var attendee in allAttendees) {
+			if (!this._removedAttendees) this._removedAttendees = new Array();
+			this._removedAttendees.push(attendee.clone());
+		}
+		allAttendees = null;			
 		this._calEvent.removeAllAttendees();
 	},
 
@@ -750,10 +795,10 @@ mivExchangeEvent.prototype = {
 	getAttachments: function _getAttachments(count)
 	{
 		if (!this._attachments) {
-			this._attachments = [];
+			this._attachments = new Array();
 			if (this.getTagValue("t:HasAttachments") == "true") {
 	//			if (this.debug) this.logInfo("Title:"+aItem.title+"Attachments:"+aExchangeItem.getTagValue("Attachments"));
-				var fileAttachments = this._exchangeCalendarItem.XPath("/t:Attachments/t:FileAttachment");
+				var fileAttachments = this._exchangeData.XPath("/t:Attachments/t:FileAttachment");
 				for each(var fileAttachment in fileAttachments) {
 	//				if (this.debug) this.logInfo(" -- Attachment: name="+fileAttachment.getTagValue("t:Name"));
 
@@ -764,7 +809,7 @@ mivExchangeEvent.prototype = {
 
 					//if (this.debug) this.logInfo("New attachment URI:"+this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
 
-					this._attachments.push(newAttachment);
+					this._attachments.push(newAttachment.clone());
 					this._calEvent.addAttachment(newAttachment);
 				}
 				fileAttachments = null;
@@ -776,29 +821,28 @@ mivExchangeEvent.prototype = {
 	//void addAttachment(in calIAttachment attachment);
 	addAttachment: function _addAttachment(attachment)
 	{
-		if (!this._newAttachments) this._newAttachments = [];
-		this._newAttachments.push(attachment);
+		if (!this._newAttachments) this._newAttachments = new Array();
+		this._newAttachments.push(attachment.clone());
 		this._calEvent.addAttachment(attachment);
 	},
 
 	//void removeAttachment(in calIAttachment attachment);
 	removeAttachment: function _removeAttachment(attachment)
 	{
-		var oldAttachments = this._newAttachments;
-		this._newAttachments = [];
-		for (var index in this._newAttachments) {
-			if (this._newAttachments[index].hashId != attachment.hashId) {
-				this._newAttachments.push(attachment);
-			}
-		}
+		if (!this._removedAttachments) this._removedAttachments = new Array();
+		this._removedAttachments.push(attachment.clone());
 		this._calEvent.removeAttachment(attachment);
 	},
 
 	//void removeAllAttachments();
 	removeAllAttachments: function _removeAllAttachments()
 	{
-		this._newAttachments = null;
-		this._newAttachments = new Array();
+		var allAttachments = this._calEvent.getAttachments({});
+		for each(var attachment in allAttachments) {
+			if (!this._removedAttachments) this._removedAttachments = new Array();
+			this._removedAttachments.push(attachment.clone());
+		}
+		allAttachments = null;			
 		this._calEvent.removeAllAttachments();
 	},
 
@@ -814,9 +858,9 @@ mivExchangeEvent.prototype = {
 	getCategories: function _getCategories(aCount)
 	{
 		if (!this._categories) {
-			this._categories = [];
-			if (this._exchangeCalendarItem) {
-				var strings = this._exchangeCalendarItem.XPath("/t:Categories/t:String");
+			this._categories = new Array();
+			if (this._exchangeData) {
+				var strings = this._exchangeData.XPath("/t:Categories/t:String");
 				for each (var cat in strings) {
 					this._categories.push(cat.value);
 				}
@@ -853,7 +897,7 @@ mivExchangeEvent.prototype = {
 		}
 
 		if (changed) {
-			this._newCategories = [];
+			this._newCategories = new Array();
 			for (var index in aCategories) {
 				this._newCategories.push(aCategories[index]);
 			}
@@ -1074,6 +1118,38 @@ mivExchangeEvent.prototype = {
 		return this._isMeeting;
 	},
 
+	// the tagName of the object of this event
+	//readonly attribute AUTF8String type;
+	get type()
+	{
+		if (!this._type) {
+			this._type = this._exchangeData.tagName;
+		}
+		return this._type;
+	},
+
+	// New external methods
+	// the exchange ParentFolderId.Id of this event
+	//readonly attribute AUTF8String parentId;
+	get parentId()
+	{
+		if (!this._parentId) {
+			this._parentId = this.getAttributeByTag("t:ParentFolderId", "Id", null);
+		}
+		return this._parentId;
+	},
+
+	// New external methods
+	// the exchange ParentFolderId.ChangeKey of this event
+	//readonly attribute AUTF8String parentChangeKey;
+	get parentChangeKey()
+	{
+		if (!this._parentChangeKey) {
+			this._parentChangeKey = this.getAttributeByTag("t:ParentFolderId", "ChangeKey", null);
+		}
+		return this._parentChangeKey;
+	},
+
 	// the exchange responseObjects of this event
 	//readonly attribute jsval responseObjects;
 
@@ -1094,32 +1170,10 @@ mivExchangeEvent.prototype = {
 		if (!this._responseObjects) {
 			this._responseObjects = {};
 
-			if (this._exchangeCalendarItem) {
-				var responseObjects = this._exchangeCalendarItem.XPath("/t:ResponseObjects/*");
+			if (this._exchangeData) {
+				var responseObjects = this._exchangeData.XPath("/t:ResponseObjects/*");
 				for each (var prop in responseObjects) {
-					switch (prop.tagName) {
-						case "AcceptItem":
-							this._responseObjects.acceptItem = true;
-							break;
-						case "TentativelyAcceptItem":
-							this._responseObjects.tentativelyAcceptItem = true;
-							break;
-						case "DeclineItem":
-							this._responseObjects.declineItem = true;
-							break;
-						case "ReplyToItem":
-							this._responseObjects.replyToItem = true;
-							break;
-						case "ReplyAllToItem":
-							this._responseObjects.replyAllToItem = true;
-							break;
-						case "ForwardItem":
-							this._responseObjects.forwardItem = true;
-							break;
-						case "CancelCalendarItem":
-							this._responseObjects.cancelCalendarItem = true;
-							break;
-					}
+					this._responseObjects[prop.tagName] = true;
 				}
 				responseObjects = null;
 			}
@@ -1128,11 +1182,18 @@ mivExchangeEvent.prototype = {
 		return this._responseObjects;
 	},
 
-	//void init(in mivIxml2jxon aExchangeCalendarItem); 
-	convertFromExchange: function _convertFromExchange(aExchangeCalendarItem) 
+	//attribute mivIxml2jxon exchangeData;
+	get exchangeData()
 	{
+		return this._exchangeData;
+	},
+
+	set exchangeData(aValue)
+	{
+//		this.logInfo("exchangeData:"+aValue.toString());
+		dump("exchangeData:"+aValue.toString()+"\n\n");
 		this.initialize();
-		this._exchangeCalendarItem = aExchangeCalendarItem;
+		this._exchangeData = aValue;
 	},
 
 	convertToExchange: function _convertToExchange() 
@@ -1140,6 +1201,51 @@ mivExchangeEvent.prototype = {
 	},
 
 	// Internal methods.
+	createAttendee: function _createAttendee(aElement, aType) 
+	{
+		if (!aElement) return null;
+
+		const participationMap = {
+			"Unknown"	: "NEEDS-ACTION",
+			"NoResponseReceived" : "NEEDS-ACTION",
+			"Tentative"	: "TENTATIVE",
+			"Accept"	: "ACCEPTED",
+			"Decline"	: "DECLINED",
+			"Organizer"	: "ACCEPTED"
+		};
+
+		let mbox = aElement.getTag("t:Mailbox");
+		let attendee = createAttendee();
+
+		if (!aType) {
+			aType = "REQ-PARTICIPANT";
+		}
+
+		switch (mbox.getTagValue("t:RoutingType","unknown")) {
+			case "SMTP" :
+				attendee.id = 'mailto:' + mbox.getTagValue("t:EmailAddress","unknown");
+				break;
+			case "EX" :
+				attendee.id = 'ldap:' + mbox.getTagValue("t:EmailAddress","unknown");
+				break;
+			default:
+				this.logInfo("createAttendee: Unknown RoutingType:'"+mbox.getTagValue("t:RoutingType")+"'");
+				attendee.id = 'mailto:' + mbox.getTagValue("t:EmailAddress","unknown");
+				break;
+		}
+		attendee.commonName = mbox.getTagValue("t:Name");
+		attendee.rsvp = "FALSE";
+		attendee.userType = "INDIVIDUAL";
+		attendee.role = aType;
+
+		if (aElement.getTagValue("t:ResponseType", "") != "") {
+			attendee.participationStatus = participationMap[aElement.getTagValue("t:ResponseType")];
+
+		}
+
+		return attendee;
+	},
+
 	tryToSetDateValueUTC: function _tryToSetDateValueUTC(ewsvalue, aDefault)
 	{
 		if ((ewsvalue) && (ewsvalue.toString().length)) {
@@ -1158,10 +1264,19 @@ mivExchangeEvent.prototype = {
 		return aDefault;
 	},
 
+	getTag: function _getTag(aTagName)
+	{
+		if (this._exchangeData) {
+			return this._exchangeData.getTag(aTagName);
+		}
+
+		return null;
+	},
+
 	getTags: function _getTags(aTagName)
 	{
-		if (this._exchangeCalendarItem) {
-			return this._exchangeCalendarItem.getTags(aTagName);
+		if (this._exchangeData) {
+			return this._exchangeData.getTags(aTagName);
 		}
 
 		return null;
@@ -1169,8 +1284,8 @@ mivExchangeEvent.prototype = {
 
 	getTagValue: function _getTagValue(aTagName, aDefaultValue)
 	{
-		if (this._exchangeCalendarItem) {
-			return this._exchangeCalendarItem.getTagValue(aTagName, aDefaultValue);
+		if (this._exchangeData) {
+			return this._exchangeData.getTagValue(aTagName, aDefaultValue);
 		}
 
 		return aDefaultValue;
@@ -1178,8 +1293,8 @@ mivExchangeEvent.prototype = {
 
 	getAttributeByTag: function _getAttributeByTag(aTagName, aAttribute, aDefaultValue)
 	{
-		if (this._exchangeCalendarItem) {
-			return this._exchangeCalendarItem.getAttributeByTag(aTagName, aAttribute, aDefaultValue);
+		if (this._exchangeData) {
+			return this._exchangeData.getAttributeByTag(aTagName, aAttribute, aDefaultValue);
 		}
 
 		return aDefaultValue;
@@ -1194,12 +1309,14 @@ mivExchangeEvent.prototype = {
 
 	logInfo: function _logInfo(aMsg, aDebugLevel) 
 	{
+		if (!aDebugLevel) aDebugLevel = 1;
+
 		var prefB = Cc["@mozilla.org/preferences-service;1"]
 			.getService(Ci.nsIPrefBranch);
 
-		this.debug = this.globalFunctions.safeGetBoolPref(prefB, "extensions.1st-setup.authentication.debug", false, true);
-		if (this.debug) {
-			this.globalFunctions.LOG("mivExchangeAuthPrompt2: "+aMsg);
+		this.debugLevel = this.globalFunctions.safeGetBoolPref(prefB, "extensions.1st-setup.core.debuglevel", 0, true);
+		if (aDebugLevel <= this.debugLevel) {
+			this.globalFunctions.LOG("mivExchangeEvent: "+aMsg);
 		}
 	},
 

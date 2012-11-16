@@ -32,9 +32,13 @@ interface mivExchangeEvent : calIEvent
 	readonly attribute AUTF8String itemClass;
 	readonly attribute boolean isCancelled;
 	readonly attribute boolean isMeeting;
+	readonly attribute AUTF8String type;
+	readonly attribute AUTF8String parentId;
+	readonly attribute AUTF8String parentChangeKey;
 
 	readonly attribute jsval responseObjects;
 
-	void convertFromExchange(in mivIxml2jxon aExchangeCalendarItem); 
+	attribute mivIxml2jxon exchangeData;
+
 	mivIxml2jxon convertToExchange(); 
 };
