@@ -1,0 +1,36 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: GPL 3.0
+ *
+ * The contents of this file are subject to the General Public License
+ * 3.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Author: Michel Verbraak (info@1st-setup.nl)
+ * Website: http://www.1st-setup.nl/
+ * email: info@1st-setup.nl
+ *
+ * This interface can be used to for updates
+ *
+ * ***** BEGIN LICENSE BLOCK *****/
+
+#include "nsISupports.idl"
+
+[scriptable, uuid(41397c22-bcea-4e98-a562-2f5f435c6111)]
+interface mivExchangeAccountManager : nsISupports
+{
+
+	jsval getAccountIds();
+	jsval getAccounts();
+	jsval getAccountById(in AUTF8String aId);
+	jsval getAccountByServer(in AUTF8String aServer);
+	void saveAccount(in jsval aAccount);
+	void removeAccount(in jsval aAccount);
+	void removeAccountById(in AUTF8String aAccountId);
+
+};

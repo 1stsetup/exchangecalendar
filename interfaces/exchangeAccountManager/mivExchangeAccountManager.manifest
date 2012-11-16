@@ -1,0 +1,5 @@
+interfaces mivExchangeAccountManager.xpt
+component {41397c22-bcea-4e98-a562-2f5f435c6111} mivExchangeAccountManager.js
+contract @1st-setup.nl/exchange/accountmanager;1 {41397c22-bcea-4e98-a562-2f5f435c6111}
+
+

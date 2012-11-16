@@ -64,8 +64,8 @@
                     flex="1" 
                     onselect="">
                 <tabs>
-<!--                    <tab id="exchangeWebService_preferences_tab_accounts"
-                         label="&exchangeWebService.preferences.tab.accounts;" hidden="true"/> -->
+                    <tab id="exchangeWebService_preferences_tab_accounts"
+                         label="&exchangeWebService.preferences.tab.accounts;" hidden="false"/> 
                     <tab id="exchangeWebService_preferences_tab_debug"
                          label="&exchangeWebService.preferences.tab.debug;"/>
                     <tab id="exchangeWebService_preferences_tab_cache"
@@ -74,9 +74,9 @@
                          label="&exchangeWebService.preferences.tab.others;"/>
                 </tabs>
                 <tabpanels flex="1">
-<!--                    <tabpanel orient="vertical">
+                    <tabpanel orient="vertical">
         			<hbox id="manage-EWS-Accounts-dialog-hbox"/>
-                    </tabpanel> -->
+                    </tabpanel> 
                     <tabpanel orient="vertical">
         			<vbox id="exchangeWebService_debug_preferences_vbox"/>
                     </tabpanel>

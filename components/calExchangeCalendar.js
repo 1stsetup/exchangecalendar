@@ -5956,7 +5956,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 	createAttendee: function _createAttendee(aElement, aType, aMyResponseType) 
 	{
 		let mbox = aElement.getTag("t:Mailbox");
-		let attendee = createAttendee();
+		let attendee = cal.createAttendee();
 
 		if (!aType) {
 			aType = "REQ-PARTICIPANT";
@@ -5994,7 +5994,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 	createMeAsAttendee: function _createMeAsAttendee(aMyResponseType) 
 	{
-		var attendee = createAttendee();
+		var attendee = cal.createAttendee();
 
 		attendee.id = 'mailto:' + this.mailbox;
 		attendee.commonName = this.userDisplayName;
@@ -6452,9 +6452,9 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 
 		var item = createEvent();
-		var item2 = Cc["@1st-setup.nl/exchange/calendarevent;1"]
+		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 				.createInstance(Ci.mivExchangeEvent);
-		item2.exchangeData = aCalendarItem;
+		item.exchangeData = aCalendarItem;
 
 		item.calendar = this.superCalendar;
 

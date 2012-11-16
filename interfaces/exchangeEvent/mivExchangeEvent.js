@@ -567,12 +567,12 @@ mivExchangeEvent.prototype = {
 			var recrule = this.readRecurrenceRule(recurrence);
 			recurrence = null;
 	
-			var recurrenceInfo = cal.createRecurrenceInfo(this);
 			if (recrule) {
+				var recurrenceInfo = cal.createRecurrenceInfo(this);
 				recurrenceInfo.setRecurrenceItems(1, [recrule]);
+				this._recurrenceInfo = recurrenceInfo.clone();
+				this._calEvent.recurrenceInfo = recurrenceInfo;
 			}
-			this._recurrenceInfo = recurrenceInfo.clone();
-			this._calEvent.recurrenceInfo = recurrenceInfo;
 		}
 		return this._calEvent.recurrenceInfo;
 	},
@@ -955,6 +955,8 @@ mivExchangeEvent.prototype = {
 	//void addAttendee(in calIAttendee attendee);
 	addAttendee: function _addAttendee(attendee)
 	{
+		if(!attendee) return;
+
 		if (!this._newAttendees) this._newAttendees = new Array();
 		this._changesAttendees.push({ action: "add", attendee: attendee.clone()});
 		this._calEvent.addAttendee(attendee);

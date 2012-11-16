@@ -49,6 +49,7 @@ contract @mozilla.org/addressbook/directory-factory;1?name=exchWebService-contac
 overlay chrome://messenger/content/addressbook/addressbook.xul chrome://exchangecalendar/content/addressbookOverlay.xul
 
 
+manifest interfaces/exchangeAccountManager/mivExchangeAccountManager.manifest
 manifest interfaces/exchangeStatistics/mivExchangeStatistics.manifest
 manifest interfaces/exchangeBadCertListener2/mivExchangeBadCertListener2.manifest
 manifest interfaces/global/mivFunctions.manifest
