@@ -136,6 +136,58 @@ mivFunctions.prototype = {
 		return null;
 	},
 
+	convertDurationToSeconds: function _convertDurationToSeconds(aDuration)
+	{
+		if (!aDuration) return null;
+
+		var tmpStr = aDuration;
+		var multiplier = 1;
+		if (tmpStr.substr(0,1) == "-") {
+			multiplier = -1;
+			tmpStr = tmpStr.substr(1);
+		}
+
+		var total = 0;
+		var subtotal = 0;
+
+		if (tmpStr.substr(0,2) == "PT") {
+			tmpStr = tmpStr.substr(2);
+
+			var counter = 0;
+			while (counter < tmpStr.length) {
+				if (isNaN(tmpStr.substr(counter, 1))) {
+					switch (tmpStr.substr(counter, 1).toUpperCase()) {
+						case "D":
+							subtotal = subtotal * 3600 * 24;
+							break;
+						case "H":
+							subtotal = subtotal * 3600;
+							break;
+						case "M":
+							subtotal = subtotal * 60;
+							break;
+						case "S":
+							subtotal = subtotal;
+							break;
+					}
+					total = total + subtotal;
+					subtotal = 0;
+					//if (this.debug) this.logInfo(" ++ total:"+total);
+				}
+				else {
+					subtotal = (subtotal * 10) + Number(tmpStr.substr(counter, 1));
+					//if (this.debug) this.logInfo(" ++ subtotal:"+subtotal);
+				}
+				counter = counter + 1;
+			}
+
+		}
+
+
+		return total * multiplier;
+		
+	},
+
 	splitUriGetParams: function _splitUriGetParams(aUri)
 	{
 		if (aUri.path.indexOf("?") > -1) {

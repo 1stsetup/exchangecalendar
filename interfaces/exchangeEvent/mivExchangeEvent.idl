@@ -26,12 +26,38 @@ interface mivIxml2jxon;
 [scriptable, uuid(4cd0469e-093f-4f7c-8ace-68f6ec76b36e)]
 interface mivExchangeEvent : calIEvent
 {
+	readonly attribute AUTF8String subject;
+	readonly attribute AUTF8String sensitivity;
+	readonly attribute calIDateTime dateTimeReceived;
+	readonly attribute calIDateTime dateTimeSent;
+	readonly attribute calIDateTime dateTimeCreated;
+	readonly attribute calIDateTime reminderDueBy;
+	readonly attribute boolean reminderIsSet;
+	readonly attribute long reminderMinutesBeforeStart;
+	readonly attribute long size;
+	readonly attribute calIDateTime originalStart;
+	readonly attribute boolean isAllDayEvent;
+	readonly attribute AUTF8String legacyFreeBusyStatus;
+	readonly attribute AUTF8String location;
+
 	readonly attribute AUTF8String changeKey;
 	readonly attribute AUTF8String uid;
 	readonly attribute AUTF8String calendarItemType;
 	readonly attribute AUTF8String itemClass;
 	readonly attribute boolean isCancelled;
 	readonly attribute boolean isMeeting;
+	readonly attribute boolean isRecurring;
+	readonly attribute boolean meetingRequestWasSent;
+	readonly attribute boolean isResponseRequested;
+	readonly attribute AUTF8String myResponseType;
+	readonly attribute AUTF8String timeZone;
+	readonly attribute AUTF8String startTimeZoneName;
+	readonly attribute AUTF8String startTimeZoneId;
+	readonly attribute AUTF8String endTimeZoneName;
+	readonly attribute AUTF8String endTimeZoneId;
+	readonly attribute AUTF8String conferenceType;
+	readonly attribute boolean allowNewTimeProposal;
+
 	readonly attribute AUTF8String type;
 	readonly attribute AUTF8String parentId;
 	readonly attribute AUTF8String parentChangeKey;

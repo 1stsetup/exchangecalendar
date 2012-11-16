@@ -38,6 +38,9 @@ function mivExchangeEvent() {
 	this.updatedItem = {};
 	this.newItem = {};
 
+	this._changesAttendees = new Array();
+	this._changesAttachments = new Array();
+
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
 
@@ -192,10 +195,9 @@ mivExchangeEvent.prototype = {
 		return this._calEvent.id;
 	},
 
-	set id(aValue) // Should never be done by any external app.
+	set id(aValue) 
 	{
-		this._newId = aValue;
-		this._calEvent.id = aValue;
+		// Should never be done by any external app.
 	},
 
 	// event title
@@ -203,7 +205,7 @@ mivExchangeEvent.prototype = {
 	get title()
 	{
 		if (!this._title) {
-			this._title = this.getTagValue("t:Subject", null);
+			this._title = this.subject;
 			if (this._title) this._calEvent.title = this._title;
 		}
 		return this._calEvent.title;
@@ -298,12 +300,41 @@ mivExchangeEvent.prototype = {
 	//attribute AUTF8String status;
 	get status()
 	{
+		if (!this._status) {
+			this._status = this.sensitivity;
+			switch(this._status) {
+				case "NotStarted" : 
+					this._calEvent.status = "NONE";
+					break;
+				case "InProgress" : 
+					this._calEvent.status = "IN-PROCESS";
+					break;
+				case "Completed" : 
+					this._calEvent.status = "COMPLETED";
+					break;
+				case "WaitingOnOthers" : 
+					this._calEvent.status = "NEEDS-ACTION";
+					break;
+				case "Deferred" : 
+					this._calEvent.status = "CANCELLED";
+					break;
+			}
+		}
 		return this._calEvent.status;
 	},
 
 	set status(aValue)
 	{
-		this._calEvent.status = aValue;
+		if (aValue != this.status) {
+			const statuses = { "NONE": "NotStarted",
+					"IN-PROCESS": "InProgress", 
+					"COMPLETED" : "Completed",
+					"NEEDS-ACTION" : "WaitingOnOthers",
+					"CANCELLED" : "Deferred",
+					null: "NotStarted" };
+			this._newStatus = statuses[aValue];
+			this._calEvent.status = aValue;
+		}
 	},
 
 	// ical interop; writing this means parsing
@@ -398,17 +429,37 @@ mivExchangeEvent.prototype = {
 	//attribute calIRecurrenceInfo recurrenceInfo;
 	get recurrenceInfo()
 	{
+		if (!this._recurrenceInfo) {
+			var recurrence = this._exchangeData.XPath("/t:Recurrence/*");
+			var recrule = this.readRecurrenceRule(recurrence);
+			recurrence = null;
+	
+			if (recrule) {
+				var recurrenceInfo = cal.createRecurrenceInfo(aItem);
+				recurrenceInfo.setRecurrenceItems(1, [recrule]);
+				this._recurrenceInfo = recurrenceInfo.clone();
+				this._calEvent.recurrenceInfo = recurrenceInfo;
+			}
+		}
 		return this._calEvent.recurrenceInfo;
 	},
 
 	set recurrenceInfo(aValue)
 	{
-		this._calEvent.recurrenceInfo = aValue;
+		if ((this.recurrenceInfo) && (aValue.toString() != this.recurrenceInfo.toString())) {
+			this._newRecurrenceInfo = aValue.clone();
+			this._calEvent.recurrenceInfo = aValue;
+		}
 	},
 
 	//readonly attribute calIDateTime recurrenceStartDate;
 	get recurrenceStartDate()
 	{
+		if ((this.recurrenceInfo) && (!this._newRecurrenceInfo)) {
+			if (this._recurrenceStartDate) {
+				return this._recurrenceStartDate;
+			}
+		}
 		return this._calEvent.recurrenceStartDate;
 	},
 
@@ -447,12 +498,18 @@ mivExchangeEvent.prototype = {
 	//readonly attribute nsISimpleEnumerator propertyEnumerator;
 	get propertyEnumerator()
 	{
+		this.getProperty("DESCRIPTION"); // To preload.
+		this.getProperty("LOCATION"); // To preload.
+		this.getProperty("TRANSP"); // To preload.
+		this.getProperty("STATUS"); // To preload.
+		this.getProperty("X-MOZ-SEND-INVITATIONS"); // To preload.
 		return this._calEvent.propertyEnumerator;
 	},
 
 	//boolean hasProperty(in AString name);
 	hasProperty: function _hasProperty(name)
 	{
+		this.getProperty(name); // To preload.
 		return this._calEvent.hasProperty(name);
 	},
 
@@ -472,15 +529,11 @@ mivExchangeEvent.prototype = {
 			}
 			break;
 		case "LOCATION": 
-			if (!this._location) {
-				this._location = this.getTagValue("t:Location", null);
-				if (this._location) this._calEvent.setProperty(name, this._location);
-			}
+			if ((this.location) && (!this._newLocation)) this._calEvent.setProperty(name, this.location);
 			break;
 		case "TRANSP": 
-			if (!this._legacyFreeBusyStatus) {
-				this._legacyFreeBusyStatus = this.getTagValue("t:LegacyFreeBusyStatus", null);
-				switch (this._legacyFreeBusyStatus) {
+			if (!this._newLegacyFreeBusyStatus) {
+				switch (this.legacyFreeBusyStatus) {
 				case "Free" : 
 					this._calEvent.setProperty(name, "TRANSPARENT");
 					break;
@@ -520,13 +573,16 @@ mivExchangeEvent.prototype = {
 				}
 			}
 			break;
-			case "X-MOZ-SEND-INVITATIONS": 
-				if ((this.responseObjects.acceptItem) ||
-				    (this.responseObjects.tentativelyAcceptItem) ||
-				    (this.responseObjects.declineItem)) {
-					this._calEvent.setProperty(name, true);
-				}
-				break;
+		case "X-MOZ-SEND-INVITATIONS": 
+			if ((this.responseObjects.acceptItem) ||
+			    (this.responseObjects.tentativelyAcceptItem) ||
+			    (this.responseObjects.declineItem)) {
+				this._calEvent.setProperty(name, true);
+			}
+			else {
+				this._calEvent.setProperty(name, false);
+			}
+			break;
 
 		}
 
@@ -763,7 +819,7 @@ mivExchangeEvent.prototype = {
 	addAttendee: function _addAttendee(attendee)
 	{
 		if (!this._newAttendees) this._newAttendees = new Array();
-		this._newAttendees.push(attendee.clone());
+		this._changesAttendees.push({ action: "add", attendee: attendee.clone()});
 		this._calEvent.addAttendee(attendee);
 	},
 
@@ -771,7 +827,7 @@ mivExchangeEvent.prototype = {
 	removeAttendee: function _removeAttendee(attendee)
 	{
 		if (!this._removedAttendees) this._removedAttendees = new Array();
-		this._removedAttendees.push(attendee.clone());
+		this._changesAttendees.push({ action: "remove", attendee: attendee.clone()});
 		this._calEvent.removeAttendee(attendee);
 	},
 
@@ -781,7 +837,7 @@ mivExchangeEvent.prototype = {
 		var allAttendees = this._calEvent.getAttendees({});
 		for each(var attendee in allAttendees) {
 			if (!this._removedAttendees) this._removedAttendees = new Array();
-			this._removedAttendees.push(attendee.clone());
+			this._changesAttendees.push({ action: "remove", attendee: attendee.clone()});
 		}
 		allAttendees = null;			
 		this._calEvent.removeAllAttendees();
@@ -822,7 +878,7 @@ mivExchangeEvent.prototype = {
 	addAttachment: function _addAttachment(attachment)
 	{
 		if (!this._newAttachments) this._newAttachments = new Array();
-		this._newAttachments.push(attachment.clone());
+		this._changesAttachments.push({ action: "add", attachment: attachment.clone()});
 		this._calEvent.addAttachment(attachment);
 	},
 
@@ -830,7 +886,7 @@ mivExchangeEvent.prototype = {
 	removeAttachment: function _removeAttachment(attachment)
 	{
 		if (!this._removedAttachments) this._removedAttachments = new Array();
-		this._removedAttachments.push(attachment.clone());
+		this._changesAttachments.push({ action: "remove", attachment: attachment.clone()});
 		this._calEvent.removeAttachment(attachment);
 	},
 
@@ -840,7 +896,7 @@ mivExchangeEvent.prototype = {
 		var allAttachments = this._calEvent.getAttachments({});
 		for each(var attachment in allAttachments) {
 			if (!this._removedAttachments) this._removedAttachments = new Array();
-			this._removedAttachments.push(attachment.clone());
+			this._changesAttachments.push({ action: "remove", attachment: attachment.clone()});
 		}
 		allAttachments = null;			
 		this._calEvent.removeAllAttachments();
@@ -878,31 +934,8 @@ mivExchangeEvent.prototype = {
 	//	     [array, size_is(aCount)] in wstring aCategories);
 	setCategories: function _setCategories(aCount, aCategories)
 	{
-		var currentCategories = this.getCategories;
-		// We are going to check if something changed.
-		var changed = false;
-		if (aCount != currentCategories.length) changed = true;
-		var counter = 0;
-		while ((!changed) && (counter < aCount)) {
-			var counter2 = 0;
-			var found = false;
-			while ((!found) && (counter2 < currentCategories.length)) {
-				if (currentCategories[counter2] == aCategories[counter]) {
-					found = true;
-				}
-				counter2++;
-			}
-			if (!found) changed = true;
-			counter++;
-		}
-
-		if (changed) {
-			this._newCategories = new Array();
-			for (var index in aCategories) {
-				this._newCategories.push(aCategories[index]);
-			}
-			this._calEvent.setCategories(aCount, aCategories);
-		}
+		this._changesCategories = true;
+		this._calEvent.setCategories(aCount, aCategories);
 	},
 
 	//
@@ -988,6 +1021,10 @@ mivExchangeEvent.prototype = {
 	//attribute calIDateTime recurrenceId;
 	get recurrenceId()
 	{
+		if (!this._recurrenceId) {
+			this._recurrenceId = this.tryToSetDateValueUTC(this.getTagValue("t:RecurrenceId", null), this._calEvent.recurrenceId);
+			if (this._recurrenceId) this._calEvent.recurrenceId = this._recurrenceId;
+		}
 		return this._calEvent.recurrenceId;
 	},
 
@@ -1017,7 +1054,7 @@ mivExchangeEvent.prototype = {
 
 	set startDate(aValue)
 	{
-		if (aValue != this.startDate) {
+		if (aValue.toString() != this.startDate.toString()) {
 			this._newStartDate = aValue;
 			this._calEvent.startDate = aValue;
 		}
@@ -1041,7 +1078,7 @@ mivExchangeEvent.prototype = {
 
 	set endDate(aValue)
 	{
-		if (aValue != this.endDate) {
+		if (aValue.toString() != this.endDate.toString()) {
 			this._newEndDate = aValue;
 			this._calEvent.endDate = aValue;
 		}
@@ -1054,10 +1091,147 @@ mivExchangeEvent.prototype = {
 	//readonly attribute calIDuration duration;
 	get duration()
 	{
+		if ((!this._duration) && (!this._newEndDate) && (!this._newStartDate)) {
+			this._duration = this.getTagValue("t:Duration", null);
+			if (this._duration) {
+				return cal.createDuration(this._duration);
+			}
+		}
 		return this._calEvent.duration;
 	},
 
 	// New external methods
+
+
+	//readonly attribute AUTF8String subject;
+	get subject()
+	{
+		if (!this._subject) {
+			this._subject = this.getTagValue("t:Subject", null);
+		}
+		return this._subject;
+	},
+
+	//readonly attribute AUTF8String sensitivity;
+	get sensitivity()
+	{
+		if (!this._sensitivity) {
+			this._sensitivity = this.getTagValue("t:Sensitivity", null);
+		}
+		return this._sensitivity;
+	},
+
+	//readonly attribute calIDateTime dateTimeReceived;
+	get dateTimeReceived()
+	{
+		if (!this._dateTimeReceived) {
+			this._dateTimeReceived = this.tryToSetDateValueUTC(this.getTagValue("t:DateTimeReceived", null), null);
+		}
+		return this._dateTimeReceived;
+	},
+
+	//readonly attribute calIDateTime dateTimeSent;
+	get dateTimeSent()
+	{
+		if (!this._dateTimeSent) {
+			this._dateTimeSent = this.tryToSetDateValueUTC(this.getTagValue("t:DateTimeSent", null), null);
+		}
+		return this._dateTimeSent;
+	},
+
+	//readonly attribute calIDateTime dateTimeCreated;
+	get dateTimeCreated()
+	{
+		if (!this._dateTimeCreated) {
+			this._dateTimeCreated = this.tryToSetDateValueUTC(this.getTagValue("t:DateTimeCreated", null), null);
+		}
+		return this._dateTimeCreated;
+	},
+
+	//readonly attribute calIDateTime reminderDueBy;
+	get reminderDueBy()
+	{
+		if (!this._reminderDueBy) {
+			this._reminderDueBy = this.tryToSetDateValueUTC(this.getTagValue("t:ReminderDueBy", null), null);
+		}
+		return this._reminderDueBy;
+	},
+
+	//readonly attribute calIDateTime reminderSignalTime;
+	get reminderSignalTime()
+	{
+		if (!this._reminderSignalTime) {
+			var tmpObject = this._exchangeData.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']");
+			if (tmpObject.length > 0) {
+				this._reminderSignalTime = this.tryToSetDateValueUTC(tmpObject.getTagValue("t:Value", null), null);
+			}
+		}
+		return this._reminderSignalTime;
+	},
+
+	//readonly attribute boolean reminderIsSet;
+	get reminderIsSet()
+	{
+		if (!this._reminderIsSet) {
+			this._reminderIsSet = (this.getTagValue("t:ReminderIsSet", "false") == "true");
+		}
+		return this._reminderIsSet;
+	},
+
+	//readonly attribute long reminderMinutesBeforeStart;
+	get reminderMinutesBeforeStart()
+	{
+		if (!this._reminderMinutesBeforeStart) {
+			this._reminderMinutesBeforeStart = this.getTagValue("t:ReminderMinutesBeforeStart", 0);
+		}
+		return this._reminderMinutesBeforeStart;
+	},
+
+	//readonly attribute long size;
+	get size()
+	{
+		if (!this._size) {
+			this._size = this.getTagValue("t:Size", 0);
+		}
+		return this._size;
+	},
+
+	//readonly attribute calIDateTime originalStart;
+	get originalStart()
+	{
+		if (!this._originalStart) {
+			this._originalStart = this.tryToSetDateValueUTC(this.getTagValue("t:OriginalStart", null), null);
+		}
+		return this._originalStart;
+	},
+
+	//readonly attribute boolean isAllDayEvent;
+	get isAllDayEvent()
+	{
+		if (!this._isAllDayEvent) {
+			this._isAllDayEvent = (this.getTagValue("t:IsAllDayEvent", "false") == "true");
+		}
+		return this._isAllDayEvent;
+	},
+
+	//readonly attribute AUTF8String legacyFreeBusyStatus;
+	get legacyFreeBusyStatus()
+	{
+		if (!this._legacyFreeBusyStatus) {
+			this._legacyFreeBusyStatus = this.getTagValue("t:LegacyFreeBusyStatus", null);
+		}
+		return this._legacyFreeBusyStatus;
+	},
+
+	//readonly attribute AUTF8String location;
+	get location()
+	{
+		if (!this._location) {
+			this._location = this.getTagValue("t:Location", null);
+		}
+		return this._location;
+	},
+
 	// the exchange changeKey of this event
 	//readonly attribute AUTF8String changeKey;
 	get changeKey()
@@ -1073,7 +1247,7 @@ mivExchangeEvent.prototype = {
 	get uid()
 	{
 		if (!this._uid) {
-			this._uid = this.getAttributeByTag("t:UID", null);
+			this._uid = this.getTagValue("t:UID", null);
 		}
 		return this._uid;
 	},
@@ -1083,7 +1257,7 @@ mivExchangeEvent.prototype = {
 	get calendarItemType()
 	{
 		if (!this._calendarItemType) {
-			this._calendarItemType = this.getAttributeByTag("t:CalendarItemType", null);
+			this._calendarItemType = this.getTagValue("t:CalendarItemType", null);
 		}
 		return this._calendarItemType;
 	},
@@ -1093,7 +1267,7 @@ mivExchangeEvent.prototype = {
 	get itemClass()
 	{
 		if (!this._itemClass) {
-			this._itemClass = this.getAttributeByTag("t:ItemClass", null);
+			this._itemClass = this.getTagValue("t:ItemClass", null);
 		}
 		return this._itemClass;
 	},
@@ -1103,7 +1277,7 @@ mivExchangeEvent.prototype = {
 	get isCancelled()
 	{
 		if (!this._isCancelled) {
-			this._isCancelled = this.getAttributeByTag("t:IsCancelled", false);
+			this._isCancelled = (this.getTagValue("t:IsCancelled", "false") == "true");
 		}
 		return this._isCancelled;
 	},
@@ -1113,10 +1287,110 @@ mivExchangeEvent.prototype = {
 	get isMeeting()
 	{
 		if (!this._isMeeting) {
-			this._isMeeting = this.getAttributeByTag("t:IsMeeting", false);
+			this._isMeeting = (this.getTagValue("t:IsMeeting", "false") == "true");
 		}
 		return this._isMeeting;
 	},
+
+	//readonly attribute boolean isRecurring;
+	get isRecurring()
+	{
+		if (!this._isRecurring) {
+			this._isRecurring = (this.getTagValue("t:IsRecurring", "false") == "true");
+		}
+		return this._isRecurring;
+	},
+
+	//readonly attribute boolean meetingRequestWasSent;
+	get meetingRequestWasSent()
+	{
+		if (!this._meetingRequestWasSent) {
+			this._meetingRequestWasSent = (this.getTagValue("t:MeetingRequestWasSent", "false") == "true");
+		}
+		return this._meetingRequestWasSent;
+	},
+
+	//readonly attribute boolean isResponseRequested;
+	get isResponseRequested()
+	{
+		if (!this._isResponseRequested) {
+			this._isResponseRequested = (this.getTagValue("t:IsResponseRequested", "false") == "true");
+		}
+		return this._isResponseRequested;
+	},
+
+	//readonly attribute AUTF8String myResponseType;
+	get myResponseType()
+	{
+		if (!this._myResponseType) {
+			this._myResponseType = this.getTagValue("t:MyResponseType", null);
+		}
+		return this._myResponseType;
+	},
+
+	//readonly attribute AUTF8String timeZone;
+	get timeZone()
+	{
+		if (!this._timeZone) {
+			this._timeZone = this.getTagValue("t:TimeZone", null);
+		}
+		return this._timeZone;
+	},
+
+	//readonly attribute AUTF8String startTimeZoneName;
+	get startTimeZoneName()
+	{
+		if (!this._startTimeZoneName) {
+			this._startTimeZoneName = this.getAttributeByTag("t:StartTimeZone", "Name", null);
+		}
+		return this._startTimeZoneName;
+	},
+
+	//readonly attribute AUTF8String startTimeZoneId;
+	get startTimeZoneId()
+	{
+		if (!this._startTimeZoneId) {
+			this._startTimeZoneId = this.getAttributeByTag("t:StartTimeZone", "Id", null);
+		}
+		return this._startTimeZoneId;
+	},
+
+	//readonly attribute AUTF8String endTimeZoneName;
+	get endTimeZoneName()
+	{
+		if (!this._endTimeZoneName) {
+			this._endTimeZoneName = this.getAttributeByTag("t:EndTimeZone", "Name", null);
+		}
+		return this._endTimeZoneName;
+	},
+
+	//readonly attribute AUTF8String endTimeZoneId;
+	get endTimeZoneId()
+	{
+		if (!this._endTimeZoneId) {
+			this._endTimeZoneId = this.getAttributeByTag("t:EndTimeZone", "Id", null);
+		}
+		return this._endTimeZoneId;
+	},
+
+	//readonly attribute AUTF8String conferenceType;
+	get conferenceType()
+	{
+		if (!this._conferenceType) {
+			this._conferenceType = this.getTagValue("t:ConferenceType", null);
+		}
+		return this._conferenceType;
+	},
+
+	//readonly attribute boolean allowNewTimeProposal;
+	get allowNewTimeProposal()
+	{
+		if (!this._allowNewTimeProposal) {
+			this._allowNewTimeProposal = (this.getTagValue("t:AllowNewTimeProposal", "false") == "true");
+		}
+		return this._allowNewTimeProposal;
+	},
+
 
 	// the tagName of the object of this event
 	//readonly attribute AUTF8String type;
@@ -1201,6 +1475,122 @@ mivExchangeEvent.prototype = {
 	},
 
 	// Internal methods.
+	readRecurrenceRule: function _readRecurrenceRule(aElement)
+	{
+		/*
+		 * The Mozilla recurrence API is bothersome and dictated by libical.
+		 *
+		 * We need to obey and build an iCalendar string which we feed in
+		 * to get the proper recurrence info.
+		 */
+		const dayMap = {
+			'Monday'	: 'MO',
+			'Tuesday'	: 'TU',
+			'Wednesday'	: 'WE',
+			'Thursday'	: 'TH',
+			'Friday'	: 'FR',
+			'Saturday'	: 'SA',
+			'Sunday'	: 'SU',
+			'Weekday'	: ['MO', 'TU', 'WE', 'TH', 'FR'],
+			'WeekendDay'	: ['SA', 'SO'],
+			'Day'		: ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SO']
+		};
+
+		var comps = {};
+	
+		for each (var rec in aElement) {
+			switch (rec.tagName) {
+			case "RelativeYearlyRecurrence":
+			case "AbsoluteYearlyRecurrence":
+				comps['FREQ'] = "YEARLY";
+				break;
+			case "RelativeMonthlyRecurrence":
+			case "AbsoluteMonthlyRecurrence":
+				comps['FREQ'] = "MONTHLY";
+				break;
+			case "WeeklyRecurrence":
+				comps['FREQ'] = "WEEKLY";
+				break;
+			case "DailyRecurrence":
+				comps['FREQ'] = "DAILY";
+				break;
+			case "NoEndRecurrence":
+			case "EndDateRecurrence":
+			case "NumberedRecurrence":
+				break;
+			default:
+				if (this.debug) this.logInfo("skipping " + rec.tagName);
+				continue;
+			}
+	
+			var weekdays = [];
+			var week = [];
+			var comps2 = rec.XPath("/*");
+			for each (var comp in comps2) {
+				switch (comp.tagName) {
+				case 'DaysOfWeek':
+					for each (let day in comp.value.split(" ")) {
+						weekdays = weekdays.concat(dayMap[day]);
+					}
+					break;
+				case 'DayOfWeekIndex':
+					week = weekMap[comp.value];
+					break;
+				case 'Month':
+					comps['BYMONTH'] = monthMap[comp.value];
+					break;
+				case 'DayOfMonth':
+					comps['BYMONTHDAY'] = comp.value;
+					break;
+				case 'FirstDayOfWeek':
+					comps['WKST'] = dayMap[comp.value];
+					break;
+				case 'Interval':
+					comps['INTERVAL'] = comp.value;
+					break;
+				case 'StartDate':
+					/* Dunno what to do with this for iCal; no place to set */
+					this._recurrenceStartDate = cal.fromRFC3339(comp.value.substr(0,10)+"T00:00:00Z", this.globalFunctions.ecTZService().UTC);
+					this._recurrenceStartDate.isDate = true;
+					break;
+				case 'EndDate':
+					comps['UNTIL'] = comp.value.replace(/Z$/, '');
+					break;
+				case 'NumberOfOccurrences':
+					comps['COUNT'] = comp.value;
+					break;
+				}
+			}
+			comps2 = null;
+
+			let wdtemp = weekdays;
+			weekdays = [];
+			for each (let day in wdtemp) {
+				weekdays.push(week + day);
+			}
+			if (weekdays.length > 0) {
+				comps['BYDAY'] = weekdays.join(',');
+			}
+		}
+
+		var compstrs = [];
+		for (var k in comps) {
+			compstrs.push(k + "=" + comps[k]);
+		}
+	
+		if (compstrs.length == 0) {
+			return null;
+		}
+	
+		var recrule = cal.createRecurrenceRule();
+	
+		/* need to do this re-assign game so that the string gets parsed */
+		var prop = recrule.icalProperty;
+		prop.value = compstrs.join(';');
+		recrule.icalProperty = prop;
+		return recrule;
+	},
+
 	createAttendee: function _createAttendee(aElement, aType) 
 	{
 		if (!aElement) return null;

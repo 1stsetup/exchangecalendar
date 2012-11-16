@@ -620,9 +620,10 @@ mivIxml2jxon.prototype = {
 		return result;
 	},
 
-	toString: function _toString()
+	toString: function _toString(parentNameSpace)
 	{
 		//this.logInfo(this.tagName+":toString", 2);
+		var nameSpaces = this.nameSpacesToString();
 		var result = "";
 		var contentCount = 0;
 		for (var index in this.content) {
@@ -630,7 +631,7 @@ mivIxml2jxon.prototype = {
 			if ((this.content[index] instanceof Ci.mivIxml2jxon) || (this.content[index] instanceof mivIxml2jxon)) {
 
 				//this.logInfo(this.tagName+":Found object at content index '"+index+"'.", 2);
-				result += this.content[index].toString();
+				result += this.content[index].toString(nameSpaces);
 			}
 			else {
 				if ((typeof this.content[index] === "string") || (this.content[index] instanceof String)) {
@@ -643,8 +644,11 @@ mivIxml2jxon.prototype = {
 			}
 		}
 
+		if ((parentNameSpace) && (nameSpaces == parentNameSpace)) {
+			nameSpaces = "";
+		}
+
 		var attributes = this.attributesToString();
-		var nameSpaces = this.nameSpacesToString();
 
 		var nameSpace = this.nameSpace;
 		if (nameSpace == "_default_") {

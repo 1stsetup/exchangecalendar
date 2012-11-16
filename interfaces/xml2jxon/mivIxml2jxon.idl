@@ -50,7 +50,7 @@ interface mivIxml2jxon : nsISupports
   AUTF8String contentStr();
   readonly attribute AUTF8String value;
 
-  AUTF8String toString();
+  AUTF8String toString([optional] in AUTF8String parentNameSpace);
 
   void setAttribute(in AUTF8String aAttribute, in AUTF8String aValue);
   AUTF8String getAttribute(in AUTF8String aAttribute, [optional] in AUTF8String aDefaultValue);

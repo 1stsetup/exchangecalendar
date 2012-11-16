@@ -38,6 +38,8 @@ interface mivFunctions : nsISupports
 
   jsval	ecUTC();
 
+  long convertDurationToSeconds(in AUTF8String aDuration);
+
   jsval	splitUriGetParams(in jsval aUri);
 
   jsval	getBranch(in AUTF8String aName);
