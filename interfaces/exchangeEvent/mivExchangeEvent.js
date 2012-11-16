@@ -34,12 +34,14 @@ function mivExchangeEvent() {
 	this._calEvent = Cc["@mozilla.org/calendar/event;1"]
 				.createInstance(Ci.calIEvent);
 
-	this._exchangeData;
+	this._exchangeData = null;
 	this.updatedItem = {};
 	this.newItem = {};
 
 	this._changesAttendees = new Array();
 	this._changesAttachments = new Array();
+	this._changesAlarm = new Array();
+	this._changedProperties = new Array();
 
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
@@ -93,7 +95,83 @@ mivExchangeEvent.prototype = {
 	//calIItemBase clone();
 	clone: function _clone()
 	{
-		return this._calEvent.clone();
+		this.logInfo("clone 1: title:"+this.title, -1);
+		var result = Cc["@1st-setup.nl/exchange/calendarevent;1"]
+				.createInstance(Ci.mivExchangeEvent);
+		this.logInfo("clone 2: title:"+this.title, -1);
+		result.exchangeData = this._exchangeData;
+		this.logInfo("clone 3: title:"+this.title, -1);
+		result.cloneToCalEvent(this._calEvent);
+		this.logInfo("clone 4: title:"+this.title, -1);
+
+		if (this._newStartDate) result.startDate = this.startDate.clone();
+		this.logInfo("clone 5: title:"+this.title, -1);
+		if (this._newEndDate) result.endDate = this.endDate.clone();
+		this.logInfo("clone 6: title:"+this.title, -1);
+
+		// We are going to replay all changes to clone
+		if (this._newTitle) result.title = this.title;
+		if (this._newPriority) result.priority = this.priority;
+		if (this._newPrivacy) result.privacy = this.privacy;
+		if (this._newStatus) result.status = this.status;
+		if (this._changesAlarm) {
+			result.clearAlarms();
+			var alarms = this._calEvent.getAlarms({});
+			for each(var alarm in alarms) {
+				result.addAlarm(alarm);
+			}
+		}
+		if (this._newRecurrenceInfo) result.recurrenceInfo = this.recurrenceInfo;
+		if (this._newBody) result.setProperty("DESCRIPTION", this.getProperty("DESCRIPTION"));
+		if (this._newLocation) result.setProperty("LOCATION", this.getProperty("LOCATION"));
+		if (this._newLegacyFreeBusyStatus) result.setProperty("TRANSP", this.getProperty("TRANSP"));
+		if (this._newMyResponseType) result.setProperty("STATUS", this.getProperty("STATUS")); 
+		if (this._changedProperties) {
+			for each(var change in this._changedProperties) {
+				switch (change.action) {
+				case "set": 
+					result.setProperty(change.name, change.value);
+					break;
+				case "remove":
+					result.deleteProperty(change.name);
+					break;
+				}
+			}
+		}
+		if (this._newOrganizer) result.organizer = this.organizer.clone();
+
+		if (this._changesAttendees) {
+			for each(var attendee in this._changesAttendees) {
+				switch (attendee.action) {
+				case "add": 
+					result.addAttendee(change.attendee);
+					break;
+				case "remove":
+					result.removeAttendee(change.attendee);
+					break;
+				}
+			}
+		}
+
+		if (this._changesAttachments) {
+			for each(var attachment in this._changesAttachments) {
+				switch (attachment.action) {
+				case "add": 
+					result.addAttachment(change.attachment);
+					break;
+				case "remove":
+					result.removeAttachment(change.attachment);
+					break;
+				}
+			}
+		}
+		if (this._changesCategories) {
+			var categories = this.getCategories({});
+			result.setCategories(categories.length, categories);
+		}
+
+		this.logInfo("clone 99: title:"+this.title+", startDate:"+result.startDate, -1);
+		return result;
 	},
 
 	/**
@@ -145,6 +223,7 @@ mivExchangeEvent.prototype = {
 
 	set generation(aValue)
 	{
+		this.logInfo("set generation: title:"+this.title);
 		this._calEvent.generation = aValue;
 	},
 
@@ -152,7 +231,7 @@ mivExchangeEvent.prototype = {
 	//readonly attribute calIDateTime creationDate;
 	get creationDate()
 	{
-		return this._calEvent.creationDate;
+		return this.dateTimeCreated;
 	},
 
 	// last time any attribute was modified on this item, in UTC
@@ -190,13 +269,16 @@ mivExchangeEvent.prototype = {
 	{
 		if (!this._id) {
 			this._id = this.getAttributeByTag("t:ItemId", "Id", null);
-			if (this._id) this._calEvent.id = this._id;
+			if (this._id) {
+				this._calEvent.id = this._id;
+			}
 		}
 		return this._calEvent.id;
 	},
 
 	set id(aValue) 
 	{
+		this.logInfo("set id: title:"+this.title);
 		// Should never be done by any external app.
 	},
 
@@ -213,6 +295,7 @@ mivExchangeEvent.prototype = {
 
 	set title(aValue)
 	{
+		this.logInfo("set title: oldTitle:"+this.title+", newTitle:"+aValue);
 		if (aValue != this.title) {
 			this._newTitle = aValue;
 			this._calEvent.title = aValue;
@@ -242,7 +325,8 @@ mivExchangeEvent.prototype = {
 
 	set priority(aValue)
 	{
-		if (aValue != this.priority) {
+		this.logInfo("set priority: title:"+this.title+", aValue:"+aValue);
+		if (aValue != this.Priority) {
 			if (aValue > 5) {
 				this._newPriority = "Low";
 			}
@@ -286,6 +370,7 @@ mivExchangeEvent.prototype = {
 
 	set privacy(aValue)
 	{
+		this.logInfo("set privacy: title:"+this.title+", aValue:"+aValue);
 		if (aValue != this.privacy) {
 			const privacies = { "PUBLIC": "Normal",
 					"CONFIDENTIAL": "Confidential", 
@@ -325,6 +410,7 @@ mivExchangeEvent.prototype = {
 
 	set status(aValue)
 	{
+		this.logInfo("set status: title:"+this.title+", aValue:"+aValue);
 		if (aValue != this.status) {
 			const statuses = { "NONE": "NotStarted",
 					"IN-PROCESS": "InProgress", 
@@ -347,6 +433,7 @@ mivExchangeEvent.prototype = {
 
 	set icalString(aValue)
 	{
+		this.logInfo("set icalString: title:"+this.title+", aValue:"+aValue);
 		this._calEvent.icalString = aValue;
 	},
 
@@ -377,6 +464,30 @@ mivExchangeEvent.prototype = {
 	//void getAlarms(out PRUint32 count, [array, size_is(count), retval] out calIAlarm aAlarms);
 	getAlarms: function _getAlarms(count)
 	{
+		if (!this._alarm) {
+			if (this.reminderIsSet) {
+				var alarm = cal.createAlarm();
+				alarm.action = "DISPLAY";
+				alarm.repeat = 0;
+
+				var alarmOffset = cal.createDuration();
+				alarmOffset.minutes = -1 * this.reminderMinutesBeforeStart;
+
+				// This is a bug fix for when the offset is more than a year)
+				if (alarmOffset.minutes < (-60*24*365)) {
+					alarmOffset.minutes = -5;
+				}
+				alarmOffset.normalize();
+
+				alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
+				alarm.offset = alarmOffset;
+
+				this.logInfo("Alarm set with an offset of "+alarmOffset.minutes+" minutes from the start");
+
+				this._alarm = alarm.clone();
+				this._calEvent.addAlarm(alarm);
+			}
+		}
 		return this._calEvent.getAlarms(count);
 	},
 
@@ -388,6 +499,14 @@ mivExchangeEvent.prototype = {
 	//void addAlarm(in calIAlarm aAlarm);
 	addAlarm: function _addAlarm(aAlarm)
 	{
+		this.getAlarms({});
+
+		if (this._newAlarm) {
+			this._calEvent.deleteAlarm(this._newAlarm);
+			this._changesAlarm.push({ action: "remove", alarm: this._newAlarm});
+		}
+		this._newAlarm = aAlarm.clone();
+		this._changesAlarm.push({ action: "add", alarm: this._newAlarm});
 		this._calEvent.addAlarm(aAlarm);
 	},
 
@@ -399,6 +518,8 @@ mivExchangeEvent.prototype = {
 	//void deleteAlarm(in calIAlarm aAlarm);
 	deleteAlarm: function _deleteAlarm(aAlarm)
 	{
+		this._changesAlarm.push({ action: "remove", alarm: this._newAlarm});
+		this._newAlarm = null;
 		this._calEvent.deleteAlarm(aAlarm);
 	},
 
@@ -408,6 +529,11 @@ mivExchangeEvent.prototype = {
 	//void clearAlarms();
 	clearAlarms: function _clearAlarms()
 	{
+		var oldAlarms = this.getAlarms({});
+		for each(var alarm in oldAlarms) {
+			this._changesAlarm.push({ action: "remove", alarm: alarm});
+		}
+		this._newAlarm = null;
 		this._calEvent.clearAlarms();
 	},
 
@@ -415,11 +541,18 @@ mivExchangeEvent.prototype = {
 	//attribute calIDateTime alarmLastAck;
 	get alarmLastAck()
 	{
+		return this.tryToSetDateValueUTC("2030-01-01T00:00:00Z", null); // For now we snooze all old alarms.
 		return this._calEvent.alarmLastAck;
 	},
 
 	set alarmLastAck(aValue)
 	{
+		if (aValue) {
+			this.logInfo("set alarmLastAck: User snoozed alarm. Title:"+this.title+", aValue:"+aValue.toString());
+		}
+		else {
+			this.logInfo("set alarmLastAck: set to null for Title:"+this.title);
+		}
 		this._calEvent.alarmLastAck = aValue;
 	},
 
@@ -434,18 +567,19 @@ mivExchangeEvent.prototype = {
 			var recrule = this.readRecurrenceRule(recurrence);
 			recurrence = null;
 	
+			var recurrenceInfo = cal.createRecurrenceInfo(this);
 			if (recrule) {
-				var recurrenceInfo = cal.createRecurrenceInfo(aItem);
 				recurrenceInfo.setRecurrenceItems(1, [recrule]);
-				this._recurrenceInfo = recurrenceInfo.clone();
-				this._calEvent.recurrenceInfo = recurrenceInfo;
 			}
+			this._recurrenceInfo = recurrenceInfo.clone();
+			this._calEvent.recurrenceInfo = recurrenceInfo;
 		}
 		return this._calEvent.recurrenceInfo;
 	},
 
 	set recurrenceInfo(aValue)
 	{
+		this.logInfo("set recurrenceInfo: title:"+this.title+", aValue:"+aValue);
 		if ((this.recurrenceInfo) && (aValue.toString() != this.recurrenceInfo.toString())) {
 			this._newRecurrenceInfo = aValue.clone();
 			this._calEvent.recurrenceInfo = aValue;
@@ -521,6 +655,7 @@ mivExchangeEvent.prototype = {
 	//nsIVariant getProperty(in AString name);
 	getProperty: function _getProperty(name)
 	{
+		this.logInfo("get property: title:"+this.title+", name:"+name);
 		switch (name) {
 		case "DESCRIPTION": 
 			if (!this._body) {
@@ -601,6 +736,7 @@ mivExchangeEvent.prototype = {
 	//void setProperty(in AString name, in nsIVariant value);
 	setProperty: function _setProperty(name, value)
 	{
+		this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value);
 		switch (name) {
 		case "DESCRIPTION": 
 			if (value != this.getProperty(name)) {
@@ -649,7 +785,7 @@ mivExchangeEvent.prototype = {
 			}
 			break;
 		default:
-			this._changedProperties[name] = value;
+			this._changedProperties.push({ action: "set", name: name, value: value});
 		}
 
 		this._calEvent.setProperty(name, value);
@@ -659,6 +795,7 @@ mivExchangeEvent.prototype = {
 	//void deleteProperty(in AString name);
 	deleteProperty: function _deleteProperty(name)
 	{
+		this.logInfo("delete priority: title:"+this.title+", name:"+name);
 		switch (name) {
 		case "DESCRIPTION": 
 			this._newBody = "";
@@ -673,9 +810,7 @@ mivExchangeEvent.prototype = {
 			this._newMyResponseType = "";
 			break;
 		default:
-			if (this._newMyResponseType[name]) {
-				delete this._newMyResponseType[name];
-			}
+			this._changedProperties.push({ action: "remove", name: name});
 		}
 
 		this._calEvent.deleteProperty(name);
@@ -756,6 +891,7 @@ mivExchangeEvent.prototype = {
 	{
 		if (!this._organizer) {
 			this._organizer = this.createAttendee(this.getTag("t:Organizer"), "CHAIR");
+			this._organizer.isOrganizer = true;
 			if (this._organizer) this._calEvent.organizer = this._organizer;
 		}
 
@@ -764,6 +900,7 @@ mivExchangeEvent.prototype = {
 
 	set organizer(aValue)
 	{
+		this.logInfo("set organizer: title:"+this.title+", aValue:"+aValue);
 		if ((!this.organizer) || (aValue.toString() != this.organizer.toString())) {
 			this._newOrganizer = aValue.clone();
 			this._calEvent.organizer = aValue;
@@ -934,6 +1071,7 @@ mivExchangeEvent.prototype = {
 	//	     [array, size_is(aCount)] in wstring aCategories);
 	setCategories: function _setCategories(aCount, aCategories)
 	{
+		this.logInfo("set categories: title:"+this.title);
 		this._changesCategories = true;
 		this._calEvent.setCategories(aCount, aCategories);
 	},
@@ -1030,7 +1168,13 @@ mivExchangeEvent.prototype = {
 
 	set recurrenceId(aValue)
 	{
-		this._calEvent.recurrenceId = aValue;
+		if (aValue) {
+			this.logInfo("set recurrenceId: User tries to set recurrenceId to:"+aValue.toString()+", title:"+this.title);
+		}
+		else {
+			this.logInfo("set recurrenceId: User tries to set recurrenceId to null, title:"+this.title);
+		}
+		this._calEvent.recurrenceId = aValue; 
 	},
 
 	// External methods calIEvent
@@ -1047,13 +1191,22 @@ mivExchangeEvent.prototype = {
 	{
 		if (!this._startDate) {
 			this._startDate = this.tryToSetDateValue(this.getTagValue("t:Start", null), this._calEvent.startDate);
-			if (this._startDate) this._calEvent.startDate = this._startDate;
+			if (this.isAllDayEvent) this._startDate.isDate = true;
+			if (this._startDate) {
+				this._calEvent.startDate = this._startDate.clone();
+				this.logInfo("get startdate 1: title:"+this.title+", startdate=="+this._calEvent.startDate.toString(), -1);
+			}
+			else {
+				this.logInfo("get startdate 2: title:"+this.title+", startdate==null", -1);
+			}
 		}
+		this.logInfo("get startdate 3: title:"+this.title+", startdate=="+this._calEvent.startDate, -1);
 		return this._calEvent.startDate;
 	},
 
 	set startDate(aValue)
 	{
+		this.logInfo("set startdate: title:"+this.title+", aValue:"+aValue);
 		if (aValue.toString() != this.startDate.toString()) {
 			this._newStartDate = aValue;
 			this._calEvent.startDate = aValue;
@@ -1071,13 +1224,15 @@ mivExchangeEvent.prototype = {
 	{
 		if (!this._endDate) {
 			this._endDate = this.tryToSetDateValue(this.getTagValue("t:End", null), this._calEvent.endDate);
-			if (this._endDate) this._calEvent.endDate = this._endDate;
+			if (this.isAllDayEvent) this._endDate.isDate = true;
+			if (this._endDate) this._calEvent.endDate = this._endDate.clone();
 		}
 		return this._calEvent.endDate;
 	},
 
 	set endDate(aValue)
 	{
+		this.logInfo("set enddate: title:"+this.title+", aValue:"+aValue);
 		if (aValue.toString() != this.endDate.toString()) {
 			this._newEndDate = aValue;
 			this._calEvent.endDate = aValue;
@@ -1102,6 +1257,10 @@ mivExchangeEvent.prototype = {
 
 	// New external methods
 
+	cloneToCalEvent: function cloneToCalEvent(aCalEvent)
+	{
+		this._calEvent = aCalEvent.clone();
+	},
 
 	//readonly attribute AUTF8String subject;
 	get subject()
@@ -1465,7 +1624,7 @@ mivExchangeEvent.prototype = {
 	set exchangeData(aValue)
 	{
 //		this.logInfo("exchangeData:"+aValue.toString());
-		dump("exchangeData:"+aValue.toString()+"\n\n");
+		//dump("exchangeData:"+aValue.toString()+"\n\n");
 		this.initialize();
 		this._exchangeData = aValue;
 	},
@@ -1605,7 +1764,7 @@ mivExchangeEvent.prototype = {
 		};
 
 		let mbox = aElement.getTag("t:Mailbox");
-		let attendee = createAttendee();
+		let attendee = cal.createAttendee();
 
 		if (!aType) {
 			aType = "REQ-PARTICIPANT";
@@ -1683,9 +1842,12 @@ mivExchangeEvent.prototype = {
 
 	getAttributeByTag: function _getAttributeByTag(aTagName, aAttribute, aDefaultValue)
 	{
+		//this.logInfo("getAttributeByTag 1: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
 		if (this._exchangeData) {
+		//this.logInfo("getAttributeByTag 2: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
 			return this._exchangeData.getAttributeByTag(aTagName, aAttribute, aDefaultValue);
 		}
+		//this.logInfo("getAttributeByTag 3: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
 
 		return aDefaultValue;
 	},
@@ -1699,6 +1861,7 @@ mivExchangeEvent.prototype = {
 
 	logInfo: function _logInfo(aMsg, aDebugLevel) 
 	{
+		return;
 		if (!aDebugLevel) aDebugLevel = 1;
 
 		var prefB = Cc["@mozilla.org/preferences-service;1"]

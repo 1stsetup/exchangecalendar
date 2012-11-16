@@ -64,6 +64,8 @@ interface mivExchangeEvent : calIEvent
 
 	readonly attribute jsval responseObjects;
 
+	void cloneToCalEvent(in calIEvent aCalEvent);
+
 	attribute mivIxml2jxon exchangeData;
 
 	mivIxml2jxon convertToExchange(); 
