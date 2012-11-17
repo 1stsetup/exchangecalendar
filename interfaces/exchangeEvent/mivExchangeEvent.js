@@ -43,6 +43,12 @@ function mivExchangeEvent() {
 	this._changesAlarm = new Array();
 	this._changedProperties = new Array();
 
+	this._newBody = undefined;
+	this._newLocation = undefined;
+	this._newLegacyFreeBusyStatus = undefined;
+	this._newMyResponseType = undefined; 
+	this._newIsInvitation = undefined;
+
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
 
@@ -63,6 +69,7 @@ mivExchangeEvent.prototype = {
 	  [iid_is(uuid),retval] out nsQIResult result
 	);	 */
 	QueryInterface: XPCOMUtils.generateQI([Ci.mivExchangeEvent,
+			Ci.calIInternalShallowCopy,
 			Ci.calIEvent,
 			Ci.calIItemBase,
 			Ci.nsIClassInfo,
@@ -82,6 +89,7 @@ mivExchangeEvent.prototype = {
 	getInterfaces: function _getInterfaces(count) 
 	{
 		var ifaces = [Ci.mivExchangeEvent,
+			Ci.calIInternalShallowCopy,
 			Ci.calIEvent,
 			Ci.calIItemBase,
 			Ci.nsIClassInfo,
@@ -92,6 +100,38 @@ mivExchangeEvent.prototype = {
 
 	getHelperForLanguage: function _getHelperForLanguage(language) {
 		return null;
+	},
+
+	// External methods calIInternalShallowCopy
+	/**
+	* create a proxy for this item; the returned item
+	* proxy will have parentItem set to this instance.
+	*
+	* @param aRecurrenceId RECURRENCE-ID of the proxy to be created 
+	*/
+	//calIItemBase createProxy(in calIDateTime aRecurrenceId);
+	createProxy: function _createProxy(aRecurrenceId)
+	{
+		var newItem = this.clone();
+		newItem.recurrenceId = aRecurrenceId;
+		return newItem;
+	},
+
+	// used by recurrenceInfo when cloning proxy objects to
+	// avoid an infinite loop.  aNewParent is optional, and is
+	// used to set the parent of the new item; it should be null
+	// if no new parent is passed in.
+	//calIItemBase cloneShallow(in calIItemBase aNewParent);
+	cloneShallow: function _cloneShallow(aNewParent)
+	{
+		var newItem = this.clone();
+		if (aNewParent) {
+			newItem.parentItem = aNewParent;
+		}
+		else {
+			newItem.parentItem = null;
+		}
+		return newItem;
 	},
 
 	// External methods calIItemBase
@@ -145,6 +185,14 @@ mivExchangeEvent.prototype = {
 		if (this._newLocation) result.setProperty("LOCATION", this.getProperty("LOCATION"));
 		if (this._newLegacyFreeBusyStatus) result.setProperty("TRANSP", this.getProperty("TRANSP"));
 		if (this._newMyResponseType) result.setProperty("STATUS", this.getProperty("STATUS")); 
+		if (this._newIsInvitation) result.setProperty("X-MOZ-SEND-INVITATIONS", this.getProperty("X-MOZ-SEND-INVITATIONS"));
+
+		if (this._newBody === null) result.deleteProperty("DESCRIPTION");
+		if (this._newLocation === null) result.deleteProperty("LOCATION");
+		if (this._newLegacyFreeBusyStatus === null) result.deleteProperty("TRANSP");
+		if (this._newMyResponseType === null) result.deleteProperty("STATUS"); 
+		if (this._newIsInvitation === null) result.deleteProperty("X-MOZ-SEND-INVITATIONS");
+
 		if (this._changedProperties) {
 			for each(var change in this._changedProperties) {
 				switch (change.action) {
@@ -208,7 +256,7 @@ mivExchangeEvent.prototype = {
 	get hashId()
 	{
 		 this._hashId = [encodeURIComponent(this.id),
-			this.recurrenceId ? this.recurrenceId.getInTimezone(UTC()).icalString : "",
+			this.recurrenceId ? this.recurrenceId.getInTimezone(this.globalFunctions.ecUTC()).icalString : "",
 			this.calendar ? encodeURIComponent(this.calendar.id) : ""].join("#");
 
 		this.logInfo("get hashId: title:"+this.title+", value:"+this._hashId);
@@ -744,35 +792,41 @@ mivExchangeEvent.prototype = {
 		case "STATUS": 
 			if (!this._myResponseType) {
 				this._myResponseType = this.getTagValue("t:MyResponseType", null);
-				switch (this._myResponseType) {
-				case "Unknown" : 
-					this._calEvent.setProperty(name, "NONE");
-					break;
-				case "Organizer" : 
-					this._calEvent.setProperty(name, "CONFIRMED");
-					break;
-				case "Tentative" : 
-					this._calEvent.setProperty(name, "TENTATIVE");
-					break;
-				case "Accept" : 
-					this._calEvent.setProperty(name, "CONFIRMED");
-					break;
-				case "Decline" : 
+				if (this.isCancelled) {
 					this._calEvent.setProperty(name, "CANCELLED");
-					break;
-				case "NoResponseReceived" : 
-					this._calEvent.setProperty(name, "NONE");
-					break;
-				default:
-					this._calEvent.setProperty(name, "NONE");
-					break;
+				}
+				else {
+					switch (this._myResponseType) {
+					case "Unknown" : 
+						this._calEvent.setProperty(name, "NONE");
+						break;
+					case "Organizer" : 
+						this._calEvent.setProperty(name, "CONFIRMED");
+						break;
+					case "Tentative" : 
+						this._calEvent.setProperty(name, "TENTATIVE");
+						break;
+					case "Accept" : 
+						this._calEvent.setProperty(name, "CONFIRMED");
+						break;
+					case "Decline" : 
+						this._calEvent.setProperty(name, "CANCELLED");
+						break;
+					case "NoResponseReceived" : 
+						this._calEvent.setProperty(name, "NONE");
+						break;
+					default:
+						this._calEvent.setProperty(name, "NONE");
+						break;
+					}
 				}
 			}
 			break;
 		case "X-MOZ-SEND-INVITATIONS": 
 			if ((this.responseObjects.acceptItem) ||
 			    (this.responseObjects.tentativelyAcceptItem) ||
-			    (this.responseObjects.declineItem)) {
+			    (this.responseObjects.declineItem) ||
+			    (this.type == "MeetingRequest")) {
 				this._calEvent.setProperty(name, true);
 			}
 			else {
@@ -849,6 +903,11 @@ mivExchangeEvent.prototype = {
 				}
 			}
 			break;
+		case "X-MOZ-SEND-INVITATIONS": 
+			if (value != this.getProperty(name)) {
+				this._newIsInvitation = value;
+			}
+			break;
 		default:
 			this._changedProperties.push({ action: "set", name: name, value: value});
 		}
@@ -863,16 +922,19 @@ mivExchangeEvent.prototype = {
 		this.logInfo("deleteProperty: title:"+this.title+", name:"+name);
 		switch (name) {
 		case "DESCRIPTION": 
-			this._newBody = "";
+			this._newBody = null;
 			break;
 		case "LOCATION": 
-			this._newLocation = "";
+			this._newLocation = null;
 			break;
 		case "TRANSP": 
-			this._newLegacyFreeBusyStatus = "";
+			this._newLegacyFreeBusyStatus = null;
 			break;
 		case "STATUS": 
-			this._newMyResponseType = "";
+			this._newMyResponseType = null;
+			break;
+		case "X-MOZ-SEND-INVITATIONS": 
+			this._newIsInvitation = null;
 			break;
 		default:
 			this._changedProperties.push({ action: "remove", name: name});
@@ -1224,11 +1286,19 @@ mivExchangeEvent.prototype = {
 		var occurrences = [];
 		switch (this.calendarItemType) {
 		case "Single":
+		case "Occurrence":
+		case "Exception":
 			if ((this.startDate.compare(aStartDate) >= 0) && (this.endDate.compare(aEndDate) < 0)) {
-				this.logInfo("getOccurrencesBetween 0: inserting myself into list.");
+				this.logInfo("getOccurrencesBetween 0a: inserting myself into list.");
 				occurrences.push(this);
 			}
 			break;
+		default:
+			if (this.recurrenceInfo) {
+				occurrences = this.recurrenceInfo.getOccurrences(aStartDate, aEndDate, 0, aCount);
+				this.logInfo("getOccurrencesBetween 0b: title:"+this.title+", this.calendarItemType:"+this.calendarItemType+", aStartDate:"+aStartDate+", aEndDate:"+aEndDate+", occurrences.length:"+occurrences.length);
+				return this.recurrenceInfo.getOccurrences(aStartDate, aEndDate, 0, aCount);
+			}
 		}
 		this.logInfo("getOccurrencesBetween 1: title:"+this.title+", aStartDate:"+aStartDate+", aEndDate:"+aEndDate+", occurrences.length:"+occurrences.length);
 
@@ -1337,7 +1407,7 @@ mivExchangeEvent.prototype = {
 			if (this.isAllDayEvent) this._endDate.isDate = true;
 			if (this._endDate) this._calEvent.endDate = this._endDate.clone();
 		}
-		this.logInfo("get endDate: title:"+this.title+", startdate=="+this._calEvent.endDate, -1);
+		this.logInfo("get endDate: title:"+this.title+", endDate=="+this._calEvent.endDate, -1);
 		return this._calEvent.endDate;
 	},
 
@@ -1532,6 +1602,7 @@ mivExchangeEvent.prototype = {
 		if (!this._calendarItemType) {
 			this._calendarItemType = this.getTagValue("t:CalendarItemType", null);
 		}
+		this.logInfo("get calendarItemType: title:"+this.title+", this._calendarItemType:"+this._calendarItemType);
 		return this._calendarItemType;
 	},
 
@@ -1573,6 +1644,13 @@ mivExchangeEvent.prototype = {
 		}
 		return this._isRecurring;
 	},
+
+	//readonly attribute boolean isInvitation;
+	get isInvitation()
+	{
+		return this.getProperty("X-MOZ-SEND-INVITATIONS");
+	},
+
 
 	//readonly attribute boolean meetingRequestWasSent;
 	get meetingRequestWasSent()

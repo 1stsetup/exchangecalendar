@@ -32,6 +32,7 @@ interface mivExchangeEvent : calIEvent
 	readonly attribute calIDateTime dateTimeSent;
 	readonly attribute calIDateTime dateTimeCreated;
 	readonly attribute calIDateTime reminderDueBy;
+	readonly attribute calIDateTime reminderSignalTime;
 	readonly attribute boolean reminderIsSet;
 	readonly attribute long reminderMinutesBeforeStart;
 	readonly attribute long size;
@@ -67,6 +68,8 @@ interface mivExchangeEvent : calIEvent
 	void cloneToCalEvent(in calIEvent aCalEvent);
 
 	attribute mivIxml2jxon exchangeData;
+
+	readonly attribute boolean isInvitation;
 
 	mivIxml2jxon convertToExchange(); 
 };
