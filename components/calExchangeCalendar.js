@@ -6451,12 +6451,15 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment:"+String(aCalendarItem), 2);
 
 
-		var item = createEvent();
+		//var item = createEvent();
 		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 				.createInstance(Ci.mivExchangeEvent);
 		item.exchangeData = aCalendarItem;
 
-		item.calendar = this.superCalendar;
+//		item.calendar = this.superCalendar;
+		item.calendar = this;
+
+		return item;
 
 		if (!doNotify) {
 			doNotify = false;
