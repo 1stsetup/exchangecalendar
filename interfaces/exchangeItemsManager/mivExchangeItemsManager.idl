@@ -1,0 +1,82 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: GPL 3.0
+ *
+ * The contents of this file are subject to the General Public License
+ * 3.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Author: Michel Verbraak (info@1st-setup.nl)
+ * Website: http://www.1st-setup.nl/
+ * email: info@1st-setup.nl
+ *
+ * This interface can be used to for updates
+ *
+ * ***** BEGIN LICENSE BLOCK *****/
+
+#include "nsISupports.idl"
+
+[scriptable, uuid(b722909d-f83d-4f01-9b98-369201f8ae38)]
+interface mivExchangeItemsManager : nsISupports
+{
+	attribute AUTF8String exchangeAccountId;
+	attribute AUTF8String folderBase;
+	attribute AUTF8String folderId;
+	attribute AUTF8String name;
+
+	attribute long pollInterval;
+
+	const unsigned long STATUS_UNINITIALIZED = 0;
+	const unsigned long STATUS_GET_FOLDER = 1;
+
+	readonly attribute AUTF8String sensitivity;
+	readonly attribute calIDateTime dateTimeReceived;
+	readonly attribute calIDateTime dateTimeSent;
+	readonly attribute calIDateTime dateTimeCreated;
+	readonly attribute calIDateTime reminderDueBy;
+	readonly attribute calIDateTime reminderSignalTime;
+	readonly attribute boolean reminderIsSet;
+	readonly attribute long reminderMinutesBeforeStart;
+	readonly attribute long size;
+	readonly attribute calIDateTime originalStart;
+	readonly attribute boolean isAllDayEvent;
+	readonly attribute AUTF8String legacyFreeBusyStatus;
+	readonly attribute AUTF8String location;
+
+	readonly attribute AUTF8String changeKey;
+	readonly attribute AUTF8String uid;
+	readonly attribute AUTF8String calendarItemType;
+	readonly attribute AUTF8String itemClass;
+	readonly attribute boolean isCancelled;
+	readonly attribute boolean isMeeting;
+	readonly attribute boolean isRecurring;
+	readonly attribute boolean meetingRequestWasSent;
+	readonly attribute boolean isResponseRequested;
+	readonly attribute AUTF8String myResponseType;
+	readonly attribute AUTF8String timeZone;
+	readonly attribute AUTF8String startTimeZoneName;
+	readonly attribute AUTF8String startTimeZoneId;
+	readonly attribute AUTF8String endTimeZoneName;
+	readonly attribute AUTF8String endTimeZoneId;
+	readonly attribute AUTF8String conferenceType;
+	readonly attribute boolean allowNewTimeProposal;
+
+	readonly attribute AUTF8String type;
+	readonly attribute AUTF8String parentId;
+	readonly attribute AUTF8String parentChangeKey;
+
+	readonly attribute jsval responseObjects;
+
+	void cloneToCalEvent(in calIEvent aCalEvent);
+
+	attribute mivIxml2jxon exchangeData;
+
+	readonly attribute boolean isInvitation;
+
+	mivIxml2jxon convertToExchange(); 
+};
