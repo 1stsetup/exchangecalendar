@@ -39,6 +39,9 @@ if (! exchWebService) var exchWebService = {};
 
 exchWebService.attachments = {
 
+	globalFunctions : Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions),
+
 	addAttachmentDialog: function _addAttachmentDialog()
 	{
 		const nsIFilePicker = Ci.nsIFilePicker;
@@ -435,14 +438,21 @@ exchWebService.attachments = {
 		var self = this;
 
 		let getParams = exchWebService.commonFunctions.splitUriGetParams(aAttachment.uri);
-		let path = aAttachment.uri.path;
-		if (path.indexOf("/?") > -1) {
-			path = path.substr(0, path.indexOf("/?"));
+
+		var prefs = "extensions.exchangecalendar@extensions.1st-setup.nl."+getParams.calendarid+".";
+
+		var serverUrl = this.globalFunctions.safeGetCharPref(null, prefs+"ecServer", "");
+		var username = this.globalFunctions.safeGetCharPref(null, prefs+"ecUser", "");
+		var domain = this.globalFunctions.safeGetCharPref(null, prefs+"ecDomain", "");
+		if (username.indexOf("@") == -1) {
+			if (domain != "") {
+				username = domain+"\\"+username;
+			}
 		}
 
 		var tmpObject = new erGetAttachmentsRequest(
-			{user: getParams.user, 
-			 serverUrl:  aAttachment.uri.prePath + path ,
+			{user: username, 
+			 serverUrl:  serverUrl ,
 			 attachmentIds: [getParams.id],
 			 doSave: doSave}, self.onDownloadAttachmentOk, self.onDownloadAttachmentError);
 

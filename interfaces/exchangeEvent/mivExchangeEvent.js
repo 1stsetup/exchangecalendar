@@ -1144,12 +1144,9 @@ dump(" we have attachments 1: title:"+this.title+"\n"+this.exchangeData+"\n");
 try{
 				for each(var fileAttachment in fileAttachments) {
 	//				if (this.debug) this.logInfo(" -- Attachment: name="+fileAttachment.getTagValue("t:Name"));
-
-dump(" we have attachments: title:"+this.title+", url:http://someserver/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent("xx")+"\n");
 					var newAttachment = cal.createAttachment();
 					newAttachment.setParameter("X-AttachmentId",fileAttachment.getAttributeByTag("t:AttachmentId","Id")); 
-//					newAttachment.uri = makeURL(this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
-					newAttachment.uri = cal.makeURL("http://someserver/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent("xx"));
+					newAttachment.uri = cal.makeURL("http://somewhere/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&calendarid="+encodeURIComponent(this.calendar.id));
 
 					//if (this.debug) this.logInfo("New attachment URI:"+this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
 
@@ -1872,6 +1869,21 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 			'Weekday'	: ['MO', 'TU', 'WE', 'TH', 'FR'],
 			'WeekendDay'	: ['SA', 'SO'],
 			'Day'		: ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SO']
+		};
+
+		const monthMap = {
+			'January'	: 1,
+			'February'	: 2,
+			'March'		: 3,
+			'April'		: 4,
+			'May'		: 5,
+			'June'		: 6,
+			'July'		: 7,
+			'August'	: 8,
+			'September'	: 9,
+			'October'	: 10,
+			'November'	: 11,
+			'December'	: 12
 		};
 
 		var comps = {};
