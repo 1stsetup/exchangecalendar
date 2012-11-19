@@ -95,7 +95,16 @@ exchWebService.forewardEvent = {
 		alert(aCode+":"+aMsg);
 	},
 
-}
+	checkAllowForwardItem: function _checkAllowForwardItem()
+	{
+		var item = exchWebService.forewardEvent.currentView().getSelectedItems({})[0];
+		if ((item.calendar.type == "exchangecalendar") && (item.responseObjects.ForwardItem)) {
+			document.getElementById("calendar-item-forward").hidden = false;
+		}
+		else {
+			document.getElementById("calendar-item-forward").hidden = true;
+		}
+	},
 
-exchWebService.commonFunctions.LOG(" YEEHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 1");
+}
 
