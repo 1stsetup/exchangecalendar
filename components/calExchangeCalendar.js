@@ -2524,69 +2524,11 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	//  boolean isInvitation(in calIItemBase aItem);
 	isInvitation: function _isInvitation(aItem, ignoreStatus)
 	{
+		var exchangeItem = aItem.QueryInterface(Ci.mivExchangeEvent);
 
-		if (ignoreStatus == undefined) {
-			ignoreStatus = true;
+		if (exchangeItem) {
+			return aItem.isInvitation;
 		}
-
-		if (!aItem) {
-			return false;
-		}
-
-		if ((aItem.isInvitation) && (aItem.isInvitation == "true")) {
-			if ((!ignoreStatus) && (aItem.getProperty("STATUS") != "NONE")) {
-				return false;
-			}
-			return true;
-		}
-
-		// If this is not an personal calendar
-		if ((this.folderBase != "calendar") || (this.folderPath != "/")) {
-			return false;
-		}
-
-		// Check if we have attendees
-		var attendees = aItem.getAttendees({});
-		if (!attendees) {
-			return false;
-		}
-
-		if (attendees.length == 0) {
-			return false;
-		}
-
-		if (aItem.isCancelled) {
-			return false;
-		}
-
-		if ((!aItem.isMeeting) || (aItem.isMeeting === false)) {
-			return false;
-		}
-
-		// When I'm not the organizer I'm invited if i am an attendee.
-		let org = aItem.organizer;
-		if ((!org) || (org.id.replace(/^mailto:/, '').toLowerCase() != this.mailbox.toLowerCase())) {
-			
-			// Check if I am an attendee
-			var attendees = aItem.getAttendees({});
-			for each (var attendee in attendees) {
-				if (attendee.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) {
-				if (this.debug) this.logInfo("isInvitation FOUND myself");
-
-					if (aItem.getProperty("STATUS") != "NONE") {
-						return false;
-					}
-					return true;
-				}
-			}
-			// I'm not directly invited. Could be through mailgroup.
-			// TODO: How do we react. 
-		}
-/*		else {
-			if ((org) && (org.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase())) {
-				if (this.debug) this.logInfo("I'm the organiser");
-			}
-		}*/
 
 		return false;
 	},
@@ -2610,16 +2552,17 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		// Parse through the attendees
 		var attendees = aItem.getAttendees({});
 		for each (var attendee in attendees) {
-			//if (this.debug) this.logInfo("getInvitedAttendee 2:"+attendee.id);
+			if (this.debug) this.logInfo("getInvitedAttendee 2:"+attendee.id);
 			if ((attendee.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) ||
 				(attendee.id.replace(/^exchangecalendar:/, '').toLowerCase() == this.mailbox.toLowerCase()) ) {
-				//if (this.debug) this.logInfo("getInvitedAttendee FOUND myself:"+aItem.title);
+				if (this.debug) this.logInfo("getInvitedAttendee FOUND myself:"+aItem.title);
+				attendee.participationStatus = participationMap[aItem.myResponseType];
 				return attendee; //.clone();
 			}
 		}
 
-		if (aItem.isInvitation == "true") {
-			//if (this.debug) this.logInfo("getInvitedAttendee  X-IsInvitation = true");
+		if (aItem.isInvitation) {
+			if (this.debug) this.logInfo("getInvitedAttendee  X-IsInvitation = true");
 			var tmpAttendee = cal.createAttendee();
 			tmpAttendee.id = "mailto:"+this.mailbox;
 			tmpAttendee.commonName = this.userDisplayName;

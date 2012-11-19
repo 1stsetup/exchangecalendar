@@ -29,6 +29,16 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 Cu.import("resource://calendar/modules/calProviderUtils.jsm");
 
+const participationMap = {
+	"Unknown"	: "NEEDS-ACTION",
+	"NoResponseReceived" : "NEEDS-ACTION",
+	"Tentative"	: "TENTATIVE",
+	"Accept"	: "ACCEPTED",
+	"Decline"	: "DECLINED",
+	"Organizer"	: "ACCEPTED"
+};
+
+
 function mivExchangeEvent() {
 
 	this._calEvent = Cc["@mozilla.org/calendar/event;1"]
@@ -428,7 +438,7 @@ mivExchangeEvent.prototype = {
 	get privacy()
 	{
 		if (!this._privacy) {
-			this._privacy = this.getTagValue("t:Sensitivity");
+			this._privacy = this.sensitivity;
 			switch(this._privacy) {
 				case "Normal" : 
 					this._calEvent.privacy = "PUBLIC";
@@ -469,26 +479,21 @@ mivExchangeEvent.prototype = {
 	get status()
 	{
 		if (!this._status) {
-			this._status = this.sensitivity;
-			switch(this._status) {
-				case "NotStarted" : 
-					this._calEvent.status = "NONE";
-					break;
-				case "InProgress" : 
-					this._calEvent.status = "IN-PROCESS";
-					break;
-				case "Completed" : 
-					this._calEvent.status = "COMPLETED";
-					break;
-				case "WaitingOnOthers" : 
-					this._calEvent.status = "NEEDS-ACTION";
-					break;
-				case "Deferred" : 
-					this._calEvent.status = "CANCELLED";
-					break;
-			}
+			this._status = this.myResponseType;
+
+			const statusMap = {
+				"Unknown"	: "NONE",
+				"NoResponseReceived" : "NONE",
+				"Tentative"	: "TENTATIVE",
+				"Accept"	: "CONFIRMED",
+				"Decline"	: "CANCELLED",
+				"Organizer"	: "CONFIRMED",
+				null: null
+			};
+
+			this._calEvent.status = statusMap[this._status];
 		}
-		this.logInfo("get status: title:"+this.title+", value:"+this._calEvent.status);
+		this.logInfo("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
 		return this._calEvent.status;
 	},
 
@@ -496,12 +501,12 @@ mivExchangeEvent.prototype = {
 	{
 		this.logInfo("set status: title:"+this.title+", aValue:"+aValue);
 		if (aValue != this.status) {
-			const statuses = { "NONE": "NotStarted",
-					"IN-PROCESS": "InProgress", 
-					"COMPLETED" : "Completed",
-					"NEEDS-ACTION" : "WaitingOnOthers",
-					"CANCELLED" : "Deferred",
-					null: "NotStarted" };
+			const statuses = { "NONE": "NoResponseReceived",
+					"TENTATIVE": "Tentative", 
+					"CONFIRMED" : "Accept",
+					"CANCELLED" : "Decline",
+					null: null };
+
 			this._newStatus = statuses[aValue];
 			this._calEvent.status = aValue;
 		}
@@ -791,12 +796,11 @@ mivExchangeEvent.prototype = {
 			break;
 		case "STATUS": 
 			if (!this._myResponseType) {
-				this._myResponseType = this.getTagValue("t:MyResponseType", null);
 				if (this.isCancelled) {
 					this._calEvent.setProperty(name, "CANCELLED");
 				}
 				else {
-					switch (this._myResponseType) {
+					switch (this.myResponseType) {
 					case "Unknown" : 
 						this._calEvent.setProperty(name, "NONE");
 						break;
@@ -823,9 +827,9 @@ mivExchangeEvent.prototype = {
 			}
 			break;
 		case "X-MOZ-SEND-INVITATIONS": 
-			if ((this.responseObjects.acceptItem) ||
-			    (this.responseObjects.tentativelyAcceptItem) ||
-			    (this.responseObjects.declineItem) ||
+			if ((this.responseObjects.AcceptItem) ||
+			    (this.responseObjects.TentativelyAcceptItem) ||
+			    (this.responseObjects.DeclineItem) ||
 			    (this.type == "MeetingRequest")) {
 				this._calEvent.setProperty(name, true);
 			}
@@ -1648,7 +1652,15 @@ mivExchangeEvent.prototype = {
 	//readonly attribute boolean isInvitation;
 	get isInvitation()
 	{
-		return this.getProperty("X-MOZ-SEND-INVITATIONS");
+		if ((this.responseObjects.AcceptItem) ||
+		    (this.responseObjects.TentativelyAcceptItem) ||
+		    (this.responseObjects.DeclineItem) ||
+		    (this.type == "MeetingRequest")) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	},
 
 
@@ -1815,7 +1827,7 @@ mivExchangeEvent.prototype = {
 
 	set exchangeData(aValue)
 	{
-		this.logInfo("exchangeData:"+aValue.toString());
+		//this.logInfo("exchangeData:"+aValue.toString());
 		//dump("exchangeData:"+aValue.toString()+"\n\n");
 		this.initialize();
 		this._exchangeData = aValue;
@@ -1945,15 +1957,6 @@ mivExchangeEvent.prototype = {
 	createAttendee: function _createAttendee(aElement, aType) 
 	{
 		if (!aElement) return null;
-
-		const participationMap = {
-			"Unknown"	: "NEEDS-ACTION",
-			"NoResponseReceived" : "NEEDS-ACTION",
-			"Tentative"	: "TENTATIVE",
-			"Accept"	: "ACCEPTED",
-			"Decline"	: "DECLINED",
-			"Organizer"	: "ACCEPTED"
-		};
 
 		let mbox = aElement.getTag("t:Mailbox");
 		let attendee = cal.createAttendee();
