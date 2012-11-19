@@ -98,9 +98,7 @@ exchWebService.forewardEvent2 = {
 
 	onLoad: function _onLoad()
 	{
-exchWebService.commonFunctions.LOG(" ------------ our Load");
 		if (document.getElementById("calendar-event-summary-dialog")) {
-exchWebService.commonFunctions.LOG(" ------------ our Load 2222222222222222");
 			window.removeEventListener("load", exchWebService.forewardEvent2.onLoad, false);
 			var args = window.arguments[0];
 			var item = args.calendarEvent;
@@ -114,17 +112,16 @@ exchWebService.commonFunctions.LOG(" ------------ our Load 2222222222222222");
 						newArray.push(tmpArray[index]);
 					}
 				}
-exchWebService.commonFunctions.LOG(" !! our new buttons:"+newArray.join(","));
 				document.getElementById("calendar-event-summary-dialog").buttons = newArray.join(",");
 			}
 			else {
-				document.getElementById("calendar-event-summary-dialog").buttons += ",extra1";
+				if ((item.calendar.type == "exchangecalendar") && (item.responseObjects.ForwardItem)) {
+					document.getElementById("calendar-event-summary-dialog").buttons += ",extra1";
+				}
 			}
 		}
 	},
 }
 
 window.addEventListener("load", exchWebService.forewardEvent2.onLoad, false);
-
-exchWebService.commonFunctions.LOG(" YEEHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 2");
 

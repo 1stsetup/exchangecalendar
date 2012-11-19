@@ -43,7 +43,7 @@
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
 <dialog id="calendar-summary-dialog" windowtype="Calendar:EventSummaryDialog"
-		buttons="accept,cancel,extra1" onload="onLoad()" buttonlabelextra1="Forward invite"
+		buttons="accept,cancel" onload="onLoad()" buttonlabelextra1="Forward invite"
 		ondialogextra1="exchWebService.forewardEvent2.onForward();" persist="screenX screenY width height"
 		xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 		
