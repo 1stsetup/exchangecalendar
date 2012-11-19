@@ -47,6 +47,7 @@ interface mivExchangeEvent : calIEvent
 	readonly attribute AUTF8String itemClass;
 	readonly attribute boolean isCancelled;
 	readonly attribute boolean isMeeting;
+	readonly attribute boolean hasAttachments;
 	readonly attribute boolean isRecurring;
 	readonly attribute boolean meetingRequestWasSent;
 	readonly attribute boolean isResponseRequested;

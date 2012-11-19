@@ -1137,25 +1137,30 @@ mivExchangeEvent.prototype = {
 		this.logInfo("getAttachments: title:"+this.title);
 		if (!this._attachments) {
 			this._attachments = new Array();
-			if (this.getTagValue("t:HasAttachments") == "true") {
+			if (this.hasAttachments) {
+dump(" we have attachments 1: title:"+this.title+"\n"+this.exchangeData+"\n");
 	//			if (this.debug) this.logInfo("Title:"+aItem.title+"Attachments:"+aExchangeItem.getTagValue("Attachments"));
 				var fileAttachments = this._exchangeData.XPath("/t:Attachments/t:FileAttachment");
+try{
 				for each(var fileAttachment in fileAttachments) {
 	//				if (this.debug) this.logInfo(" -- Attachment: name="+fileAttachment.getTagValue("t:Name"));
 
-					var newAttachment = createAttachment();
+dump(" we have attachments: title:"+this.title+", url:http://someserver/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent("xx")+"\n");
+					var newAttachment = cal.createAttachment();
 					newAttachment.setParameter("X-AttachmentId",fileAttachment.getAttributeByTag("t:AttachmentId","Id")); 
 //					newAttachment.uri = makeURL(this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
-					newAttachment.uri = makeURL(this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent("xx"));
+					newAttachment.uri = cal.makeURL("http://someserver/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent("xx"));
 
 					//if (this.debug) this.logInfo("New attachment URI:"+this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
 
 					this._attachments.push(newAttachment.clone());
 					this._calEvent.addAttachment(newAttachment);
 				}
+}catch(err){ dump("ERROR:"+err+"\n");}
 				fileAttachments = null;
 			} 
 		}
+dump(" we have attachments 2: title:"+this.title+"\n");
 		return this._calEvent.getAttachments(count);
 	},
 
@@ -1640,6 +1645,16 @@ mivExchangeEvent.prototype = {
 		return this._isMeeting;
 	},
 
+	// the exchange hasAttachments of this event
+	//readonly attribute boolean hasAttachments;
+	get hasAttachments()
+	{
+		if (!this._hasAttachments) {
+			this._hasAttachments = (this.getTagValue("t:HasAttachments", "false") == "true");
+		}
+		return this._hasAttachments;
+	},
+
 	//readonly attribute boolean isRecurring;
 	get isRecurring()
 	{
@@ -2056,7 +2071,7 @@ mivExchangeEvent.prototype = {
 
 	logInfo: function _logInfo(aMsg, aDebugLevel) 
 	{
-			this.globalFunctions.LOG("mivExchangeEvent: "+aMsg);
+			//this.globalFunctions.LOG("mivExchangeEvent: "+aMsg);
 		return;
 
 		if (!aDebugLevel) aDebugLevel = 1;
