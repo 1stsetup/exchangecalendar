@@ -6110,8 +6110,19 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 	{
 		if (this.debug) this.logInfo("removeChildrenFromMaster start. Title:"+aMaster.title);
 		// Remove children of this master. They will be added later.
-		for (var index in this.itemCache) {
-			if ( (this.itemCache[index]) &&
+		for each(var child in aMaster.getExceptions({})) {
+			aMaster.removeException(child);
+			this.notifyTheObservers("onDeleteItem", [child]);
+			delete this.itemCache[child.id];
+		}
+
+		for each(var child in aMaster.getOccurrences({})) {
+			aMaster.removeOccurrence(child);
+			this.notifyTheObservers("onDeleteItem", [child]);
+			delete this.itemCache[child.id];
+		}
+
+/*			if ( (this.itemCache[index]) &&
 			     (isEvent(this.itemCache[index])) &&
 			     (this.itemCache[index].parentItem.id == aMaster.id) ) {
 				if (this.debug) this.logInfo("removeChildrenFromMaster: Removing child:"+this.itemCache[index].title+", startdate="+this.itemCache[index].startDate.toString());
@@ -6121,7 +6132,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 				this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
 				delete this.itemCache[index];
 			}
-		}
+		}*/
 		if (this.debug) this.logInfo("removeChildrenFromMaster end.:"+aMaster.title);
 	},
 
@@ -6406,8 +6417,9 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 					if (master) {
 						// We allready have a master in Cache.
 						if (this.debug) this.logInfo("Found master for exception:"+master.title+", date:"+master.startDate.toString());
-						item.parentItem = master;
-						master.recurrenceInfo.modifyException(item, true);
+						master.addException(item);
+						//item.parentItem = master;
+						//master.recurrenceInfo.modifyException(item, true);
 						this.setSnoozeTime(item, master);
 					}
 					else {
@@ -6423,7 +6435,9 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 					if (master) {
 						// We allready have a master in Cache.
 						if (this.debug) this.logInfo("Found master for occurrence:"+master.title+", date:"+master.startDate.toString());
-						item.parentItem = master;
+
+						master.addOccurrence(item);
+						//item.parentItem = master;
 
 						this.setSnoozeTime(item, master);
 					}
@@ -6461,9 +6475,14 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 						     (this.itemCache[index].uid == item.uid) &&
 						     (this.itemCache[index].parentItem.id != item.id) ) {
 							if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment: WE SEE THIS LINE. SOLVE IT subject:"+item.title);
-							this.itemCache[index].parentItem = item;
+							//this.itemCache[index].parentItem = item;
 							if (this.itemCache[index].calendarItemType == "Exception") {
-								item.recurrenceInfo.modifyException(this.itemCache[index], true);
+								item.addException(this.itemCache[index]);
+								//item.recurrenceInfo.modifyException(this.itemCache[index], true);
+							}
+							if (this.itemCache[index].calendarItemType == "Occurrence") {
+								item.addOccurrence(this.itemCache[index]);
+								//item.recurrenceInfo.modifyException(this.itemCache[index], true);
 							}
 						}
 

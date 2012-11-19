@@ -1831,6 +1831,71 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 		return this._responseObjects;
 	},
 
+	//void getExceptions(out uint32_t count,
+	//	      [array,size_is(count),retval] out mivExchangeEvent aException);
+	getExceptions: function _getExceptions(aCount)
+	{
+		var result = [];
+		for each(var exception in this._exceptions) {
+			result.push(exception);
+		}
+		aCount.value = result.length;
+		return result;
+	},
+
+	//void addException(in mivExchangeEvent aItem);
+	addException: function _addException(aItem)
+	{
+		if ((aItem.calendarItemType == "Exception") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
+			aItem.parentItem = this;
+			this._exceptions[aItem.id] = aItem.clone();
+			this.recurrenceInfo.modifyException(aItem, true);
+		}
+	},
+
+	//void removeException(in mivExchangeEvent aItem);
+	removeException: function _removeException(aItem)
+	{
+		if ((aItem.calendarItemType == "Exception") && (this.calendarItemType == "RecurringMaster")) {
+			if (this._exceptions[aItem.id]) {
+				this.recurrenceInfo.removeExceptionFor(aItem.recurrenceId);
+				this._exceptions[aItem.id] = null;
+				delete this._exceptions[aItem.id];
+			}
+		}
+	},
+
+	//void getOccurrences(out uint32_t count, [array,size_is(count),retval] out mivExchangeEvent aOccurrence);
+	getExceptions: function _getExceptions(aCount)
+	{
+		var result = [];
+		for each(var occurrence in this._occurrences) {
+			result.push(occurrence);
+		}
+		aCount.value = result.length;
+		return result;
+	},
+
+	//void addOccurrence(in mivExchangeEvent aItem);
+	addOccurrence: function _addOccurrence(aItem)
+	{
+		if ((aItem.calendarItemType == "Occurrence") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
+			aItem.parentItem = this;
+			this._occurrences[aItem.id] = aItem.clone();
+		}
+	},
+
+	//void removeOccurrence(in mivExchangeEvent aItem);
+	removeOccurrence: function _removeOccurrence(aItem)
+	{
+		if ((aItem.calendarItemType == "Occurrence") && (this.calendarItemType == "RecurringMaster")) {
+			if (this._occurrences[aItem.id]) {
+				this._occurrences[aItem.id] = null;
+				delete this._occurrences[aItem.id];
+			}
+		}
+	},
+
 	//attribute mivIxml2jxon exchangeData;
 	get exchangeData()
 	{
