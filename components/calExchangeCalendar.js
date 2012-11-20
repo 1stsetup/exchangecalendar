@@ -1258,6 +1258,9 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	            throw Cr.NS_ERROR_INVALID_ARG;
 	        }
 
+		aNewItem = aNewItem.QueryInterface(Ci.mivExchangeEvent);
+		dump("__ aNewItem.updateXML:"+aNewItem.updateXML.toString()+"\n");
+
 	        var this_ = this;
 	        function reportError(errStr, errId) {
 	            this_.notifyOperationComplete(aListener,
@@ -1305,8 +1308,6 @@ if (this.debug) this.logInfo("singleModified doNotify");
 
 		if (isEvent(aNewItem)) {
 
-			var invite = this.isInvitation(aOldItem, true);
-
 			var doSendMeetingRespons = false;
 			var meOld = this.getInvitedAttendee(aOldItem);
 			if (!meOld) {
@@ -1320,7 +1321,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 				meNew.participationStatus = "NEEDS-ACTION";
 			}
 
-			if (invite === true) {
+			if (aOldItem.isInvitation) {
 
 				if (this.debug) this.logInfo("1 meOld.participationStatus="+meOld.participationStatus+", meNew.participationStatus="+meNew.participationStatus);
 				if (this.debug) this.logInfo("1 aOldItem.status="+aOldItem.getProperty("STATUS")+", aNewItem.status="+aNewItem.getProperty("STATUS"));
@@ -1386,7 +1387,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 					var tmpUID = aNewItem.id;
 					requestResponseItem = this.cloneItem(aNewItem);
 					requestResponseItem.id = tmpItem.id;
-					requestResponseItem.setProperty("X-UID",  tmpItem.uid);
+					//requestResponseItem.setProperty("X-UID",  tmpItem.uid);
 					//requestResponseItem.setProperty("X-ChangeKey",  tmpItem.changeKey);
 				}
 				else {
@@ -1425,13 +1426,13 @@ if (this.debug) this.logInfo("singleModified doNotify");
 				}
 
 
-				var changesObj = this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, invite);
+				var changesObj = this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, aOldItem.isInvitation);
 				var changes;
 				if (changesObj) {
 					changes = changesObj.changes;
 				}
 				var weHaveChanges = (changes || (attachmentsUpdates.create.length > 0) || (attachmentsUpdates.delete.length > 0));
-//				var weHaveChanges = (this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, invite) || (attachmentsUpdates.create.length > 0) || (attachmentsUpdates.delete.length > 0));
+//				var weHaveChanges = (this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, aOldItem.isInvitation) || (attachmentsUpdates.create.length > 0) || (attachmentsUpdates.delete.length > 0));
 
 				var iAmOrganizer = ((aNewItem.organizer) && (aNewItem.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()));
 				if (iAmOrganizer) {
@@ -1489,9 +1490,9 @@ if (this.debug) this.logInfo("singleModified doNotify");
 				if (this.debug) this.logInfo(" == aOldItem.parentItem.id:"+aOldItem.parentItem.id);
 	
 						// We need to find out wat has changed;
-						if (this.debug) this.logInfo(" ==1 invite="+invite);
+						if (this.debug) this.logInfo(" ==1 invite="+aOldItem.isInvitation);
 
-						var changesObj = this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, invite);
+						var changesObj = this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, aOldItem.isInvitation);
 						var changes;
 						if (changesObj) {
 							changes = changesObj.changes;
@@ -1560,14 +1561,14 @@ if (this.debug) this.logInfo("singleModified doNotify");
 					else {
 						if (this.debug) this.logInfo("modifyItem: Single event modification");
 						// We need to find out wat has changed;
-						if (this.debug) this.logInfo(" ==1 invite="+invite);
+						if (this.debug) this.logInfo(" ==1 invite="+aOldItem.isInvitation);
 
-						var changesObj = this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, invite);
+						var changesObj = this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, aOldItem.isInvitation);
 						var changes;
 						if (changesObj) {
 							changes = changesObj.changes;
 						}
-//						var changes = this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, invite);
+//						var changes = this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, aOldItem.isInvitation);
 						if (changes) {
 							if (this.debug) this.logInfo("modifyItem: changed:"+String(changes));
 
@@ -1611,7 +1612,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 							}
 							else {
 								if (this.debug) this.logInfo("modifyItem: No changes 1.");
-								if (!invite) {
+								if (!aOldItem.isInvitation) {
 									//aNewItem.parentItem = aNewItem; move to storagecalendar
 									this.singleModified(aNewItem, true);
 								}
@@ -1625,10 +1626,10 @@ if (this.debug) this.logInfo("singleModified doNotify");
 					
 					// We need to find the Index of this item.
 					var self = this;
-					if (aOldItem.hasProperty("X-OccurrenceIndex")) {
+					if (aOldItem.occurrenceIndex > -1) {
 						if (this.debug) this.logInfo(" [[[[[[[[[[[[ We allready have an index for this occurrence ]]]]]]]]]]]]");
 					}
-						if (this.debug) this.logInfo(" [[[[[[[[[[[[ Index:"+aOldItem.getProperty("X-OccurrenceIndex")+" ]]]]]]]]]]]]");
+						if (this.debug) this.logInfo(" [[[[[[[[[[[[ Index:"+aOldItem.occurrenceIndex+" ]]]]]]]]]]]]");
 
 					this.addToQueue( erGetOccurrenceIndexRequest,
 						{user: this.user, 
@@ -4974,7 +4975,11 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 					if (this.debug) this.logInfo( "       !!! Equal to old value:"+prop.toString(), 2);
 					continue;
 				}
-				if (this.debug) this.logInfo( "       !!! NOT EQUAL to old value:"+prop.toString(), 2);
+				if (this.debug) {
+					this.logInfo( "       !!! NOT EQUAL to old value:\nprop:"+prop.toString(), 2);
+					this.logInfo("oeStr:"+oeStr.toString(), 2);
+				
+				}
 			}
 	
 			var se = ce.addChildTag("SetItemField", "nsTypes", null);
@@ -6154,9 +6159,9 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 	cloneItem: function _cloneItem(aItem) {
 		var newItem = aItem.clone();
-		if (aItem.id != aItem.parentItem.id) {
+/*		if (aItem.id != aItem.parentItem.id) {
 			newItem.parentItem = aItem.parentItem;
-		}
+		}*/
 
 		return newItem;
 	},
@@ -6363,7 +6368,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		//item.setProperty("X-ChangeKey", aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey"));
 		if ((erGetItemsRequest) && (erGetItemsRequest.argument.occurrenceIndexes) && (erGetItemsRequest.argument.occurrenceIndexes[item.id])) {
 			if (this.debug) this.logInfo(" Muriel:"+erGetItemsRequest.argument.occurrenceIndexes[item.id]+", title:"+item.title);
-			item.setProperty("X-OccurrenceIndex", erGetItemsRequest.argument.occurrenceIndexes[item.id]+"");
+			item.occurrenceIndex = erGetItemsRequest.argument.occurrenceIndexes[item.id];
+			//setProperty("X-OccurrenceIndex", erGetItemsRequest.argument.occurrenceIndexes[item.id]+"");
 		}
 		
 		var uid = item.uid;

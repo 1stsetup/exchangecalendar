@@ -76,6 +76,8 @@ interface mivExchangeEvent : calIEvent
 	void cloneToCalEvent(in calIEvent aCalEvent);
 
 	attribute mivIxml2jxon exchangeData;
+	attribute uint32_t occurrenceIndex;
+	readonly attribute mivIxml2jxon updateXML;
 
 	readonly attribute boolean isInvitation;
 

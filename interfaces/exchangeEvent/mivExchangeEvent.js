@@ -27,6 +27,8 @@ var components = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
+Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
+
 Cu.import("resource://calendar/modules/calProviderUtils.jsm");
 
 const participationMap = {
@@ -38,6 +40,118 @@ const participationMap = {
 	"Organizer"	: "ACCEPTED"
 };
 
+const fieldPathMap = {
+	'ActualWork'			: 'task',
+	'AdjacentMeetingCount'		: 'calendar',
+	'AdjacentMeetings'		: 'calendar',
+	'AllowNewTimeProposal'		: 'calendar',
+	'AppointmentReplyTime'		: 'calendar',
+	'AppointmentSequenceNumber'	: 'calendar',
+	'AppointmentState'		: 'calendar',
+	'AssignedTime'			: 'task',
+	'AssociatedCalendarItemId'	: 'meeting',
+	'Attachments'			: 'item',
+	'BillingInformation'		: 'task',
+	'Body'				: 'item',
+	'CalendarItemType'		: 'calendar',
+	'Categories'			: 'item',
+	'ChangeCount'			: 'task',
+	'Companies'			: 'task',
+	'CompleteDate'			: 'task',
+	'ConferenceType'		: 'calendar',
+	'ConflictingMeetingCount'	: 'calendar',
+	'ConflictingMeetings'		: 'calendar',
+	'Contacts'			: 'task',
+	'ConversationId'		: 'item',
+	'Culture'			: 'item',
+	'DateTimeCreated'		: 'item',
+	'DateTimeReceived'		: 'item',
+	'DateTimeSent'			: 'item',
+	'DateTimeStamp'			: 'calendar',
+	'DelegationState'		: 'task',
+	'Delegator'			: 'task',
+	'DeletedOccurrences'		: 'calendar',
+	'DisplayCc'			: 'item',
+	'DisplayTo'			: 'item',
+	'DueDate'			: 'task',
+	'Duration'			: 'calendar',
+	'EffectiveRights'		: 'item',
+	'End'				: 'calendar',
+	'EndTimeZone'			: 'calendar',
+	'FirstOccurrence'		: 'calendar',
+	'FolderClass'			: 'folder',
+	'FolderId'			: 'folder',
+	'HasAttachments'		: 'item',
+	'HasBeenProcessed'		: 'meeting',
+	'Importance'			: 'item',
+	'InReplyTo'			: 'item',
+	'IntendedFreeBusyStatus'	: 'meetingRequest',
+	'InternetMessageHeaders'	: 'item',
+	'IsAllDayEvent'			: 'calendar',
+	'IsAssignmentEditable'		: 'task',
+	'IsAssociated'			: 'item',
+	'IsCancelled'			: 'calendar',
+	'IsComplete'			: 'task',
+	'IsDelegated'			: 'meeting',
+	'IsDraft'			: 'item',
+	'IsFromMe'			: 'item',
+	'IsMeeting'			: 'calendar',
+	'IsOnlineMeeting'		: 'calendar',
+	'IsOutOfDate'			: 'meeting',
+	'IsRecurring'			: 'calendar',
+	'IsResend'			: 'item',
+	'IsResponseRequested'		: 'calendar',
+	'IsSubmitted'			: 'item',
+	'IsTeamTask'			: 'task',
+	'IsUnmodified'			: 'item',
+	'ItemClass'			: 'item',
+	'ItemId'			: 'item',
+	'LastModifiedName'		: 'item',
+	'LastModifiedTime'		: 'item',
+	'LastOccurrence'		: 'calendar',
+	'LegacyFreeBusyStatus'		: 'calendar',
+	'Location'			: 'calendar',
+	'MeetingRequestType'		: 'meetingRequest',
+	'MeetingRequestWasSent'		: 'calendar',
+	'MeetingTimeZone'		: 'calendar',
+	'MeetingWorkspaceUrl'		: 'calendar',
+	'Mileage'			: 'task',
+	'MimeContent'			: 'item',
+	'ModifiedOccurrences'		: 'calendar',
+	'MyResponseType'		: 'calendar',
+	'NetShowUrl'			: 'calendar',
+	'OptionalAttendees'		: 'calendar',
+	'Organizer'			: 'calendar',
+	'OriginalStart'			: 'calendar',
+	'Owner'				: 'task',
+	'ParentFolderId'		: 'item',
+	'PercentComplete'		: 'task',
+	'Recurrence'			: 'calendar',
+	'RecurrenceId'			: 'calendar',
+	'ReminderDueBy'			: 'item',
+	'ReminderIsSet'			: 'item',
+	'ReminderMinutesBeforeStart'	: 'item',
+	'RequiredAttendees'		: 'calendar',
+	'Resources'			: 'calendar',
+	'ResponseObjects'		: 'item',
+	'ResponseType'			: 'meeting',
+	'SearchParameters'		: 'folder',
+	'Sensitivity'			: 'item',
+	'Size'				: 'item',
+	'Start'				: 'calendar',
+	'StartDate'			: 'task',
+	'StartTimeZone'			: 'calendar',
+	'StatusDescription'		: 'task',
+	'Status'			: 'task',
+	'Subject'			: 'item',
+	'TimeZone'			: 'calendar',
+	'TotalWork'			: 'task',
+	'UID'				: 'calendar',
+	'UniqueBody'			: 'item',
+	'WebClientEditFormQueryString'	: 'item',
+	'WebClientReadFormQueryString'	: 'item',
+	'When'				: 'calendar'
+};
 
 function mivExchangeEvent() {
 
@@ -223,10 +337,10 @@ mivExchangeEvent.prototype = {
 			for each(var attendee in this._changesAttendees) {
 				switch (attendee.action) {
 				case "add": 
-					result.addAttendee(change.attendee);
+					result.addAttendee(attendee.attendee);
 					break;
 				case "remove":
-					result.removeAttendee(change.attendee);
+					result.removeAttendee(attendee.attendee);
 					break;
 				}
 			}
@@ -236,10 +350,10 @@ mivExchangeEvent.prototype = {
 			for each(var attachment in this._changesAttachments) {
 				switch (attachment.action) {
 				case "add": 
-					result.addAttachment(change.attachment);
+					result.addAttachment(attachment.attachment);
 					break;
 				case "remove":
-					result.removeAttachment(change.attachment);
+					result.removeAttachment(attachment.attachment);
 					break;
 				}
 			}
@@ -1925,6 +2039,64 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 
 	convertToExchange: function _convertToExchange() 
 	{
+	},
+
+	//attribute long occurrenceIndex;
+	get occurrenceIndex()
+	{
+		if (this._occurrenceIndex) {
+			return this._occurrenceIndex;
+		}
+
+		return -1;
+	},
+
+	set occurrenceIndex(aValue)
+	{
+		if (aValue != this._occurrenceIndex) {
+			this._occurrenceIndex = aValue;
+		}
+	},
+
+	addSetItemField: function _addSetItemField(parentItem, aField, aValue, aAttributes)
+	{
+		var setItemField = parentItem.addChildTag("SetItemField", "t", null);
+		var fieldURI = setItemField.addChildTag("FieldURI", "t", null);
+		fieldURI.setAttribute("FieldURI", fieldPathMap[aField]);
+		var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", aValue);
+		if (aAttributes) {
+			for (var attribute in aAttributes) {
+				fieldValue.setAttribute(attribute, aAttributes[attribute]);
+			}
+		}
+	},
+
+	get updateXML()
+	{
+		var xml = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
+				.createInstance(Ci.mivIxml2jxon);
+try{
+		xml.processXMLString('<t:ItemChange xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>', 0, null);
+		var updates = xml.addChildTag("Updates", "t", null);
+
+		if (this.isInvitation) {
+			// Only can accept/decline/tentative
+			// Or change alarm.
+			
+		}
+		else {
+			if (this._newTitle) {
+				this.addSetItemField(updates, "Subject", this._newTitle);
+			}
+			if (this._newBody) {
+				this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
+			}
+		}
+}
+catch(err) {
+dump("EEEERROR:"+err+"\n");
+}
+		return xml;
 	},
 
 	// Internal methods.
