@@ -6122,17 +6122,6 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			delete this.itemCache[child.id];
 		}
 
-/*			if ( (this.itemCache[index]) &&
-			     (isEvent(this.itemCache[index])) &&
-			     (this.itemCache[index].parentItem.id == aMaster.id) ) {
-				if (this.debug) this.logInfo("removeChildrenFromMaster: Removing child:"+this.itemCache[index].title+", startdate="+this.itemCache[index].startDate.toString());
-				if (this.itemCache[index].isMutable) {
-					this.itemCache[index].parentItem = this.itemCache[index];
-				}
-				this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
-				delete this.itemCache[index];
-			}
-		}*/
 		if (this.debug) this.logInfo("removeChildrenFromMaster end.:"+aMaster.title);
 	},
 
@@ -6233,7 +6222,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 //				this.clearXMozSnoozeTimes(aMaster);
 
 //				var reminderTime = cal.createDateTime(pidLidReminderSignalTime);
-				var reminderTime = cal.createDateTime(aMaster.reminderSignalTime);
+				var reminderTime = aMaster.reminderSignalTime;
 				if (reminderTime) {
 
 					if (aItem) {
@@ -6302,7 +6291,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			else {
 				// aItem is a Single
 				this.clearXMozSnoozeTimes(aItem);
-				var reminderTime = cal.createDateTime(pidLidReminderSignalTime);
+				var reminderTime = pidLidReminderSignalTime;
 				if (this.debug) this.logInfo("Set snooze time: X-MOZ-SNOOZE-TIME="+reminderTime.icalString);
 				aItem.setProperty("X-MOZ-SNOOZE-TIME", reminderTime.icalString);
 
@@ -6359,7 +6348,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 //		item.calendar = this.superCalendar;
 		item.calendar = this;
 
-		return item;
+		//return item;
 
 		if (!doNotify) {
 			doNotify = false;

@@ -59,6 +59,9 @@ function mivExchangeEvent() {
 	this._newMyResponseType = undefined; 
 	this._newIsInvitation = undefined;
 
+	this._occurrences = {};
+	this._exceptions = {};
+
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
 
@@ -179,7 +182,6 @@ mivExchangeEvent.prototype = {
 
 		// We are going to replay all changes to clone
 		if (this._newTitle) result.title = this.title;
-		result.title = result.title + "(clone)";
 		if (this._newPriority) result.priority = this.priority;
 		if (this._newPrivacy) result.privacy = this.privacy;
 		if (this._newStatus) result.status = this.status;
@@ -659,7 +661,7 @@ mivExchangeEvent.prototype = {
 	//attribute calIRecurrenceInfo recurrenceInfo;
 	get recurrenceInfo()
 	{
-		if (!this._recurrenceInfo) {
+		if ((!this._recurrenceInfo) && (this._exchangeData)) {
 			var recurrence = this._exchangeData.XPath("/t:Recurrence/*");
 			var recrule = this.readRecurrenceRule(recurrence);
 			recurrence = null;
@@ -1055,7 +1057,7 @@ mivExchangeEvent.prototype = {
 	getAttendees: function _getAttendees(count)
 	{
 		this.logInfo("getAttendees: title:"+this.title);
-		if (!this._attendees) {
+		if ((!this._attendees) && (this._exchangeData)) {
 			this._attendees = new Array();
 			var tmpAttendee;
 
@@ -1135,7 +1137,7 @@ mivExchangeEvent.prototype = {
 	getAttachments: function _getAttachments(count)
 	{
 		this.logInfo("getAttachments: title:"+this.title);
-		if (!this._attachments) {
+		if ((!this._attachments) && (this._exchangeData)) {
 			this._attachments = new Array();
 			if (this.hasAttachments) {
 dump(" we have attachments 1: title:"+this.title+"\n"+this.exchangeData+"\n");
@@ -1204,15 +1206,13 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 	getCategories: function _getCategories(aCount)
 	{
 		this.logInfo("getCategories: title:"+this.title);
-		if (!this._categories) {
+		if ((!this._categories) && (this._exchangeData)) {
 			this._categories = new Array();
-			if (this._exchangeData) {
-				var strings = this._exchangeData.XPath("/t:Categories/t:String");
-				for each (var cat in strings) {
-					this._categories.push(cat.value);
-				}
-				strings = null;
+			var strings = this._exchangeData.XPath("/t:Categories/t:String");
+			for each (var cat in strings) {
+				this._categories.push(cat.value);
 			}
+			strings = null;
 			this._calEvent.setCategories(this._categories.length, this._categories);
 		}
 		return this._calEvent.getCategories(aCount);
@@ -1299,6 +1299,20 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 				occurrences.push(this);
 			}
 			break;
+		case "RecurringMaster":
+			for each(var exception in this._exceptions) {
+				if ((exception.compare(aStartDate) >= 0) && (exception.compare(aEndDate) < 0)) {
+					this.logInfo("getOccurrencesBetween 0d: inserting myself into list.");
+					occurrences.push(exception);
+				}
+			}
+			for each(var occurrence in this._occurrences) {
+				if ((occurrence.compare(aStartDate) >= 0) && (occurrence.compare(aEndDate) < 0)) {
+					this.logInfo("getOccurrencesBetween 0e: inserting myself into list.");
+					occurrences.push(occurrence);
+				}
+			}
+			break;
 		default:
 			if (this.recurrenceInfo) {
 				occurrences = this.recurrenceInfo.getOccurrences(aStartDate, aEndDate, 0, aCount);
@@ -1322,7 +1336,7 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 	get parentItem()
 	{
 		this.logInfo("get parentItem: title:"+this.title);
-		if (!this._parentItem) {
+		if ((!this._parentItem) && (!this._newParentItem)) {
 			this._parenItem = this;
 			this._calEvent.parentItem = this;
 		}
@@ -1357,7 +1371,8 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 
 	set recurrenceId(aValue)
 	{
-		if (aValue) {
+		if (aValue != this.recurrenceId) {
+			this._re
 			this.logInfo("set recurrenceId: User tries to set recurrenceId to:"+aValue.toString()+", title:"+this.title);
 		}
 		else {
@@ -1509,10 +1524,10 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 	//readonly attribute calIDateTime reminderSignalTime;
 	get reminderSignalTime()
 	{
-		if (!this._reminderSignalTime) {
+		if ((!this._reminderSignalTime) && (this._exchangeData)) {
 			var tmpObject = this._exchangeData.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']");
 			if (tmpObject.length > 0) {
-				this._reminderSignalTime = this.tryToSetDateValueUTC(tmpObject.getTagValue("t:Value", null), null);
+				this._reminderSignalTime = this.tryToSetDateValueUTC(tmpObject[0].getTagValue("t:Value", null), null);
 			}
 		}
 		return this._reminderSignalTime;
@@ -1771,7 +1786,7 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 	//readonly attribute AUTF8String type;
 	get type()
 	{
-		if (!this._type) {
+		if ((!this._type) && (this._exchangeData)) {
 			this._type = this._exchangeData.tagName;
 		}
 		return this._type;
@@ -1816,16 +1831,14 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 	*/
 	get responseObjects()
 	{
-		if (!this._responseObjects) {
+		if ((!this._responseObjects) && (this._exchangeData)) {
 			this._responseObjects = {};
 
-			if (this._exchangeData) {
-				var responseObjects = this._exchangeData.XPath("/t:ResponseObjects/*");
-				for each (var prop in responseObjects) {
-					this._responseObjects[prop.tagName] = true;
-				}
-				responseObjects = null;
+			var responseObjects = this._exchangeData.XPath("/t:ResponseObjects/*");
+			for each (var prop in responseObjects) {
+				this._responseObjects[prop.tagName] = true;
 			}
+			responseObjects = null;
 		}
 
 		return this._responseObjects;
