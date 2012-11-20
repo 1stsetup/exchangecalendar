@@ -176,6 +176,8 @@ function mivExchangeEvent() {
 	this._occurrences = {};
 	this._exceptions = {};
 
+	this._isMutable = true;
+
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
 
@@ -270,7 +272,7 @@ mivExchangeEvent.prototype = {
 	get isMutable()
 	{
 		this.logInfo("get isMutable: title:"+this.title+", value:"+this._calEvent.isMutable);
-		return this._calEvent.isMutable;
+		return this._isMutable;
 	},
 
 	// makes this item immutable
@@ -278,7 +280,7 @@ mivExchangeEvent.prototype = {
 	makeImmutable: function _makeImmutable()
 	{
 		this.logInfo("makeImmutable: title:"+this.title);
-		this._calEvent.makeImmutable();
+		this._isMutable = false;
 	},
 
 	// clone always returns a mutable event
@@ -493,7 +495,12 @@ mivExchangeEvent.prototype = {
 	{
 		if (!this._title) {
 			this._title = this.subject;
-			if (this._title) this._calEvent.title = this._title;
+			if (this._title) {
+				this._calEvent.title = this._title;
+			}
+			else {
+				this._calEvent.title = "";
+			}
 		}
 		this.logInfo("get title: title:"+this._calEvent.title);
 		return this._calEvent.title;
@@ -890,7 +897,12 @@ mivExchangeEvent.prototype = {
 		case "DESCRIPTION": 
 			if (!this._body) {
 				this._body = this.getTagValue("t:Body", null);
-				if (this._body) this._calEvent.setProperty(name, this._body);
+				if (this._body) {
+					this._calEvent.setProperty(name, this._body);
+				}
+				else {
+					this._calEvent.setProperty(name, "");
+				}
 			}
 			break;
 		case "LOCATION": 
@@ -975,7 +987,7 @@ mivExchangeEvent.prototype = {
 	//void setProperty(in AString name, in nsIVariant value);
 	setProperty: function _setProperty(name, value)
 	{
-		this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value);
+		dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
 		switch (name) {
 		case "DESCRIPTION": 
 			if (value != this.getProperty(name)) {
@@ -983,6 +995,7 @@ mivExchangeEvent.prototype = {
 			}
 			break;
 		case "LOCATION": 
+			dump("Location:"+this.getProperty(name)+", value="+value+ "\n");
 			if (value != this.getProperty(name)) {
 				this._newLocation = value;
 			}
@@ -1705,7 +1718,7 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 	get location()
 	{
 		if (!this._location) {
-			this._location = this.getTagValue("t:Location", null);
+			this._location = this.getTagValue("t:Location", "");
 		}
 		return this._location;
 	},
@@ -2062,7 +2075,7 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 	{
 		var setItemField = parentItem.addChildTag("SetItemField", "t", null);
 		var fieldURI = setItemField.addChildTag("FieldURI", "t", null);
-		fieldURI.setAttribute("FieldURI", fieldPathMap[aField]);
+		fieldURI.setAttribute("FieldURI", fieldPathMap[aField]+":"+aField);
 		var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", aValue);
 		if (aAttributes) {
 			for (var attribute in aAttributes) {
@@ -2073,11 +2086,7 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 
 	get updateXML()
 	{
-		var xml = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
-				.createInstance(Ci.mivIxml2jxon);
-try{
-		xml.processXMLString('<t:ItemChange xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>', 0, null);
-		var updates = xml.addChildTag("Updates", "t", null);
+		var updates = this.globalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>', 0, null);
 
 		if (this.isInvitation) {
 			// Only can accept/decline/tentative
@@ -2088,15 +2097,76 @@ try{
 			if (this._newTitle) {
 				this.addSetItemField(updates, "Subject", this._newTitle);
 			}
+			if (this._newPrivacy) {
+				this.addSetItemField(updates, "Sensitivity", this._newPrivacy);
+			}
 			if (this._newBody) {
 				this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
 			}
+			// Categories
+			if (this._newPriority) {
+				this.addSetItemField(updates, "Importance", this._newPriority);
+			}
+
+
+			if (this._newStartDate) {
+				var tmpStart = this._newStartDate.clone();
+				if (this._newStartDate.isDate) {
+					tmpStart.isDate = false;
+
+					// We make a non-UTC datetime value for this.globalFunctions.
+					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
+					var exchStart = cal.toRFC3339(tmpStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
+				}
+				else {
+					// We set in bias advanced to UCT datetime values for this.globalFunctions.
+					var exchStart = cal.toRFC3339(tmpStart);
+				}
+				this.addSetItemField(updates, "Start", exchStart);
+			}
+
+			if (this._newEndDate) {
+				var tmpEnd = this._newEndDate.clone();
+
+				if (this._newEndDate.isDate) {
+					tmpEnd.isDate = false;
+					var tmpDuration = cal.createDuration();
+					tmpDuration.minutes = -1;
+					tmpEnd.addDuration(tmpDuration);
+
+					// We make a non-UTC datetime value for this.globalFunctions.
+					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
+					var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19); //cal.toRFC3339(tmpEnd).length-6);
+				}
+				else {
+					// We set in bias advanced to UCT datetime values for this.globalFunctions.
+					var exchEnd = cal.toRFC3339(tmpEnd);
+				}
+				this.addSetItemField(updates, "End", exchEnd);
+			}
+
+			if (this.startDate.isDate) {
+				this.addSetItemField(updates, "IsAllDayEvent", "true");
+			}
+			else {
+				this.addSetItemField(updates, "IsAllDayEvent", "false");
+			}
+	
+			if (this._newLegacyFreeBusyStatus) {
+				this.addSetItemField(updates, "LegacyFreeBusyStatus", this._newLegacyFreeBusyStatus);
+			}
+
+			if (this._newLocation) {
+				this.addSetItemField(updates, "Location", this._newLocation);
+			}
+
+			// Attendees
+
+			// Recurrence rule.
+
 		}
-}
-catch(err) {
-dump("EEEERROR:"+err+"\n");
-}
-		return xml;
+
+		return updates;
 	},
 
 	// Internal methods.

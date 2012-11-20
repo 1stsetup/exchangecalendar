@@ -1258,9 +1258,6 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	            throw Cr.NS_ERROR_INVALID_ARG;
 	        }
 
-		aNewItem = aNewItem.QueryInterface(Ci.mivExchangeEvent);
-		dump("__ aNewItem.updateXML:"+aNewItem.updateXML.toString()+"\n");
-
 	        var this_ = this;
 	        function reportError(errStr, errId) {
 	            this_.notifyOperationComplete(aListener,
@@ -4887,7 +4884,8 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			isInvitation = false;
 		}
 
-		const noDelete = {
+		var onlySnoozeChanged = true;
+/*		const noDelete = {
 			'MeetingTimeZone'		: true,
 			'ReminderIsSet'			: true,
 			'ReminderMinutesBeforeStart'	: true,
@@ -5010,6 +5008,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 					}
 				}
 			}
+
 			var parentTag = null;
 			if (isEvent(aOldItem)) {
 				parentTag = se.addChildTag("CalendarItem", "nsTypes", null);
@@ -5020,17 +5019,18 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			parentTag.addChildTagObject(prop);
 			ceCount++;
 		}
-	
+*/	
+		upd.addChildTagObject(aNewItem.updateXML);
 		if (onlySnoozeChanged) {
 			if (this.debug) this.logInfo("onlySnoozeChanged Or reminder time before start.");
 		}
 
-		oeprops = null;
+/*		oeprops = null;
 		neprops = null;
 
 		if (ceCount == 0) {
 			return {changes: null, onlySnoozeChanged: onlySnoozeChanged};
-		}
+		}*/
 
 		return {changes: upd, onlySnoozeChanged: onlySnoozeChanged};
 	},
