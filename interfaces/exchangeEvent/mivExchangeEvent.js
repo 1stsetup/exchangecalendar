@@ -297,6 +297,12 @@ mivExchangeEvent.prototype = {
 		if (this._newEndDate) result.endDate = this.endDate.clone();
 
 		// We are going to replay all changes to clone
+		if (this._newBody === null) result.deleteProperty("DESCRIPTION");
+		if (this._newLocation === null) result.deleteProperty("LOCATION");
+		if (this._newLegacyFreeBusyStatus === null) result.deleteProperty("TRANSP");
+		if (this._newMyResponseType === null) result.deleteProperty("STATUS"); 
+		if (this._newIsInvitation === null) result.deleteProperty("X-MOZ-SEND-INVITATIONS");
+
 		if (this._newTitle) result.title = this.title;
 		if (this._newPriority) result.priority = this.priority;
 		if (this._newPrivacy) result.privacy = this.privacy;
@@ -314,12 +320,6 @@ mivExchangeEvent.prototype = {
 		if (this._newLegacyFreeBusyStatus) result.setProperty("TRANSP", this.getProperty("TRANSP"));
 		if (this._newMyResponseType) result.setProperty("STATUS", this.getProperty("STATUS")); 
 		if (this._newIsInvitation) result.setProperty("X-MOZ-SEND-INVITATIONS", this.getProperty("X-MOZ-SEND-INVITATIONS"));
-
-		if (this._newBody === null) result.deleteProperty("DESCRIPTION");
-		if (this._newLocation === null) result.deleteProperty("LOCATION");
-		if (this._newLegacyFreeBusyStatus === null) result.deleteProperty("TRANSP");
-		if (this._newMyResponseType === null) result.deleteProperty("STATUS"); 
-		if (this._newIsInvitation === null) result.deleteProperty("X-MOZ-SEND-INVITATIONS");
 
 		if (this._changedProperties) {
 			for each(var change in this._changedProperties) {
@@ -995,7 +995,6 @@ mivExchangeEvent.prototype = {
 			}
 			break;
 		case "LOCATION": 
-			dump("Location:"+this.getProperty(name)+", value="+value+ "\n");
 			if (value != this.getProperty(name)) {
 				this._newLocation = value;
 			}
@@ -2156,7 +2155,10 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 				this.addSetItemField(updates, "LegacyFreeBusyStatus", this._newLegacyFreeBusyStatus);
 			}
 
+dump(" WWWWWWWWWWWWWWWWOEPIE0:"+this._newLocation+"\n");
+dump(" WWWWWWWWWWWWWWWWOEPIE1:"+this.getProperty("LOCATION")+"\n");
 			if (this._newLocation) {
+dump(" WWWWWWWWWWWWWWWWOEPIE2\n");
 				this.addSetItemField(updates, "Location", this._newLocation);
 			}
 
