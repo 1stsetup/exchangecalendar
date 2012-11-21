@@ -95,15 +95,6 @@ mivIxml2jxon.prototype = {
 
 	// methods from nsISupport
 
-	_refCount: 0,
-
-	//nsrefcnt AddRef();
-	AddRef: function _AddRef()
-	{
-		this._refCount++;
-		return this._refCount;
-	},
-
 	/* void QueryInterface(
 	  in nsIIDRef uuid,
 	  [iid_is(uuid),retval] out nsQIResult result
@@ -111,13 +102,6 @@ mivIxml2jxon.prototype = {
 	QueryInterface: XPCOMUtils.generateQI([Ci.mivIxml2jxon,
 			Ci.nsIClassInfo,
 			Ci.nsISupports]),
-
-	//nsrefcnt Release();
-	Release: function _Release()
-	{
-		this._refCount--;
-		return this._refCount;
-	},
 
 	// methods from nsIClassInfo
 
@@ -475,23 +459,16 @@ mivIxml2jxon.prototype = {
 
 	addSibblingTag: function _addChildTag(aTagName, aNameSpace, aValue)
 	{
-		if (!aParent) return null;
-
 		if (aNameSpace) {
 			var nameSpace = aNameSpace;
 		}
 		else {
-			if (aParent.nameSpace) {
-				var nameSpace = aParent.nameSpace;
-			}
-			else {
-				var nameSpace = "_default_";
-			}
+			var nameSpace = "_default_";
 		}
 
 		var result = new mivIxml2jxon("<"+nameSpace+tagSeparator+aTagName+"/>", 0, this);
 		result.addToContent(aValue);
-		aParent.addToContent(result);
+		this.addToContent(result);
 		return result;
 	},
 

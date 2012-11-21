@@ -67,5 +67,6 @@ interface mivIxml2jxon : nsISupports
   void addParentNameSpaces(in mivIxml2jxon aParent);
   jsval addChildTagObject(in jsval aObject);
   jsval addChildTag(in AUTF8String aTagName, in AUTF8String aNameSpace, in AUTF8String aValue);
+  jsval addSibblingTag(in AUTF8String aTagName, in AUTF8String aNameSpace, in AUTF8String aValue);
 
 };

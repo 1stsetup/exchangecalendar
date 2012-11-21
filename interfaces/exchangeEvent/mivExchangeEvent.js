@@ -540,7 +540,7 @@ mivExchangeEvent.prototype = {
 	set priority(aValue)
 	{
 		this.logInfo("set priority: title:"+this.title+", aValue:"+aValue);
-		if (aValue != this.Priority) {
+		if (aValue != this.priority) {
 			if (aValue > 5) {
 				this._newPriority = "Low";
 			}
@@ -971,7 +971,7 @@ mivExchangeEvent.prototype = {
 
 		}
 
-		this.logInfo("get property 2: title:"+this.title+", name:"+name+", value:"+this._calEvent.getProperty(name));
+		this.logInfo("get property 2: title:"+this.title+", name:"+name+", value:"+this._calEvent.getProperty(name)+", _newLocation:"+this._newLocation);
 		return this._calEvent.getProperty(name);
 	},
 
@@ -990,14 +990,21 @@ mivExchangeEvent.prototype = {
 		dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
 		switch (name) {
 		case "DESCRIPTION": 
-			if (value != this.getProperty(name)) {
+			if (value != this._newBody) {
 				this._newBody = value;
 			}
 			break;
 		case "LOCATION": 
-			if (value != this.getProperty(name)) {
+			if (value != this._newLocation) {
 				this._newLocation = value;
+this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 			}
+			break;
+		case "PRIORITY":
+			this.priority = value;
+			break;
+		case "CLASS":
+			this.privacy = value;
 			break;
 		case "TRANSP": 
 			if (value != this.getProperty(name)) {
@@ -1266,10 +1273,8 @@ mivExchangeEvent.prototype = {
 		if ((!this._attachments) && (this._exchangeData)) {
 			this._attachments = new Array();
 			if (this.hasAttachments) {
-dump(" we have attachments 1: title:"+this.title+"\n"+this.exchangeData+"\n");
 	//			if (this.debug) this.logInfo("Title:"+aItem.title+"Attachments:"+aExchangeItem.getTagValue("Attachments"));
 				var fileAttachments = this._exchangeData.XPath("/t:Attachments/t:FileAttachment");
-try{
 				for each(var fileAttachment in fileAttachments) {
 	//				if (this.debug) this.logInfo(" -- Attachment: name="+fileAttachment.getTagValue("t:Name"));
 					var newAttachment = cal.createAttachment();
@@ -1281,11 +1286,9 @@ try{
 					this._attachments.push(newAttachment.clone());
 					this._calEvent.addAttachment(newAttachment);
 				}
-}catch(err){ dump("ERROR:"+err+"\n");}
 				fileAttachments = null;
 			} 
 		}
-dump(" we have attachments 2: title:"+this.title+"\n");
 		return this._calEvent.getAttachments(count);
 	},
 
@@ -1331,7 +1334,7 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 	//	     [array, size_is(aCount), retval] out wstring aCategories);
 	getCategories: function _getCategories(aCount)
 	{
-		this.logInfo("getCategories: title:"+this.title);
+		dump("getCategories: title:"+this.title+"\n");
 		if ((!this._categories) && (this._exchangeData)) {
 			this._categories = new Array();
 			var strings = this._exchangeData.XPath("/t:Categories/t:String");
@@ -1351,7 +1354,8 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 	//	     [array, size_is(aCount)] in wstring aCategories);
 	setCategories: function _setCategories(aCount, aCategories)
 	{
-		this.logInfo("set categories: title:"+this.title);
+		dump("set categories: title:"+this.title+", aCategories.length:"+aCategories.length+"\n");
+		this.getCategories({});
 		this._changesCategories = true;
 		this._calEvent.setCategories(aCount, aCategories);
 	},
@@ -2075,7 +2079,19 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 		var setItemField = parentItem.addChildTag("SetItemField", "t", null);
 		var fieldURI = setItemField.addChildTag("FieldURI", "t", null);
 		fieldURI.setAttribute("FieldURI", fieldPathMap[aField]+":"+aField);
-		var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", aValue);
+
+		try {
+			if (aValue.QueryInterface(Ci.mivIxml2jxon)) {
+				var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", null).addChildTagObject(aValue);
+			}
+			else {
+				var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", aValue);
+			}
+		}
+		catch(err) {
+			var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", aValue);
+		}
+
 		if (aAttributes) {
 			for (var attribute in aAttributes) {
 				fieldValue.setAttribute(attribute, aAttributes[attribute]);
@@ -2103,6 +2119,25 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 				this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
 			}
 			// Categories
+			if (this._changesCategories) {
+				var categoriesXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
+							.createInstance(Ci.mivIxml2jxon);
+				var categories = this.getCategories({});
+				var first = true;
+				for each(var category in categories) {
+					if (first) {
+						first = false;
+						categoriesXML.processXMLString("<t:String>"+category+"</t:String>", 0, null);
+					}
+					else {
+						categoriesXML.addSibblingTag("String", "t", category);
+					}
+				}
+				if (categories.length > 0) {
+					this.addSetItemField(updates, "Categories", categoriesXML);
+				}
+			}
+
 			if (this._newPriority) {
 				this.addSetItemField(updates, "Importance", this._newPriority);
 			}
@@ -2144,21 +2179,21 @@ dump(" we have attachments 2: title:"+this.title+"\n");
 				this.addSetItemField(updates, "End", exchEnd);
 			}
 
-			if (this.startDate.isDate) {
-				this.addSetItemField(updates, "IsAllDayEvent", "true");
-			}
-			else {
-				this.addSetItemField(updates, "IsAllDayEvent", "false");
-			}
+			if (this._newStartDate) {
+				if (this._newStartDate.isDate) {
+					this.addSetItemField(updates, "IsAllDayEvent", "true");
+				}
+				else {
+					this.addSetItemField(updates, "IsAllDayEvent", "false");
+				}
 	
+			}
+
 			if (this._newLegacyFreeBusyStatus) {
 				this.addSetItemField(updates, "LegacyFreeBusyStatus", this._newLegacyFreeBusyStatus);
 			}
 
-dump(" WWWWWWWWWWWWWWWWOEPIE0:"+this._newLocation+"\n");
-dump(" WWWWWWWWWWWWWWWWOEPIE1:"+this.getProperty("LOCATION")+"\n");
 			if (this._newLocation) {
-dump(" WWWWWWWWWWWWWWWWOEPIE2\n");
 				this.addSetItemField(updates, "Location", this._newLocation);
 			}
 
