@@ -71,6 +71,8 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 	this.tags = {};
 	this.attr = {};
 
+	this._siblings = new Array();
+
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
 
@@ -457,7 +459,7 @@ mivIxml2jxon.prototype = {
 		return result;
 	},
 
-	addSibblingTag: function _addChildTag(aTagName, aNameSpace, aValue)
+	addSibblingTag: function _addSibblingTag(aTagName, aNameSpace, aValue)
 	{
 		if (aNameSpace) {
 			var nameSpace = aNameSpace;
@@ -466,9 +468,10 @@ mivIxml2jxon.prototype = {
 			var nameSpace = "_default_";
 		}
 
-		var result = new mivIxml2jxon("<"+nameSpace+tagSeparator+aTagName+"/>", 0, this);
+		var result = new mivIxml2jxon("<"+nameSpace+tagSeparator+aTagName+"/>", 0, null);
 		result.addToContent(aValue);
-		this.addToContent(result);
+		this._siblings.push(result);
+		//this.addToContent(result);
 		return result;
 	},
 
@@ -640,6 +643,10 @@ mivIxml2jxon.prototype = {
 		}
 		else {
 			result = "<"+nameSpace+this.tagName+attributes+nameSpaces+">" + result + "</"+nameSpace+this.tagName+">";
+		}
+
+		for each(var sibling in this._siblings) {
+			result = result + sibling.toString();
 		}
 
 		return result;

@@ -987,7 +987,7 @@ mivExchangeEvent.prototype = {
 	//void setProperty(in AString name, in nsIVariant value);
 	setProperty: function _setProperty(name, value)
 	{
-		dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
+		this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
 		switch (name) {
 		case "DESCRIPTION": 
 			if (value != this._newBody) {
@@ -1235,7 +1235,6 @@ this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 		if(!attendee) return;
 
 		if (!this._attendees) this.getAttendees({});
-		if (!this._newAttendees) this._newAttendees = new Array();
 		this._changesAttendees.push({ action: "add", attendee: attendee.clone()});
 		this._calEvent.addAttendee(attendee);
 	},
@@ -1244,7 +1243,6 @@ this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 	removeAttendee: function _removeAttendee(attendee)
 	{
 		this.logInfo("removeAttendee: title:"+this.title);
-		if (!this._removedAttendees) this._removedAttendees = new Array();
 		this._changesAttendees.push({ action: "remove", attendee: attendee.clone()});
 		this._calEvent.removeAttendee(attendee);
 	},
@@ -1255,7 +1253,6 @@ this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 		this.logInfo("removeAllAttendees: title:"+this.title);
 		var allAttendees = this.getAttendees({});
 		for each(var attendee in allAttendees) {
-			if (!this._removedAttendees) this._removedAttendees = new Array();
 			this._changesAttendees.push({ action: "remove", attendee: attendee.clone()});
 		}
 		allAttendees = null;			
@@ -1334,7 +1331,7 @@ this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 	//	     [array, size_is(aCount), retval] out wstring aCategories);
 	getCategories: function _getCategories(aCount)
 	{
-		dump("getCategories: title:"+this.title+"\n");
+		this.logInfo("getCategories: title:"+this.title+"\n");
 		if ((!this._categories) && (this._exchangeData)) {
 			this._categories = new Array();
 			var strings = this._exchangeData.XPath("/t:Categories/t:String");
@@ -1354,7 +1351,7 @@ this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 	//	     [array, size_is(aCount)] in wstring aCategories);
 	setCategories: function _setCategories(aCount, aCategories)
 	{
-		dump("set categories: title:"+this.title+", aCategories.length:"+aCategories.length+"\n");
+		this.logInfo("set categories: title:"+this.title+", aCategories.length:"+aCategories.length+"\n");
 		this.getCategories({});
 		this._changesCategories = true;
 		this._calEvent.setCategories(aCount, aCategories);
@@ -2009,7 +2006,7 @@ this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 	},
 
 	//void getOccurrences(out uint32_t count, [array,size_is(count),retval] out mivExchangeEvent aOccurrence);
-	getExceptions: function _getExceptions(aCount)
+	getOccurrences: function _getOccurrences(aCount)
 	{
 		var result = [];
 		for each(var occurrence in this._occurrences) {
@@ -2101,7 +2098,7 @@ this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 
 	get updateXML()
 	{
-		var updates = this.globalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>', 0, null);
+		var updates = this.globalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 
 		if (this.isInvitation) {
 			// Only can accept/decline/tentative
@@ -2198,6 +2195,61 @@ this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 			}
 
 			// Attendees
+			if (this._changesAttendees.length > 0) {
+				var reqAttendeeCount = 0;
+				var optAttendeeCount = 0;
+				var attendees = this.getAttendees({});
+				if (attendees.length > 0) {
+
+					const attendeeStatus = {
+						"NEEDS-ACTION"	: "Unknown",
+						"TENTATIVE"	: "Tentative",
+						"ACCEPTED"	: "Accept",
+						"DECLINED"	: "Decline",
+						null		: "Unknown"
+					};
+
+					for each(var attendee in attendees) {
+						switch (attendee.role) {
+						case "REQ-PARTICIPANT":
+							if (reqAttendeeCount == 0) {
+								var reqAttendees = this.globalFunctions.xmlToJxon('<t:Attendee xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+								var ae = reqAttendees;
+							}
+							else {
+								var ae = reqAttendees.addSibblingTag("Attendee", "t", null);
+							}
+							reqAttendeeCount++;
+							break;
+						case "OPT-PARTICIPANT":
+							if (optAttendeeCount == 0) {
+								var optAttendees = this.globalFunctions.xmlToJxon('<t:Attendee xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+								var ae = optAttendees;
+							}
+							else {
+								var ae = optAttendees.addSibblingTag("Attendee", "t", null);
+							}
+							optAttendeeCount++;
+							break;
+						}
+						var mailbox = ae.addChildTag("Mailbox", "t", null);
+						mailbox.addChildTag("Name", "t", attendee.commonName);
+
+						var tmpEmailAddress = attendee.id.replace(/^mailto:/, '');
+						if (tmpEmailAddress.indexOf("@") > 0) {
+							mailbox.addChildTag("EmailAddress", "t", tmpEmailAddress);
+						}
+						else {
+							mailbox.addChildTag("EmailAddress", "t", "unknown@somewhere.com");
+						}
+						ae.addChildTag("ResponseType", "t", attendeeStatus[attendee.participationStatus]);
+
+					}
+					if (reqAttendeeCount > 0) this.addSetItemField(updates, "RequiredAttendees", reqAttendees);
+					if (optAttendeeCount > 0) this.addSetItemField(updates, "OptionalAttendees", optAttendees);
+				}
+			}
+
 
 			// Recurrence rule.
 
