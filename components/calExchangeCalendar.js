@@ -2522,10 +2522,14 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	//  boolean isInvitation(in calIItemBase aItem);
 	isInvitation: function _isInvitation(aItem, ignoreStatus)
 	{
-		var exchangeItem = aItem.QueryInterface(Ci.mivExchangeEvent);
+		try {
+			var exchangeItem = aItem.QueryInterface(Ci.mivExchangeEvent);
 
-		if (exchangeItem) {
-			return aItem.isInvitation;
+			if (exchangeItem) {
+				return aItem.isInvitation;
+			}
+		}
+		catch(err){
 		}
 
 		return false;
