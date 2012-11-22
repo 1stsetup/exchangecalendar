@@ -69,16 +69,14 @@ Cu.import("resource://exchangecalendar/erGetUserAvailability.js");
 Cu.import("resource://exchangecalendar/erCreateItem.js");
 Cu.import("resource://exchangecalendar/erSendMeetingRespons.js");
 Cu.import("resource://exchangecalendar/erSyncInbox.js");
-Cu.import("resource://exchangecalendar/erGetTimeZones.js");
 Cu.import("resource://exchangecalendar/erCreateAttachment.js");
 Cu.import("resource://exchangecalendar/erDeleteAttachment.js");
 //Cu.import("resource://interfaces/xml.js");
 
 //Cu.import("resource://interfaces/exchangeEvent/mivExchangeEvent.js");
+//Cu.import("resource://interfaces/exchangeTimeZones/mivExchangeTimeZones.js");
 
 var globalStart = new Date().getTime();
-var global_ews_2010_timezonedefinitions;
-var globalTimeZoneDefinitions = {};
 
 var tmpActivityManager = Cc["@mozilla.org/activity-manager;1"];
 
@@ -291,37 +289,6 @@ const MAPI_PidLidReminderSet = "34051";
 
 var EXPORTED_SYMBOLS = ["calExchangeCalendar", "fixPrefBug", "removeOldPrefs"];
 
-function urlToPath (aPath) {
-
-    if (!aPath || !/^file:/.test(aPath))
-      return ;
-    var rv;
-   var ph = Cc["@mozilla.org/network/protocol;1?name=file"]
-        .createInstance(Ci.nsIFileProtocolHandler);
-    rv = ph.getFileFromURLSpec(aPath).path;
-    return rv;
-}
-
-function chromeToPath (aPath) {
-
-   if (!aPath || !(/^chrome:/.test(aPath)))
-      return; //not a chrome url
-   var rv;
-   
-      var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci["nsIIOService"]);
-        var uri = ios.newURI(aPath, "UTF-8", null);
-        var cr = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci["nsIChromeRegistry"]);
-        rv = cr.convertChromeURL(uri).spec;
-
-        if (/^file:/.test(rv))
-          rv = urlToPath(rv);
-        else
-          rv = urlToPath("file://"+rv);
-
-      return rv;
-}
-
-
 function calExchangeCalendar() {
 
 	this.myId = null;
@@ -330,6 +297,9 @@ function calExchangeCalendar() {
 
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
+
+	this.timeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
+				.getService(Ci.mivExchangeTimeZones);
 
 	this.setDoDebug();
 
@@ -376,9 +346,6 @@ function calExchangeCalendar() {
 	this.offlineQueue = [];
 
 	this.doReset = false;
-
-	this.haveTimeZones = false;
-	this.EWSTimeZones = null;
 
 	this.shutdown = false;
 
@@ -2800,7 +2767,6 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			this.syncInboxState = this.globalFunctions.safeGetCharPref(this.prefs,"syncInboxState", "");
 
 			this.getSyncState();
-			//this.getTimeZones(); moved to setFolderProperties.
 
 		}
 		return true;
@@ -3669,10 +3635,6 @@ dump("\resetCalendar\n");
 
 		this.performStartup();
 
-/*		this.checkFolderPath();
-		this.getSyncState();
-		this.getTimeZones();
-*/
 		if (this.debug) this.logInfo("oldBeginDate:"+oldBeginDate.toString()+", oldEndDate:"+oldEndDate.toString());
 		this.getItems(Ci.calICalendar.ITEM_FILTER_TYPE_TODO +
 				Ci.calICalendar.ITEM_FILTER_TYPE_EVENT
@@ -4889,152 +4851,11 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		var onlySnoozeChanged = true;
-/*		const noDelete = {
-			'MeetingTimeZone'		: true,
-			'ReminderIsSet'			: true,
-			'ReminderMinutesBeforeStart'	: true,
-			'ReminderDueBy'			: true,
-			'PercentComplete'		: true
-		};
-
-		const noUpdateOnInvitation = {
-			'RequiredAttendees'		: true,
-			'OptionalAttendees'		: true,
-			'Organizer'			: true,
-		};
-	
-		var ce = upd.addChildTag("Updates", "nsTypes", null);
-
-		if (isEvent(aOldItem)) {
-			var oe = this.convertCalAppointmentToExchangeAppointment(aOldItem, null, false);
-			var ne = this.convertCalAppointmentToExchangeAppointment(aNewItem, null, false);
-		}
-		if (isToDo(aOldItem)) {
-			var oe = this.convertCalTaskToExchangeTask(aOldItem);
-			var ne = this.convertCalTaskToExchangeTask(aNewItem);
-		}
-	
-		var onlySnoozeChanged = true;
-		var ceCount = 0;
-
-		var oeprops = oe.XPath("*");
-		var neprops = ne.XPath("*");
-		for each (var prop in oeprops) {
-			var fullTagName = prop.nameSpace+':'+prop.tagName;
-			var neTags = ne.getTags(fullTagName);
-			if (neTags.length > 0 || noDelete[prop.tagName]) {
-				if (neTags.length > 0) { if (this.debug) this.logInfo("     -- ne.getTags("+fullTagName+").length > 0", 2) };
-				if (noDelete[prop.tagName]) { if (this.debug) this.logInfo("     -- noDelete["+prop.tagName+"] == true", 2) };
-				continue;
-			}
-
-			if ((isInvitation) && (neTags.length > 0 || noUpdateOnInvitation[prop.tagName])) {
-				continue;
-			}
-			neTags = null;
-
-			var de = ce.addChildTag("DeleteItemField", "nsTypes", null);
-			if (prop.tagName == "ExtendedProperty") {
-				de.addChildTagObject(prop.getTag("nsTypes:ExtendedFieldURI"));
-			} else {
-				if ((fieldPathMap[prop.tagName] == "calendar") && (isEvent(aOldItem))) {
-					de.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", 'calendar:' + prop.tagName);
-				}
-				else {
-					if ((fieldPathMap[prop.tagName] == "calendar") && (isToDo(aOldItem))) {
-						de.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", 'task:' + prop.tagName);
-					}
-					else {
-						de.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", fieldPathMap[prop.tagName] + ':' + prop.tagName);
-					}
-				}
-
-			}
-	
-			onlySnoozeChanged = false;
-			ceCount++;
-		}
-
-		var oeStr = oe.toString();
-		for each (var prop in neprops) {
-			var fullTagName = prop.nameSpace+':'+prop.tagName;
-			//if (this.debug) this.logInfo("    ???: neprops: tagName:"+prop.tagName+","+prop.toString());
-
-			if ((isInvitation) && (noUpdateOnInvitation[prop.tagName])) {
-				continue;
-			}
-	
-			// Always save lastLightningModified field
-			var doSave = false;
-			if ((prop.tagName == "ExtendedProperty") &&
-				(prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyName", "") == "lastLightningModified")) {
-				//if (this.debug) this.logInfo("    ???: doSave = true for tagName:"+prop.tagName+","+prop.toString());
-				doSave = true;
-			}
-
-			if (! doSave) {
-				if (oeStr.indexOf(prop.toString()) > -1) {
-					if (this.debug) this.logInfo( "       !!! Equal to old value:"+prop.toString(), 2);
-					continue;
-				}
-				if (this.debug) {
-					this.logInfo( "       !!! NOT EQUAL to old value:\nprop:"+prop.toString(), 2);
-					this.logInfo("oeStr:"+oeStr.toString(), 2);
-				
-				}
-			}
-	
-			var se = ce.addChildTag("SetItemField", "nsTypes", null);
-			if (prop.tagName == "ExtendedProperty") {
-				se.addChildTagObject(prop.getTag("nsTypes:ExtendedFieldURI"));
-
-				if ((prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyId", "") != MAPI_PidLidReminderSignalTime) && 
-				    (prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyId", "") != "34051") &&
-				    (prop.getAttributeByTag("nsTypes:ExtendedFieldURI", "PropertyId", "") != "34049")) {
-					onlySnoozeChanged = false;
-				}
-			} else {
-
-				if ((fieldPathMap[prop.tagName] == "calendar") && (isEvent(aOldItem))) {
-					onlySnoozeChanged = false;
-					se.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", 'calendar:' + prop.tagName);
-				}
-				else {
-					if ((fieldPathMap[prop.tagName] == "calendar") && (isToDo(aOldItem))) {
-						onlySnoozeChanged = false;
-						se.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", 'task:' + prop.tagName);
-					}
-					else {
-						if ((prop.tagName != "ReminderMinutesBeforeStart") && (prop.tagName != "ReminderIsSet")) {
-							onlySnoozeChanged = false;
-						}
-						se.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", fieldPathMap[prop.tagName] + ':' + prop.tagName);
-					}
-				}
-			}
-
-			var parentTag = null;
-			if (isEvent(aOldItem)) {
-				parentTag = se.addChildTag("CalendarItem", "nsTypes", null);
-			}
-			if (isToDo(aOldItem)) {
-				parentTag = se.addChildTag("Task", "nsTypes", null);
-			}
-			parentTag.addChildTagObject(prop);
-			ceCount++;
-		}
-*/	
 		upd.addChildTagObject(aNewItem.updateXML);
+
 		if (onlySnoozeChanged) {
 			if (this.debug) this.logInfo("onlySnoozeChanged Or reminder time before start.");
 		}
-
-/*		oeprops = null;
-		neprops = null;
-
-		if (ceCount == 0) {
-			return {changes: null, onlySnoozeChanged: onlySnoozeChanged};
-		}*/
 
 		return {changes: upd, onlySnoozeChanged: onlySnoozeChanged};
 	},
@@ -7371,347 +7192,16 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			null);
 	},
 
-	get ews_2010_timezonedefinitions()
-	{
-		return global_ews_2010_timezonedefinitions;
-
-		if (!this._ews_2010_timezonedefinitions) {
-
-			var somefile = chromeToPath("chrome://exchangecalendar/content/ewsTimesZoneDefinitions_2007.xml");
-			var file = Components.classes["@mozilla.org/file/local;1"]
-					.createInstance(Components.interfaces.nsILocalFile);
-			if (this.debug) this.logInfo("Will use local file for timezone data for 2007. name:"+somefile);
-			file.initWithPath(somefile);
-
-			var istream = Components.classes["@mozilla.org/network/file-input-stream;1"].  
-					 createInstance(Components.interfaces.nsIFileInputStream);  
-			istream.init(file, -1, -1, 0);  
-			istream.QueryInterface(Components.interfaces.nsILineInputStream);  
-			  
-			// read lines into array  
-			var line = {}, lines = "", hasmore;  
-			do {  
-				hasmore = istream.readLine(line);  
-				lines += line.value;   
-			} while(hasmore);  
-			  
-			istream.close();
-
-			try {
-				try {
-				    this._ews_2010_timezonedefinitions = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
-						       .createInstance(Ci.mivIxml2jxon);
-				}
-				catch(exc) { if (this.debug) this.logInfo("createInstance error:"+exc);}
-
-
-				try {
-					this._ews_2010_timezonedefinitions.processXMLString(lines, 0, null);
-				}
-				catch(exc) { if (this.debug) this.logInfo("processXMLString error:"+exc.name+", "+exc.message);} 
-
-			}
-			catch(exc) {if (this.debug) this.logInfo("Could not convert timezone xml file into XML object:"+exc); };
-
-			if (this.debug) this.logInfo("End of get ews_2010_timezonedefinitions");
-		}
-
-		return this._ews_2010_timezonedefinitions;
-	},
-
-	getEWSTimeZones: function _getEWSTimeZones(aTimeZoneDefinitions)
-	{
-		var rm = aTimeZoneDefinitions.XPath("/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage");
-		if (rm.length == 0) return null;
-
-		var timeZoneDefinitions = {};
-
-		var timeZoneDefinitionArray = rm[0].XPath("/m:TimeZoneDefinitions/t:TimeZoneDefinition");
-		if (this.debug) this.logInfo("$$$ timeZoneDefinitionArray.length:"+timeZoneDefinitionArray.length);
-		for (var index in timeZoneDefinitionArray) {
-			timeZoneDefinitions[timeZoneDefinitionArray[index].getAttribute("Id")] = timeZoneDefinitionArray[index];
-		}
-		rm = null;
-		return timeZoneDefinitions;
-	},
-
 	getTimeZones: function _getTimeZones()
 	{
-		var tmpTimer = Cc["@mozilla.org/timer;1"]
-				.createInstance(Ci.nsITimer);
-
-		var self = this;
-		tmpTimer.initWithCallback({ notify: function setTimeout_notify() {self.getTimeZones2();	}}, 1, this.cacheLoader.TYPE_ONE_SHOT);
-		
-	},
-
-	getTimeZones2: function _getTimeZones2()
-	{
-		// This only works for Exchange 2010 servers
-		if (this.debug) this.logInfo("getTimeZones 1");
-		var self = this;
-		if (this.isVersion2010) {
-			this.addToQueue(erGetTimeZonesRequest,
-					{user: this.user, 
-					 serverUrl: this.serverUrl,
-					 actionStart: Date.now() },
-					function(erGetTimeZonesRequest, aTimeZoneDefinitions) { self.getTimeZonesOK(erGetTimeZonesRequest, aTimeZoneDefinitions);}, 
-					function(erGetTimeZonesRequest, aCode, aMsg) { self.getTimeZonesError(erGetTimeZonesRequest, aCode, aMsg);},
-					null);
-		}
-
-		if (this.isVersion2007) {
-			if (this.debug) this.logInfo("getTimeZones 2");
-			if (this.debug) this.logInfo("getTimeZones for 2007");
-			//this.EWSTimeZones = this.getEWSTimeZones(this.ews_2010_timezonedefinitions);
-			this.EWSTimezones = globalTimeZoneDefinitions;
-			this.haveTimeZones = true;
-		}
-	},
-
-	getTimeZonesOK: function _getTimeZonesOK(erGetTimeZonesRequest, aTimeZoneDefinitions)
-	{
-		this.notConnected = false;
-		this.saveCredentials(erGetTimeZonesRequest.argument);
-		this.EWSTimeZones = this.getEWSTimeZones(aTimeZoneDefinitions);
-		if (this.debug) this.logInfo("getTimeZonesOK");
-		this.haveTimeZones = true;
-	},
-
-	getTimeZonesError: function _getTimeZonesError(erGetTimeZonesRequest, aCode, aMsg)
-	{
-		if (this.debug) this.logInfo("getTimeZonesError: Msg"+aMsg);
-		this.haveTimeZones = false;
-		this.notConnected = true;
-	},
-
-	calculateBiasOffsets: function _calculateBiasOffsets(aCalTimeZone)
-	{
-		var tzcomp = aCalTimeZone.icalComponent;
-		if (!tzcomp) {
-			return {};
-		}
-	
-		var dsttz = null;
-		for (var comp = tzcomp.getFirstSubcomponent("DAYLIGHT");
-		     comp;
-		     comp = tzcomp.getNextSubcomponent("DAYLIGHT")) {
-			if (!dsttz || dsttz.getFirstProperty("DTSTART").valueAsDatetime.compare(
-					comp.getFirstProperty("DTSTART").valueAsDatetime) < 0) {
-				dsttz = comp;
-			}
-		}
-		var stdtz = null;
-		for (var comp = tzcomp.getFirstSubcomponent("STANDARD");
-		     comp;
-		     comp = tzcomp.getNextSubcomponent("STANDARD")) {
-			if (!stdtz || stdtz.getFirstProperty("DTSTART").valueAsDatetime.compare(
-					comp.getFirstProperty("DTSTART").valueAsDatetime) < 0) {
-				stdtz = comp;
-			}
-		}
-	
-		if (!stdtz) {
-			return {};
-		}
-	
-		// Get TZOFFSETTO from standard time.
-		var m = stdtz.getFirstProperty("TZOFFSETTO").value.match(/^([+-]?)(\d\d)(\d\d)$/);
-		var biasOffset = cal.createDuration();
-		biasOffset.hours = m[2];
-		biasOffset.minutes = m[3];
-		if (m[1] == '+') {
-			biasOffset.isNegative = true;
-		}
-
-		var tmpBaseOffset = biasOffset.icalString;
-
-		var daylightOffset = null;
-		if (dsttz) {
-			var m = dsttz.getFirstProperty("TZOFFSETTO").value.match(/^([+-]?)(\d\d)(\d\d)$/);
-			daylightOffset = cal.createDuration();
-			daylightOffset.hours = m[2];
-			daylightOffset.minutes = m[3];
-			if (m[1] == '+') {
-				daylightOffset.isNegative = true;
-			}
-		}
-	
-		if (daylightOffset) {
-			return { standard: biasOffset.icalString,
-				 daylight: daylightOffset.icalString } ;
-		}
-		else {
-			return { standard: biasOffset.icalString,
-				 daylight: null } ;
-		}
-	},
-
-	convertDurationToSeconds: function _convertDurationToSeconds(aDuration)
-	{
-		if (!aDuration) return null;
-
-		var tmpStr = aDuration;
-		var multiplier = 1;
-		if (tmpStr.substr(0,1) == "-") {
-			multiplier = -1;
-			tmpStr = tmpStr.substr(1);
-		}
-
-		var total = 0;
-		var subtotal = 0;
-
-		if (tmpStr.substr(0,2) == "PT") {
-			tmpStr = tmpStr.substr(2);
-
-			var counter = 0;
-			while (counter < tmpStr.length) {
-				if (isNaN(tmpStr.substr(counter, 1))) {
-					switch (tmpStr.substr(counter, 1).toUpperCase()) {
-						case "D":
-							subtotal = subtotal * 3600 * 24;
-							break;
-						case "H":
-							subtotal = subtotal * 3600;
-							break;
-						case "M":
-							subtotal = subtotal * 60;
-							break;
-						case "S":
-							subtotal = subtotal;
-							break;
-					}
-					total = total + subtotal;
-					subtotal = 0;
-					//if (this.debug) this.logInfo(" ++ total:"+total);
-				}
-				else {
-					subtotal = (subtotal * 10) + Number(tmpStr.substr(counter, 1));
-					//if (this.debug) this.logInfo(" ++ subtotal:"+subtotal);
-				}
-				counter = counter + 1;
-			}
-
-		}
-
-
-		return total * multiplier;
-		
+		this.timeZones.addURL(this.serverUrl, this.user, this);
 	},
 
 	getEWSTimeZoneId: function _getEWSTimeZoneId(aCalTimeZone)
 	{
 		if (this.debug) this.logInfo("getEWSTimeZoneId:"+aCalTimeZone.tzid);
 
-		if (this.EWSTimeZones) {
-			
-			if (aCalTimeZone.isFloating) {
-				var tmpZone = this.globalFunctions.ecDefaultTimeZone();
-			}
-			else {
-				var tmpZone = aCalTimeZone;
-			}
-
-			var weHaveAMatch = null;
-			var tmpPlaceName = null;
-			var tmpId = null;
-			if (tmpZone.tzid.indexOf("/") > -1) {
-				// Get City/Place name from tzid.
-				tmpPlaceName = tmpZone.tzid.substr(tmpZone.tzid.indexOf("/")+1);
-			}
-			else {
-				tmpId = tmpZone.tzid.toString();
-			}
-
-
-			var tmpBiasValues = this.calculateBiasOffsets(tmpZone);
-			if (!tmpBiasValues.standard) {
-				return "UTC";
-			}
-
-			//if (tmpBiasValues.standard.indexOf("PT0") == 0) {
-			//	if (this.debug) this.logInfo("Changing tmpBiasValues.standard="+tmpBiasValues.standard+ " -> PT0H");
-			//	tmpBiasValues.standard = "PT0H";
-			//}
-			if (this.debug) this.logInfo("tmpBiasValues.standard="+tmpBiasValues.standard);
-			if (tmpBiasValues.daylight) {
-				if (tmpBiasValues.daylight == tmpBiasValues.standard) {
-					if (this.debug) this.logInfo("tmpBiasValues.daylight == tmpBiasValues.standard Not going to use daylight value.");
-					tmpBiasValues.daylight = null;
-				}
-				else {
-					if (this.debug) this.logInfo("tmpBiasValues.daylight="+tmpBiasValues.daylight);
-				}
-			}
-
-			for each(var timeZoneDefinition in this.EWSTimeZones) {
-				//if (this.debug) this.logInfo("timeZoneDefinition.@Name="+timeZoneDefinition.@Name);
-				var placeNameMatch = false;
-				if ((tmpPlaceName) && (timeZoneDefinition.getAttribute("Name", "").indexOf(tmpPlaceName) > -1)) {
-					// We found our placename in the name of the timezonedefinition
-					placeNameMatch = true;
-				}
-
-				var idMatch = false;
-				if ((tmpId) && (timeZoneDefinition.getAttribute("Id", "") == tmpId)) {
-					// We found our tmpId in the id of the timezonedefinition
-					idMatch = true;
-				}
-
-				var standardMatch = null;
-				var periods = timeZoneDefinition.XPath("/t:Periods/t:Period[@Name = 'Standard']");
-				if (periods.length > 0) {
-					for (var index in periods) {
-						//if (this.debug) this.logInfo("xx period.@Bias="+period.@Bias.toString());
-						if (this.convertDurationToSeconds(periods[index].getAttribute("Bias")) == this.convertDurationToSeconds(tmpBiasValues.standard)) {
-							standardMatch = periods[index].getAttribute("Bias", null);
-							break;
-						}
-					}
-				}
-				periods = null;
-
-				if (standardMatch) {
-					var daylightMatch = null;
-					if (tmpBiasValues.daylight) {
-						var periods = timeZoneDefinition.XPath("/t:Periods/t:Period[@Name = 'Daylight']");
-						if (periods.length > 0) {
-							for (var index in periods) {
-								//if (this.debug) this.logInfo("yy period.@Bias="+period.@Bias.toString());
-								if (this.convertDurationToSeconds(periods[index].getAttribute("Bias")) == this.convertDurationToSeconds(tmpBiasValues.daylight)) {
-									daylightMatch = periods[index].getAttribute("Bias", null);
-									break;
-								}
-							}
-						}
-						periods = null;
-					}
-	
-					if ((standardMatch) && ((!tmpBiasValues.daylight) || (daylightMatch))) {
-						if (this.debug) this.logInfo("WE HAVE A TIMEZONE MATCH BETWEEN LIGHTNING AND this.globalFunctions. Cal:"+aCalTimeZone.tzid+", EWS:"+timeZoneDefinition.getAttribute("Name"));
-	
-						// If we also found the place name this will overrule everything else.
-						if ((placeNameMatch) || (idMatch) || (!weHaveAMatch)) {
-							weHaveAMatch = timeZoneDefinition.getAttribute("Id");
-	
-							if (placeNameMatch) {
-								if (this.debug) this.logInfo("We have a timzonematch on place name");
-								break;
-							}
-							if (idMatch) {
-								if (this.debug) this.logInfo("We have a timzonematch on id");
-								break;
-							}
-						}
-					}
-				}
-
-			}
-
-			return weHaveAMatch;
-		}
-
-		return "UTC";
+		return this.timeZones.getExchangeTimeZoneIdByCalTimeZone(aCalTimeZone, this.serverUrl);
 	},
 
 	doDeleteCalendar: function _doDeleteCalendar()
@@ -7779,37 +7269,6 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		//if (this.debug) this.logInfo("removeFromMeetingRequestCache:"+aUID);
 //		this.meetingRequestsCache[aUID] == null;
 		delete this.meetingRequestsCache[aID];
-	},
-
-	doTimezoneChanged: function _doTimezoneChanged()
-	{
-		if (this.debug) this.logInfo("doTimeZoneChanged 1");
-		return;
-
-		var prefTzid = cal.getPrefSafe("calendar.timezone.local", null);
-		if (this.debug) this.logInfo("-- New timezone id:"+prefTzid);
-		var newTimezone = this.globalFunctions.ecTZService().getTimezone(prefTzid);
-		if (this.debug) this.logInfo("doTimeZoneChanged 2");
-
-		// Get all cached items into new timezone
-		for (var index in this.itemCache) {
-			if (this.itemCache[index]) {
-				//var oldItem = this.itemCache[index].clone();
-				var oldItem = this.cloneItem(this.itemCache[index]);
-				if (! this.itemCache[index].startDate.isDate) {
-					if (this.debug) this.logInfo("mod startDate 1:"+this.itemCache[index].startDate.toString());
-					this.itemCache[index].startDate = this.itemCache[index].startDate.getInTimezone(newTimezone);
-					if (this.debug) this.logInfo("mod startDate 2:"+this.itemCache[index].startDate.toString());
-				}
-				if (! this.itemCache[index].endDate.isDate) {
-					if (this.debug) this.logInfo("mod endDate");
-					this.itemCache[index].endDate = this.itemCache[index].endDate.getInTimezone(newTimezone);
-				}
-				this.notifyTheObservers("onModifyItem", [this.itemCache[index],oldItem]);
-			}
-		}
-		if (this.debug) this.logInfo("doTimeZoneChanged 3");
-
 	},
 
 	findItemInListByDatesAndID: function _findItemInListByDates(aList, aItem)
@@ -8860,12 +8319,6 @@ ecObserver.prototype = {
 				this.unregister();
 				break;
 			case "nsPref:changed":
-				if (data == "calendar.timezone.local") {
-					// TODO: For now this will not work because it can happen that 
-					// the timezoneservice does not know about the pref update.
-					// The order of calling observers is random.
-					this.calendar.doTimezoneChanged();
-				}
 				if ((data == "extensions.1st-setup.debug.log") || (data == "extensions.1st-setup.core.debuglevel")) {
 					this.calendar.setDoDebug();
 				}
@@ -8884,7 +8337,6 @@ ecObserver.prototype = {
 		observerService.addObserver(this, "quit-application", false); 
 		observerService.addObserver(this, "network:offline-status-changed", false);
 
-		Services.prefs.addObserver("calendar.timezone.local", this, false);
 		Services.prefs.addObserver("extensions.1st-setup.debug.log", this, false);
 		Services.prefs.addObserver("extensions.1st-setup.core.debuglevel", this, false);
 
@@ -8901,7 +8353,6 @@ ecObserver.prototype = {
 		observerService.removeObserver(this, "onCalReset");  
 		observerService.removeObserver(this, "quit-application");  
 		observerService.removeObserver(this, "network:offline-status-changed");
-		Services.prefs.removeObserver("calendar.timezone.local", this);
 
 		getCalendarManager().removeObserver(this.ecInvitationsCalendarManagerObserver);
 	}  
@@ -9005,61 +8456,6 @@ exchWebService.check4addon = {
 	}
 }
 
-function load_ews_2010_timezonedefinitions()
-{
-	if (!global_ews_2010_timezonedefinitions) {
-
-		var somefile = chromeToPath("chrome://exchangecalendar/content/ewsTimesZoneDefinitions_2007.xml");
-		var file = Components.classes["@mozilla.org/file/local;1"]
-				.createInstance(Components.interfaces.nsILocalFile);
-		file.initWithPath(somefile);
-
-		var istream = Components.classes["@mozilla.org/network/file-input-stream;1"].  
-				 createInstance(Components.interfaces.nsIFileInputStream);  
-		istream.init(file, -1, -1, 0);  
-		istream.QueryInterface(Components.interfaces.nsILineInputStream);  
-		  
-		// read lines into array  
-		var line = {}, lines = "", hasmore;  
-		do {  
-			hasmore = istream.readLine(line);  
-			lines += line.value;   
-		} while(hasmore);  
-		  
-		istream.close();
-
-		try {
-		    global_ews_2010_timezonedefinitions = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
-				       .createInstance(Ci.mivIxml2jxon);
-		}
-		catch(exc) { 
-				dump("\ncreateInstance error:"+exc+"\n");
-		}
-
-
-		try {
-			global_ews_2010_timezonedefinitions.processXMLString(lines, 0, null);
-		}
-		catch(exc) { 
-				dump("\nprocessXMLString error:"+exc.name+", "+exc.message+"\n");
-		} 
-
-		var rm = global_ews_2010_timezonedefinitions.XPath("/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage");
-		if (rm.length == 0) return null;
-
-		globalTimeZoneDefinitions = {};
-
-		var timeZoneDefinitionArray = rm[0].XPath("/m:TimeZoneDefinitions/t:TimeZoneDefinition");
-		for (var index in timeZoneDefinitionArray) {
-			globalTimeZoneDefinitions[timeZoneDefinitionArray[index].getAttribute("Id")] = timeZoneDefinitionArray[index];
-		}
-		rm = null;
-
-		//dump("\nEnd of get ews_2010_timezonedefinitions\n");
-	}
-
-}
-
 function NSGetFactory(cid) {
 
 	try {
@@ -9069,7 +8465,6 @@ function NSGetFactory(cid) {
 
 			cal.loadScripts(scriptLoadOrder, Cu.getGlobalForObject(this));
 			NSGetFactory.mainEC = XPCOMUtils.generateNSGetFactory([calExchangeCalendar]);
-			load_ews_2010_timezonedefinitions();
 			
 	}
 

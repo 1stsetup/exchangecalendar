@@ -673,6 +673,38 @@ mivFunctions.prototype = {
 		return result;
 	},
 
+	urlToPath: function _urlToPath(aPath) 
+	{
+
+		if (!aPath || !/^file:/.test(aPath))
+			return ;
+		var rv;
+		var ph = Cc["@mozilla.org/network/protocol;1?name=file"]
+				.createInstance(Ci.nsIFileProtocolHandler);
+		rv = ph.getFileFromURLSpec(aPath).path;
+		return rv;
+	},
+
+	chromeToPath: function _chromeToPath(aPath) 
+	{
+
+		if (!aPath || !(/^chrome:/.test(aPath)))
+			return; //not a chrome url
+		var rv;
+
+		var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci["nsIIOService"]);
+		var uri = ios.newURI(aPath, "UTF-8", null);
+		var cr = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci["nsIChromeRegistry"]);
+		rv = cr.convertChromeURL(uri).spec;
+
+		if (/^file:/.test(rv))
+			rv = this.urlToPath(rv);
+		else
+			rv = this.urlToPath("file://"+rv);
+
+		return rv;
+	},
+
 	splitOnCharacter: function _splitOnCharacter(aString, aStartPos, aSplitCharacter)
 	{
 //		this.LOG("splitOnCharacter: aString:"+aString+", aSplitCharacter:"+aSplitCharacter);

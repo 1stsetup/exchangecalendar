@@ -48,7 +48,7 @@ interface mivFunctions : nsISupports
 
   boolean safeGetBoolPref(in jsval aBranch, in AUTF8String aName, [optional] in boolean aDefaultValue, [optional] in boolean aCreateWhenNotAvailable);
 
-  PRInt64 safeGetIntPref(in jsval aBranch, in AUTF8String aName, [optional] in PRInt64 aDefaultValue, [optional] in boolean aCreateWhenNotAvailable);
+  int64_t safeGetIntPref(in jsval aBranch, in AUTF8String aName, [optional] in int64_t aDefaultValue, [optional] in boolean aCreateWhenNotAvailable);
 
   jsval getStringBundle(in AUTF8String bundleURL);
 
@@ -66,7 +66,7 @@ interface mivFunctions : nsISupports
 
   void ERROR(in AUTF8String aMessage);
 
-  AUTF8String STACK([optional]in PRUint64 aDepth, [optional] in PRUint64 aSkip);
+  AUTF8String STACK([optional]in uint64_t aDepth, [optional] in uint64_t aSkip);
 
   AUTF8String STACKshort();
 
@@ -74,10 +74,13 @@ interface mivFunctions : nsISupports
 
   AUTF8String trim(in AUTF8String str);
 
-  PRUint64 copyPreferences(in jsval aFromPrefs, in jsval aToPrefs);
+  uint64_t copyPreferences(in jsval aFromPrefs, in jsval aToPrefs);
 
   jsval xmlToJxon([optional] in AUTF8String aXMLString) ;
 
-  AUTF8String splitOnCharacter(in AUTF8String aString, in PRUint64 aStartPos, in jsval aSplitCharacter);
+  jsval urlToPath(in AUTF8String aPath);
+  jsval chromeToPath(in AUTF8String aPath);
+
+  AUTF8String splitOnCharacter(in AUTF8String aString, in uint64_t aStartPos, in jsval aSplitCharacter);
 
 };

@@ -20,14 +20,13 @@
  * ***** BEGIN LICENSE BLOCK *****/
 
 #include "nsISupports.idl"
+#include "calITimezone.idl"
 
-[scriptable, uuid(e491a5d9-678a-4b2c-8d7f-c1a8f8ff40e8)]
-interface mivExchangeStatistics : nsISupports
+[scriptable, uuid(16093d9f-a9ac-41ab-9995-0a3a7423b45c)]
+interface mivExchangeTimeZones : nsISupports
 {
 
-  void setServerVersion(in AUTF8String aURL, in AUTF8String aVersion);
-  AUTF8String getServerVersion([optional] in AUTF8String aURL);
-
-  void getURLList(out uint32_t count, [array,size_is(count),retval] out string aURLStr);
+  void addURL(in AUTF8String aURL, in AUTF8String aUser, in jsval aCalendar);
+  AUTF8String getExchangeTimeZoneIdByCalTimeZone(in calITimezone aCalTimeZone);
 
 };

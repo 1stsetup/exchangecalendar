@@ -2045,7 +2045,7 @@ this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 	set exchangeData(aValue)
 	{
 		//this.logInfo("exchangeData:"+aValue.toString());
-		//dump("exchangeData:"+aValue.toString()+"\n\n");
+		dump("exchangeData:"+aValue.toString()+"\n\n");
 		this.initialize();
 		this._exchangeData = aValue;
 	},
