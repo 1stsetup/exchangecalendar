@@ -74,7 +74,6 @@ Cu.import("resource://exchangecalendar/erDeleteAttachment.js");
 //Cu.import("resource://interfaces/xml.js");
 
 //Cu.import("resource://interfaces/exchangeEvent/mivExchangeEvent.js");
-//Cu.import("resource://interfaces/exchangeTimeZones/mivExchangeTimeZones.js");
 
 var globalStart = new Date().getTime();
 
@@ -6240,7 +6239,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 						master.addException(item);
 						//item.parentItem = master;
 						//master.recurrenceInfo.modifyException(item, true);
-						this.setSnoozeTime(item, master);
+						//this.setSnoozeTime(item, master);
 					}
 					else {
 						if (this.debug) this.logInfo("HAS NO MASTER: STRANGE: Exception:"+item.title);
@@ -6259,7 +6258,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 						master.addOccurrence(item);
 						//item.parentItem = master;
 
-						this.setSnoozeTime(item, master);
+						//this.setSnoozeTime(item, master);
 					}
 					else {
 						if (this.debug) this.logInfo("HAS NO MASTER: STRANGE: Occurrence:"+item.title);
@@ -6360,7 +6359,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 					break;
 				default:
-					this.setSnoozeTime(item, null);
+					//this.setSnoozeTime(item, null);
 			}
 		}
 
