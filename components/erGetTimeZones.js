@@ -95,13 +95,13 @@ erGetTimeZonesRequest.prototype = {
 		req.setAttribute("ReturnFullTimeZoneData", "true");
 
 		this.parent.xml2jxon = true;
-		dump("erGetTimeZonesRequest.onSendOk:"+String(req)+"\n");
+		//dump("erGetTimeZonesRequest.onSendOk:"+String(req)+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erGetTimeZonesRequest.onSendOk:"+String(aResp));
+		//exchWebService.commonFunctions.LOG("erGetTimeZonesRequest.onSendOk:"+String(aResp));
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
 		if (rm.length > 0) {
@@ -120,7 +120,7 @@ erGetTimeZonesRequest.prototype = {
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)
 	{
-		exchWebService.commonFunctions.LOG("erGetTimeZonesRequest.onSendError:"+aMsg);
+		//exchWebService.commonFunctions.LOG("erGetTimeZonesRequest.onSendError:"+aMsg);
 		this.isRunning = false;
 		if (this.mCbError) {
 			this.mCbError(this, aCode, aMsg);

@@ -87,7 +87,6 @@ mivExchangeTimeZones.prototype = {
 	// void addURL(in AUTF8String aURL);
 	addURL: function _addURL(aURL, aUser, aCalendar)
 	{
-dump("timezone addurl\n");
 		var version = this.exchangeStatistics.getServerVersion(aURL);
 
 		if (!this._timeZones[version]) {
@@ -97,6 +96,7 @@ dump("timezone addurl\n");
 					 ecRequest:erGetTimeZonesRequest,
 					 arguments: {user: aUser, 
 					 serverUrl: aURL,
+					 ServerVersion: version,
 					 actionStart: Date.now() },
 					 cbOk: function(erGetTimeZonesRequest, aTimeZoneDefinitions) { self.getTimeZonesOK(erGetTimeZonesRequest, aTimeZoneDefinitions);}, 
 					 cbError: function(erGetTimeZonesRequest, aCode, aMsg) { self.getTimeZonesError(erGetTimeZonesRequest, aCode, aMsg);},
@@ -289,14 +289,12 @@ dump("timezone addurl\n");
 
 	getTimeZonesOK: function _getTimeZonesOK(erGetTimeZonesRequest, aTimeZoneDefinitions)
 	{
-dump("timezone getTimeZonesOK\n");
 		this.addExchangeTimeZones(aTimeZoneDefinitions, erGetTimeZonesRequest.argument.serverUrl);
 		this.logInfo("getTimeZonesOK");
 	},
 
 	getTimeZonesError: function _getTimeZonesError(erGetTimeZonesRequest, aCode, aMsg)
 	{
-dump("timezone getTimeZonesError: aCode:"+aCode+", aMsg:"+aMsg+"\n");
 		this.logInfo("getTimeZonesError: Msg"+aMsg);
 	},
 
@@ -337,21 +335,9 @@ dump("timezone getTimeZonesError: aCode:"+aCode+", aMsg:"+aMsg+"\n");
 		  
 		istream.close();
 
-		try {
-		    var timezonedefinitions = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
-				       .createInstance(Ci.mivIxml2jxon);
-		}
-		catch(exc) { 
-				dump("\ncreateInstance error:"+exc+"\n");
-		}
-
-
-		try {
-			timezonedefinitions.processXMLString(lines, 0, null);
-		}
-		catch(exc) { 
-				dump("\nprocessXMLString error:"+exc.name+", "+exc.message+"\n");
-		} 
+		var timezonedefinitions = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
+						.createInstance(Ci.mivIxml2jxon);
+		timezonedefinitions.processXMLString(lines, 0, null);
 
 		this.addExchangeTimeZones(timezonedefinitions, "Exchange2007_SP1");
 	},

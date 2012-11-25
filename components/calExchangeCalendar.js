@@ -6120,7 +6120,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			}
 			else {
 				// aItem is a Single
-				this.clearXMozSnoozeTimes(aItem);
+/*				this.clearXMozSnoozeTimes(aItem);
 				var reminderTime = pidLidReminderSignalTime;
 				if (this.debug) this.logInfo("Set snooze time: X-MOZ-SNOOZE-TIME="+reminderTime.icalString);
 				aItem.setProperty("X-MOZ-SNOOZE-TIME", reminderTime.icalString);
@@ -6129,7 +6129,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 				lastAck.addDuration(cal.createDuration('-PT1S'));
 				aItem.alarmLastAck = lastAck;
 				if (this.debug) this.logInfo("Set alarmLastAck:"+lastAck.icalString);
- 
+ */
 			}
 		}
 		else {

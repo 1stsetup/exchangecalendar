@@ -366,6 +366,7 @@ mivExchangeEvent.prototype = {
 		}
 
 		if (this._newParentItem) result.parentItem =this.parentItem;
+		if (this._newAlarmLastAck) result.alarmLastAck = this.alarmLastAck;
 
 		this.logInfo("clone 99: title:"+this.title+", startDate:"+result.startDate, -1);
 		return result;
@@ -760,18 +761,29 @@ mivExchangeEvent.prototype = {
 	//attribute calIDateTime alarmLastAck;
 	get alarmLastAck()
 	{
-		this.logInfo("get alarmLastAck: title:"+this.title);
-		return this.tryToSetDateValueUTC("2030-01-01T00:00:00Z", null); // For now we snooze all old alarms.
+		if (!this._alarmLastAck) {
+			this._alarmLastAck = this.reminderSignalTime;
+			if (!this._alarmLastAck) {
+				this._alarmLastAck = this.tryToSetDateValueUTC("2030-01-01T00:00:00Z", null);
+			}
+
+			switch (this.calendarItemType) {
+			case "Single":
+				this._alarmLastAck.addDuration(cal.createDuration('-PT1S'));
+				break;
+			}
+			this._calEvent.alarmLastAck = this._alarmLastAck;
+		}
+		this.logInfo("get alarmLastAck: title:"+this.title+", alarmLastAck:"+this._calEvent.alarmLastAck, -1);
 		return this._calEvent.alarmLastAck;
 	},
 
 	set alarmLastAck(aValue)
 	{
-		if (aValue) {
-			this.logInfo("set alarmLastAck: User snoozed alarm. Title:"+this.title+", aValue:"+aValue.toString());
-		}
-		else {
-			this.logInfo("set alarmLastAck: set to null for Title:"+this.title);
+		if (aValue.compare(this.alarmLastAck) != 0) {
+
+			this.logInfo("set alarmLastAck: User snoozed alarm. Title:"+this.title+", aValue:"+aValue.toString()+", alarmTime:"+this.getAlarmTime(), -1);
+			this._newAlarmLastAck = aValue.clone();
 		}
 		this._calEvent.alarmLastAck = aValue;
 	},
@@ -987,7 +999,7 @@ mivExchangeEvent.prototype = {
 	//void setProperty(in AString name, in nsIVariant value);
 	setProperty: function _setProperty(name, value)
 	{
-		this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
+		this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
 		switch (name) {
 		case "DESCRIPTION": 
 			if (value != this._newBody) {
@@ -997,7 +1009,6 @@ mivExchangeEvent.prototype = {
 		case "LOCATION": 
 			if (value != this._newLocation) {
 				this._newLocation = value;
-this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 			}
 			break;
 		case "PRIORITY":
@@ -1046,6 +1057,9 @@ this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 			if (value != this.getProperty(name)) {
 				this._newIsInvitation = value;
 			}
+			break;
+		case "X-MOZ-SNOOZE-TIME":
+				this._newXMozSnoozeTime = value;
 			break;
 		default:
 			this._changedProperties.push({ action: "set", name: name, value: value});
@@ -1655,6 +1669,13 @@ this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 			var tmpObject = this._exchangeData.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']");
 			if (tmpObject.length > 0) {
 				this._reminderSignalTime = this.tryToSetDateValueUTC(tmpObject[0].getTagValue("t:Value", null), null);
+				this.logInfo("Setting X-MOZ-SNOOZE-TIME by data in exchangedata", -1);
+				switch (this.calendarItemType) {
+				case "Single":
+					this.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
+					this._xMozSnoozeTime = this._reminderSignalTime.icalString;
+					break;
+				}
 			}
 		}
 		return this._reminderSignalTime;
@@ -2074,26 +2095,58 @@ this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 	addSetItemField: function _addSetItemField(parentItem, aField, aValue, aAttributes)
 	{
 		var setItemField = parentItem.addChildTag("SetItemField", "t", null);
-		var fieldURI = setItemField.addChildTag("FieldURI", "t", null);
-		fieldURI.setAttribute("FieldURI", fieldPathMap[aField]+":"+aField);
+		if (aField != "ExtendedProperty") {
+			var fieldURI = setItemField.addChildTag("FieldURI", "t", null);
+			fieldURI.setAttribute("FieldURI", fieldPathMap[aField]+":"+aField);
 
-		try {
-			if (aValue.QueryInterface(Ci.mivIxml2jxon)) {
-				var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", null).addChildTagObject(aValue);
+			try {
+				if (aValue.QueryInterface(Ci.mivIxml2jxon)) {
+					var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", null).addChildTagObject(aValue);
+				}
+				else {
+					var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", aValue);
+				}
 			}
-			else {
+			catch(err) {
 				var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", aValue);
 			}
-		}
-		catch(err) {
-			var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", aValue);
-		}
 
-		if (aAttributes) {
-			for (var attribute in aAttributes) {
-				fieldValue.setAttribute(attribute, aAttributes[attribute]);
+			if (aAttributes) {
+				for (var attribute in aAttributes) {
+					fieldValue.setAttribute(attribute, aAttributes[attribute]);
+				}
 			}
 		}
+		else {
+			setItemField.addChildTagObject(aValue);
+		}
+	},
+
+	getAlarmTime: function _getAlarmTime()
+	{
+		var alarms = this.getAlarms({});		
+		var alarm = alarms[0];		
+		if (!alarm) {
+			return null;
+		}
+
+		switch (alarm.related) {
+		case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
+			var alarmTime = alarm.alarmDate;
+			break;
+		case Ci.calIAlarm.ALARM_RELATED_START:
+			var alarmTime = this.startDate.clone();
+			alarmTime.addDuration(alarm.offset);
+			break;
+		case Ci.calIAlarm.ALARM_RELATED_END:
+			var alarmTime = this.endDate.clone();
+			alarmTime.addDuration(alarm.offset);
+			break;
+		}
+
+		alarmTime = alarmTime.getInTimezone(cal.UTC());
+
+		return alarmTime;
 	},
 
 	get updateXML()
@@ -2253,8 +2306,109 @@ this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 
 			// Recurrence rule.
 
+			var reminderIsSetChanged = undefined;
+			// Alarm
+			if (this._newAlarm !== undefined) {
+				// Alarm was changed.
+				if (this._newAlarm === null) {
+					// Alarm was removed.
+					//this.addSetItemField(updates, "ReminderIsSet", "false");
+					reminderIsSetChanged = "false";
+				}
+				else {
+					// New alarm setting.
+					var alarms = this.getAlarms({});
+					if (alarms.length > 0) {
+						//this.addSetItemField(updates, "ReminderIsSet", "true");
+						reminderIsSetChanged = "true";
+						// Calculate the alarm.
+
+						var alarm = alarms[0];
+
+						// Exchange alarm is always an offset to the start.
+						switch (alarm.related) {
+						case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
+							this.logInfo("ALARM_RELATED_ABSOLUTE we are going to calculate a offset from the start.");
+							var newAlarmTime = alarm.alarmDate.clone();
+
+							// Calculate offset from start of item.
+							var offset = newAlarmTime.subtractDate(this.startDate);
+							break;
+						case Ci.calIAlarm.ALARM_RELATED_START:
+							this.logInfo("ALARM_RELATED_START this is easy exchange does the same.");
+							var newAlarmTime = this.startDate.clone();
+							var offset = alarm.offset.clone();
+							break;
+						case Ci.calIAlarm.ALARM_RELATED_END:
+							this.logInfo("ALARM_RELATED_END we are going to calculate the offset from the start.");
+							var newAlarmTime = this.endDate.clone();
+							newAlarmTime.addDuration(alarm.offset);
+
+							var offset = newAlarmTime.subtractDate(alarmEvent.startDate);
+							break;
+						}
+
+						this.addSetItemField(updates, "ReminderDueBy", cal.toRFC3339(this.startDate.getInTimezone(cal.UTC())));
+						
+						if (offset.inSeconds != 0) {
+							this.addSetItemField(updates, "ReminderMinutesBeforeStart", String((offset.inSeconds / 60) * -1));
+						}
+						else {
+							this.addSetItemField(updates, "ReminderMinutesBeforeStart", "0");
+						}
+
+					}
+					else {
+						// This should never happen.
+						dump("mivExchangeEvent: updateXML: Weird error. We have a history of an alarm added but no alarms exist. This should never happen. please report to info@1st-setup.nl\n");
+					}
+				}
+
+			}
+
+			// Alarm snooze
+			if (this._xMozSnoozeTime != this._newXMozSnoozeTime) {
+				if (this._newAlarmLastAck) {
+					if (this._newAlarmLastAck.compare(this.getAlarmTime()) > 0) {
+						dump("------------ user set snooze for a certain time.\n");
+						var newAlarmXML = this.globalFunctions.xmlToJxon('<t:ExtendedFieldURI xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+						newAlarmXML.setAttribute("DistinguishedPropertySetId", "Common");
+
+						const MAPI_PidLidReminderSignalTime = "34144";
+
+						newAlarmXML.setAttribute("PropertyId", MAPI_PidLidReminderSignalTime);
+						newAlarmXML.setAttribute("PropertyType", "SystemTime");
+
+						var newSnoozeTime = cal.createDateTime(this._newXMozSnoozeTime);
+						newSnoozeTime = newSnoozeTime.getInTimezone(cal.UTC());
+						newAlarmXML.addSibblingTag("Value", "t", cal.toRFC3339(newSnoozeTime));
+
+						this.addSetItemField(updates, "ExtendedProperty", newAlarmXML);
+					}
+					else {
+						dump("------------ user snoozed (1) but how?????????????.\n");
+					}
+				}
+				else {
+					dump("------------ user snoozed (2) but how?????????????.\n");
+				}
+			}
+			else {
+				if (this._newAlarmLastAck) {
+					dump("---------- xmozsnoozetime DID not change. X-MOZ-SNOOZE-TIME:"+this.getProperty("X-MOZ-SNOOZE-TIME")+" And alarmLastAck was changed. User removed alarm.\n");
+					reminderIsSetChanged = "false";
+				}
+				else {
+					dump("---------- xmozsnoozetime DID not change. X-MOZ-SNOOZE-TIME:"+this.getProperty("X-MOZ-SNOOZE-TIME")+" but alarmLastAck was not changed. What did user do????.\n");
+				}
+			}
+
+			if (reminderIsSetChanged) {
+				this.addSetItemField(updates, "ReminderIsSet", reminderIsSetChanged);
+			}
 		}
 
+		dump("updates:"+updates.toString()+"\n");
 		return updates;
 	},
 
@@ -2493,7 +2647,7 @@ this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 	logInfo: function _logInfo(aMsg, aDebugLevel) 
 	{
 			//this.globalFunctions.LOG("mivExchangeEvent: "+aMsg);
-		return;
+		//return;
 
 		if (!aDebugLevel) aDebugLevel = 1;
 
@@ -2501,6 +2655,7 @@ this.logInfo(" SETTING location: this._newLocation:"+this._newLocation);
 			.getService(Ci.nsIPrefBranch);
 
 		this.debugLevel = this.globalFunctions.safeGetBoolPref(prefB, "extensions.1st-setup.core.debuglevel", 0, true);
+		this.debugLevel = 0;
 		if (aDebugLevel <= this.debugLevel) {
 			this.globalFunctions.LOG("mivExchangeEvent: "+aMsg);
 		}

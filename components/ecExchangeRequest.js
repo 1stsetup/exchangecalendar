@@ -822,11 +822,13 @@ catch(err){
 	{
 		var msg = exchWebService.commonFunctions.xmlToJxon('<nsSoap:Envelope xmlns:nsSoap="'+nsSoapStr+'" xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
+		var version = this.exchangeStatistics.getServerVersion(this.mArgument.serverUrl);
+
 		if (this.mArgument.ServerVersion) {
 			msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", this.mArgument.ServerVersion);
 		}
 		else {
-			msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", this.exchangeStatistics.getServerVersion());
+			msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", version);
 		}
 		msg.addChildTag("Body", "nsSoap", null).addChildTagObject(aReq);
 
