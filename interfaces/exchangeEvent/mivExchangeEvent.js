@@ -525,7 +525,7 @@ catch(err){
 				this._calEvent.id = this._id;
 			}
 		}
-		this.logInfo("get id: title:"+this.title+", id:"+this._calEvent.id);
+		//this.logInfo("get id: title:"+this.title+", id:"+this._calEvent.id);
 		return this._calEvent.id;
 	},
 
@@ -548,7 +548,7 @@ catch(err){
 				this._calEvent.title = "";
 			}
 		}
-		this.logInfo("get title: title:"+this._calEvent.title);
+		//this.logInfo("get title: title:"+this._calEvent.title);
 		return this._calEvent.title;
 	},
 
@@ -2796,7 +2796,7 @@ this.logInfo("after 1");
 
 	logInfo: function _logInfo(aMsg, aDebugLevel) 
 	{
-			this.globalFunctions.LOG("mivExchangeEvent: "+aMsg);
+			//this.globalFunctions.LOG("mivExchangeEvent: "+aMsg);
 		return;
 
 		if (!aDebugLevel) aDebugLevel = 1;
