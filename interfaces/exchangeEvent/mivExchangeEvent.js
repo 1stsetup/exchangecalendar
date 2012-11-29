@@ -1286,6 +1286,7 @@ catch(err){
 				tmpAttendee = this.createAttendee(at, "REQ-PARTICIPANT");
 				this._calEvent.addAttendee(tmpAttendee);
 				this._attendees.push(tmpAttendee.clone());
+				this._reqParticipants = true;
 			}
 			attendees = null;
 			attendees = this._exchangeData.XPath("/t:OptionalAttendees/t:Attendee")
@@ -1293,6 +1294,7 @@ catch(err){
 				tmpAttendee = this.createAttendee(at, "OPT-PARTICIPANT");
 				this._calEvent.addAttendee(tmpAttendee);
 				this._attendees.push(tmpAttendee.clone());
+				this._optParticipants = true;
 			}
 			attendees = null;
 		}
@@ -2195,28 +2197,30 @@ catch(err){
 		}
 	},
 
-	addSetItemField: function _addSetItemField(parentItem, aField, aValue, aAttributes)
+	addUpdateXMLField: function _addUpdateXMLField(updateType, parentItem, aField, aValue, aAttributes)
 	{
-		var setItemField = parentItem.addChildTag("SetItemField", "t", null);
+		var setItemField = parentItem.addChildTag(updateType, "t", null);
 		if (aField != "ExtendedFieldURI") {
 			var fieldURI = setItemField.addChildTag("FieldURI", "t", null);
 			fieldURI.setAttribute("FieldURI", fieldPathMap[aField]+":"+aField);
 
-			try {
-				if (aValue.QueryInterface(Ci.mivIxml2jxon)) {
-					var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", null).addChildTagObject(aValue);
+			if (aValue) {
+				try {
+					if (aValue.QueryInterface(Ci.mivIxml2jxon)) {
+						var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", null).addChildTagObject(aValue);
+					}
+					else {
+						var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", aValue);
+					}
 				}
-				else {
+				catch(err) {
 					var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", aValue);
 				}
-			}
-			catch(err) {
-				var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", aValue);
-			}
 
-			if (aAttributes) {
-				for (var attribute in aAttributes) {
-					fieldValue.setAttribute(attribute, aAttributes[attribute]);
+				if (aAttributes) {
+					for (var attribute in aAttributes) {
+						fieldValue.setAttribute(attribute, aAttributes[attribute]);
+					}
 				}
 			}
 		}
@@ -2234,6 +2238,16 @@ catch(err){
 			extProp.addChildTag("Value", "t", aValue);
 		}
 
+	},
+
+	addSetItemField: function _addSetItemField(parentItem, aField, aValue, aAttributes)
+	{
+		this.addUpdateXMLField("SetItemField", parentItem, aField, aValue, aAttributes);
+	},
+
+	addDeleteItemField: function _addDeleteItemField(parentItem, aField)
+	{
+		this.addUpdateXMLField("DeleteItemField", parentItem, aField);
 	},
 
 	getAlarmTime: function _getAlarmTime()
@@ -2265,6 +2279,155 @@ catch(err){
 		alarmTime = alarmTime.getInTimezone(cal.UTC());
 
 		return alarmTime;
+	},
+
+	makeRecurrenceRule: function _makeRecurrenceRule(updates)
+	{
+		if (!this.parentItem) {
+			return;
+		}
+
+		if (!this.recurrenceInfo || this.parentItem.id != this.id) {
+			if (!this.recurrenceInfo) {
+				this.logInfo("makeRecurrenceRule: We have no recurrenceInfo");
+			}
+			if (this.parentItem.id != this.id) {
+				this.logInfo("makeRecurrenceRule: We have this.parentItem.id != this.id");
+			}
+			return;
+		}
+
+		var rrule = null;
+		for each (var ritem in this.recurrenceInfo.getRecurrenceItems({})) {
+			if (calInstanceOf(ritem, Ci.calIRecurrenceRule)) {
+				rrule = ritem;
+				this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
+				//break;
+			}
+		}
+
+		if (!rrule) {
+			// XXX exception?
+			this.logInfo("makeRecurrenceRule: We have no rrule");
+			return;
+		}
+
+		var r = updates.addChildTag("Recurrence", "nsTypes", null);
+
+		/* can't get parameters of RRULEs... have to do it manually :/ */
+		var prop = {};
+		for each (let ps in rrule.icalProperty.value.split(';')) {
+			let m = ps.split('=');
+			prop[m[0]] = m[1];
+		}
+
+		var startDate;
+		if (cal.isEvent(this)) {
+			startDate = this.startDate;
+		}
+		else {
+			if (this.entryDate) {
+				startDate = this.entryDate.clone();
+				startDate.isDate = false;
+			}
+		}
+
+		if (startDate) {
+			var startDate = startDate.clone();
+		}
+		else {
+			var startDate = cal.now();
+		}
+		startDate.isDate = true;
+	
+		prop["BYMONTHDAY"] = prop["BYMONTHDAY"] || startDate.day;
+		prop["BYMONTH"] = prop["BYMONTH"] || (startDate.month + 1);
+
+		switch (rrule.type) {
+		case 'YEARLY':
+			if (prop["BYDAY"]) {
+				var m = prop["BYDAY"].match(/^(-?\d)(..)$/);
+				var ryr = r.addChildTag("RelativeYearlyRecurrence", "nsTypes", null);
+				ryr.addChildTag("DaysOfWeek", "nsTypes", dayRevMap[m[2]]);
+				ryr.addChildTag("DayOfWeekIndex", "nsTypes", dayRevMap[m[1]]);
+				ryr.addChildTag("Month", "nsTypes", monthIdxMap[prop["BYMONTH"] - 1]);
+			} else {
+				var ayr = r.addChildTag("AbsoluteYearlyRecurrence", "nsTypes", null);
+				ayr.addChildTag("DayOfMonth", "nsTypes", prop["BYMONTHDAY"]);
+				ayr.addChildTag("Month", "nsTypes", monthIdxMap[prop["BYMONTH"] - 1]);
+			}
+			break;
+		case 'MONTHLY':
+			if (prop["BYDAY"]) {
+				var rmr = r.addChildTag("RelativeMonthlyRecurrence", "nsTypes", null);				
+				rmr.addChildTag("Interval", "nsTypes", rrule.interval);
+				var m = prop["BYDAY"].match(/^(-?\d)(..)$/);
+				rmr.addChildTag("DaysOfWeek", "nsTypes", dayRevMap[m[2]]);
+				rmr.addChildTag("DayOfWeekIndex", "nsTypes", weekRevMap[m[1]]);
+			} else {
+				var amr = r.addChildTag("AbsoluteMonthlyRecurrence", "nsTypes", null);
+				amr.addChildTag("Interval", "nsTypes", rrule.interval);
+				amr.addChildTag("DayOfMonth", "nsTypes", prop["BYMONTHDAY"]);
+			}
+			break;
+		case 'WEEKLY':
+			var wr = r.addChildTag("WeeklyRecurrence", "nsTypes", null);
+			wr.addChildTag("Interval", "nsTypes", rrule.interval);
+			var days = [];
+			var daystr = prop["BYDAY"] || dayIdxMap[startDate.weekday];
+			for each (let day in daystr.split(",")) {
+				days.push(dayRevMap[day]);
+			}
+			wr.addChildTag("DaysOfWeek", "nsTypes", days.join(' '));
+			break;
+		case 'DAILY':
+			var dr = r.addChildTag("DailyRecurrence", "nsTypes", null);
+			dr.addChildTag("Interval", "nsTypes", rrule.interval);
+			break;
+		}
+
+		if (cal.isEvent(this)) {
+			var startDateStr = cal.toRFC3339(startDate.getInTimezone(this.globalFunctions.ecUTC()));
+		}
+		else {
+			// We make a non-UTC datetime value for this.globalFunctions.
+			// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
+			//LOG("  ==== tmpStart:"+cal.toRFC3339(tmpStart));
+			var startDateStr = cal.toRFC3339(startDate).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
+		}
+
+		if (rrule.isByCount && rrule.count != -1) {
+			var nr = r.addChildTag("NumberedRecurrence", "nsTypes", null);
+			nr.addChildTag("StartDate", "nsTypes", startDateStr);
+			nr.addChildTag("NumberOfOccurrences", "nsTypes", rrule.count);
+		} else if (!rrule.isByCount && rrule.untilDate) {
+
+			var endDate = rrule.untilDate.clone();
+			if (cal.isEvent(this)) {
+				endDate.isDate = true;
+				var endDateStr = cal.toRFC3339(endDate.getInTimezone(this.globalFunctions.ecUTC()));
+			}
+			else {
+				if (!endDate.isDate) {
+					endDate.isDate = true;
+					endDate.isDate = false;
+					var tmpDuration = cal.createDuration();
+					tmpDuration.days = 1;
+					endDate.addDuration(tmpDuration);
+
+					endDate.isDate = true;
+				}
+				var endDateStr = cal.toRFC3339(endDate).substr(0, 19); //cal.toRFC3339(tmpEnd).length-6);
+			}
+			var edr = r.addChildTag("EndDateRecurrence", "nsTypes", null);
+			edr.addChildTag("StartDate", "nsTypes", startDateStr);
+			edr.addChildTag("EndDate", "nsTypes", endDateStr);
+		} else {
+			var ner = r.addChildTag("NoEndRecurrence", "nsTypes", null);
+			ner.addChildTag("StartDate", "nsTypes", startDateStr);
+		}
+
+		/* We won't write WKST/FirstDayOfWeek for now because it is Exchange 2010 and up */
 	},
 
 	get updateXML()
@@ -2312,6 +2475,11 @@ try{
 				}
 				if (categories.length > 0) {
 					this.addSetItemField(updates, "Categories", categoriesXML);
+				}
+				else {
+					if (this._categories.length > 0) {
+						this.addDeleteItemField(updates, "Categories");
+					}
 				}
 			}
 
@@ -2425,19 +2593,59 @@ try{
 						ae.addChildTag("ResponseType", "t", attendeeStatus[attendee.participationStatus]);
 
 					}
-					if (reqAttendeeCount > 0) this.addSetItemField(updates, "RequiredAttendees", reqAttendees);
-					if (optAttendeeCount > 0) this.addSetItemField(updates, "OptionalAttendees", optAttendees);
+					if (reqAttendeeCount > 0) {
+						this.addSetItemField(updates, "RequiredAttendees", reqAttendees);
+					}
+					else {
+						if (this._reqParticipants) {
+							this.addDeleteItemField(updates, "RequiredAttendees");
+						}
+					}
+					if (optAttendeeCount > 0) {
+						this.addSetItemField(updates, "OptionalAttendees", optAttendees);
+					}
+					else {
+						if (this._optParticipants) {
+							this.addDeleteItemField(updates, "OptionalAttendees");
+						}
+					}
 				}
 			}
 
 
-			// Recurrence rule.
+			// Recurrence rule. Michel
+			var recurrenceInfoChanged;
+			if (this._recurrenceInfo) {
+				// We had recurrenceInfo. Lets see if it changed.
+				if (this._newRecurrenceInfo !== undefined) {
+					// It was changed or removed
+					if (this._newRecurrenceInfo !== null) {
+						// It was removed
+						recurrenceInfoChanged = false;
+						this.addDeleteItemField(updates, "Recurrence");
+					}
+					else {
+						// See if something changed
+						recurrenceInfoChanged = true;
+					}
+				}
+			}
+			else {
+				// We did not have recurrence info. Check if we have now
+				if (this._newRecurrenceInfo) {
+					recurrenceInfoChanged = true;
+				}
+			}
+			if (recurrenceInfoChanged) {
+				this.makeRecurrenceRule(updates);
+			}
+			
 
 			// Alarms and snoozes
 			this.checkAlarmChange(updates);
 }
 catch(err){
-dump("Error:"+err+"\n");
+this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 }
 		}
 
@@ -2467,7 +2675,7 @@ dump("Error:"+err+"\n");
 
 					var alarm = alarms[0];
 
-					if (this._alarm.offset != alarm.offset) {
+					if ((!this._alarm) || (this._alarm.offset != alarm.offset)) {
 						// Exchange alarm is always an offset to the start.
 						switch (alarm.related) {
 						case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
@@ -2571,7 +2779,8 @@ this.logInfo("before 2: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime+", thi
 				this.logInfo("checkAlarmChange: this._xMozSnoozeTime == this._newXMozSnoozeTime and this._newAlarmLastAck.");
 			}
 			else {
-				dump("---------- xmozsnoozetime DID not change. X-MOZ-SNOOZE-TIME:"+this.getProperty("X-MOZ-SNOOZE-TIME")+" but alarmLastAck was not changed. What did user do????.\n");
+				//dump("---------- xmozsnoozetime DID not change. X-MOZ-SNOOZE-TIME:"+this.getProperty("X-MOZ-SNOOZE-TIME")+" but alarmLastAck was not changed. What did user do????.\n");
+				// User probably changed some other field.
 			}
 		}
 
@@ -2814,7 +3023,7 @@ this.logInfo("before 2: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime+", thi
 
 	logInfo: function _logInfo(aMsg, aDebugLevel) 
 	{
-			this.globalFunctions.LOG("mivExchangeEvent: "+aMsg);
+			this.globalFunctions.LOG("mivExchangeEvent: "+aMsg+"("+this.globalFunctions.STACKshort()+")");
 		return;
 
 		if (!aDebugLevel) aDebugLevel = 1;

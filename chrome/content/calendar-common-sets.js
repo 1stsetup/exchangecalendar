@@ -80,7 +80,7 @@ exchWebService.forewardEvent = {
 			{user: exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecDomain")+"\\"+exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecUser"), 
 			 mailbox: exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecMailbox"),
 			 serverUrl: exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecServer"), item: item, attendees: attendee, 
-			changeKey :  item.getProperty("X-ChangeKey"), description : item.getProperty("description")}, 		
+			changeKey :  item.changeKey, description : item.getProperty("description")}, 		
 			exchWebService.forewardEvent.erForewardItemRequestOK, exchWebService.forewardEvent.erForewardItemRequestError);
 		return true;
 	},
