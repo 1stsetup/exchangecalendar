@@ -241,7 +241,7 @@ mivExchangeEvent.prototype = {
 	//calIItemBase createProxy(in calIDateTime aRecurrenceId);
 	createProxy: function _createProxy(aRecurrenceId)
 	{
-		this.logInfo("CreateProxy");
+		this.logInfo("CreateProxy aRecurrenceId:"+aRecurrenceId);
 
 		var occurrence;
 		for each(var occurrence in this._occurrences) {
@@ -271,7 +271,7 @@ mivExchangeEvent.prototype = {
 	//calIItemBase cloneShallow(in calIItemBase aNewParent);
 	cloneShallow: function _cloneShallow(aNewParent)
 	{
-		this.logInfo("cloneShallow");
+		this.logInfo("cloneShallow aNewParent:"+aNewParent);
 		var newItem = this.clone();
 		if (aNewParent) {
 			newItem.parentItem = aNewParent;
@@ -1678,7 +1678,13 @@ catch(err){
 
 	cloneToCalEvent: function cloneToCalEvent(aCalEvent)
 	{
-		this._calEvent = aCalEvent.clone();
+		this.logInfo("cloneToCalEvent: start: this.calendarItemType:"+this.calendarItemType);
+//		if (this.calendarItemType == "RecurringMaster") {
+//			this._calEvent = aCalEvent.cloneShallow();
+//		}
+//		else {
+			this._calEvent = aCalEvent.clone();
+//		}
 		this.logInfo("cloneToCalEvent: title:"+this.title+",\nthis._calEvent.hashId:"+this._calEvent.hashId+"\naCalEvent.hashId:"+aCalEvent.hashId);
 	},
 
@@ -2505,16 +2511,28 @@ dump("Error:"+err+"\n");
 		else {
 			if (this.calendarItemType == "RecurringMaster") {
 				// Check if we are passed last occurrence or exception
-this.logInfo("before 1: this._reminderSignalTime:"+this._reminderSignalTime);
-				var nextOccurrence = this.recurrenceInfo.getNextOccurrence(this._reminderSignalTime);
-this.logInfo("after 1");
-				if ((! nextOccurrence) && (this.reminderIsSet)) {
-					this.logInfo("checkAlarmChange: We do not have a nextOccurrence and reminder was set. Going to tunr it off.");
-					reminderIsSetChanged = "false";
+this.logInfo("before 1: this._reminderSignalTime:"+this._reminderSignalTime+", this.reminderDueBy:"+this.reminderDueBy);
+this.logInfo("before 2: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime+", this._newAlarmLastAck:"+this._newAlarmLastAck);
+				if (!this._newXMozSnoozeTime) {
+					var nextOccurrence = this.recurrenceInfo.getNextOccurrence(this.reminderDueBy);
+	//				var nextOccurrence = this.recurrenceInfo.getNextOccurrence(this._reminderSignalTime);
+	this.logInfo("after 1");
+					if ((! nextOccurrence) && (this.reminderIsSet)) {
+						this.logInfo("checkAlarmChange: We do not have a nextOccurrence and reminder was set. Going to tunr it off.");
+						reminderIsSetChanged = "false";
+					}
+					else {
+						if (nextOccurrence) {
+							var minutes = nextOccurrence.reminderMinutesBeforeStart * -1;
+							var tmpDuration = cal.createDuration();
+							tmpDuration.minutes = minutes;
+	this.logInfo("after 2: nextOccurrence.startDate:"+nextOccurrence.startDate+", nextOccurrence.reminderMinutesBeforeStart:"+nextOccurrence.reminderMinutesBeforeStart+ ", reminderMinutesBeforeStart:"+minutes);
+							nextOccurrence.startDate.addDuration(tmpDuration);
+							this.setProperty("X-MOZ-SNOOZE-TIME-"+nextOccurrence.recurrenceId.nativeTime, nextOccurrence.startDate.getInTimezone(cal.UTC()).icalString);					}
+					}
 				}
 				else {
-					if (nextOccurrence) {
-						this.setProperty("X-MOZ-SNOOZE-TIME-"+nextOccurrence.recurrenceId.nativeTime, nextOccurrence.startDate.getInTimezone(cal.UTC()).icalString);					}
+	this.logInfo("after 3: alarm was snoozed to new time and not dismissed.");
 				}
 			}
 		}
@@ -2796,7 +2814,7 @@ this.logInfo("after 1");
 
 	logInfo: function _logInfo(aMsg, aDebugLevel) 
 	{
-			//this.globalFunctions.LOG("mivExchangeEvent: "+aMsg);
+			this.globalFunctions.LOG("mivExchangeEvent: "+aMsg);
 		return;
 
 		if (!aDebugLevel) aDebugLevel = 1;
