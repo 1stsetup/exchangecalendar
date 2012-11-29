@@ -119,7 +119,7 @@ erSendMeetingResponsRequest.prototype = {
 
 		var referenceItemId = r.addChildTag("ReferenceItemId", "nsTypes", null);
 		referenceItemId.setAttribute("Id", this.item.id);
-		referenceItemId.setAttribute("ChangeKey", this.item.getProperty("X-ChangeKey"));
+		referenceItemId.setAttribute("ChangeKey", this.item.changeKey);
 
 		req.addChildTag("Items", "nsMessages", null).addChildTagObject(r);
 

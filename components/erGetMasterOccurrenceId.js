@@ -69,7 +69,7 @@ function erGetMasterOccurrenceIdRequest(aArgument, aCbOk, aCbError, aListener)
 	switch (aArgument.getType) {
 		case "lightning" :
 			this.id = aArgument.item.id;
-			this.changeKey = aArgument.item.getProperty("X-ChangeKey");
+			this.changeKey = aArgument.item.changeKey;
 			break;
 		case "exchange" :
 			this.id = aArgument.item.Id;

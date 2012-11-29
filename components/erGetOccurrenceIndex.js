@@ -68,7 +68,7 @@ function erGetOccurrenceIndexRequest(aArgument, aCbOk, aCbError, aListener)
 	this.serverUrl = aArgument.serverUrl;
 	this.listener = aListener;
 	this.masterID = aArgument.masterItem.id;
-	this.masterChangeKey = aArgument.masterItem.getProperty("X-ChangeKey");
+	this.masterChangeKey = aArgument.masterItem.changeKey;
 //	this.startDate = aArgument.masterItem.getProperty("X-Start");
 
 	this.currentSearchIndex = 1;
