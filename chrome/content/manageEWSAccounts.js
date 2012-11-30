@@ -120,6 +120,9 @@ exchWebService.manageEWSAccounts = {
 	{
 		document.getElementById("exchWebService_autodiscover").disabled = false;
 
+		document.getElementById("exchWebService_usekerberos").checked = aAccount.kerberos;
+		document.getElementById("exchWebService_usekerberos").disabled = false;
+
 		document.getElementById("exchWebService_manageEWSAccounts_account_name").value = aAccount.name;
 		document.getElementById("exchWebService_manageEWSAccounts_account_name").disabled = false;
 
@@ -136,6 +139,9 @@ exchWebService.manageEWSAccounts = {
 	disableDetails: function _showDetails(aAccount)
 	{
 		document.getElementById("exchWebService_autodiscover").disabled = true;
+
+		document.getElementById("exchWebService_usekerberos").checked = false;
+		document.getElementById("exchWebService_usekerberos").disabled = true;
 
 		document.getElementById("exchWebService_manageEWSAccounts_account_name").value = "";
 		document.getElementById("exchWebService_manageEWSAccounts_account_name").disabled = true;
@@ -186,7 +192,8 @@ exchWebService.manageEWSAccounts = {
 				name: "new Account",
 				server: "",
 				user: "",
-				mailbox: "" };
+				mailbox: "",
+				kerberos: false };
 		exchWebService.accountFunctions.saveAccount(this.selectedAccount);
 		var listbox = document.getElementById("exchWebService-manageEWSAccounts-accounts-listbox");
 		if (listbox) {
@@ -278,6 +285,13 @@ exchWebService.manageEWSAccounts = {
 		this.selectedAccount.user = aTextBox.value;
 	},
 
+	doUseKerberosChanged: function _doUseKerberosChanged(aCheckBox)
+	{
+		this.detailsChecked = false;
+		this.detailsChanged = true;
+		this.selectedAccount.kerberos = aCheckBox.checked;
+	},
+
 	doAutodiscoverCheck: function _doAutodiscoverCheck()
 	{
 		document.getElementById("exchWebService_autodiscovercheckbutton").disabled = true;
@@ -286,9 +300,11 @@ exchWebService.manageEWSAccounts = {
 			window.setCursor("wait");
 			var user = document.getElementById("exchWebService_windowsuser").value;
 			var mailbox = document.getElementById("exchWebService_mailbox").value;
+			var kerberos = document.getElementById("exchWebService_usekerberos").checked;
 			var tmpObject = new erAutoDiscoverRequest( 
 				{user: user, 
-				 mailbox: mailbox}, 
+				 mailbox: mailbox,
+				 kerberos: kerberos}, 
 				 this.autodiscoveryOK, 
 				 this.autodiscoveryError, null);
 		}

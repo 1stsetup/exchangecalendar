@@ -1,4 +1,5 @@
 <!ENTITY ecautodiscover "Använd Exchanges funktion för automatisk utforskning.">
+<!ENTITY ecusekerberos "Use Kerberos authentication.">
 <!ENTITY ecfolderbase.label "Basmapp:">
 <!ENTITY ecfolderpath.label "Sökväg under basmapp:">
 <!ENTITY ecfolderidofshare.label "Basmapps-ID:">

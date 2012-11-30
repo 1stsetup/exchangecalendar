@@ -52,6 +52,7 @@
 					 oninput="exchWebService.manageEWSAccounts.doNameChanged(this)"/>
 			</hbox>
 			<checkbox disabled="true" label="&exchWebService.manageEWSAccounts.autodiscover.label;" id="exchWebService_autodiscover" oncommand="exchWebService.manageEWSAccounts.doAutodiscoverChanged(this);"/>
+			<checkbox disabled="true" label="&exchWebService.manageEWSAccounts.usekerberos.label;" id="exchWebService_usekerberos" oncommand="exchWebService.manageEWSAccounts.doUsekerberosChanged(this);"/>
 			<grid flex="1">
 			    <columns>
 			        <column/>

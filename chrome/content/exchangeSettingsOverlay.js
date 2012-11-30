@@ -63,6 +63,7 @@ var exchWebServicesgMailbox = "";
 var exchWebServicesgDisplayName = "";
 var exchWebServicesgUser = "";
 var exchWebServicesgDomain = "";
+var exchWebServicesgUseKerberos = false;
 var exchWebServicesgFolderIdOfShare = "";
 var exchWebServicesgFolderBase = "calendar";
 var exchWebServicesgFolderPath = "/";
@@ -211,6 +212,13 @@ function exchWebServicesAutodiscoverCheckbox(aCheckBox)
 	exchWebServicesCheckRequired();
 }
 
+function exchWebServicesUseKerberosCheckbox(aCheckBox)
+{
+	exchWebServicesgUseKerberos = aCheckBox.checked;
+	gexchWebServicesDetailsChecked = false;
+	exchWebServicesCheckRequired();
+}
+
 function exchWebServicesInitMailbox(aNewValue)
 {
 	exchWebServicesgMailbox = aNewValue;
@@ -328,6 +336,7 @@ function exchWebServicesDoCheckServerAndMailbox()
 			var tmpObject = new erConvertIDRequest(
 				{user: exchWebServicesGetUsername(), 
 				 mailbox: exchWebServicesgMailbox,
+				 kerberos: exchWebServicesgUseKerberos,
 				 serverUrl: exchWebServicesgServer,
 				 folderId: folderIdOfShare}, exchWebServicesConvertIDOK, exchWebServicesConvertIDError);
 		}
@@ -335,6 +344,7 @@ function exchWebServicesDoCheckServerAndMailbox()
 			var tmpObject = new erPrimarySMTPCheckRequest(
 				{user: exchWebServicesGetUsername(), 
 				 mailbox: exchWebServicesgMailbox,
+				 kerberos: exchWebServicesgUseKerberos,
 				 serverUrl: exchWebServicesgServer,
 				 folderBase: "calendar"}, exchWebServicesCheckServerAndMailboxOK, exchWebServicesCheckServerAndMailboxError);
 		}
@@ -354,6 +364,7 @@ function exchWebServicesConvertIDOK(aFolderID, aMailbox)
 		var tmpObject = new erGetFolderRequest(
 			{user: exchWebServicesGetUsername(), 
 			 mailbox: aMailbox,
+			 kerberos: exchWebServicesgUseKerberos,
 			 serverUrl: exchWebServicesgServer,
 			 folderID: aFolderID}, exchWebServicesGetFolderOK, exchWebServicesGetFolderError);
 	}
@@ -529,7 +540,8 @@ function exchWebServicesDoAutodiscoverCheck()
 		window.setCursor("wait");
 	var tmpObject = new erAutoDiscoverRequest( 
 		{user: exchWebServicesGetUsername(), 
-		 mailbox: exchWebServicesgMailbox}, 
+		 mailbox: exchWebServicesgMailbox,
+		 kerberos: exchWebServicesgUseKerberos}, 
 		 exchWebServicesAutodiscoveryOK, 
 		 exchWebServicesAutodiscoveryError, null)
 	}
@@ -644,8 +656,9 @@ function exchWebServicesLoadExchangeSettingsByCalId(aCalId)
 			document.getElementById("menuitem.label.ecfolderbase.publicfoldersroot").disabled = false;
 		}
 
+		document.getElementById("exchWebService_usekerberos").checked = exchWebServicesCalPrefs.getBoolPref("ecUseKerberos");
 
-
+		exchWebServicesgUseKerberos = exchWebServicesCalPrefs.getBoolPref("ecUseKerberos");
 		exchWebServicesgServer = exchWebServicesCalPrefs.getCharPref("ecServer");
 		exchWebServicesgUser = exchWebServicesCalPrefs.getCharPref("ecUser");
 		exchWebServicesgDomain = exchWebServicesCalPrefs.getCharPref("ecDomain");
@@ -679,6 +692,7 @@ function exchWebServicesSaveExchangeSettingsByCalId(aCalId)
 
 	if (exchWebServicesCalPrefs) {
 		exchWebServicesCalPrefs.setCharPref("ecServer", exchWebServicesgServer);
+		exchWebServicesCalPrefs.setBoolPref("ecUseKerberos", exchWebServicesgUseKerberos);
 		exchWebServicesCalPrefs.setCharPref("ecUser", exchWebServicesgUser);
 		exchWebServicesCalPrefs.setCharPref("ecDomain", exchWebServicesgDomain);
 		exchWebServicesCalPrefs.setCharPref("ecFolderpath", exchWebServicesgFolderPath);
@@ -766,6 +780,7 @@ function exchWebServicesLoadExchangeSettingsByContactUUID(aUUID)
 		exchWebServicesgServer = exchWebServicesCalPrefs.getCharPref("server");
 		exchWebServicesgUser = exchWebServicesCalPrefs.getCharPref("user");
 		exchWebServicesgDomain = exchWebServicesCalPrefs.getCharPref("domain");
+		exchWebServicesgUseKerberos = exchWebServicesCalPrefs.getBoolPref("kerberos");
 
 		exchWebServicesgFolderBase = exchWebServicesCalPrefs.getCharPref("folderbase");
 		exchWebServicesgFolderPath = exchWebServicesCalPrefs.getCharPref("folderpath");
@@ -802,6 +817,7 @@ function exchWebServicesSaveExchangeSettingsByContactUUID(isNewDirectory, aUUID)
 		exchWebServicesCalPrefs.setCharPref("server", exchWebServicesgServer);
 		exchWebServicesCalPrefs.setCharPref("user", exchWebServicesgUser);
 		exchWebServicesCalPrefs.setCharPref("domain", exchWebServicesgDomain);
+		exchWebServicesCalPrefs.setBoolPref("kerberos", exchWebServicesgUseKerberos);
 		exchWebServicesCalPrefs.setCharPref("folderpath", exchWebServicesgFolderPath);
 	exchWebService.commonFunctions.LOG("exchWebServicesSaveExchangeSettingsByContactUUID: folderbase:"+exchWebServicesgFolderBase);
 		exchWebServicesCalPrefs.setCharPref("folderbase", exchWebServicesgFolderBase);
@@ -824,6 +840,7 @@ function exchWebServicesSaveExchangeSettingsByContactUUID(isNewDirectory, aUUID)
 			mailbox: exchWebServicesgMailbox,
 			user: exchWebServicesgUser,
 			domain: exchWebServicesgDomain,
+			kerberos: exchWebServicesgUseKerberos,
 			serverUrl: exchWebServicesgServer,
 			folderBase: exchWebServicesgFolderBase,
 			folderPath: exchWebServicesgFolderPath,

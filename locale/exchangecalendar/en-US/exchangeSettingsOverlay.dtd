@@ -1,4 +1,5 @@
 <!ENTITY ecautodiscover "Use Exchange's autodiscovery function.">
+<!ENTITY ecusekerberos "Use Kerberos authentication.">
 <!ENTITY ecfolderbase.label "Folder base:">
 <!ENTITY ecfolderpath.label "Path below folder base:">
 <!ENTITY ecfolderidofshare.label "Share Folder Id:">

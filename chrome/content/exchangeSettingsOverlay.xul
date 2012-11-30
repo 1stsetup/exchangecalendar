@@ -48,6 +48,7 @@
 
 	<vbox id="exchWebService-exchange-settings">
 		<checkbox label="&ecautodiscover;" id="exchWebService_autodiscover" oncommand="exchWebServicesAutodiscoverCheckbox(this);"/>
+		<checkbox label="&ecusekerberos;" id="exchWebService_usekerberos" oncommand="exchWebServicesUseKerberosCheckbox(this);"/>
         	<grid flex="1">
         	    <columns>
         	        <column/>

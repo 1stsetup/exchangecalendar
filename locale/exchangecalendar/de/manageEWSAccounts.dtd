@@ -5,6 +5,7 @@
 <!ENTITY exchWebService.manageEWSAccounts.saveAccount.button "Einstellungen speichern">
 
 <!ENTITY exchWebService.manageEWSAccounts.autodiscover.label "Exchange's Autodiscovery Funktion nutzen.">
+<!ENTITY exchWebService.manageEWSAccounts.usekerberos.label "Use Kerberos authentication.">
 <!ENTITY exchWebService.manageEWSAccounts.mailbox.label "Postfachname:">
 <!ENTITY exchWebService.manageEWSAccounts.windowsuser.label "Benutzername:">
 <!ENTITY exchWebService.manageEWSAccounts.windowsdomain.label "Domainname:">

@@ -84,8 +84,6 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.prePassword = "";
 
-	this.kerberos = true;
-
 	this.prefB = Cc["@mozilla.org/preferences-service;1"]
 			.getService(Ci.nsIPrefBranch);
 
@@ -94,6 +92,19 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.exchangeBadCertListener2 = Cc["@1st-setup.nl/exchange/badcertlistener2;1"]
 			.getService(Ci.mivExchangeBadCertListener2);
+
+
+	if (typeof(aArgument.kerberos)!=='undefined') {
+		// autodiscover / check server requests - no prefs stored yet.
+		this.kerberos = aArgument.kerberos;
+	} else {
+		// all others - calendar has it in prefs.
+		// this will slighty change the logic on extension upgrade: 
+		// one should go and click 'Use Kerberos authentication' in settings to use Kerberos again
+		this.kerberos = exchWebService.commonFunctions.safeGetBoolPref(this.prefB, 
+				"extensions.exchangecalendar@extensions.1st-setup.nl."+aArgument["calendar"]["id"]+".ecUseKerberos", 
+				false, false);
+	} 
 
 }
 
@@ -216,23 +227,26 @@ ExchangeRequest.prototype = {
 			openUser = openUser.substr(openUser.indexOf("\\")+1);
 		}*/
 
-		var myAuthPrompt2 = Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
-		if (myAuthPrompt2.getUserCanceled(this.currentUrl)) {
+		if(!this.kerberos) {
+			var myAuthPrompt2 = Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
+			if (myAuthPrompt2.getUserCanceled(this.currentUrl)) {
+				
+				this.fail(this.ER_ERROR_USER_ABORT_AUTHENTICATION, "User canceled providing a valid password for url="+this.currentUrl+". Aborting this request.");
+				return;
+			}
+
+
+			try {
+				var password = myAuthPrompt2.getPassword(null, openUser, this.currentUrl);
 			
-			this.fail(this.ER_ERROR_USER_ABORT_AUTHENTICATION, "User canceled providing a valid password for url="+this.currentUrl+". Aborting this request.");
-			return;
-		}
-
-		try {
-			var password = myAuthPrompt2.getPassword(null, openUser, this.currentUrl);
-//			var password = myAuthPrompt2.getPassword(null, this.mArgument.user, this.currentUrl);
-		}
-		catch(err) {
-			this.logInfo(err);
-			this.fail(this.ER_ERROR_USER_ABORT_AUTHENTICATION, "User canceled providing a valid password for url="+this.currentUrl+". Aborting this request.");
-			return;
-		}
-
+//				var password = myAuthPrompt2.getPassword(null, this.mArgument.user, this.currentUrl);
+			}
+			catch(err) {
+				this.logInfo(err);
+				this.fail(this.ER_ERROR_USER_ABORT_AUTHENTICATION, "User canceled providing a valid password for url="+this.currentUrl+". Aborting this request.");
+				return;
+			}
+		} 
 		this.xmlReq = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance();
 
 		this.mXmlReq = this.xmlReq;
@@ -250,12 +264,15 @@ ExchangeRequest.prototype = {
 
 		if (this.debug) this.logInfo(": 1 ExchangeRequest.sendRequest : user="+this.mArgument.user+", url="+this.currentUrl);
 
-		this._notificationCallbacks = new ecnsIAuthPrompt2(this);
+		if(!this.kerberos) {
+			this._notificationCallbacks = new ecnsIAuthPrompt2(this);
+		}
 
 		try {
 
 //				this.xmlReq.open("POST", this.currentUrl, true);
-			if (password) {
+			if(!this.kerberos) {
+//			if (password) {
 				if (this.debug) this.logInfo("We have a prePassword: *******");
 				this.xmlReq.open("POST", this.currentUrl, true, openUser, password);
 				//this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user, password);
