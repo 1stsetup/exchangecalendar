@@ -608,7 +608,7 @@ calExchangeCalendar.prototype = {
 			changed = true;
 		}
 
-
+		if (this.debug) this.logInfo("set readOnly to '"+aValue+"'");
 		this._readOnly = aValue;
 
 		if (changed) {
@@ -6174,8 +6174,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 				.createInstance(Ci.mivExchangeEvent);
 		item.exchangeData = aCalendarItem;
 
-//		item.calendar = this.superCalendar;
-		item.calendar = this;
+		item.calendar = this.superCalendar;
+//		item.calendar = this;
 
 		//return item;
 

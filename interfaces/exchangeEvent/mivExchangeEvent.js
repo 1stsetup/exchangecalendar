@@ -314,6 +314,7 @@ this.logInfo("clone: 1");
 		result.exchangeData = this._exchangeData;
 this.logInfo("clone: 2");
 		result.cloneToCalEvent(this._calEvent);
+		result.calendar = this._calEvent.calendar;
 this.logInfo("clone: 3");
 
 		if (this._newStartDate) result.startDate = this.startDate.clone();
