@@ -619,6 +619,7 @@ calExchangeCalendar.prototype = {
 
 	//  attribute boolean readOnly;
 	get readOnly() {
+		//dump("get readOnly: name:"+this.name+", this._readOnly:"+this._readOnly+", this.notConnected:"+this.notConnected+"\n");
 		return ((this._readOnly) || (this.notConnected));
 	},
 
@@ -3494,7 +3495,10 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	getUserAvailabilityRequestError: function _getUserAvailabilityRequestError(erGetUserAvailabilityRequest, aCode, aMsg)
 	{
 		this.saveCredentials(erGetUserAvailabilityRequest.argument);
-		this.notConnected = true;
+
+		if (aCode != -7) {
+			this.notConnected = true;
+		}
 
 		if (this.OnlyShowAvailability) {
 			this.OnlyShowAvailability = false;
