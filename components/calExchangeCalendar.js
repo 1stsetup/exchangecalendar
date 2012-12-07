@@ -6273,6 +6273,12 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 	
 					if (this.debug) this.logInfo("@1:"+item.startDate.toString()+":IsMaster");
 
+					if (this.itemCache[item.id]) {
+						if (this.debug) this.logInfo("This master also existed as an normal item. Probably an upgrade from single to master.");
+						this.notifyTheObservers("onDeleteItem", [this.itemCache[item.id]]);
+						delete this.itemCache[item.id];
+					}
+
 					// Try to find occurrences of this master which have their parentItem not
 					// yet set to this one. Also set right recurrenceinfo for exceptions.
 					// !!! This should not happen. Masters are allways cached before occurrence or exception.

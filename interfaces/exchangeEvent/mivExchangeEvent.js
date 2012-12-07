@@ -887,11 +887,11 @@ catch(err){
 
 	set recurrenceInfo(aValue)
 	{
-		this.logInfo("set recurrenceInfo: title:"+this.title+", aValue:"+aValue);
-		if ((this.recurrenceInfo) && (aValue.toString() != this.recurrenceInfo.toString())) {
-			this._newRecurrenceInfo = aValue.clone();
-			this._calEvent.recurrenceInfo = aValue;
-		}
+		this.logInfo("set recurrenceInfo 1: title:"+this.title+", aValue:"+aValue);
+		if (!this._recurrenceInfo) this.recurrenceInfo;
+
+		this._newRecurrenceInfo = aValue.clone();
+		this._calEvent.recurrenceInfo = aValue;
 	},
 
 	//readonly attribute calIDateTime recurrenceStartDate;
@@ -2197,7 +2197,7 @@ catch(err){
 		}
 	},
 
-	addUpdateXMLField: function _addUpdateXMLField(updateType, parentItem, aField, aValue, aAttributes)
+	addUpdateXMLField: function _addUpdateXMLField(updateType, parentItem, aField, aValue, aAttributes, aValueIsComplete)
 	{
 		var setItemField = parentItem.addChildTag(updateType, "t", null);
 		if (aField != "ExtendedFieldURI") {
@@ -2207,7 +2207,12 @@ catch(err){
 			if (aValue) {
 				try {
 					if (aValue.QueryInterface(Ci.mivIxml2jxon)) {
-						var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", null).addChildTagObject(aValue);
+						if (aValueIsComplete) {
+							var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTagObject(aValue);
+						}
+						else {
+							var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", null).addChildTagObject(aValue);
+						}
 					}
 					else {
 						var fieldValue = setItemField.addChildTag("CalendarItem", "t", null).addChildTag(aField, "t", aValue);
@@ -2240,9 +2245,9 @@ catch(err){
 
 	},
 
-	addSetItemField: function _addSetItemField(parentItem, aField, aValue, aAttributes)
+	addSetItemField: function _addSetItemField(parentItem, aField, aValue, aAttributes, aValueIsComplete)
 	{
-		this.addUpdateXMLField("SetItemField", parentItem, aField, aValue, aAttributes);
+		this.addUpdateXMLField("SetItemField", parentItem, aField, aValue, aAttributes, aValueIsComplete);
 	},
 
 	addDeleteItemField: function _addDeleteItemField(parentItem, aField)
@@ -2281,12 +2286,13 @@ catch(err){
 		return alarmTime;
 	},
 
-	makeRecurrenceRule: function _makeRecurrenceRule(updates)
+	makeRecurrenceRule: function _makeRecurrenceRule()
 	{
 		if (!this.parentItem) {
+			this.logInfo("makeRecurrenceRule: No parent.");
 			return;
 		}
-
+try{
 		if (!this.recurrenceInfo || this.parentItem.id != this.id) {
 			if (!this.recurrenceInfo) {
 				this.logInfo("makeRecurrenceRule: We have no recurrenceInfo");
@@ -2299,7 +2305,7 @@ catch(err){
 
 		var rrule = null;
 		for each (var ritem in this.recurrenceInfo.getRecurrenceItems({})) {
-			if (calInstanceOf(ritem, Ci.calIRecurrenceRule)) {
+			if (ritem instanceof Ci.calIRecurrenceRule) {
 				rrule = ritem;
 				this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				//break;
@@ -2312,7 +2318,9 @@ catch(err){
 			return;
 		}
 
-		var r = updates.addChildTag("Recurrence", "nsTypes", null);
+		var r = this.globalFunctions.xmlToJxon('<t:Recurrence xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+
+		//var r = updates.addChildTag("Recurrence", "t", null);
 
 		/* can't get parameters of RRULEs... have to do it manually :/ */
 		var prop = {};
@@ -2347,42 +2355,42 @@ catch(err){
 		case 'YEARLY':
 			if (prop["BYDAY"]) {
 				var m = prop["BYDAY"].match(/^(-?\d)(..)$/);
-				var ryr = r.addChildTag("RelativeYearlyRecurrence", "nsTypes", null);
-				ryr.addChildTag("DaysOfWeek", "nsTypes", dayRevMap[m[2]]);
-				ryr.addChildTag("DayOfWeekIndex", "nsTypes", dayRevMap[m[1]]);
-				ryr.addChildTag("Month", "nsTypes", monthIdxMap[prop["BYMONTH"] - 1]);
+				var ryr = r.addChildTag("RelativeYearlyRecurrence", "t", null);
+				ryr.addChildTag("DaysOfWeek", "t", dayRevMap[m[2]]);
+				ryr.addChildTag("DayOfWeekIndex", "t", dayRevMap[m[1]]);
+				ryr.addChildTag("Month", "t", monthIdxMap[prop["BYMONTH"] - 1]);
 			} else {
-				var ayr = r.addChildTag("AbsoluteYearlyRecurrence", "nsTypes", null);
-				ayr.addChildTag("DayOfMonth", "nsTypes", prop["BYMONTHDAY"]);
-				ayr.addChildTag("Month", "nsTypes", monthIdxMap[prop["BYMONTH"] - 1]);
+				var ayr = r.addChildTag("AbsoluteYearlyRecurrence", "t", null);
+				ayr.addChildTag("DayOfMonth", "t", prop["BYMONTHDAY"]);
+				ayr.addChildTag("Month", "t", monthIdxMap[prop["BYMONTH"] - 1]);
 			}
 			break;
 		case 'MONTHLY':
 			if (prop["BYDAY"]) {
-				var rmr = r.addChildTag("RelativeMonthlyRecurrence", "nsTypes", null);				
-				rmr.addChildTag("Interval", "nsTypes", rrule.interval);
+				var rmr = r.addChildTag("RelativeMonthlyRecurrence", "t", null);				
+				rmr.addChildTag("Interval", "t", rrule.interval);
 				var m = prop["BYDAY"].match(/^(-?\d)(..)$/);
-				rmr.addChildTag("DaysOfWeek", "nsTypes", dayRevMap[m[2]]);
-				rmr.addChildTag("DayOfWeekIndex", "nsTypes", weekRevMap[m[1]]);
+				rmr.addChildTag("DaysOfWeek", "t", dayRevMap[m[2]]);
+				rmr.addChildTag("DayOfWeekIndex", "t", weekRevMap[m[1]]);
 			} else {
-				var amr = r.addChildTag("AbsoluteMonthlyRecurrence", "nsTypes", null);
-				amr.addChildTag("Interval", "nsTypes", rrule.interval);
-				amr.addChildTag("DayOfMonth", "nsTypes", prop["BYMONTHDAY"]);
+				var amr = r.addChildTag("AbsoluteMonthlyRecurrence", "t", null);
+				amr.addChildTag("Interval", "t", rrule.interval);
+				amr.addChildTag("DayOfMonth", "t", prop["BYMONTHDAY"]);
 			}
 			break;
 		case 'WEEKLY':
-			var wr = r.addChildTag("WeeklyRecurrence", "nsTypes", null);
-			wr.addChildTag("Interval", "nsTypes", rrule.interval);
+			var wr = r.addChildTag("WeeklyRecurrence", "t", null);
+			wr.addChildTag("Interval", "t", rrule.interval);
 			var days = [];
 			var daystr = prop["BYDAY"] || dayIdxMap[startDate.weekday];
 			for each (let day in daystr.split(",")) {
 				days.push(dayRevMap[day]);
 			}
-			wr.addChildTag("DaysOfWeek", "nsTypes", days.join(' '));
+			wr.addChildTag("DaysOfWeek", "t", days.join(' '));
 			break;
 		case 'DAILY':
-			var dr = r.addChildTag("DailyRecurrence", "nsTypes", null);
-			dr.addChildTag("Interval", "nsTypes", rrule.interval);
+			var dr = r.addChildTag("DailyRecurrence", "t", null);
+			dr.addChildTag("Interval", "t", rrule.interval);
 			break;
 		}
 
@@ -2397,9 +2405,9 @@ catch(err){
 		}
 
 		if (rrule.isByCount && rrule.count != -1) {
-			var nr = r.addChildTag("NumberedRecurrence", "nsTypes", null);
-			nr.addChildTag("StartDate", "nsTypes", startDateStr);
-			nr.addChildTag("NumberOfOccurrences", "nsTypes", rrule.count);
+			var nr = r.addChildTag("NumberedRecurrence", "t", null);
+			nr.addChildTag("StartDate", "t", startDateStr);
+			nr.addChildTag("NumberOfOccurrences", "t", rrule.count);
 		} else if (!rrule.isByCount && rrule.untilDate) {
 
 			var endDate = rrule.untilDate.clone();
@@ -2419,13 +2427,19 @@ catch(err){
 				}
 				var endDateStr = cal.toRFC3339(endDate).substr(0, 19); //cal.toRFC3339(tmpEnd).length-6);
 			}
-			var edr = r.addChildTag("EndDateRecurrence", "nsTypes", null);
-			edr.addChildTag("StartDate", "nsTypes", startDateStr);
-			edr.addChildTag("EndDate", "nsTypes", endDateStr);
+			var edr = r.addChildTag("EndDateRecurrence", "t", null);
+			edr.addChildTag("StartDate", "t", startDateStr);
+			edr.addChildTag("EndDate", "t", endDateStr);
 		} else {
-			var ner = r.addChildTag("NoEndRecurrence", "nsTypes", null);
-			ner.addChildTag("StartDate", "nsTypes", startDateStr);
+			var ner = r.addChildTag("NoEndRecurrence", "t", null);
+			ner.addChildTag("StartDate", "t", startDateStr);
 		}
+
+		return r;
+}
+catch(err){
+this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
+}
 
 		/* We won't write WKST/FirstDayOfWeek for now because it is Exchange 2010 and up */
 	},
@@ -2617,27 +2631,34 @@ try{
 			var recurrenceInfoChanged;
 			if (this._recurrenceInfo) {
 				// We had recurrenceInfo. Lets see if it changed.
+				this.logInfo("We had recurrenceInfo. Lets see if it changed.");
 				if (this._newRecurrenceInfo !== undefined) {
 					// It was changed or removed
-					if (this._newRecurrenceInfo !== null) {
+					if (this._newRecurrenceInfo === null) {
 						// It was removed
+						this.logInfo("We had recurrenceInfo. And it is removed.");
 						recurrenceInfoChanged = false;
 						this.addDeleteItemField(updates, "Recurrence");
 					}
 					else {
 						// See if something changed
+						this.logInfo("We had recurrenceInfo. And it was changed.");
 						recurrenceInfoChanged = true;
 					}
 				}
 			}
 			else {
 				// We did not have recurrence info. Check if we have now
+				this.logInfo("We did not have recurrenceInfo. See if it was added.");
 				if (this._newRecurrenceInfo) {
+					this.logInfo("We did not have recurrenceInfo. But we do have now.");
 					recurrenceInfoChanged = true;
 				}
 			}
 			if (recurrenceInfoChanged) {
-				this.makeRecurrenceRule(updates);
+				
+				var recurrenceXML = this.makeRecurrenceRule();
+				this.addSetItemField(updates, "Recurrence", recurrenceXML, null, true);
 			}
 			
 
@@ -2722,7 +2743,17 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 this.logInfo("before 1: this._reminderSignalTime:"+this._reminderSignalTime+", this.reminderDueBy:"+this.reminderDueBy);
 this.logInfo("before 2: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime+", this._newAlarmLastAck:"+this._newAlarmLastAck);
 				if (!this._newXMozSnoozeTime) {
-					var nextOccurrence = this.recurrenceInfo.getNextOccurrence(this.reminderDueBy);
+					var nextOccurrence;
+					if (this.recurrenceInfo) {
+						if (this.reminderDueBy) {
+							this.logInfo("before 3: We have a reminderDueBy");
+							nextOccurrence = this.recurrenceInfo.getNextOccurrence(this.reminderDueBy);
+						}
+						else {
+							this.logInfo("before 3: We do not have a reminderDueBy we will use now.");
+							nextOccurrence = this.recurrenceInfo.getNextOccurrence(cal.now());
+						}
+					}
 	//				var nextOccurrence = this.recurrenceInfo.getNextOccurrence(this._reminderSignalTime);
 	this.logInfo("after 1");
 					if ((! nextOccurrence) && (this.reminderIsSet)) {
@@ -2764,13 +2795,10 @@ this.logInfo("before 2: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime+", thi
 							{ DistinguishedPropertySetId: "Common",
 							  PropertyId: MAPI_PidLidReminderSignalTime,
 							  PropertyType: "SystemTime"} );
-/*				}
-				else {
-					dump("------------ user snoozed (1) but how?????????????.\n");
-				}*/
 			}
 			else {
-				dump("------------ user snoozed (2) but how?????????????.\n");
+				//dump("------------ user snoozed (2) but how?????????????.\n");
+				// This happens when someone changes the recurrence info on a master.
 			}
 		}
 		else {
