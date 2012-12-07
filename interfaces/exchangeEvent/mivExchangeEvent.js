@@ -310,17 +310,12 @@ try {
 		this.logInfo("clone: title:"+this.title, -1);
 		var result = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 				.createInstance(Ci.mivExchangeEvent);
-this.logInfo("clone: 1");
 		result.exchangeData = this._exchangeData;
-this.logInfo("clone: 2");
 		result.cloneToCalEvent(this._calEvent);
 		result.calendar = this._calEvent.calendar;
-this.logInfo("clone: 3");
 
 		if (this._newStartDate) result.startDate = this.startDate.clone();
-this.logInfo("clone: 4");
 		if (this._newEndDate) result.endDate = this.endDate.clone();
-this.logInfo("clone: 5");
 
 		// We are going to replay all changes to clone
 		if (this._newBody === null) result.deleteProperty("DESCRIPTION");
@@ -388,6 +383,7 @@ this.logInfo("clone: this._ocurrences 1");
 					break;
 				}
 			}
+			var tmpattendees = result.getAttendees({});
 		}
 
 		if (this._changesAttachments) {
@@ -1331,6 +1327,9 @@ catch(err){
 	removeAttendee: function _removeAttendee(attendee)
 	{
 		this.logInfo("removeAttendee: title:"+this.title);
+		if(!attendee) return;
+
+		if (!this._attendees) this.getAttendees({});
 		this._changesAttendees.push({ action: "remove", attendee: attendee.clone()});
 		this._calEvent.removeAttendee(attendee);
 	},
