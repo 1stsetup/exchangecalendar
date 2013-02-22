@@ -4855,6 +4855,9 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 		var onlySnoozeChanged = true;
 		upd.addChildTagObject(aNewItem.updateXML);
+		if (aNewItem.nonPersonalDataChanged) {
+			onlySnoozeChanged = false;
+		}
 
 		if (onlySnoozeChanged) {
 			if (this.debug) this.logInfo("onlySnoozeChanged Or reminder time before start.");

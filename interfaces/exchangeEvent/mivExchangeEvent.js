@@ -173,6 +173,8 @@ function mivExchangeEvent() {
 	this._newMyResponseType = undefined; 
 	this._newIsInvitation = undefined;
 
+	this._nonPersonalDataChanged = false;
+
 	this._occurrences = {};
 	this._exceptions = {};
 
@@ -1288,6 +1290,7 @@ catch(err){
 			for each (var at in attendees) {
 				tmpAttendee = this.createAttendee(at, "REQ-PARTICIPANT");
 				this._calEvent.addAttendee(tmpAttendee);
+				this.logInfo("getAttendees: title:"+this.title+", adding attendee.id:"+tmpAttendee.id);
 				this._attendees.push(tmpAttendee.clone());
 				this._reqParticipants = true;
 			}
@@ -1296,6 +1299,7 @@ catch(err){
 			for each (var at in attendees) {
 				tmpAttendee = this.createAttendee(at, "OPT-PARTICIPANT");
 				this._calEvent.addAttendee(tmpAttendee);
+				this.logInfo("getAttendees: title:"+this.title+", adding attendee.id:"+tmpAttendee.id);
 				this._attendees.push(tmpAttendee.clone());
 				this._optParticipants = true;
 			}
@@ -1318,15 +1322,71 @@ catch(err){
 		return this._calEvent.getAttendeeById(id);
 	},
 
+	attendeeIsInList: function _attendeeIsInList(attendee)
+	{
+		for each(var tmpAttendee in this.getAttendees({})) {
+			if ((tmpAttendee) && (tmpAttendee.id == attendee.id)) {
+				return tmpAttendee;
+			}
+		}
+		return null;
+	},
+
+	attendeeIsInChangesList: function _attendeeIsInChangesList(attendee)
+	{
+		for each(var tmpAttendee in this._changesAttendees) {
+			if ((tmpAttendee.attendee) && (tmpAttendee.attendee.id == attendee.id)) {
+				return tmpAttendee;
+			}
+		}
+		return null;
+	},
+
+	removeAttendeeFromChangesList: function _removeAttendeeFromChangesList(attendee)
+	{
+		var newChangesList = new Array();
+
+		for each(var tmpAttendee in this._changesAttendees) {
+			if ((tmpAttendee.attendee) && (tmpAttendee.attendee.id != attendee.id)) {
+				newChangesList.push(tmpAttendee);
+			}
+		}
+
+		this._changesAttendees = undefined;
+		this._changesAttendees = newChangesList;
+	},
+
 	//void addAttendee(in calIAttendee attendee);
 	addAttendee: function _addAttendee(attendee)
 	{
-		this.logInfo("addAttendee: title:"+this.title);
+		this.logInfo("addAttendee1: title:"+this.title+", attendee.id:"+attendee.id);
 		if(!attendee) return;
 
 		if (!this._attendees) this.getAttendees({});
+
+		var attendeeExists = this.attendeeIsInList(attendee);
+		if (attendeeExists != null) {
+			// We are not going to add this attendee as it is already in the list
+			this.logInfo("addAttendee1a: title:"+this.title+", attendee is already in list. not going to ad change record.");
+			return;
+		}
+
+		attendeeExists = this.attendeeIsInChangesList(attendee);
+		if (attendeeExists != null) {
+			// We have a change for this attendee already in the changes list.
+			if (attendeeExists.action == "remove") {
+				// We have a remove change in the list and we now want to re-add it. We just remove the remove change.
+				this.removeAttendeeFromChangesList(attendee);
+				this._calEvent.addAttendee(attendee);
+				this.logInfo("addAttendee1b: title:"+this.title+", attendee.id:"+attendee.id+", removed from changes list.");
+			}
+			// If the action was "add" we do not do anything as we do not have to duplicate it.
+			this.logInfo("addAttendee1c: title:"+this.title+", attendee.id:"+attendee.id);
+			return;
+		}
 		this._changesAttendees.push({ action: "add", attendee: attendee.clone()});
 		this._calEvent.addAttendee(attendee);
+		this.logInfo("addAttendee2: title:"+this.title+", attendee.id:"+attendee.id);
 	},
 
 	//void removeAttendee(in calIAttendee attendee);
@@ -1336,6 +1396,25 @@ catch(err){
 		if(!attendee) return;
 
 		if (!this._attendees) this.getAttendees({});
+
+		var attendeeExists = this.attendeeIsInList(attendee);
+		if (attendeeExists == null) {
+			// We are not going to remove this attendee as it is not in the list
+			return;
+		}
+
+		var attendeeExists = this.attendeeIsInChangesList(attendee);
+		if (attendeeExists != null) {
+			if (attendeeExists.action == "add") {
+				// There was already a change for this attendee and it was an addition. We remove this addition
+				this.removeAttendeeFromChangesList(attendee);
+				this._calEvent.removeAttendee(attendee);
+			}
+
+			// If the action was "remove" we do not do anything as we do not have to duplicate it.
+			return;
+		}
+
 		this._changesAttendees.push({ action: "remove", attendee: attendee.clone()});
 		this._calEvent.removeAttendee(attendee);
 	},
@@ -1346,7 +1425,19 @@ catch(err){
 		this.logInfo("removeAllAttendees: title:"+this.title);
 		var allAttendees = this.getAttendees({});
 		for each(var attendee in allAttendees) {
-			this._changesAttendees.push({ action: "remove", attendee: attendee.clone()});
+
+			var attendeeExists = this.attendeeIsInChangesList(attendee);
+			if (attendeeExists != null) {
+				if (attendeeExists.action == "add") {
+					// There was already a change for this attendee and it was an addition. We remove this addition
+					this.removeAttendeeFromChangesList(attendee);
+				}
+
+				// If the action was "remove" we do not do anything as we do not have to duplicate it.
+			}
+			else {
+				this._changesAttendees.push({ action: "remove", attendee: attendee.clone()});
+			}
 		}
 		allAttendees = null;			
 		this._calEvent.removeAllAttendees();
@@ -2452,11 +2543,14 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 	get updateXML()
 	{
+		this._nonPersonalDataChanged = false;
+
 		var updates = this.globalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 
 		if (this.isInvitation) {
 			// Only can accept/decline/tentative
 			if (this._newMyResponseType != this._myResponseType) {
+				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "MyResponseType", this._newMyResponseType);
 			}
 
@@ -2470,12 +2564,14 @@ try{
 	dump(" == this.calendarItemType:"+this.calendarItemType+"\n");
 
 			if (this._newTitle) {
+				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "Subject", this._newTitle);
 			}
 			if (this._newPrivacy) {
 				this.addSetItemField(updates, "Sensitivity", this._newPrivacy);
 			}
 			if (this._newBody) {
+				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
 			}
 			// Categories
@@ -2521,6 +2617,7 @@ try{
 					// We set in bias advanced to UCT datetime values for this.globalFunctions.
 					var exchStart = cal.toRFC3339(tmpStart);
 				}
+				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "Start", exchStart);
 			}
 
@@ -2541,10 +2638,12 @@ try{
 					// We set in bias advanced to UCT datetime values for this.globalFunctions.
 					var exchEnd = cal.toRFC3339(tmpEnd);
 				}
+				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "End", exchEnd);
 			}
 
 			if (this._newStartDate) {
+				this._nonPersonalDataChanged = true;
 				if (this._newStartDate.isDate) {
 					this.addSetItemField(updates, "IsAllDayEvent", "true");
 				}
@@ -2559,6 +2658,7 @@ try{
 			}
 
 			if (this._newLocation) {
+				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "Location", this._newLocation);
 			}
 
@@ -2614,18 +2714,22 @@ try{
 
 					}
 					if (reqAttendeeCount > 0) {
+						this._nonPersonalDataChanged = true;
 						this.addSetItemField(updates, "RequiredAttendees", reqAttendees);
 					}
 					else {
 						if (this._reqParticipants) {
+							this._nonPersonalDataChanged = true;
 							this.addDeleteItemField(updates, "RequiredAttendees");
 						}
 					}
 					if (optAttendeeCount > 0) {
+						this._nonPersonalDataChanged = true;
 						this.addSetItemField(updates, "OptionalAttendees", optAttendees);
 					}
 					else {
 						if (this._optParticipants) {
+							this._nonPersonalDataChanged = true;
 							this.addDeleteItemField(updates, "OptionalAttendees");
 						}
 					}
@@ -2644,6 +2748,7 @@ try{
 						// It was removed
 						this.logInfo("We had recurrenceInfo. And it is removed.");
 						recurrenceInfoChanged = false;
+						this._nonPersonalDataChanged = true;
 						this.addDeleteItemField(updates, "Recurrence");
 					}
 					else {
@@ -2664,6 +2769,7 @@ try{
 			if (recurrenceInfoChanged) {
 				
 				var recurrenceXML = this.makeRecurrenceRule();
+				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "Recurrence", recurrenceXML, null, true);
 			}
 			
@@ -2680,6 +2786,10 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		return updates;
 	},
 
+	get nonPersonalDataChanged()
+	{
+		return this._nonPersonalDataChanged;
+	},
 
 	checkAlarmChange: function _checkAlarmChange(updates)
 	{

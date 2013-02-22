@@ -79,6 +79,8 @@ interface mivExchangeEvent : calIEvent
 	attribute uint32_t occurrenceIndex;
 	readonly attribute mivIxml2jxon updateXML;
 
+	readonly attribute boolean nonPersonalDataChanged;
+
 	readonly attribute boolean isInvitation;
 
 	mivIxml2jxon convertToExchange(); 
