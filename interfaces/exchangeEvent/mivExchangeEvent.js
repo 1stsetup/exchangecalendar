@@ -890,7 +890,12 @@ catch(err){
 		this.logInfo("set recurrenceInfo 1: title:"+this.title+", aValue:"+aValue);
 		if (!this._recurrenceInfo) this.recurrenceInfo;
 
-		this._newRecurrenceInfo = aValue.clone();
+		if (aValue) {
+			this._newRecurrenceInfo = aValue.clone();
+		}
+		else {
+			this._newRecurrenceInfo = aValue;
+		}
 		this._calEvent.recurrenceInfo = aValue;
 	},
 
@@ -971,6 +976,7 @@ catch(err){
 		case "DESCRIPTION": 
 			if (!this._body) {
 				this._body = this.getTagValue("t:Body", null);
+				this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
 				if (this._body) {
 					this._calEvent.setProperty(name, this._body);
 				}
