@@ -5,6 +5,7 @@
 <!ENTITY exchWebService.manageEWSAccounts.saveAccount.button "Spara inställningar">
 
 <!ENTITY exchWebService.manageEWSAccounts.autodiscover.label "Använd Exchanges funktion för automatisk utforskning.">
+<!ENTITY exchWebService.manageEWSAccounts.usekerberos.label "Use Kerberos authentication.">
 <!ENTITY exchWebService.manageEWSAccounts.mailbox.label "Namn på postlåda:">
 <!ENTITY exchWebService.manageEWSAccounts.windowsuser.label "Användarnamn:">
 <!ENTITY exchWebService.manageEWSAccounts.windowsdomain.label "Domännamn:">

@@ -5,6 +5,7 @@
 <!ENTITY exchWebService.manageEWSAccounts.saveAccount.button "Save settings">
 
 <!ENTITY exchWebService.manageEWSAccounts.autodiscover.label "Use Exchange's autodiscovery function.">
+<!ENTITY exchWebService.manageEWSAccounts.usekerberos.label "Use Kerberos authentication.">
 <!ENTITY exchWebService.manageEWSAccounts.mailbox.label "Mailbox name:">
 <!ENTITY exchWebService.manageEWSAccounts.windowsuser.label "Username:">
 <!ENTITY exchWebService.manageEWSAccounts.windowsdomain.label "Domain name:">

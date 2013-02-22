@@ -118,6 +118,9 @@ exchWebService.accountFunctions = {
 				case "number":
 					this.prefs.setIntPref(aAccount.id+"."+index, aAccount[index]);
 					break;
+				case "boolean":
+					this.prefs.setBoolPref(aAccount.id+"."+index, aAccount[index]);
+					break;
 				default:
 					this.logInfo("Unknown object index:"+index);
 				}

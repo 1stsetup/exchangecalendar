@@ -1,4 +1,5 @@
 <!ENTITY ecautodiscover "Gebruik autodiscovery functie van Exchange.">
+<!ENTITY ecusekerberos "Use Kerberos authentication.">
 <!ENTITY ecfolderbase.label "Basisfolder:">
 <!ENTITY ecfolderpath.label "Pad onder basis:">
 <!ENTITY ecfolderidofshare.label "Share FolderId:">

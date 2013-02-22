@@ -1,4 +1,5 @@
 <!ENTITY ecautodiscover "Exchange's Autodiscovery Funktion nutzen.">
+<!ENTITY ecusekerberos "Use Kerberos authentication.">
 <!ENTITY ecfolderbase.label "Hauptordner:">
 <!ENTITY ecfolderpath.label "Pfad unterhalb des Hauptordners:">
 <!ENTITY ecfolderidofshare.label "Freigabeordner Id:">

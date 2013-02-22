@@ -1,4 +1,5 @@
 <!ENTITY ecautodiscover "Utiliser la fonction de découverte automatique d'Exchange.">
+<!ENTITY ecusekerberos "Utiliser authentification Kerberos.">
 <!ENTITY ecfolderbase.label "Dossier racine:">
 <!ENTITY ecfolderpath.label "Chemin sous le dossier racine:">
 <!ENTITY ecfolderidofshare.label "Dossier partagé:">
