@@ -43,11 +43,14 @@ function mivExchangeTimeZones() {
 	this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
 				.getService(Ci.mivExchangeStatistics);
 
+	this.timezoneService = Cc["@mozilla.org/calendar/timezone-service;1"]
+				.getService(Ci.calITimezoneProvider);
+
 	// load timezone file from resource. This is for Exchange server version before 2010.
 	this.load_timezonedefinitions_file();
 }
 
-var PREF_MAINPART = 'extensions.1st-setup.exchangecalendar.statistics.';
+var PREF_MAINPART = 'extensions.1st-setup.exchangecalendar.timezones.';
 
 var mivExchangeTimeZonesGUID = "16093d9f-a9ac-41ab-9995-0a3a7423b45c";
 
@@ -223,6 +226,93 @@ mivExchangeTimeZones.prototype = {
 		}
 
 		return "UTC";
+	},
+
+	getCalTimeZoneByExchangeTimeZone: function _getCalTimeZoneByExchangeTimeZone(aExchangeTimeZone, aURL)
+	{
+		if (aExchangeTimeZone == null) return null;
+
+		var result = null;
+
+		var zoneId = aExchangeTimeZone.getAttribute("Id", "??");
+		this.logInfo("Exchange timezone:"+zoneId);
+
+		var standardPeriods = aExchangeTimeZone.XPath("/t:Periods/t:Period[@Name = 'Standard']");
+		var standardBias = null;
+		if (standardPeriods.length > 0) {
+			// Get last period. Most of the time this is the last in the list.
+			standardBias = this.globalFunctions.convertDurationToSeconds(standardPeriods[standardPeriods.length-1].getAttribute("Bias"));
+		}
+
+		var daylightPeriods = aExchangeTimeZone.XPath("/t:Periods/t:Period[@Name = 'Daylight']");
+		var daylightBias = null;
+		if (daylightPeriods.length > 0) {
+			// Get last period. Most of the time this is the last in the list.
+			daylightBias = this.globalFunctions.convertDurationToSeconds(daylightPeriods[daylightPeriods.length-1].getAttribute("Bias"));
+		}
+
+		// Loop through the lightning timezones.
+		// First we try to do a fast detection by name
+		var weHaveAMatch = false;
+		if (zoneId != "??") {
+			var timezones = this.timezoneService.timezoneIds;
+			while (timezones.hasMore() && (!weHaveAMatch)) {
+				var tmpZone = timezones.getNext();
+				var zoneParts = tmpZone.split("/");
+				if (zoneParts.length > 1) {
+					country = zoneParts[1];
+				}
+				this.logInfo("Lightning timezone:"+tmpZone+". We will use:"+country);
+
+				if (zoneId.indexOf(country) > -1) {
+					this.logInfo("  --> We have a match between Lightning and Exchange on country name.");
+					result = this.timezoneService.getTimezone(tmpZone);
+
+					var tmpBiasValues = this.calculateBiasOffsets(result);
+					if (!tmpBiasValues.standard) {
+						tmpBiasValues.standard = "PT0H";
+					}
+
+					if (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.standard) == standardBias) {
+						if ((tmpBiasValues.daylight == null) || (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.daylight) == daylightBias)) {
+							weHaveAMatch = true;
+							this.logInfo("  --> a. We have a match between on Bias values.");
+						}
+					}
+				}
+			}
+		}
+
+		if (!weHaveAMatch) {
+			// We scan the while list to find a match.
+			result = null;
+
+			var timezones = this.timezoneService.timezoneIds;
+			while (timezones.hasMore() && (!weHaveAMatch)) {
+				var tmpZone = timezones.getNext();
+				result = this.timezoneService.getTimezone(tmpZone);
+
+				var tmpBiasValues = this.calculateBiasOffsets(result);
+				if (!tmpBiasValues.standard) {
+					tmpBiasValues.standard = "PT0H";
+				}
+
+				if (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.standard) == standardBias) {
+					if ((tmpBiasValues.daylight == null) || (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.daylight) == daylightBias)) {
+						weHaveAMatch = true;
+						this.logInfo("  --> b. We have a match between on Bias values for Lightning zone:"+tmpZone);
+					}
+				}
+
+			}
+		}
+
+		if (!weHaveAMatch) {
+			result = null;
+			this.logInfo("  --> c. Could not find a matching lightning timezone.");
+		}
+
+		return result;
 	},
 
 	// Internal methods.

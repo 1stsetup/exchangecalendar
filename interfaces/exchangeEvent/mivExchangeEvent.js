@@ -183,6 +183,9 @@ function mivExchangeEvent() {
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
 
+	this.timeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
+				.getService(Ci.mivExchangeTimeZones);
+
 	this.logInfo("mivExchangeEvent: init");
 
 }
@@ -1712,6 +1715,10 @@ catch(err){
 			this._startDate = this.tryToSetDateValue(this.getTagValue("t:Start", null), this._calEvent.startDate);
 			if (this.isAllDayEvent) this._startDate.isDate = true;
 			if (this._startDate) {
+				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "");
+				if (timezone) {
+					this._startDate = this._startDate.getInTimezone(timezone);
+				}
 				this._calEvent.startDate = this._startDate.clone();
 			}
 		}
@@ -1740,7 +1747,13 @@ catch(err){
 		if (!this._endDate) {
 			this._endDate = this.tryToSetDateValue(this.getTagValue("t:End", null), this._calEvent.endDate);
 			if (this.isAllDayEvent) this._endDate.isDate = true;
-			if (this._endDate) this._calEvent.endDate = this._endDate.clone();
+			if (this._endDate) {
+				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:EndTimeZone"), "");
+				if (timezone) {
+					this._endDate = this._endDate.getInTimezone(timezone);
+				}
+				this._calEvent.endDate = this._endDate.clone();
+			}
 		}
 		this.logInfo("get endDate: title:"+this.title+", endDate=="+this._calEvent.endDate, -1);
 		return this._calEvent.endDate;

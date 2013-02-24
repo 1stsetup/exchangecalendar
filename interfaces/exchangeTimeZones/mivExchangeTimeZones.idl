@@ -22,11 +22,15 @@
 #include "nsISupports.idl"
 #include "calITimezone.idl"
 
+interface mivIxml2jxon;
+
 [scriptable, uuid(16093d9f-a9ac-41ab-9995-0a3a7423b45c)]
 interface mivExchangeTimeZones : nsISupports
 {
 
   void addURL(in AUTF8String aURL, in AUTF8String aUser, in jsval aCalendar);
-  AUTF8String getExchangeTimeZoneIdByCalTimeZone(in calITimezone aCalTimeZone);
+  AUTF8String getExchangeTimeZoneIdByCalTimeZone(in calITimezone aCalTimeZone, in AUTF8String aURL);
+
+  calITimezone getCalTimeZoneByExchangeTimeZone(in mivIxml2jxon aExchangeTimeZone, in AUTF8String aURL);
 
 };
