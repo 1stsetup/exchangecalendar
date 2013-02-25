@@ -234,8 +234,9 @@ mivExchangeTimeZones.prototype = {
 
 		var result = null;
 
-		var zoneId = aExchangeTimeZone.getAttribute("Id", "??");
-		this.logInfo("Exchange timezone:"+zoneId);
+		var exchangeZoneId = aExchangeTimeZone.getAttribute("Id", "??");
+		var exchangeZoneName = aExchangeTimeZone.getAttribute("Name", "??");
+		this.logInfo("Exchange timezone:"+exchangeZoneId+"/"+exchangeZoneName);
 
 		var standardPeriods = aExchangeTimeZone.XPath("/t:Periods/t:Period[@Name = 'Standard']");
 		var standardBias = null;
@@ -253,62 +254,70 @@ mivExchangeTimeZones.prototype = {
 
 		// Loop through the lightning timezones.
 		// First we try to do a fast detection by name
-		var weHaveAMatch = false;
-		if (zoneId != "??") {
+		var zoneScore = 0;
+		if ((exchangeZoneId != "??") || (exchangeZoneName != "??")) {
 			var timezones = this.timezoneService.timezoneIds;
-			while (timezones.hasMore() && (!weHaveAMatch)) {
+			var tmpResult = null;
+			while (timezones.hasMore()) {
 				var tmpZone = timezones.getNext();
 				var zoneParts = tmpZone.split("/");
-				if (zoneParts.length > 1) {
-					country = zoneParts[1];
+
+				var tmpScore = 0;
+				for each(var zonePart in zoneParts) {
+					if (exchangeZoneId.indexOf(zonePart) > -1) {
+						tmpScore = tmpScore + 1;
+					}
+					if (exchangeZoneName.indexOf(zonePart) > -1) {
+						tmpScore = tmpScore + 1;
+					}
 				}
-				this.logInfo("Lightning timezone:"+tmpZone+". We will use:"+country);
 
-				if (zoneId.indexOf(country) > -1) {
-					this.logInfo("  --> We have a match between Lightning and Exchange on country name.");
-					result = this.timezoneService.getTimezone(tmpZone);
+				if (tmpScore > zoneScore) {
+					this.logInfo("  --> We have a match between Lightning '"+tmpZone+"' and Exchange '"+exchangeZoneId+"/"+exchangeZoneName+"' on id and name.");
+					tmpResult = this.timezoneService.getTimezone(tmpZone);
 
-					var tmpBiasValues = this.calculateBiasOffsets(result);
+					var tmpBiasValues = this.calculateBiasOffsets(tmpResult);
 					if (!tmpBiasValues.standard) {
 						tmpBiasValues.standard = "PT0H";
 					}
 
 					if (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.standard) == standardBias) {
 						if ((tmpBiasValues.daylight == null) || (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.daylight) == daylightBias)) {
-							weHaveAMatch = true;
-							this.logInfo("  --> a. We have a match between on Bias values.");
+							result = tmpResult;
+							zoneScore = tmpScore;
+							this.logInfo("  --> a. We have a match between Lightning '"+tmpZone+"' and Exchange '"+exchangeZoneId+"/"+exchangeZoneName+"'  on Bias values.");
 						}
 					}
 				}
 			}
 		}
 
-		if (!weHaveAMatch) {
+		var weHaveAMatch = false;
+		if (result == null) {
 			// We scan the while list to find a match.
-			result = null;
-
 			var timezones = this.timezoneService.timezoneIds;
+			var tmpResult = null;
 			while (timezones.hasMore() && (!weHaveAMatch)) {
 				var tmpZone = timezones.getNext();
-				result = this.timezoneService.getTimezone(tmpZone);
+				tmpResult = this.timezoneService.getTimezone(tmpZone);
 
-				var tmpBiasValues = this.calculateBiasOffsets(result);
+				var tmpBiasValues = this.calculateBiasOffsets(tmpResult);
 				if (!tmpBiasValues.standard) {
 					tmpBiasValues.standard = "PT0H";
 				}
 
 				if (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.standard) == standardBias) {
 					if ((tmpBiasValues.daylight == null) || (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.daylight) == daylightBias)) {
+						result = tmpResult;
 						weHaveAMatch = true;
-						this.logInfo("  --> b. We have a match between on Bias values for Lightning zone:"+tmpZone);
+						this.logInfo("  --> b. We have a match between Lightning '"+tmpZone+"' and Exchange '"+exchangeZoneId+"/"+exchangeZoneName+"' on Bias values.");
 					}
 				}
 
 			}
 		}
 
-		if (!weHaveAMatch) {
-			result = null;
+		if (result == null) {
 			this.logInfo("  --> c. Could not find a matching lightning timezone.");
 		}
 
