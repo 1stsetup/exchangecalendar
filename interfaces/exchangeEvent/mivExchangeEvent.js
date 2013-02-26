@@ -246,7 +246,7 @@ mivExchangeEvent.prototype = {
 	//calIItemBase createProxy(in calIDateTime aRecurrenceId);
 	createProxy: function _createProxy(aRecurrenceId)
 	{
-		this.logInfo("CreateProxy aRecurrenceId:"+aRecurrenceId);
+		//this.logInfo("CreateProxy aRecurrenceId:"+aRecurrenceId);
 
 		var occurrence;
 		for each(var occurrence in this._occurrences) {
@@ -265,7 +265,7 @@ mivExchangeEvent.prototype = {
 			newItem.parentItem = this;
 		}
 
-		this.logInfo("CreateProxy the end");
+		//this.logInfo("CreateProxy the end");
 		return newItem;
 	},
 
@@ -276,7 +276,7 @@ mivExchangeEvent.prototype = {
 	//calIItemBase cloneShallow(in calIItemBase aNewParent);
 	cloneShallow: function _cloneShallow(aNewParent)
 	{
-		this.logInfo("cloneShallow aNewParent:"+aNewParent);
+		//this.logInfo("cloneShallow aNewParent:"+aNewParent);
 		var newItem = this.clone();
 		if (aNewParent) {
 			newItem.parentItem = aNewParent;
@@ -295,7 +295,7 @@ mivExchangeEvent.prototype = {
 	//readonly attribute boolean isMutable;
 	get isMutable()
 	{
-		this.logInfo("get isMutable: title:"+this.title+", value:"+this._calEvent.isMutable);
+		//this.logInfo("get isMutable: title:"+this.title+", value:"+this._calEvent.isMutable);
 		return this._isMutable;
 	},
 
@@ -303,7 +303,7 @@ mivExchangeEvent.prototype = {
 	//void makeImmutable();
 	makeImmutable: function _makeImmutable()
 	{
-		this.logInfo("makeImmutable: title:"+this.title);
+		//this.logInfo("makeImmutable: title:"+this.title);
 		this._isMutable = false;
 	},
 
@@ -312,7 +312,7 @@ mivExchangeEvent.prototype = {
 	clone: function _clone()
 	{
 try {
-		this.logInfo("clone: title:"+this.title, -1);
+		//this.logInfo("clone: title:"+this.title, -1);
 		var result = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 				.createInstance(Ci.mivExchangeEvent);
 		result.exchangeData = this._exchangeData;
@@ -344,7 +344,7 @@ try {
 
 		if (this._occurrences) {
 			for each(var occurrence in this._occurrences) {
-this.logInfo("clone: this._ocurrences 1");
+//this.logInfo("clone: this._ocurrences 1");
 				result.removeOccurrence(occurrence);
 				result.addOccurrence(occurrence);
 			}
@@ -411,7 +411,7 @@ this.logInfo("clone: this._ocurrences 1");
 		if (this._newParentItem) result.parentItem =this.parentItem;
 		if (this._newAlarmLastAck) result.alarmLastAck = this.alarmLastAck;
 
-		this.logInfo("clone 99: title:"+this.title+", startDate:"+result.startDate, -1);
+		//this.logInfo("clone 99: title:"+this.title+", startDate:"+result.startDate, -1);
 }
 catch(err){
   this.logInfo("Clone: error:"+err);
@@ -435,7 +435,7 @@ catch(err){
 			this.recurrenceId ? this.recurrenceId.getInTimezone(this.globalFunctions.ecUTC()).icalString : "",
 			this.calendar ? encodeURIComponent(this.calendar.id) : ""].join("#");
 
-		this.logInfo("get hashId: title:"+this.title+", value:"+this._hashId);
+		//this.logInfo("get hashId: title:"+this.title+", value:"+this._hashId);
 		return this._hashId;
 	},
 
@@ -450,7 +450,7 @@ catch(err){
 	//boolean hasSameIds(in calIItemBase aItem);
 	hasSameIds: function _hasSameIds(aItem)
 	{
-		this.logInfo("hasSameIds: title:"+this.title);
+		//this.logInfo("hasSameIds: title:"+this.title);
 		return this._calEvent.hasSameIds(aItem);
 	},
 
@@ -474,7 +474,7 @@ catch(err){
 
 	set generation(aValue)
 	{
-		this.logInfo("set generation: title:"+this.title);
+		//this.logInfo("set generation: title:"+this.title);
 		this._calEvent.generation = aValue;
 	},
 
@@ -482,7 +482,7 @@ catch(err){
 	//readonly attribute calIDateTime creationDate;
 	get creationDate()
 	{
-		this.logInfo("get creationDate: title:"+this.title+", value:"+this.dateTimeCreated);
+		//this.logInfo("get creationDate: title:"+this.title+", value:"+this.dateTimeCreated);
 		return this.dateTimeCreated;
 	},
 
@@ -493,7 +493,7 @@ catch(err){
 		if (!this._lastModifiedTime) {
 			this._lastModifiedTime = this.tryToSetDateValueUTC(this.getTagValue("t:LastModifiedTime", null), null);
 		}
-		this.logInfo("get lastModifiedTime: title:"+this.title+", value:"+this._lastModifiedTime);
+		//this.logInfo("get lastModifiedTime: title:"+this.title+", value:"+this._lastModifiedTime);
 		return this._lastModifiedTime;
 	},
 
@@ -501,7 +501,7 @@ catch(err){
 	//readonly attribute calIDateTime stampTime;
 	get stampTime()
 	{
-		this.logInfo("get stampTime: title:"+this.title+", value:"+this._calEvent.stampTime);
+		//this.logInfo("get stampTime: title:"+this.title+", value:"+this._calEvent.stampTime);
 		return this._calEvent.stampTime;
 	},
 
@@ -556,7 +556,7 @@ catch(err){
 
 	set title(aValue)
 	{
-		this.logInfo("set title: oldTitle:"+this.title+", newTitle:"+aValue);
+		//this.logInfo("set title: oldTitle:"+this.title+", newTitle:"+aValue);
 		if (aValue != this.title) {
 			this._newTitle = aValue;
 			this._calEvent.title = aValue;
@@ -581,13 +581,13 @@ catch(err){
 					break;
 			}
 		}
-		this.logInfo("get priority: title:"+this.title+", value:"+this._calEvent.priority);
+		//this.logInfo("get priority: title:"+this.title+", value:"+this._calEvent.priority);
 		return this._calEvent.priority;
 	},
 
 	set priority(aValue)
 	{
-		this.logInfo("set priority: title:"+this.title+", aValue:"+aValue);
+		//this.logInfo("set priority: title:"+this.title+", aValue:"+aValue);
 		if (aValue != this.priority) {
 			if (aValue > 5) {
 				this._newPriority = "Low";
@@ -628,13 +628,13 @@ catch(err){
 			}
 			this.setProperty("CLASS", this._calEvent.privacy);
 		}
-		this.logInfo("get privacy: title:"+this.title+", value:"+this._calEvent.privacy);
+		//this.logInfo("get privacy: title:"+this.title+", value:"+this._calEvent.privacy);
 		return this._calEvent.privacy;
 	},
 
 	set privacy(aValue)
 	{
-		this.logInfo("set privacy: title:"+this.title+", aValue:"+aValue);
+		//this.logInfo("set privacy: title:"+this.title+", aValue:"+aValue);
 		if (aValue != this.privacy) {
 			const privacies = { "PUBLIC": "Normal",
 					"CONFIDENTIAL": "Confidential", 
@@ -664,13 +664,13 @@ catch(err){
 
 			this._calEvent.status = statusMap[this._status];
 		}
-		this.logInfo("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
+		//this.logInfo("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
 		return this._calEvent.status;
 	},
 
 	set status(aValue)
 	{
-		this.logInfo("set status: title:"+this.title+", aValue:"+aValue);
+		//this.logInfo("set status: title:"+this.title+", aValue:"+aValue);
 		if (aValue != this.status) {
 			const statuses = { "NONE": "NoResponseReceived",
 					"TENTATIVE": "Tentative", 
@@ -688,13 +688,13 @@ catch(err){
 	//attribute AUTF8String icalString;
 	get icalString()
 	{
-		this.logInfo("get icalString: title:"+this.title+", value:"+this._calEvent.icalString);
+		//this.logInfo("get icalString: title:"+this.title+", value:"+this._calEvent.icalString);
 		return this._calEvent.icalString;
 	},
 
 	set icalString(aValue)
 	{
-		this.logInfo("set icalString: title:"+this.title+", aValue:"+aValue);
+		//this.logInfo("set icalString: title:"+this.title+", aValue:"+aValue);
 		this._calEvent.icalString = aValue;
 	},
 
@@ -704,13 +704,13 @@ catch(err){
 	//attribute calIIcalComponent icalComponent;
 	get icalComponent()
 	{
-		this.logInfo("get icalComponent: title:"+this.title+", value:"+this._calEvent.icalComponent);
+		//this.logInfo("get icalComponent: title:"+this.title+", value:"+this._calEvent.icalComponent);
 		return this._calEvent.icalComponent;
 	},
 
 	set icalComponent(aValue)
 	{
-		this.logInfo("set icalComponent: title:"+this.title+", aValue:"+aValue);
+		//this.logInfo("set icalComponent: title:"+this.title+", aValue:"+aValue);
 		this._calEvent.icalComponent = aValue;
 	},
 
@@ -727,10 +727,10 @@ catch(err){
 	//void getAlarms(out PRUint32 count, [array, size_is(count), retval] out calIAlarm aAlarms);
 	getAlarms: function _getAlarms(count)
 	{
-		this.logInfo("getAlarms: title:"+this.title);
+		//this.logInfo("getAlarms: title:"+this.title);
 		if (!this._alarm) {
 			if ((this.reminderIsSet) && (this.reminderDueBy.compare(this.startDate) < 1) && (this.calendarItemType != "RecurringMaster")) {
-				this.logInfo("Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType);
+				//this.logInfo("Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType);
 				var alarm = cal.createAlarm();
 				alarm.action = "DISPLAY";
 				alarm.repeat = 0;
@@ -747,7 +747,7 @@ catch(err){
 				alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
 				alarm.offset = alarmOffset;
 
-				this.logInfo("Alarm set with an offset of "+alarmOffset.minutes+" minutes from the start");
+				//this.logInfo("Alarm set with an offset of "+alarmOffset.minutes+" minutes from the start");
 
 				this._alarm = alarm.clone();
 				this._calEvent.addAlarm(alarm);
@@ -764,7 +764,7 @@ catch(err){
 	//void addAlarm(in calIAlarm aAlarm);
 	addAlarm: function _addAlarm(aAlarm)
 	{
-		this.logInfo("addAlarm: title:"+this.title);
+		//this.logInfo("addAlarm: title:"+this.title);
 		this.getAlarms({}); // Preload
 
 		if (this._newAlarm) {
@@ -784,7 +784,7 @@ catch(err){
 	//void deleteAlarm(in calIAlarm aAlarm);
 	deleteAlarm: function _deleteAlarm(aAlarm)
 	{
-		this.logInfo("deleteAlarm: title:"+this.title);
+		//this.logInfo("deleteAlarm: title:"+this.title);
 		this._changesAlarm.push({ action: "remove", alarm: this._newAlarm});
 		this._newAlarm = null;
 		this._calEvent.deleteAlarm(aAlarm);
@@ -796,7 +796,7 @@ catch(err){
 	//void clearAlarms();
 	clearAlarms: function _clearAlarms()
 	{
-		this.logInfo("clearAlarms: title:"+this.title);
+		//this.logInfo("clearAlarms: title:"+this.title);
 		var oldAlarms = this.getAlarms({});
 		for each(var alarm in oldAlarms) {
 			this._changesAlarm.push({ action: "remove", alarm: alarm});
@@ -835,7 +835,7 @@ catch(err){
 			}
 			this._calEvent.alarmLastAck = this._alarmLastAck;
 		}
-		this.logInfo("get alarmLastAck: title:"+this.title+", alarmLastAck:"+this._calEvent.alarmLastAck, -1);
+		//this.logInfo("get alarmLastAck: title:"+this.title+", alarmLastAck:"+this._calEvent.alarmLastAck, -1);
 		return this._calEvent.alarmLastAck;
 	},
 
@@ -843,12 +843,12 @@ catch(err){
 	{
 		if ((aValue) && (aValue.compare(this.alarmLastAck) != 0)) {
 
-			this.logInfo("set alarmLastAck: User snoozed alarm. Title:"+this.title+", aValue:"+aValue.toString()+", alarmTime:"+this.getAlarmTime(), -1);
+			//this.logInfo("set alarmLastAck: User snoozed alarm. Title:"+this.title+", aValue:"+aValue.toString()+", alarmTime:"+this.getAlarmTime(), -1);
 			this._newAlarmLastAck = aValue.clone();
 		}
 		else {
 			if (aValue === null) {
-				this.logInfo("set alarmLastAck: set to NULL. Title:"+this.title+", aValue:"+aValue+", alarmTime:"+this.getAlarmTime(), -1);
+				//this.logInfo("set alarmLastAck: set to NULL. Title:"+this.title+", aValue:"+aValue+", alarmTime:"+this.getAlarmTime(), -1);
 				this._newAlarmLastAck = null;
 			}
 		}
@@ -867,7 +867,7 @@ catch(err){
 			recurrence = null;
 	
 			if (recrule) {
-				this.logInfo("get recurrenceInfo 1: title:"+this.title+", recrule:"+recrule);
+				//this.logInfo("get recurrenceInfo 1: title:"+this.title+", recrule:"+recrule);
 				var recurrenceInfo = cal.createRecurrenceInfo(this);
 				recurrenceInfo.setRecurrenceItems(1, [recrule]);
 				this._recurrenceInfo = recurrenceInfo.clone();
@@ -875,24 +875,24 @@ catch(err){
 			}
 			else {
 				this._recurrenceInfo = null;
-				this.logInfo("get recurrenceInfo 2: title:"+this.title+", recrule:null");
+				//this.logInfo("get recurrenceInfo 2: title:"+this.title+", recrule:null");
 			}
 		}
 
 		// For debugging
 		var recurrenceInfo = this._calEvent.recurrenceInfo;
 		if (recurrenceInfo) {
-			this.logInfo("get recurrenceInfo 3: title:"+this.title+", this._calEvent.recurrenceInfo:"+this._calEvent.recurrenceInfo);
+			//this.logInfo("get recurrenceInfo 3: title:"+this.title+", this._calEvent.recurrenceInfo:"+this._calEvent.recurrenceInfo);
 		}
 		else {
-			this.logInfo("get recurrenceInfo 4: title:"+this.title+", this._calEvent.recurrenceInfo:null");
+			//this.logInfo("get recurrenceInfo 4: title:"+this.title+", this._calEvent.recurrenceInfo:null");
 		}
 		return this._calEvent.recurrenceInfo;
 	},
 
 	set recurrenceInfo(aValue)
 	{
-		this.logInfo("set recurrenceInfo 1: title:"+this.title+", aValue:"+aValue);
+		//this.logInfo("set recurrenceInfo 1: title:"+this.title+", aValue:"+aValue);
 		if (!this._recurrenceInfo) this.recurrenceInfo;
 
 		if (aValue) {
@@ -912,7 +912,7 @@ catch(err){
 				return this._recurrenceStartDate;
 			}
 		}
-		this.logInfo("get recurrenceStartDate: title:"+this.title+", value:"+this._calEvent.recurrenceStartDate);
+		//this.logInfo("get recurrenceStartDate: title:"+this.title+", value:"+this._calEvent.recurrenceStartDate);
 		return this._calEvent.recurrenceStartDate;
 	},
 
@@ -963,7 +963,7 @@ catch(err){
 	//boolean hasProperty(in AString name);
 	hasProperty: function _hasProperty(name)
 	{
-		this.logInfo("hasProperty: title:"+this.title+", name:"+name);
+		//this.logInfo("hasProperty: title:"+this.title+", name:"+name);
 		this.getProperty(name); // To preload.
 		return this._calEvent.hasProperty(name);
 	},
@@ -976,12 +976,12 @@ catch(err){
 	//nsIVariant getProperty(in AString name);
 	getProperty: function _getProperty(name)
 	{
-		this.logInfo("get property 1: title:"+this.title+", name:"+name);
+		//this.logInfo("get property 1: title:"+this.title+", name:"+name);
 		switch (name) {
 		case "DESCRIPTION": 
 			if (!this._body) {
 				this._body = this.getTagValue("t:Body", null);
-				this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
+				//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
 				if (this._body) {
 					this._calEvent.setProperty(name, this._body);
 				}
@@ -1056,7 +1056,7 @@ catch(err){
 
 		}
 
-		this.logInfo("get property 2: title:"+this.title+", name:"+name+", value:"+this._calEvent.getProperty(name)+", _newLocation:"+this._newLocation);
+		//this.logInfo("get property 2: title:"+this.title+", name:"+name+", value:"+this._calEvent.getProperty(name)+", _newLocation:"+this._newLocation);
 		return this._calEvent.getProperty(name);
 	},
 
@@ -1072,7 +1072,7 @@ catch(err){
 	//void setProperty(in AString name, in nsIVariant value);
 	setProperty: function _setProperty(name, value)
 	{
-		this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
+		//this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
 		switch (name) {
 		case "DESCRIPTION": 
 			if (value != this._newBody) {
@@ -1136,7 +1136,7 @@ catch(err){
 			break;
 		default:
 			if (name.indexOf("X-MOZ-SNOOZE-TIME-") > -1) {
-				this.logInfo("setProperty: "+name+" is set to value:"+value);
+				//this.logInfo("setProperty: "+name+" is set to value:"+value);
 				this._newXMozSnoozeTime = value;
 			}
 			else {
@@ -1151,7 +1151,7 @@ catch(err){
 	//void deleteProperty(in AString name);
 	deleteProperty: function _deleteProperty(name)
 	{
-		this.logInfo("deleteProperty: title:"+this.title+", name:"+name);
+		//this.logInfo("deleteProperty: title:"+this.title+", name:"+name);
 		switch (name) {
 		case "DESCRIPTION": 
 			this._newBody = null;
@@ -1180,7 +1180,7 @@ catch(err){
 	//boolean isPropertyPromoted(in AString name);
 	isPropertyPromoted: function _isPropertyPromoted(name)
 	{
-		this.logInfo("isPropertyPromoted: title:"+this.title+", name:"+name);
+		//this.logInfo("isPropertyPromoted: title:"+this.title+", name:"+name);
 		return this._calEvent.isPropertyPromoted(name);
 	},
 
@@ -1195,7 +1195,7 @@ catch(err){
 	//	               in AString aParameterName);
 	getPropertyParameter: function _getPropertyParameter(aPropertyName, aParameterName)
 	{
-		this.logInfo("getPropertyParameter: title:"+this.title+", aPropertyName:"+aPropertyName+", aParameterName:"+aParameterName+", value:"+this._calEvent.getPropertyParameter(aPropertyName, aParameterName));
+		//this.logInfo("getPropertyParameter: title:"+this.title+", aPropertyName:"+aPropertyName+", aParameterName:"+aParameterName+", value:"+this._calEvent.getPropertyParameter(aPropertyName, aParameterName));
 		return this._calEvent.getPropertyParameter(aPropertyName, aParameterName);
 	},
 
@@ -1210,7 +1210,7 @@ catch(err){
 	//	              in AString aParameterName);
 	hasPropertyParameter: function _hasPropertyParameter(aPropertyName, aParameterName)
 	{
-		this.logInfo("hasPropertyParameter: title:"+this.title+", aPropertyName:"+aPropertyName+", aParameterName:"+aParameterName+", value:"+this._calEvent.hasPropertyParameter(aPropertyName, aParameterName));
+		//this.logInfo("hasPropertyParameter: title:"+this.title+", aPropertyName:"+aPropertyName+", aParameterName:"+aParameterName+", value:"+this._calEvent.hasPropertyParameter(aPropertyName, aParameterName));
 		return this._calEvent.hasPropertyParameter(aPropertyName, aParameterName);
 	},
 
@@ -1227,7 +1227,7 @@ catch(err){
 	//	            in AUTF8String aParameterValue);
 	setPropertyParameter: function _setPropertyParameter(aPropertyName, aParameterName, aParameterValue)
 	{
-		this.logInfo("setPropertyParameter: title:"+this.title+", aPropertyName:"+aPropertyName+", aParameterName:"+aParameterName+", aParameterValue:"+aParameterValue);
+		//this.logInfo("setPropertyParameter: title:"+this.title+", aPropertyName:"+aPropertyName+", aParameterName:"+aParameterName+", aParameterValue:"+aParameterValue);
 		return this._calEvent.setPropertyParameter(aPropertyName, aParameterName, aParameterValue);
 	},
 
@@ -1240,7 +1240,7 @@ catch(err){
 	//nsISimpleEnumerator getParameterEnumerator(in AString aPropertyName);
 	getParameterEnumerator: function _getParameterEnumerator(aPropertyName)
 	{
-		this.logInfo("getParameterEnumerator: title:"+this.title+", aPropertyName:"+aPropertyName);
+		//this.logInfo("getParameterEnumerator: title:"+this.title+", aPropertyName:"+aPropertyName);
 		return this._calEvent.getParameterEnumerator(aPropertyName);
 	},
 
@@ -1259,13 +1259,13 @@ catch(err){
 			if (this._organizer) this._calEvent.organizer = this._organizer;
 		}
 
-		this.logInfo("get organizer: title:"+this.title+", value:"+this._calEvent.organizer);
+		//this.logInfo("get organizer: title:"+this.title+", value:"+this._calEvent.organizer);
 		return this._calEvent.organizer;
 	},
 
 	set organizer(aValue)
 	{
-		this.logInfo("set organizer: title:"+this.title+", aValue:"+aValue);
+		//this.logInfo("set organizer: title:"+this.title+", aValue:"+aValue);
 		if ((!this.organizer) || (aValue.toString() != this.organizer.toString())) {
 			this._newOrganizer = aValue.clone();
 			this._calEvent.organizer = aValue;
@@ -1282,7 +1282,7 @@ catch(err){
 	//	    [array,size_is(count),retval] out calIAttendee attendees);
 	getAttendees: function _getAttendees(count)
 	{
-		this.logInfo("getAttendees: title:"+this.title);
+		//this.logInfo("getAttendees: title:"+this.title);
 		if ((!this._attendees) && (this._exchangeData)) {
 			this._attendees = new Array();
 			var tmpAttendee;
@@ -1293,7 +1293,7 @@ catch(err){
 			for each (var at in attendees) {
 				tmpAttendee = this.createAttendee(at, "REQ-PARTICIPANT");
 				this._calEvent.addAttendee(tmpAttendee);
-				this.logInfo("getAttendees: title:"+this.title+", adding attendee.id:"+tmpAttendee.id);
+				//this.logInfo("getAttendees: title:"+this.title+", adding attendee.id:"+tmpAttendee.id);
 				this._attendees.push(tmpAttendee.clone());
 				this._reqParticipants = true;
 			}
@@ -1302,7 +1302,7 @@ catch(err){
 			for each (var at in attendees) {
 				tmpAttendee = this.createAttendee(at, "OPT-PARTICIPANT");
 				this._calEvent.addAttendee(tmpAttendee);
-				this.logInfo("getAttendees: title:"+this.title+", adding attendee.id:"+tmpAttendee.id);
+				//this.logInfo("getAttendees: title:"+this.title+", adding attendee.id:"+tmpAttendee.id);
 				this._attendees.push(tmpAttendee.clone());
 				this._optParticipants = true;
 			}
@@ -1319,7 +1319,7 @@ catch(err){
 	//calIAttendee getAttendeeById(in AUTF8String id);
 	getAttendeeById: function _getAttendeeById(id)
 	{
-		this.logInfo("getAttendeeById: title:"+this.title+", id:"+id);
+		//this.logInfo("getAttendeeById: title:"+this.title+", id:"+id);
 		if (!this._attendees) this.getAttendees({});
 
 		return this._calEvent.getAttendeeById(id);
@@ -1362,7 +1362,7 @@ catch(err){
 	//void addAttendee(in calIAttendee attendee);
 	addAttendee: function _addAttendee(attendee)
 	{
-		this.logInfo("addAttendee1: title:"+this.title+", attendee.id:"+attendee.id);
+		//this.logInfo("addAttendee1: title:"+this.title+", attendee.id:"+attendee.id);
 		if(!attendee) return;
 
 		if (!this._attendees) this.getAttendees({});
@@ -1370,7 +1370,7 @@ catch(err){
 		var attendeeExists = this.attendeeIsInList(attendee);
 		if (attendeeExists != null) {
 			// We are not going to add this attendee as it is already in the list
-			this.logInfo("addAttendee1a: title:"+this.title+", attendee is already in list. not going to ad change record.");
+			//this.logInfo("addAttendee1a: title:"+this.title+", attendee is already in list. not going to ad change record.");
 			return;
 		}
 
@@ -1381,21 +1381,21 @@ catch(err){
 				// We have a remove change in the list and we now want to re-add it. We just remove the remove change.
 				this.removeAttendeeFromChangesList(attendee);
 				this._calEvent.addAttendee(attendee);
-				this.logInfo("addAttendee1b: title:"+this.title+", attendee.id:"+attendee.id+", removed from changes list.");
+				//this.logInfo("addAttendee1b: title:"+this.title+", attendee.id:"+attendee.id+", removed from changes list.");
 			}
 			// If the action was "add" we do not do anything as we do not have to duplicate it.
-			this.logInfo("addAttendee1c: title:"+this.title+", attendee.id:"+attendee.id);
+			//this.logInfo("addAttendee1c: title:"+this.title+", attendee.id:"+attendee.id);
 			return;
 		}
 		this._changesAttendees.push({ action: "add", attendee: attendee.clone()});
 		this._calEvent.addAttendee(attendee);
-		this.logInfo("addAttendee2: title:"+this.title+", attendee.id:"+attendee.id);
+		//this.logInfo("addAttendee2: title:"+this.title+", attendee.id:"+attendee.id);
 	},
 
 	//void removeAttendee(in calIAttendee attendee);
 	removeAttendee: function _removeAttendee(attendee)
 	{
-		this.logInfo("removeAttendee: title:"+this.title);
+		//this.logInfo("removeAttendee: title:"+this.title);
 		if(!attendee) return;
 
 		if (!this._attendees) this.getAttendees({});
@@ -1425,7 +1425,7 @@ catch(err){
 	//void removeAllAttendees();
 	removeAllAttendees: function _removeAllAttendees()
 	{
-		this.logInfo("removeAllAttendees: title:"+this.title);
+		//this.logInfo("removeAllAttendees: title:"+this.title);
 		var allAttendees = this.getAttendees({});
 		for each(var attendee in allAttendees) {
 
@@ -1453,7 +1453,7 @@ catch(err){
 	//	      [array,size_is(count),retval] out calIAttachment attachments);
 	getAttachments: function _getAttachments(count)
 	{
-		this.logInfo("getAttachments: title:"+this.title);
+		//this.logInfo("getAttachments: title:"+this.title);
 		if ((!this._attachments) && (this._exchangeData)) {
 			this._attachments = new Array();
 			if (this.hasAttachments) {
@@ -1479,7 +1479,7 @@ catch(err){
 	//void addAttachment(in calIAttachment attachment);
 	addAttachment: function _addAttachment(attachment)
 	{
-		this.logInfo("addAttachment: title:"+this.title);
+		//this.logInfo("addAttachment: title:"+this.title);
 		if (!this._newAttachments) this._newAttachments = new Array();
 		this._changesAttachments.push({ action: "add", attachment: attachment.clone()});
 		this._calEvent.addAttachment(attachment);
@@ -1488,7 +1488,7 @@ catch(err){
 	//void removeAttachment(in calIAttachment attachment);
 	removeAttachment: function _removeAttachment(attachment)
 	{
-		this.logInfo("removeAttachment: title:"+this.title);
+		//this.logInfo("removeAttachment: title:"+this.title);
 		if (!this._removedAttachments) this._removedAttachments = new Array();
 		this._changesAttachments.push({ action: "remove", attachment: attachment.clone()});
 		this._calEvent.removeAttachment(attachment);
@@ -1497,7 +1497,7 @@ catch(err){
 	//void removeAllAttachments();
 	removeAllAttachments: function _removeAllAttachments()
 	{
-		this.logInfo("removeAllAttachments: title:"+this.title);
+		//this.logInfo("removeAllAttachments: title:"+this.title);
 		var allAttachments = this._calEvent.getAttachments({});
 		for each(var attachment in allAttachments) {
 			if (!this._removedAttachments) this._removedAttachments = new Array();
@@ -1518,7 +1518,7 @@ catch(err){
 	//	     [array, size_is(aCount), retval] out wstring aCategories);
 	getCategories: function _getCategories(aCount)
 	{
-		this.logInfo("getCategories: title:"+this.title+"\n");
+		//this.logInfo("getCategories: title:"+this.title+"\n");
 		if ((!this._categories) && (this._exchangeData)) {
 			this._categories = new Array();
 			var strings = this._exchangeData.XPath("/t:Categories/t:String");
@@ -1538,7 +1538,7 @@ catch(err){
 	//	     [array, size_is(aCount)] in wstring aCategories);
 	setCategories: function _setCategories(aCount, aCategories)
 	{
-		this.logInfo("set categories: title:"+this.title+", aCategories.length:"+aCategories.length+"\n");
+		//this.logInfo("set categories: title:"+this.title+", aCategories.length:"+aCategories.length+"\n");
 		this.getCategories({});
 		this._changesCategories = true;
 		this._calEvent.setCategories(aCount, aCategories);
@@ -1556,7 +1556,7 @@ catch(err){
 	//	    [array,size_is(count),retval] out calIRelation relations);
 	getRelations: function _getRelations(count)
 	{
-		this.logInfo("getRelations: title:"+this.title);
+		//this.logInfo("getRelations: title:"+this.title);
 		return this._calEvent.getRelations(count);
 	},
 
@@ -1566,7 +1566,7 @@ catch(err){
 	//void addRelation(in calIRelation relation);
 	addRelation: function _addRelation(relation)
 	{
-		this.logInfo("addRelation: title:"+this.title);
+		//this.logInfo("addRelation: title:"+this.title);
 		this._calEvent.addRelation(relation);
 	},
 
@@ -1576,7 +1576,7 @@ catch(err){
 	//void removeRelation(in calIRelation relation);
 	removeRelation: function _removeRelation(relation)
 	{
-		this.logInfo("removeRelation: title:"+this.title);
+		//this.logInfo("removeRelation: title:"+this.title);
 		this._calEvent.removeRelation(relation);
 	},
 
@@ -1586,7 +1586,7 @@ catch(err){
 	//void removeAllRelations();
 	removeAllRelations: function _removeAllRelations()
 	{
-		this.logInfo("removeAllRelations: title:"+this.title);
+		//this.logInfo("removeAllRelations: title:"+this.title);
 		this._calEvent.removeAllRelations();
 	},
 
@@ -1609,20 +1609,20 @@ catch(err){
 		case "Occurrence":
 		case "Exception":
 			if ((this.startDate.compare(aStartDate) >= 0) && (this.endDate.compare(aEndDate) < 0)) {
-				this.logInfo("getOccurrencesBetween 0a: inserting myself into list.");
+				//this.logInfo("getOccurrencesBetween 0a: inserting myself into list.");
 				occurrences.push(this);
 			}
 			break;
 		case "RecurringMaster":
 			for each(var exception in this._exceptions) {
 				if ((exception.compare(aStartDate) >= 0) && (exception.compare(aEndDate) < 0)) {
-					this.logInfo("getOccurrencesBetween 0d: inserting myself into list.");
+					//this.logInfo("getOccurrencesBetween 0d: inserting myself into list.");
 					occurrences.push(exception);
 				}
 			}
 			for each(var occurrence in this._occurrences) {
 				if ((occurrence.compare(aStartDate) >= 0) && (occurrence.compare(aEndDate) < 0)) {
-					this.logInfo("getOccurrencesBetween 0e: inserting myself into list.");
+					//this.logInfo("getOccurrencesBetween 0e: inserting myself into list.");
 					occurrences.push(occurrence);
 				}
 			}
@@ -1630,11 +1630,11 @@ catch(err){
 		default:
 			if (this.recurrenceInfo) {
 				occurrences = this.recurrenceInfo.getOccurrences(aStartDate, aEndDate, 0, aCount);
-				this.logInfo("getOccurrencesBetween 0b: title:"+this.title+", this.calendarItemType:"+this.calendarItemType+", aStartDate:"+aStartDate+", aEndDate:"+aEndDate+", occurrences.length:"+occurrences.length);
+				//this.logInfo("getOccurrencesBetween 0b: title:"+this.title+", this.calendarItemType:"+this.calendarItemType+", aStartDate:"+aStartDate+", aEndDate:"+aEndDate+", occurrences.length:"+occurrences.length);
 				return this.recurrenceInfo.getOccurrences(aStartDate, aEndDate, 0, aCount);
 			}
 		}
-		this.logInfo("getOccurrencesBetween 1: title:"+this.title+", aStartDate:"+aStartDate+", aEndDate:"+aEndDate+", occurrences.length:"+occurrences.length);
+		//this.logInfo("getOccurrencesBetween 1: title:"+this.title+", aStartDate:"+aStartDate+", aEndDate:"+aEndDate+", occurrences.length:"+occurrences.length);
 
 		aCount.value = occurrences.length;
 		return occurrences;
@@ -1649,7 +1649,7 @@ catch(err){
 	//attribute calIItemBase parentItem;
 	get parentItem()
 	{
-		this.logInfo("get parentItem: title:"+this.title);
+		//this.logInfo("get parentItem: title:"+this.title);
 		if ((!this._parentItem) && (!this._newParentItem)) {
 			this._parenItem = this;
 			this._calEvent.parentItem = this;
@@ -1659,7 +1659,7 @@ catch(err){
 
 	set parentItem(aValue)
 	{
-		this.logInfo("set parentItem: title:"+this.title);
+		//this.logInfo("set parentItem: title:"+this.title);
 		if (aValue != this.parentItem) {
 			this._newParentItem = aValue;
 			this._calEvent.parentItem = aValue;
@@ -1682,7 +1682,7 @@ catch(err){
 				this._calEvent.recurrenceId = this._recurrenceId;
 			}
 		}
-		this.logInfo("get recurrenceId: title:"+this.title+", value:"+this._calEvent.recurrenceId);
+		//this.logInfo("get recurrenceId: title:"+this.title+", value:"+this._calEvent.recurrenceId);
 		return this._calEvent.recurrenceId;
 	},
 
@@ -1690,10 +1690,10 @@ catch(err){
 	{
 		if (aValue != this.recurrenceId) {
 			this._newRecurrenceId = aValue;
-			this.logInfo("set recurrenceId: User tries to set recurrenceId to:"+aValue.toString()+", title:"+this.title+", this.calendarItemType:"+this.calendarItemType);
+			//this.logInfo("set recurrenceId: User tries to set recurrenceId to:"+aValue.toString()+", title:"+this.title+", this.calendarItemType:"+this.calendarItemType);
 		}
 		else {
-			this.logInfo("set recurrenceId: User tries to set recurrenceId to null, title:"+this.title);
+			//this.logInfo("set recurrenceId: User tries to set recurrenceId to null, title:"+this.title);
 		}
 		this._calEvent.recurrenceId = aValue; 
 	},
@@ -1710,7 +1710,7 @@ catch(err){
 	//attribute calIDateTime startDate;
 	get startDate()
 	{
-		this.logInfo("get startdate 1: title:"+this.title);
+		//this.logInfo("get startdate 1: title:"+this.title);
 		if (!this._startDate) {
 			this._startDate = this.tryToSetDateValue(this.getTagValue("t:Start", null), this._calEvent.startDate);
 			if (this.isAllDayEvent) this._startDate.isDate = true;
@@ -1722,13 +1722,13 @@ catch(err){
 				this._calEvent.startDate = this._startDate.clone();
 			}
 		}
-		this.logInfo("get startdate 2: title:"+this.title+", startdate=="+this._calEvent.startDate);
+		//this.logInfo("get startdate 2: title:"+this.title+", startdate=="+this._calEvent.startDate);
 		return this._calEvent.startDate;
 	},
 
 	set startDate(aValue)
 	{
-		this.logInfo("set startdate: title:"+this.title+", aValue:"+aValue);
+		//this.logInfo("set startdate: title:"+this.title+", aValue:"+aValue);
 		if (aValue.toString() != this.startDate.toString()) {
 			this._newStartDate = aValue;
 			this._calEvent.startDate = aValue;
@@ -1755,13 +1755,13 @@ catch(err){
 				this._calEvent.endDate = this._endDate.clone();
 			}
 		}
-		this.logInfo("get endDate: title:"+this.title+", endDate=="+this._calEvent.endDate, -1);
+		//this.logInfo("get endDate: title:"+this.title+", endDate=="+this._calEvent.endDate, -1);
 		return this._calEvent.endDate;
 	},
 
 	set endDate(aValue)
 	{
-		this.logInfo("set enddate: title:"+this.title+", aValue:"+aValue);
+		//this.logInfo("set enddate: title:"+this.title+", aValue:"+aValue);
 		if (aValue.toString() != this.endDate.toString()) {
 			this._newEndDate = aValue;
 			this._calEvent.endDate = aValue;
@@ -1778,11 +1778,11 @@ catch(err){
 		if ((!this._duration) && (!this._newEndDate) && (!this._newStartDate)) {
 			this._duration = this.getTagValue("t:Duration", null);
 			if (this._duration) {
-				this.logInfo("get duration: title:"+this.title+", value:"+cal.createDuration(this._duration));
+				//this.logInfo("get duration: title:"+this.title+", value:"+cal.createDuration(this._duration));
 				return cal.createDuration(this._duration);
 			}
 		}
-		this.logInfo("get duration: title:"+this.title+", value:"+this._calEvent.duration);
+		//this.logInfo("get duration: title:"+this.title+", value:"+this._calEvent.duration);
 		return this._calEvent.duration;
 	},
 
@@ -1790,14 +1790,14 @@ catch(err){
 
 	cloneToCalEvent: function cloneToCalEvent(aCalEvent)
 	{
-		this.logInfo("cloneToCalEvent: start: this.calendarItemType:"+this.calendarItemType);
+		//this.logInfo("cloneToCalEvent: start: this.calendarItemType:"+this.calendarItemType);
 //		if (this.calendarItemType == "RecurringMaster") {
 //			this._calEvent = aCalEvent.cloneShallow();
 //		}
 //		else {
 			this._calEvent = aCalEvent.clone();
 //		}
-		this.logInfo("cloneToCalEvent: title:"+this.title+",\nthis._calEvent.hashId:"+this._calEvent.hashId+"\naCalEvent.hashId:"+aCalEvent.hashId);
+		//this.logInfo("cloneToCalEvent: title:"+this.title+",\nthis._calEvent.hashId:"+this._calEvent.hashId+"\naCalEvent.hashId:"+aCalEvent.hashId);
 	},
 
 	//readonly attribute AUTF8String subject;
@@ -1861,7 +1861,7 @@ catch(err){
 			var tmpObject = this._exchangeData.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']");
 			if (tmpObject.length > 0) {
 				this._reminderSignalTime = this.tryToSetDateValueUTC(tmpObject[0].getTagValue("t:Value", null), null);
-				this.logInfo("Setting X-MOZ-SNOOZE-TIME by data in exchangedata", -1);
+				//this.logInfo("Setting X-MOZ-SNOOZE-TIME by data in exchangedata", -1);
 				switch (this.calendarItemType) {
 				case "RecurringMaster":
 					this._xMozSnoozeTime = this._reminderSignalTime.icalString;
@@ -1871,7 +1871,7 @@ catch(err){
 					this._xMozSnoozeTime = this._reminderSignalTime.icalString;
 					break;
 				default:
-					this.logInfo("Would like to set X-MOZ-SNOOZE-TIME for this.calendarItemType:"+this.calendarItemType);
+					//this.logInfo("Would like to set X-MOZ-SNOOZE-TIME for this.calendarItemType:"+this.calendarItemType);
 				}
 			}
 		}
@@ -1968,7 +1968,7 @@ catch(err){
 		if (!this._calendarItemType) {
 			this._calendarItemType = this.getTagValue("t:CalendarItemType", null);
 		}
-		this.logInfo("get calendarItemType: title:"+this.title+", this._calendarItemType:"+this._calendarItemType);
+		//this.logInfo("get calendarItemType: title:"+this.title+", this._calendarItemType:"+this._calendarItemType);
 		return this._calendarItemType;
 	},
 
@@ -2251,7 +2251,7 @@ catch(err){
 			this._occurrences[aItem.id] = aItem.clone();
 
 			var itemAlarms = aItem.getAlarms({});
-			this.logInfo("AddOccurrence: itemAlarms.length:"+itemAlarms.length+", X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
+			//this.logInfo("AddOccurrence: itemAlarms.length:"+itemAlarms.length+", X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
 			if ((itemAlarms.length > 0) && (aItem.startDate.compare(this.reminderDueBy) == 0)) {
 				this.setProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime, this.reminderSignalTime.getInTimezone(cal.UTC()).icalString);
 			}
@@ -2281,7 +2281,7 @@ catch(err){
 	set exchangeData(aValue)
 	{
 		//this.logInfo("exchangeData:"+aValue.toString());
-		dump("exchangeData:"+aValue.toString()+"\n\n");
+		//dump("exchangeData:"+aValue.toString()+"\n\n");
 		this.initialize();
 		this._exchangeData = aValue;
 	},
@@ -2399,16 +2399,16 @@ catch(err){
 	makeRecurrenceRule: function _makeRecurrenceRule()
 	{
 		if (!this.parentItem) {
-			this.logInfo("makeRecurrenceRule: No parent.");
+			//this.logInfo("makeRecurrenceRule: No parent.");
 			return;
 		}
 try{
 		if (!this.recurrenceInfo || this.parentItem.id != this.id) {
 			if (!this.recurrenceInfo) {
-				this.logInfo("makeRecurrenceRule: We have no recurrenceInfo");
+				//this.logInfo("makeRecurrenceRule: We have no recurrenceInfo");
 			}
 			if (this.parentItem.id != this.id) {
-				this.logInfo("makeRecurrenceRule: We have this.parentItem.id != this.id");
+				//this.logInfo("makeRecurrenceRule: We have this.parentItem.id != this.id");
 			}
 			return;
 		}
@@ -2417,14 +2417,14 @@ try{
 		for each (var ritem in this.recurrenceInfo.getRecurrenceItems({})) {
 			if (ritem instanceof Ci.calIRecurrenceRule) {
 				rrule = ritem;
-				this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
+				//this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				//break;
 			}
 		}
 
 		if (!rrule) {
 			// XXX exception?
-			this.logInfo("makeRecurrenceRule: We have no rrule");
+			//this.logInfo("makeRecurrenceRule: We have no rrule");
 			return;
 		}
 
@@ -2754,28 +2754,28 @@ try{
 			var recurrenceInfoChanged;
 			if (this._recurrenceInfo) {
 				// We had recurrenceInfo. Lets see if it changed.
-				this.logInfo("We had recurrenceInfo. Lets see if it changed.");
+				//this.logInfo("We had recurrenceInfo. Lets see if it changed.");
 				if (this._newRecurrenceInfo !== undefined) {
 					// It was changed or removed
 					if (this._newRecurrenceInfo === null) {
 						// It was removed
-						this.logInfo("We had recurrenceInfo. And it is removed.");
+						//this.logInfo("We had recurrenceInfo. And it is removed.");
 						recurrenceInfoChanged = false;
 						this._nonPersonalDataChanged = true;
 						this.addDeleteItemField(updates, "Recurrence");
 					}
 					else {
 						// See if something changed
-						this.logInfo("We had recurrenceInfo. And it was changed.");
+						//this.logInfo("We had recurrenceInfo. And it was changed.");
 						recurrenceInfoChanged = true;
 					}
 				}
 			}
 			else {
 				// We did not have recurrence info. Check if we have now
-				this.logInfo("We did not have recurrenceInfo. See if it was added.");
+				//this.logInfo("We did not have recurrenceInfo. See if it was added.");
 				if (this._newRecurrenceInfo) {
-					this.logInfo("We did not have recurrenceInfo. But we do have now.");
+					//this.logInfo("We did not have recurrenceInfo. But we do have now.");
 					recurrenceInfoChanged = true;
 				}
 			}
@@ -2812,7 +2812,7 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 			// Alarm was changed.
 			if (this._newAlarm === null) {
 				// Alarm was removed.
-				this.logInfo("checkAlarmChange: this._newAlarm !== undefined and this._newAlarm === null.");
+				//this.logInfo("checkAlarmChange: this._newAlarm !== undefined and this._newAlarm === null.");
 				reminderIsSetChanged = "false";
 			}
 			else {
@@ -2829,19 +2829,19 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 						// Exchange alarm is always an offset to the start.
 						switch (alarm.related) {
 						case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
-							this.logInfo("ALARM_RELATED_ABSOLUTE we are going to calculate a offset from the start.");
+							//this.logInfo("ALARM_RELATED_ABSOLUTE we are going to calculate a offset from the start.");
 							var newAlarmTime = alarm.alarmDate.clone();
 
 							// Calculate offset from start of item.
 							var offset = newAlarmTime.subtractDate(this.startDate);
 							break;
 						case Ci.calIAlarm.ALARM_RELATED_START:
-							this.logInfo("ALARM_RELATED_START this is easy exchange does the same.");
+							//this.logInfo("ALARM_RELATED_START this is easy exchange does the same.");
 							var newAlarmTime = this.startDate.clone();
 							var offset = alarm.offset.clone();
 							break;
 						case Ci.calIAlarm.ALARM_RELATED_END:
-							this.logInfo("ALARM_RELATED_END we are going to calculate the offset from the start.");
+							//this.logInfo("ALARM_RELATED_END we are going to calculate the offset from the start.");
 							var newAlarmTime = this.endDate.clone();
 							newAlarmTime.addDuration(alarm.offset);
 
@@ -2869,24 +2869,24 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		else {
 			if (this.calendarItemType == "RecurringMaster") {
 				// Check if we are passed last occurrence or exception
-this.logInfo("before 1: this._reminderSignalTime:"+this._reminderSignalTime+", this.reminderDueBy:"+this.reminderDueBy);
-this.logInfo("before 2: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime+", this._newAlarmLastAck:"+this._newAlarmLastAck);
+//this.logInfo("before 1: this._reminderSignalTime:"+this._reminderSignalTime+", this.reminderDueBy:"+this.reminderDueBy);
+//this.logInfo("before 2: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime+", this._newAlarmLastAck:"+this._newAlarmLastAck);
 				if (!this._newXMozSnoozeTime) {
 					var nextOccurrence;
 					if (this.recurrenceInfo) {
 						if (this.reminderDueBy) {
-							this.logInfo("before 3: We have a reminderDueBy");
+							//this.logInfo("before 3: We have a reminderDueBy");
 							nextOccurrence = this.recurrenceInfo.getNextOccurrence(this.reminderDueBy);
 						}
 						else {
-							this.logInfo("before 3: We do not have a reminderDueBy we will use now.");
+							//this.logInfo("before 3: We do not have a reminderDueBy we will use now.");
 							nextOccurrence = this.recurrenceInfo.getNextOccurrence(cal.now());
 						}
 					}
 	//				var nextOccurrence = this.recurrenceInfo.getNextOccurrence(this._reminderSignalTime);
-	this.logInfo("after 1");
+	//this.logInfo("after 1");
 					if ((! nextOccurrence) && (this.reminderIsSet)) {
-						this.logInfo("checkAlarmChange: We do not have a nextOccurrence and reminder was set. Going to tunr it off.");
+						//this.logInfo("checkAlarmChange: We do not have a nextOccurrence and reminder was set. Going to tunr it off.");
 						reminderIsSetChanged = "false";
 					}
 					else {
@@ -2894,13 +2894,13 @@ this.logInfo("before 2: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime+", thi
 							var minutes = nextOccurrence.reminderMinutesBeforeStart * -1;
 							var tmpDuration = cal.createDuration();
 							tmpDuration.minutes = minutes;
-	this.logInfo("after 2: nextOccurrence.startDate:"+nextOccurrence.startDate+", nextOccurrence.reminderMinutesBeforeStart:"+nextOccurrence.reminderMinutesBeforeStart+ ", reminderMinutesBeforeStart:"+minutes);
+	//this.logInfo("after 2: nextOccurrence.startDate:"+nextOccurrence.startDate+", nextOccurrence.reminderMinutesBeforeStart:"+nextOccurrence.reminderMinutesBeforeStart+ ", reminderMinutesBeforeStart:"+minutes);
 							nextOccurrence.startDate.addDuration(tmpDuration);
 							this.setProperty("X-MOZ-SNOOZE-TIME-"+nextOccurrence.recurrenceId.nativeTime, nextOccurrence.startDate.getInTimezone(cal.UTC()).icalString);					}
 					}
 				}
 				else {
-	this.logInfo("after 3: alarm was snoozed to new time and not dismissed.");
+	//this.logInfo("after 3: alarm was snoozed to new time and not dismissed.");
 				}
 			}
 		}
@@ -2910,11 +2910,11 @@ this.logInfo("before 2: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime+", thi
 			if (this._newAlarmLastAck) {
 //				if (((this.getAlarmTime()) && (this._newAlarmLastAck.compare(this.getAlarmTime()) > 0)) || (this.calendarItemType == "RecurringMaster")) {
 					if (this._newXMozSnoozeTime) {
-						this.logInfo("checkAlarmChange: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime);
+						//this.logInfo("checkAlarmChange: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime);
 						var newSnoozeTime = cal.createDateTime(this._newXMozSnoozeTime);
 					}
 					else {
-						this.logInfo("checkAlarmChange: this._newXMozSnoozeTime:"+this._xMozSnoozeTime);
+						//this.logInfo("checkAlarmChange: this._newXMozSnoozeTime:"+this._xMozSnoozeTime);
 						var newSnoozeTime = cal.createDateTime(this._xMozSnoozeTime);
 					}
 					newSnoozeTime = newSnoozeTime.getInTimezone(cal.UTC());
@@ -2933,7 +2933,7 @@ this.logInfo("before 2: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime+", thi
 		else {
 			if (this._newAlarmLastAck) {
 				reminderIsSetChanged = "false";
-				this.logInfo("checkAlarmChange: this._xMozSnoozeTime == this._newXMozSnoozeTime and this._newAlarmLastAck.");
+				//this.logInfo("checkAlarmChange: this._xMozSnoozeTime == this._newXMozSnoozeTime and this._newAlarmLastAck.");
 			}
 			else {
 				//dump("---------- xmozsnoozetime DID not change. X-MOZ-SNOOZE-TIME:"+this.getProperty("X-MOZ-SNOOZE-TIME")+" but alarmLastAck was not changed. What did user do????.\n");
