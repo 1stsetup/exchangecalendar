@@ -186,7 +186,7 @@ function mivExchangeEvent() {
 	this.timeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
 				.getService(Ci.mivExchangeTimeZones);
 
-	this.logInfo("mivExchangeEvent: init");
+//	this.logInfo("mivExchangeEvent: init");
 
 }
 
@@ -546,9 +546,6 @@ catch(err){
 			if (this._title) {
 				this._calEvent.title = this._title;
 			}
-			else {
-				this._calEvent.title = "";
-			}
 		}
 		//this.logInfo("get title: title:"+this._calEvent.title);
 		return this._calEvent.title;
@@ -610,23 +607,25 @@ catch(err){
 	{
 		if (!this._privacy) {
 			this._privacy = this.sensitivity;
-			switch(this._privacy) {
-				case "Normal" : 
-					this._calEvent.privacy = "PUBLIC";
-					break;
-				case "Confidential" : 
-					this._calEvent.privacy = "CONFIDENTIAL";
-					break;
-				case "Personal" : 
-					this._calEvent.privacy = "PRIVATE";
-					break;
-				case "Private" : 
-					this._calEvent.privacy = "PRIVATE";
-					break;
-				default :
-					this._calEvent.privacy = "PUBLIC";
+			if (this._privacy != null) {
+				switch(this._privacy) {
+					case "Normal" : 
+						this._calEvent.privacy = "PUBLIC";
+						break;
+					case "Confidential" : 
+						this._calEvent.privacy = "CONFIDENTIAL";
+						break;
+					case "Personal" : 
+						this._calEvent.privacy = "PRIVATE";
+						break;
+					case "Private" : 
+						this._calEvent.privacy = "PRIVATE";
+						break;
+					default :
+						this._calEvent.privacy = "PUBLIC";
+				}
+				this.setProperty("CLASS", this._calEvent.privacy);
 			}
-			this.setProperty("CLASS", this._calEvent.privacy);
 		}
 		//this.logInfo("get privacy: title:"+this.title+", value:"+this._calEvent.privacy);
 		return this._calEvent.privacy;
@@ -984,9 +983,6 @@ catch(err){
 				//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
 				if (this._body) {
 					this._calEvent.setProperty(name, this._body);
-				}
-				else {
-					this._calEvent.setProperty(name, "");
 				}
 			}
 			break;
@@ -1602,26 +1598,28 @@ catch(err){
 	//	              [array,size_is(aCount),retval] out calIItemBase aOccurrences);
 	getOccurrencesBetween: function _getOccurrencesBetween(aStartDate, aEndDate, aCount)
 	{
-		// for Debugging
+		if (aStartDate == null) aStartDate = this.startDate.clone();
+		if (aEndDate == null) aEndDate = this.endDate.clone();
+
 		var occurrences = [];
 		switch (this.calendarItemType) {
 		case "Single":
 		case "Occurrence":
 		case "Exception":
-			if ((this.startDate.compare(aStartDate) >= 0) && (this.endDate.compare(aEndDate) < 0)) {
+			if ( ((aStartDate == null) || (this.startDate.compare(aStartDate) >= 0)) && ((aEndDate == null) || (this.endDate.compare(aEndDate) < 0)) ) {
 				//this.logInfo("getOccurrencesBetween 0a: inserting myself into list.");
 				occurrences.push(this);
 			}
 			break;
 		case "RecurringMaster":
 			for each(var exception in this._exceptions) {
-				if ((exception.compare(aStartDate) >= 0) && (exception.compare(aEndDate) < 0)) {
+				if ( ((aStartDate == null) || (exception.compare(aStartDate) >= 0)) && ((aEndDate == null) || (exception.compare(aEndDate) < 0)) ) {
 					//this.logInfo("getOccurrencesBetween 0d: inserting myself into list.");
 					occurrences.push(exception);
 				}
 			}
 			for each(var occurrence in this._occurrences) {
-				if ((occurrence.compare(aStartDate) >= 0) && (occurrence.compare(aEndDate) < 0)) {
+				if ( ((aStartDate == null) || (occurrence.compare(aStartDate) >= 0)) && ((aEndDate == null) || (occurrence.compare(aEndDate) < 0)) ) {
 					//this.logInfo("getOccurrencesBetween 0e: inserting myself into list.");
 					occurrences.push(occurrence);
 				}
@@ -1713,8 +1711,9 @@ catch(err){
 		//this.logInfo("get startdate 1: title:"+this.title);
 		if (!this._startDate) {
 			this._startDate = this.tryToSetDateValue(this.getTagValue("t:Start", null), this._calEvent.startDate);
-			if (this.isAllDayEvent) this._startDate.isDate = true;
 			if (this._startDate) {
+				if (this.isAllDayEvent) this._startDate.isDate = true;
+
 				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "");
 				if (timezone) {
 					this._startDate = this._startDate.getInTimezone(timezone);
@@ -1746,8 +1745,8 @@ catch(err){
 	{
 		if (!this._endDate) {
 			this._endDate = this.tryToSetDateValue(this.getTagValue("t:End", null), this._calEvent.endDate);
-			if (this.isAllDayEvent) this._endDate.isDate = true;
 			if (this._endDate) {
+				if (this.isAllDayEvent) this._endDate.isDate = true;
 				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:EndTimeZone"), "");
 				if (timezone) {
 					this._endDate = this._endDate.getInTimezone(timezone);
@@ -1936,7 +1935,7 @@ catch(err){
 	get location()
 	{
 		if (!this._location) {
-			this._location = this.getTagValue("t:Location", "");
+			this._location = this.getTagValue("t:Location", null);
 		}
 		return this._location;
 	},

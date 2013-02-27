@@ -870,13 +870,19 @@ calExchangeCalendar.prototype = {
 		}
 
 		if (isEvent(aItem)) {	
-			if (aItem.id) {
+			// michel123
+
+			var tmpItem = Cc["@1st-setup.nl/exchange/calendarevent;1"]
+					.createInstance(Ci.mivExchangeEvent);
+			tmpItem.cloneToCalEvent(aItem);
+
+			if (tmpItem.id) {
 				// This is and item create through an iTIP response.
 
 				var cachedItem = null;
 				for (var index in this.meetingRequestsCache) {
 					if (this.meetingRequestsCache[index]) {
-						if (this.meetingRequestsCache[index].uid == aItem.id) {
+						if (this.meetingRequestsCache[index].uid == tmpItem.id) {
 							cachedItem = this.meetingRequestsCache[index];
 							break;
 						}
@@ -886,9 +892,9 @@ calExchangeCalendar.prototype = {
 				if (cachedItem) {
 					// We have meeting request in our cache.
 					// Send meetingrespons base on status and remove message in inbox.
-					if (this.debug) this.logInfo("BOA: iTIP action item with STATUS:"+aItem.getProperty("STATUS"));
+					if (this.debug) this.logInfo("BOA: iTIP action item with STATUS:"+tmpItem.getProperty("STATUS"));
 
-					var aNewItem = this.cloneItem(aItem);
+					var aNewItem = this.cloneItem(tmpItem);
 					aNewItem.setProperty("X-UID", cachedItem.uid);
 					//aNewItem.setProperty("X-ChangeKey", cachedItem.changeKey);
 					aNewItem.setProperty("X-MEETINGREQUEST", cachedItem.getProperty("X-MEETINGREQUEST"));
@@ -900,7 +906,7 @@ calExchangeCalendar.prototype = {
 						this.notifyOperationComplete(aListener,
 			        	                             Cr.NS_OK,
 			                        	             Ci.calIOperationListener.ADD,
-			                        	             aItem.id,
+			                        	             tmpItem.id,
 			                        	             aNewItem);
 					}
 					else {
@@ -908,18 +914,18 @@ calExchangeCalendar.prototype = {
 						this.notifyOperationComplete(aListener,
 			        	                             Ci.calIErrors.OPERATION_CANCELLED,
 			                        	             Ci.calIOperationListener.ADD,
-			                        	             aItem.id,
-			                        	             aItem);
+			                        	             tmpItem.id,
+			                        	             tmpItem);
 					}
 					return;
 				}
 				else {
-					this.getMeetingRequestFromServer(aItem, aItem.id, Ci.calIOperationListener.ADD, aListener);
+					this.getMeetingRequestFromServer(tmpItem, tmpItem.id, Ci.calIOperationListener.ADD, aListener);
 					return;
 
 				}
 			}
-			var ewsItem = this.convertCalAppointmentToExchangeAppointment(aItem, "create", true);
+			var ewsItem = this.convertCalAppointmentToExchangeAppointment(tmpItem, "create", true);
 		}
 		if (isToDo(aItem)) {
 			var ewsItem = this.convertCalTaskToExchangeTask(aItem, "create");
