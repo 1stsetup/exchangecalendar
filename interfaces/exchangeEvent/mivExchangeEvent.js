@@ -1004,6 +1004,7 @@ catch(err){
 			}
 			break;
 		case "STATUS": 
+		        //this.logInfo("get property X: title:"+this.title+", name:"+name+", value:"+this._calEvent.getProperty(name)+", _newLocation:"+this._newLocation);
 			if (!this._myResponseType) {
 				if (this.isCancelled) {
 					this._calEvent.setProperty(name, "CANCELLED");
@@ -1102,6 +1103,7 @@ catch(err){
 			}
 			break;
 		case "STATUS": 
+			//this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
 			if (value != this.getProperty(name)) {
 				switch (value) {
 				case "NONE":
@@ -2057,8 +2059,13 @@ catch(err){
 	get myResponseType()
 	{
 		if (!this._myResponseType) {
-			this._myResponseType = this.getTagValue("t:MyResponseType", null);
+			this._myResponseType = this.getTagValue("t:MyResponseType", "NoResponseReceived");
 		}
+
+		if (this._newMyResponseType) {
+			return this._newMyResponseType;
+		}
+		
 		return this._myResponseType;
 	},
 
@@ -2561,7 +2568,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 		if (this.isInvitation) {
 			// Only can accept/decline/tentative
-			if (this._newMyResponseType != this._myResponseType) {
+			if ((this._newMyResponseType) && (this._newMyResponseType != this._myResponseType)) {
 				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "MyResponseType", this._newMyResponseType);
 			}
