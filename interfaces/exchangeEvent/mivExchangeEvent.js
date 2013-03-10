@@ -166,6 +166,7 @@ function mivExchangeEvent() {
 	this._changesAttachments = new Array();
 	this._changesAlarm = new Array();
 	this._changedProperties = new Array();
+	this.mailboxAliases = new Array();
 
 	this._newBody = undefined;
 	this._newLocation = undefined;
@@ -315,6 +316,9 @@ try {
 		//this.logInfo("clone: title:"+this.title, -1);
 		var result = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 				.createInstance(Ci.mivExchangeEvent);
+		for each(var alias in this.mailboxAliases) {
+			result.addMailboxAlias(alias);
+		}
 		result.exchangeData = this._exchangeData;
 		result.cloneToCalEvent(this._calEvent);
 		result.calendar = this._calEvent.calendar;
@@ -669,7 +673,7 @@ catch(err){
 
 	set status(aValue)
 	{
-		//this.logInfo("set status: title:"+this.title+", aValue:"+aValue);
+		this.logInfo("set status: title:"+this.title+", aValue:"+aValue);
 		if (aValue != this.status) {
 			const statuses = { "NONE": "NoResponseReceived",
 					"TENTATIVE": "Tentative", 
@@ -1030,7 +1034,7 @@ catch(err){
 						this._calEvent.setProperty(name, "NONE");
 						break;
 					default:
-						this._calEvent.setProperty(name, "NONE");
+						//this._calEvent.setProperty(name, "NONE");
 						break;
 					}
 				}
@@ -3084,6 +3088,11 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		return recrule;
 	},
 
+	addMailboxAlias: function _addMailboxAlias(aAlias)
+	{
+		this.mailboxAliases.push(aAlias);
+	},
+
 	createAttendee: function _createAttendee(aElement, aType) 
 	{
 		if (!aElement) return null;
@@ -3094,6 +3103,17 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		if (!aType) {
 			aType = "REQ-PARTICIPANT";
 		}
+
+		var me = false;
+		for each(var alias in this.mailboxAliases) {
+			if (mbox.getTagValue("t:EmailAddress","unknown") == alias) {
+				me = true;
+				dump("createAttendee: Title:"+this.title+", email:"+mbox.getTagValue("t:EmailAddress","unknown")+". This address is mine ("+alias+").\n");
+//				break;
+			}
+		}
+
+		// We also need to check aliases but these do not get stored yet.
 
 		switch (mbox.getTagValue("t:RoutingType","unknown")) {
 			case "SMTP" :
@@ -3112,9 +3132,15 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		attendee.userType = "INDIVIDUAL";
 		attendee.role = aType;
 
-		if (aElement.getTagValue("t:ResponseType", "") != "") {
-			attendee.participationStatus = participationMap[aElement.getTagValue("t:ResponseType")];
-
+		if (me) {
+			attendee.participationStatus = participationMap[this.myResponseType];
+				dump("createAttendee A: Title:"+this.title+", attendee:"+attendee.id+", myResponseType:"+this.myResponseType+", attendee.participationStatus:"+attendee.participationStatus+"\n");
+		}
+		else {
+			if (aElement.getTagValue("t:ResponseType", "") != "") {
+				attendee.participationStatus = participationMap[aElement.getTagValue("t:ResponseType")];
+				dump("createAttendee B: Title:"+this.title+", attendee:"+attendee.id+", ResponseType:"+aElement.getTagValue("t:ResponseType")+", attendee.participationStatus:"+attendee.participationStatus+"\n");
+			}
 		}
 
 		return attendee;

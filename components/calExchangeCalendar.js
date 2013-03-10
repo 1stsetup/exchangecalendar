@@ -874,6 +874,7 @@ calExchangeCalendar.prototype = {
 
 			var tmpItem = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 					.createInstance(Ci.mivExchangeEvent);
+			tmpItem.addMailboxAlias(this.mailbox);
 			tmpItem.cloneToCalEvent(aItem);
 
 			if (tmpItem.id) {
@@ -2531,7 +2532,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			if ((attendee.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) ||
 				(attendee.id.replace(/^exchangecalendar:/, '').toLowerCase() == this.mailbox.toLowerCase()) ) {
 				if (this.debug) this.logInfo("getInvitedAttendee FOUND myself:"+aItem.title);
-				attendee.participationStatus = participationMap[aItem.myResponseType];
+//				attendee.participationStatus = participationMap[aItem.myResponseType];
 				return attendee; //.clone();
 			}
 		}
@@ -6185,6 +6186,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		//var item = createEvent();
 		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 				.createInstance(Ci.mivExchangeEvent);
+		item.addMailboxAlias(this.mailbox);
 		item.exchangeData = aCalendarItem;
 
 		item.calendar = this.superCalendar;

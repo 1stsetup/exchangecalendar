@@ -84,4 +84,6 @@ interface mivExchangeEvent : calIEvent
 	readonly attribute boolean isInvitation;
 
 	mivIxml2jxon convertToExchange(); 
+
+	void addMailboxAlias(in AUTF8String aAlias);
 };
