@@ -3106,10 +3106,10 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 		var me = false;
 		for each(var alias in this.mailboxAliases) {
-			if (mbox.getTagValue("t:EmailAddress","unknown") == alias) {
+			if (mbox.getTagValue("t:EmailAddress","unknown").toLowerCase() == alias.toLowerCase()) {
 				me = true;
-				dump("createAttendee: Title:"+this.title+", email:"+mbox.getTagValue("t:EmailAddress","unknown")+". This address is mine ("+alias+").\n");
-//				break;
+				//dump("createAttendee: Title:"+this.title+", email:"+mbox.getTagValue("t:EmailAddress","unknown")+". This address is mine ("+alias+").\n");
+				//break;
 			}
 		}
 
@@ -3134,12 +3134,12 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 		if (me) {
 			attendee.participationStatus = participationMap[this.myResponseType];
-				dump("createAttendee A: Title:"+this.title+", attendee:"+attendee.id+", myResponseType:"+this.myResponseType+", attendee.participationStatus:"+attendee.participationStatus+"\n");
+				//dump("createAttendee A: Title:"+this.title+", attendee:"+attendee.id+", myResponseType:"+this.myResponseType+", attendee.participationStatus:"+attendee.participationStatus+"\n");
 		}
 		else {
 			if (aElement.getTagValue("t:ResponseType", "") != "") {
 				attendee.participationStatus = participationMap[aElement.getTagValue("t:ResponseType")];
-				dump("createAttendee B: Title:"+this.title+", attendee:"+attendee.id+", ResponseType:"+aElement.getTagValue("t:ResponseType")+", attendee.participationStatus:"+attendee.participationStatus+"\n");
+				//dump("createAttendee B: Title:"+this.title+", attendee:"+attendee.id+", ResponseType:"+aElement.getTagValue("t:ResponseType")+", attendee.participationStatus:"+attendee.participationStatus+"\n");
 			}
 		}
 
