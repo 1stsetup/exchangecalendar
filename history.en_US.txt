@@ -1,7 +1,8 @@
-Version 3.2.0-Beta:
+Version 3.2.0-Beta1:
 - Added own ExchangeEvent Interface. With this creation of items from cache or exchange server should be faster.
-- Converted handling of timezones to own interface.
+- Converted handling of timezones to own interface. 
 - Timezone of Lightning events are set to those of Exchange. As close as possible because the timezone databases between Exchange and Lighting are not the same.
+- Added new SOAP Autodiscovery functionality which is supported since Exchange2010. It will use this when available.
 
 Version 3.1.102:
 - Fixes bug 226: No more than 20 contacts are shown.
