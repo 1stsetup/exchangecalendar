@@ -45,7 +45,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 
-var EXPORTED_SYMBOLS = ["ExchangeRequest", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponseStr1", "nsAutodiscoverResponseStr2", "xml_tag"];
+var EXPORTED_SYMBOLS = ["ExchangeRequest", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponseStr1", "nsAutodiscoverResponseStr2", "nsAutodiscover2010Str", "nsWSAStr", "nsXSIStr", "xml_tag"];
 
 var xml_tag = '<?xml version="1.0" encoding="utf-8"?>\n';
 
@@ -54,6 +54,9 @@ const nsTypesStr = "http://schemas.microsoft.com/exchange/services/2006/types";
 const nsMessagesStr = "http://schemas.microsoft.com/exchange/services/2006/messages";
 const nsAutodiscoverResponseStr1 = "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006";
 const nsAutodiscoverResponseStr2 = "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a";
+const nsAutodiscover2010Str = "http://schemas.microsoft.com/exchange/2010/Autodiscover";
+const nsWSAStr = "http://www.w3.org/2005/08/addressing";
+const nsXSIStr = "http://www.w3.org/2001/XMLSchema-instance";
 
 var gExchangeRequestVersion = "0.1";
 

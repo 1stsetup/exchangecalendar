@@ -45,6 +45,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 //Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/erAutoDiscover.js");
+Cu.import("resource://exchangecalendar/erAutoDiscoverySOAP.js");
 Cu.import("resource://exchangecalendar/erPrimarySMTPCheck.js");
 Cu.import("resource://exchangecalendar/erConvertID.js");
 Cu.import("resource://exchangecalendar/erFindFolder.js");
@@ -521,17 +522,20 @@ function exchWebServicesCheckServerError(aExchangeRequest, aCode, aMsg)
 	window.setCursor("auto");
 }
 
+var exchAutoDiscovery2010 = true;
+
 function exchWebServicesDoAutodiscoverCheck()
 {
 	document.getElementById("exchWebService_autodiscovercheckbutton").disabled = true;
 
 	try {
 		window.setCursor("wait");
-	var tmpObject = new erAutoDiscoverRequest( 
-		{user: exchWebServicesGetUsername(), 
-		 mailbox: exchWebServicesgMailbox}, 
-		 exchWebServicesAutodiscoveryOK, 
-		 exchWebServicesAutodiscoveryError, null)
+		exchAutoDiscovery2010 = true;  // We first try Autodiscovery for Exchange2010 and higher. 
+		var tmpObject = new erAutoDiscoverySOAPRequest( 
+			{user: exchWebServicesGetUsername(), 
+			 mailbox: exchWebServicesgMailbox}, 
+			 exchWebServicesAutodiscoveryOK, 
+			 exchWebServicesAutodiscoveryError, null);
 	}
 	catch(err) {
 		window.setCursor("auto");
@@ -594,6 +598,25 @@ function exchWebServicesAutodiscoveryOK(ewsUrls, DisplayName, SMTPAddress)
 function exchWebServicesAutodiscoveryError(aExchangeRequest, aCode, aMsg)
 {
 	exchWebService.commonFunctions.LOG("ecAutodiscoveryError. aCode:"+aCode+", aMsg:"+aMsg);
+
+	if (exchAutoDiscovery2010 == true) {
+		exchAutoDiscovery2010 = false; // AutoDiscovery for Exchange2010 and higher failed. Next try old POX Autodiscovery.
+
+		try {
+			var tmpObject = new erAutoDiscoverRequest( 
+				{user: exchWebServicesGetUsername(), 
+				 mailbox: exchWebServicesgMailbox}, 
+				 exchWebServicesAutodiscoveryOK, 
+				 exchWebServicesAutodiscoveryError, null);
+			return;
+		}
+		catch(err) {
+			window.setCursor("auto");
+			exchWebService.commonFunctions.ERROR("Warning: Could not create erAutoDiscoverRequest. Err="+err+"\n");
+			return;
+		}
+	}
+
 	switch (aCode) {
 	case -20:
 	case -30:
