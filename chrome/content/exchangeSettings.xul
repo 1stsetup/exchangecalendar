@@ -72,7 +72,7 @@
 
 	<tabbox flex="1">
 		<tabs onselect="exchWebService.exchangeSettings.doTabChanged(this);">
-			<tab label="&ecsettings.tab.adsettings;" selected="true" />
+			<tab label="&ecsettings.tab.adsettings;" selected="true" /> 
 			<tab label="&ecsettings.tab.meetingrequestsettings;" />
 			<tab label="&ecsettings.tab.calendarfolderproperties;" />
 			<tab label="&ecsettings.tab.offlineCachingproperties;" />

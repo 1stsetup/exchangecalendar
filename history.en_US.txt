@@ -1,3 +1,6 @@
+Version 3.2.0-Beta2:
+- Fixes bug 241 -  Autodiscover RedirectAddr not followed
+
 Version 3.2.0-Beta1:
 - Added own ExchangeEvent Interface. With this creation of items from cache or exchange server should be faster.
 - Converted handling of timezones to own interface. 

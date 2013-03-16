@@ -102,10 +102,27 @@ erAutoDiscoverRequest.prototype = {
 		exchWebService.commonFunctions.LOG("sendAutodiscover.onSendOk:"+String(aResp));
 		var DisplayName = "";
 		var SMTPaddress = "";
+		var redirectAddr = null;
 		var ewsUrls = "";
 		var aError = true;
 		var aCode = -1;
 		var aMsg = String(aResp);
+
+		// Try to see if we get a redirectAddr Action
+		var account = aResp.XPath("/a1:Autodiscover/a2:Response/a2:Account[a2:Action ='redirectAddr']");
+		if (account.length > 0) {
+			// We have an redirectAddr. Send OK back but with the redirectAddr set.
+			redirectAddr = account[0].getTagValue("a2:RedirectAddr", null);
+			if ((this.mCbOk) && (redirectAddr)) {
+				//this.isRunning = false;
+				this.mCbOk(ewsUrls, DisplayName, SMTPaddress, redirectAddr);
+			}
+			if (aError) {
+				this.onSendError(aExchangeRequest, aCode, aMsg);
+			}
+			this.isRunning = false;
+			return;
+		}
 
 		// Try to get the Displayname if it is available
 		var tag = aResp.XPath("/a1:Autodiscover/a2:Response/a2:User/a2:DisplayName");
@@ -149,7 +166,7 @@ erAutoDiscoverRequest.prototype = {
 		}
 		else {
 			if (this.mCbOk) {
-				this.mCbOk(ewsUrls, DisplayName, SMTPaddress);
+				this.mCbOk(ewsUrls, DisplayName, SMTPaddress, redirectAddr);
 			}
 		}
 		this.isRunning = false;

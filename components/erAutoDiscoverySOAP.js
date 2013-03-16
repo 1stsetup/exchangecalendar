@@ -116,11 +116,27 @@ erAutoDiscoverySOAPRequest.prototype = {
 		exchWebService.commonFunctions.LOG("sendAutodiscoverySOAP.onSendOk:"+String(aResp));
 		var DisplayName = "";
 		var SMTPaddress = "";
+		var redirectAddr = null;
 		var ewsUrls = new Array();
 		var aError = true;
 		var aCode = -1;
 		var aMsg = String(aResp);
 
+		// Check if we received and RedirectAddress errorcode.
+		var rm = aResp.XPath("/s:Envelope/s:Body/_default_:GetUserSettingsResponseMessage/_default_:Response[_default_:ErrorCode='NoError']/_default_:UserResponses/_default_:UserResponse[_default_:ErrorCode='RedirectAddress']");
+		if (rm.length > 0) {
+			redirectAddr = rm[0].getTagValue("_default_:RedirectTarget", null);
+			if ((this.mCbOk) && (redirectAddr)) {
+				//this.isRunning = false;
+				this.mCbOk(ewsUrls, DisplayName, SMTPaddress, redirectAddr);
+			}
+			if (aError) {
+				this.onSendError(aExchangeRequest, aCode, aMsg);
+			}
+			this.isRunning = false;
+			return;
+		}
+		
 		var rm = aResp.XPath("/s:Envelope/s:Body/_default_:GetUserSettingsResponseMessage/_default_:Response[_default_:ErrorCode='NoError']/_default_:UserResponses/_default_:UserResponse[_default_:ErrorCode='NoError']/_default_:UserSettings/_default_:UserSetting");
 
 		if (rm.length > 0) {
@@ -167,7 +183,7 @@ erAutoDiscoverySOAPRequest.prototype = {
 		}
 		else {
 			if (this.mCbOk) {
-				this.mCbOk(ewsUrls, DisplayName, SMTPaddress);
+				this.mCbOk(ewsUrls, DisplayName, SMTPaddress, redirectAddr);
 			}
 		}
 		this.isRunning = false;

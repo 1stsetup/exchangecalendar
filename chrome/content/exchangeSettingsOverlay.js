@@ -543,9 +543,19 @@ function exchWebServicesDoAutodiscoverCheck()
 	}
 }
 
-function exchWebServicesAutodiscoveryOK(ewsUrls, DisplayName, SMTPAddress)
+function exchWebServicesAutodiscoveryOK(ewsUrls, DisplayName, SMTPAddress, redirectAddr)
 {
 	exchWebService.commonFunctions.LOG("ecAutodiscoveryOK");
+
+	if (redirectAddr) {
+		// We have an redirectAddr. Go use the new email address as primary.
+		exchWebService.commonFunctions.LOG("ecAutodiscoveryOK: We received an redirectAddr:"+redirectAddr);
+		exchWebServicesgMailbox = redirectAddr;
+		document.getElementById("exchWebService_mailbox").value = redirectAddr;
+		exchWebServicesDoAutodiscoverCheck();
+		return;
+	}
+
 	var selectedEWSUrl = {value:undefined};
 	var userCancel = false;
 
