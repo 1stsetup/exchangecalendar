@@ -2634,7 +2634,7 @@ try{
 
 					// We make a non-UTC datetime value for this.globalFunctions.
 					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
-					var exchStart = cal.toRFC3339(tmpStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
+					var exchStart = cal.toRFC3339(tmpStart).substr(0, 19)+"Z"; //cal.toRFC3339(tmpStart).length-6);
 				}
 				else {
 					// We set in bias advanced to UCT datetime values for this.globalFunctions.
@@ -2655,7 +2655,7 @@ try{
 
 					// We make a non-UTC datetime value for this.globalFunctions.
 					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
-					var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19); //cal.toRFC3339(tmpEnd).length-6);
+					var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19)+"Z"; //cal.toRFC3339(tmpEnd).length-6);
 				}
 				else {
 					// We set in bias advanced to UCT datetime values for this.globalFunctions.

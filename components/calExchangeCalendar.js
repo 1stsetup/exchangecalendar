@@ -4161,11 +4161,13 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 		// Precalculate right start and end time for exchange.
 		// If not timezone specified set them to the lightning preference.
-		if ((aItem.startDate.timezone.isFloating) && (!aItem.startDate.isDate)) {
+//		if ((aItem.startDate.timezone.isFloating) && (!aItem.startDate.isDate)) {
+		if (aItem.startDate.timezone.isFloating) {
 			aItem.startDate = aItem.startDate.getInTimezone(this.globalFunctions.ecDefaultTimeZone());
 		}
 
-		if ((aItem.endDate.timezone.isFloating) && (!aItem.endDate.isDate)) {
+//		if ((aItem.endDate.timezone.isFloating) && (!aItem.endDate.isDate)) {
+		if (aItem.endDate.timezone.isFloating) {
 			aItem.endDate = aItem.endDate.getInTimezone(this.globalFunctions.ecDefaultTimeZone());
 		}
 
@@ -4181,8 +4183,8 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 			// We make a non-UTC datetime value for this.globalFunctions.
 			// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
-			var exchStart = cal.toRFC3339(tmpStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
-			var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19); //cal.toRFC3339(tmpEnd).length-6);
+			var exchStart = cal.toRFC3339(tmpStart.getInTimezone(this.globalFunctions.ecUTC())).substr(0, 19)+"Z"; //cal.toRFC3339(tmpStart).length-6);
+			var exchEnd = cal.toRFC3339(tmpEnd.getInTimezone(this.globalFunctions.ecUTC())).substr(0, 19)+"Z"; //cal.toRFC3339(tmpEnd).length-6);
 		}
 		else {
 			// We set in bias advanced to UCT datetime values for this.globalFunctions.
