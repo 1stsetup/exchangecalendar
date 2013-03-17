@@ -1,0 +1,5 @@
+interfaces mivExchangeCalendar.xpt
+component {720a458e-b6cd-4883-8a4d-5be27ec454d8} mivExchangeCalendar.js
+contract @mozilla.org/calendar/calendar;1?type=exchangecalendar {720a458e-b6cd-4883-8a4d-5be27ec454d8}
+
+

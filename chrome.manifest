@@ -31,8 +31,7 @@ locale exchangecalendar de locale/exchangecalendar/de/
 locale exchangecalendar ja-JP locale/exchangecalendar/ja-JP/
 locale exchangecalendar sv locale/exchangecalendar/sv/
 
-component {720a458e-b6cd-4883-8a4d-5be27ec454d8} components/calExchangeCalendar.js
-contract @mozilla.org/calendar/calendar;1?type=exchangecalendar {720a458e-b6cd-4883-8a4d-5be27ec454d8}
+manifest interfaces/exchangeCalendar/mivExchangeCalendar.manifest
 
 component {227664eb-cce6-4b7a-8d57-0bb0c6c9b362} components/exchangeAbRootDirectory.js
 contract @mozilla.org/addressbook/directory;1?type=exchWebService-contactRoot-directory {227664eb-cce6-4b7a-8d57-0bb0c6c9b362}

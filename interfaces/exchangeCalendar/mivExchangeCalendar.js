@@ -286,7 +286,7 @@ const MAPI_PidLidReminderSet = "34051";
 // calExchangeCalendar
 //
 
-var EXPORTED_SYMBOLS = ["calExchangeCalendar", "fixPrefBug", "removeOldPrefs"];
+//var EXPORTED_SYMBOLS = ["calExchangeCalendar"];
 
 function calExchangeCalendar() {
 
