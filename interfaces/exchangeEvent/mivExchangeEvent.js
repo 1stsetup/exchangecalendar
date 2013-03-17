@@ -153,6 +153,65 @@ const fieldPathMap = {
 	'When'				: 'calendar'
 };
 
+const dayRevMap = {
+	'MO' : 'Monday',
+	'TU' : 'Tuesday',
+	'WE' : 'Wednesday',
+	'TH' : 'Thursday',
+	'FR' : 'Friday',
+	'SA' : 'Saturday',
+	'SU' : 'Sunday'
+};
+
+const dayIdxMap = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+
+const weekRevMap = {
+	'1' : 'First',
+	'2' : 'Second',
+	'3' : 'Third',
+	'4' : 'Fourth',
+	'-1': 'Last'
+};
+
+const monthIdxMap = ['January', 'February', 'March', 'April', 'May', 'June',
+		     'July', 'August', 'September', 'October', 'November', 'December'];
+
+const dayMap = {
+	'Monday'	: 'MO',
+	'Tuesday'	: 'TU',
+	'Wednesday'	: 'WE',
+	'Thursday'	: 'TH',
+	'Friday'	: 'FR',
+	'Saturday'	: 'SA',
+	'Sunday'	: 'SU',
+	'Weekday'	: ['MO', 'TU', 'WE', 'TH', 'FR'],
+	'WeekendDay'	: ['SA', 'SO'],
+	'Day'		: ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SO']
+};
+
+const weekMap = {
+	'First'		: 1,
+	'Second'	: 2,
+	'Third'		: 3,
+	'Fourth'	: 4,
+	'Last'		: -1
+};
+
+const monthMap = {
+	'January'	: 1,
+	'February'	: 2,
+	'March'		: 3,
+	'April'		: 4,
+	'May'		: 5,
+	'June'		: 6,
+	'July'		: 7,
+	'August'	: 8,
+	'September'	: 9,
+	'October'	: 10,
+	'November'	: 11,
+	'December'	: 12
+};
+
 function mivExchangeEvent() {
 
 	this._calEvent = Cc["@mozilla.org/calendar/event;1"]
@@ -2631,6 +2690,9 @@ try{
 				var tmpStart = this._newStartDate.clone();
 				if (this._newStartDate.isDate) {
 					tmpStart.isDate = false;
+					var tmpDuration = cal.createDuration();
+					tmpDuration.minutes = -60;
+					tmpStart.addDuration(tmpDuration);
 
 					// We make a non-UTC datetime value for this.globalFunctions.
 					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
@@ -2642,6 +2704,12 @@ try{
 				}
 				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "Start", exchStart);
+
+				if (!this.calendar.isVersion2007) {
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:StartTimeZone Id="'+this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl)+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+
+					this.addSetItemField(updates, "StartTimeZone", tmpTimeZone, null, true);
+				}
 			}
 
 			if (this._newEndDate) {
@@ -2650,7 +2718,7 @@ try{
 				if (this._newEndDate.isDate) {
 					tmpEnd.isDate = false;
 					var tmpDuration = cal.createDuration();
-					tmpDuration.minutes = -1;
+					tmpDuration.minutes = -61;
 					tmpEnd.addDuration(tmpDuration);
 
 					// We make a non-UTC datetime value for this.globalFunctions.
@@ -2663,6 +2731,12 @@ try{
 				}
 				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "End", exchEnd);
+
+				if (!this.calendar.isVersion2007) {
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:EndTimeZone Id="'+this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newEndDate.timezone, this.calendar.serverUrl)+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+
+					this.addSetItemField(updates, "EndTimeZone", tmpTimeZone, null, true);
+				}
 			}
 
 			if (this._newStartDate) {
@@ -2674,6 +2748,18 @@ try{
 					this.addSetItemField(updates, "IsAllDayEvent", "false");
 				}
 	
+			}
+			else {
+				if (this._newEndDate) {
+					this._nonPersonalDataChanged = true;
+					if (this._newEndDate.isDate) {
+						this.addSetItemField(updates, "IsAllDayEvent", "true");
+					}
+					else {
+						this.addSetItemField(updates, "IsAllDayEvent", "false");
+					}
+	
+				}
 			}
 
 			if (this._newLegacyFreeBusyStatus) {

@@ -410,7 +410,8 @@ calExchangeCalendar.prototype = {
 	// void getInterfaces(out PRUint32 count, [array, size_is(count), retval] out nsIIDPtr array);
 	getInterfaces: function _getInterfaces(count) 
 	{
-		var ifaces = [Ci.calICalendar,
+		var ifaces = [Ci.mivExchangeCalendar,
+			Ci.calICalendar,
 			Ci.calICalendarProvider,
 			Ci.calIFreeBusyService,
 			Ci.calISchedulingSupport,
@@ -6764,6 +6765,15 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		this.saveCredentials(erGetItemsRequest.argument);
 		this.notConnected = true;
 
+	},
+
+	get isVersion2013()
+	{
+		if (this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("2013") > -1 ) {
+			return true;
+		}
+
+		return false;
 	},
 
 	get isVersion2010()

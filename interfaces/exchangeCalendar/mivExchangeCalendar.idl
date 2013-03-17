@@ -24,6 +24,41 @@
 [scriptable, uuid(720a458e-b6cd-4883-8a4d-5be27ec454d8)]
 interface mivExchangeCalendar : calICalendar
 {
+	attribute AUTF8String user;
+	attribute AUTF8String domain;
+	readonly attribute AUTF8String mailbox;
+	readonly attribute AUTF8String serverUrl;
+	readonly attribute AUTF8String userDisplayName;
+	readonly attribute AUTF8String folderBase;
+	readonly attribute AUTF8String folderPath;
+	attribute AUTF8String folderID;
+	attribute AUTF8String changeKey;
+	readonly attribute AUTF8String folderIDOfShare;
+	readonly attribute boolean isPublicFolder;
+	readonly attribute boolean doPollInbox;
+
+	readonly attribute long pollInboxInterval;
+	readonly attribute boolean doAutoRespondMeeting;
+	readonly attribute AUTF8String autoResponseAnswer;
+	readonly attribute boolean doAutoRemoveInvitationCancelation1;
+	readonly attribute boolean doAutoRemoveInvitationCancelation2;
+	readonly attribute boolean doAutoRemoveInvitationResponse1;
+	readonly attribute boolean sendAutoRespondMeetingRequestMessage;
+	readonly attribute AUTF8String autoRespondMeetingRequestMessage;
+	readonly attribute long cacheStartupBefore;
+	readonly attribute long cacheStartupAfter;
+
+	void resetCalendar();
+
+	readonly attribute boolean isVersion2013;
+	readonly attribute boolean isVersion2010;
 	readonly attribute boolean isVersion2007;
+
+	//attribute boolean weAreSyncing;
+	attribute boolean useOfflineCache;
+	attribute boolean isOffline;
+
+	readonly attribute calIDateTime offlineStartDate;
+	readonly attribute calIDateTime offlineEndDate;
 
 };
