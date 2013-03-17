@@ -96,6 +96,8 @@ mivExchangeTimeZones.prototype = {
 	{
 		var version = this.exchangeStatistics.getServerVersion(aURL);
 
+		this.logInfo("addURL: aURL:"+aURL+", version:"+version, 1);
+
 		if (!this._timeZones[version]) {
 
 			var self = this;
@@ -103,7 +105,7 @@ mivExchangeTimeZones.prototype = {
 					 ecRequest:erGetTimeZonesRequest,
 					 arguments: {user: aUser, 
 					 serverUrl: aURL,
-					 ServerVersion: version,
+					 serverVersion: version,
 					 actionStart: Date.now() },
 					 cbOk: function(erGetTimeZonesRequest, aTimeZoneDefinitions) { self.getTimeZonesOK(erGetTimeZonesRequest, aTimeZoneDefinitions);}, 
 					 cbError: function(erGetTimeZonesRequest, aCode, aMsg) { self.getTimeZonesError(erGetTimeZonesRequest, aCode, aMsg);},
@@ -115,11 +117,13 @@ mivExchangeTimeZones.prototype = {
 
 	getExchangeTimeZoneIdByCalTimeZone: function _getExchangeTimeZoneIdByCalTimeZone(aCalTimeZone, aURL)
 	{
-		//this.logInfo("getExchangeTimeZoneIdByCalTimeZone:"+aCalTimeZone.tzid);
 
 		var version = this.exchangeStatistics.getServerVersion(aURL);
 
+		this.logInfo("getExchangeTimeZoneIdByCalTimeZone:"+aCalTimeZone.tzid+", aURL:"+aURL+", version:"+version, 1);
+
 		if (this._timeZones[version]) {
+			this.logInfo("getExchangeTimeZoneIdByCalTimeZone: We have a time in list.");
 			
 			if (aCalTimeZone.isFloating) {
 				var tmpZone = this.globalFunctions.ecDefaultTimeZone();
@@ -401,7 +405,7 @@ mivExchangeTimeZones.prototype = {
 
 	getTimeZonesOK: function _getTimeZonesOK(erGetTimeZonesRequest, aTimeZoneDefinitions)
 	{
-		this.addExchangeTimeZones(aTimeZoneDefinitions, erGetTimeZonesRequest.argument.serverUrl);
+		this.addExchangeTimeZones(aTimeZoneDefinitions, erGetTimeZonesRequest.argument.serverVersion);
 		//this.logInfo("getTimeZonesOK");
 	},
 
@@ -465,7 +469,7 @@ mivExchangeTimeZones.prototype = {
 
 		this.storedDebugLevel = this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"debuglevel", 0, true);
 		if (debugLevel <= this.storedDebugLevel) {
-			this.globalFunctions.LOG("[exchangeStatistics] "+message + " ("+this.globalFunctions.STACKshort()+")");
+			this.globalFunctions.LOG("[mivExchangeTimeZones] "+message + " ("+this.globalFunctions.STACKshort()+")");
 		}
 	},
 
