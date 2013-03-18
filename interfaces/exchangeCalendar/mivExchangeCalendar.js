@@ -1464,11 +1464,11 @@ if (this.debug) this.logInfo("singleModified doNotify");
 						// We need to find out wat has changed;
 						if (this.debug) this.logInfo(" ==1 invite="+aOldItem.isInvitation);
 
-						var changesObj = this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, aOldItem.isInvitation);
+/*						var changesObj = this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, aOldItem.isInvitation);
 						var changes;
 						if (changesObj) {
 							changes = changesObj.changes;
-						}
+						}*/
 
 						if (changes) {
 							if (this.debug) this.logInfo("modifyItem: changed:"+String(changes));
@@ -4864,7 +4864,14 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		var onlySnoozeChanged = true;
-		upd.addChildTagObject(aNewItem.updateXML);
+
+		var updateObject = aNewItem.updateXML;
+		if (updateObject.toString() == '<t:Updates xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"/>') {
+			// Nothing changed
+			return {changes: null, onlySnoozeChanged: false};
+		}
+
+		upd.addChildTagObject(updateObject);
 		if (aNewItem.nonPersonalDataChanged) {
 			onlySnoozeChanged = false;
 		}

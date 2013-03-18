@@ -2273,6 +2273,7 @@ catch(err){
 	//void addException(in mivExchangeEvent aItem);
 	addException: function _addException(aItem)
 	{
+		dump("addException: aItem.title:"+aItem.title+"\n");
 		if ((aItem.calendarItemType == "Exception") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
 			aItem.parentItem = this;
 			this._exceptions[aItem.id] = aItem.clone();
