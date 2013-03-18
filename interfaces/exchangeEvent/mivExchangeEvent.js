@@ -1100,10 +1100,10 @@ catch(err){
 			}
 			break;
 		case "X-MOZ-SEND-INVITATIONS": 
-			if ((this.responseObjects.AcceptItem) ||
+			if ((this.responseObjects) && ((this.responseObjects.AcceptItem) ||
 			    (this.responseObjects.TentativelyAcceptItem) ||
 			    (this.responseObjects.DeclineItem) ||
-			    (this.type == "MeetingRequest")) {
+			    (this.type == "MeetingRequest"))) {
 				this._calEvent.setProperty(name, true);
 			}
 			else {
@@ -2032,7 +2032,7 @@ catch(err){
 		if (!this._calendarItemType) {
 			this._calendarItemType = this.getTagValue("t:CalendarItemType", null);
 		}
-		//this.logInfo("get calendarItemType: title:"+this.title+", this._calendarItemType:"+this._calendarItemType);
+		dump("get calendarItemType: title:"+this.title+", this._calendarItemType:"+this._calendarItemType+", startdate="+this.startDate.toString()+"\n");
 		return this._calendarItemType;
 	},
 
@@ -2316,6 +2316,7 @@ catch(err){
 	//void addOccurrence(in mivExchangeEvent aItem);
 	addOccurrence: function _addOccurrence(aItem)
 	{
+		dump("addOccurrence: aItem.title:"+aItem.title+"\n");
 		if ((aItem.calendarItemType == "Occurrence") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
 			aItem.parentItem = this;
 			this._occurrences[aItem.id] = aItem.clone();

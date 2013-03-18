@@ -2685,6 +2685,9 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		var oldRecurrenceItems;
 		oldRecurrenceItems = aOldItem.recurrenceInfo.getRecurrenceItems({});
 
+		if (this.debug) this.logInfo("getRemovedOccurrence: newRecurrenceItems.length="+newRecurrenceItems.length);
+		if (this.debug) this.logInfo("getRemovedOccurrence: oldRecurrenceItems.length="+oldRecurrenceItems.length);
+
 		if ((!newRecurrenceItems) || (newRecurrenceItems.length == 0)) {
 			// No recurrenceItems in the new item
 			// Nothing can be checked if it is removed.
@@ -2701,6 +2704,8 @@ if (this.debug) this.logInfo("singleModified doNotify");
 
 		var newException = aNewItem.recurrenceInfo.getExceptionIds({});
 		var oldException = aOldItem.recurrenceInfo.getExceptionIds({});
+		if (this.debug) this.logInfo("getRemovedOccurrence: newException.length="+newException.length);
+		if (this.debug) this.logInfo("getRemovedOccurrence: oldException.length="+oldException.length);
 		if (newException.length != oldException.length) {
 			if (this.debug) this.logInfo("getRemovedOccurrence: Exceptions count changed. newCount="+newException.length+",  oldCount="+oldException.length);
 		}
