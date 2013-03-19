@@ -73,7 +73,7 @@ Cu.import("resource://exchangecalendar/erCreateAttachment.js");
 Cu.import("resource://exchangecalendar/erDeleteAttachment.js");
 //Cu.import("resource://interfaces/xml.js");
 
-//Cu.import("resource://interfaces/exchangeEvent/mivExchangeEvent.js");
+//Cu.import("resource://interfaces/exchangeRecurrenceInfo/mivExchangeRecurrenceInfo.js");
 
 var globalStart = new Date().getTime();
 

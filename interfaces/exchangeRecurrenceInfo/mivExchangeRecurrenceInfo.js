@@ -30,7 +30,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 function mivExchangeRecurrenceInfo() {
 
 	this._recurrenceInfo = Cc["@mozilla.org/calendar/recurrence-info;1"]
-				.createInstance(Ci.mivExchangeEvent);
+				.createInstance(Ci.calIRecurrenceInfo);
 
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
@@ -59,9 +59,9 @@ mivExchangeRecurrenceInfo.prototype = {
 	  [iid_is(uuid),retval] out nsQIResult result
 	);	 */
 	QueryInterface: XPCOMUtils.generateQI([Ci.mivExchangeRecurrenceInfo,
-						Components.interfaces.nsISupports,
-						Components.interfaces.calIRecurrenceInfo,
-						Components.interfaces.nsIClassInfo]),
+						Ci.nsISupports,
+						Ci.calIRecurrenceInfo,
+						Ci.nsIClassInfo]),
 
 	//nsrefcnt Release();
 	Release: function _Release()
@@ -72,7 +72,7 @@ mivExchangeRecurrenceInfo.prototype = {
 
 	// Attributes from nsIClassInfo
 
-	classDescription: "Load balancer for requests to Exchange server.",
+	classDescription: "RecurrenceInfo object for Exchange recurring master.",
 	classID: components.ID("{"+mivExchangeRecurrenceInfoGUID+"}"),
 	contractID: "@1st-setup.nl/exchange/recurrenceinfo;1",
 	flags: Ci.nsIClassInfo.THREADSAFE,
@@ -82,14 +82,15 @@ mivExchangeRecurrenceInfo.prototype = {
 	getInterfaces: function _getInterfaces(count) 
 	{
 		var ifaces = [Ci.mivExchangeRecurrenceInfo,
-				Components.interfaces.nsISupports,
-				Components.interfaces.calIRecurrenceInfo,
-				Components.interfaces.nsIClassInfo];
+				Ci.nsISupports,
+				Ci.calIRecurrenceInfo,
+				Ci.nsIClassInfo];
 		count.value = ifaces.length;
 		return ifaces;
 	},
 
-	getHelperForLanguage: function _getHelperForLanguage(language) {
+	getHelperForLanguage: function _getHelperForLanguage(language) 
+	{
 		return null;
 	},
 
@@ -125,7 +126,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //attribute calIItemBase item;
 	get item()
 	{
-		return return this._recurrenceInfo.item;
+		return this._recurrenceInfo.item;
 	},
 
 	set item(aValue)
@@ -167,9 +168,9 @@ mivExchangeRecurrenceInfo.prototype = {
 		return this._recurrenceInfo.getRecurrenceItems(aReturn);
 	},
   //void setRecurrenceItems(in unsigned long aCount, [array,size_is(aCount)] in calIRecurrenceItem aItems);
-	setRecurrenceItems: function _setRecurrenceItems(aItems)
+	setRecurrenceItems: function _setRecurrenceItems(aCount, aItems)
 	{
-		this._recurrenceInfo.setRecurrenceItems(aItems);
+		this._recurrenceInfo.setRecurrenceItems(aCount, aItems);
 	},
 
   //unsigned long countRecurrenceItems();
@@ -407,7 +408,6 @@ function NSGetFactory(cid) {
 		if (!NSGetFactory.mivExchangeRecurrenceInfo) {
 			// Load main script from lightning that we need.
 			NSGetFactory.mivExchangeRecurrenceInfo = XPCOMUtils.generateNSGetFactory([mivExchangeRecurrenceInfo]);
-			
 	}
 
 	} catch(e) {
@@ -418,4 +418,5 @@ function NSGetFactory(cid) {
 
 	return NSGetFactory.mivExchangeRecurrenceInfo(cid);
 } 
+
 

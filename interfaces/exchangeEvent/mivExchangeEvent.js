@@ -931,7 +931,7 @@ catch(err){
 			if (recrule) {
 				//this.logInfo("get recurrenceInfo 1: title:"+this.title+", recrule:"+recrule);
 				//var recurrenceInfo = cal.createRecurrenceInfo(this);
-				var recurrenceInfo = Cc[@1st-setup.nl/exchange/recurrenceinfo;1]
+				var recurrenceInfo = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
 							.createInstance(Ci.mivExchangeRecurrenceInfo);
 
 				recurrenceInfo.item = this;
