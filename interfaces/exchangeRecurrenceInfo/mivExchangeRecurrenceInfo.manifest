@@ -1,0 +1,5 @@
+interfaces mivExchangeRecurrenceInfo.xpt
+component {d69c5580-8ff7-11e2-9e96-0800200c9a66} mivExchangeRecurrenceInfo.js
+contract @1st-setup.nl/exchange/recurrenceinfo;1 {d69c5580-8ff7-11e2-9e96-0800200c9a66}
+
+
