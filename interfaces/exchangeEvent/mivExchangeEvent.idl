@@ -72,6 +72,7 @@ interface mivExchangeEvent : calIEvent
 	void getOccurrences(out uint32_t count, [array,size_is(count),retval] out mivExchangeEvent aOccurrence);
 	void addOccurrence(in mivExchangeEvent aItem);
 	void removeOccurrence(in mivExchangeEvent aItem);
+	void removeOccurrenceAt(in calIDateTime aRecurrenceId);
 
 	void cloneToCalEvent(in calIEvent aCalEvent);
 

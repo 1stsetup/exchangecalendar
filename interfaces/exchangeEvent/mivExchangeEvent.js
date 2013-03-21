@@ -403,19 +403,21 @@ try {
 				result.addAlarm(alarm);
 			}
 		}
+
+
 		if (this._newRecurrenceInfo) result.recurrenceInfo = this.recurrenceInfo.clone();
 
 		if (this._occurrences) {
 			for each(var occurrence in this._occurrences) {
 //this.logInfo("clone: this._ocurrences 1");
-				result.removeOccurrence(occurrence);
+				//result.removeOccurrence(occurrence);
 				result.addOccurrence(occurrence);
 			}
 		}
 
 		if (this._exceptions) {
 			for each(var exception in this._exceptions) {
-				result.removeException(exception);
+				//result.removeException(exception);
 				result.addException(exception);
 			}
 		}
@@ -960,6 +962,7 @@ catch(err){
 	set recurrenceInfo(aValue)
 	{
 		//this.logInfo("set recurrenceInfo 1: title:"+this.title+", aValue:"+aValue);
+		dump("set recurrenceInfo 1: title:"+this.title+", aValue:"+aValue+"\n");
 		if (!this._recurrenceInfo) this.recurrenceInfo;
 
 		if (aValue) {
@@ -2312,6 +2315,7 @@ catch(err){
 	{
 		var result = [];
 		for each(var occurrence in this._occurrences) {
+		dump("getOccurrences: occurrence.title:"+occurrence.title+", startDate:"+occurrence.startDate.toString()+"\n");
 			result.push(occurrence);
 		}
 		aCount.value = result.length;
@@ -2321,7 +2325,7 @@ catch(err){
 	//void addOccurrence(in mivExchangeEvent aItem);
 	addOccurrence: function _addOccurrence(aItem)
 	{
-		dump("addOccurrence: aItem.title:"+aItem.title+"\n");
+		dump("addOccurrence: aItem.title:"+aItem.title+", startDate:"+aItem.startDate.toString()+"\n");
 		if ((aItem.calendarItemType == "Occurrence") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
 			aItem.parentItem = this;
 			this._occurrences[aItem.id] = aItem.clone();
@@ -2337,15 +2341,41 @@ catch(err){
 	//void removeOccurrence(in mivExchangeEvent aItem);
 	removeOccurrence: function _removeOccurrence(aItem)
 	{
-		if ((aItem.calendarItemType == "Occurrence") && (this.calendarItemType == "RecurringMaster")) {
-			if (this._occurrences[aItem.id]) {
-				this._occurrences[aItem.id] = null;
-				if (this.hasProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime)) {
-					this.deleteProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
+		if (aItem) {
+				dump("  --> 1.\n");
+			if ((aItem.calendarItemType == "Occurrence") && (this.calendarItemType == "RecurringMaster")) {
+				dump("  --> 2.\n");
+				if (this._occurrences[aItem.id]) {
+				dump("  --> 3.\n");
+					this._occurrences[aItem.id] = null;
+					if (this.hasProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime)) {
+						this.deleteProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
+					}
+					delete this._occurrences[aItem.id];
+				dump("  --> 4.\n");
 				}
-				delete this._occurrences[aItem.id];
 			}
 		}
+				dump("  --> 5.\n");
+	},
+
+	//void removeOccurrenceAt(in calIDateTime aRecurrenceId);
+	removeOccurrenceAt: function _removeOccurrenceAt(aRecurrenceId)
+	{
+		// Find item.
+		var item = null;
+		for each(var occurrence in this._occurrences) {
+			if (occurrence.recurrenceId.compare(aRecurrenceId) == 0) {
+				dump("item.removeOccurrenceAt: Found item for occurrence.\n");
+				item = occurrence;
+				break;
+			}
+		}
+		
+		if (item) {
+			this.removeOccurrence(item);
+		}
+
 	},
 
 	//attribute mivIxml2jxon exchangeData;
@@ -2475,32 +2505,33 @@ catch(err){
 	makeRecurrenceRule: function _makeRecurrenceRule()
 	{
 		if (!this.parentItem) {
-			//this.logInfo("makeRecurrenceRule: No parent.");
+			this.logInfo("makeRecurrenceRule: No parent.");
 			return;
 		}
 try{
 		if (!this.recurrenceInfo || this.parentItem.id != this.id) {
 			if (!this.recurrenceInfo) {
-				//this.logInfo("makeRecurrenceRule: We have no recurrenceInfo");
+				this.logInfo("makeRecurrenceRule: We have no recurrenceInfo");
 			}
 			if (this.parentItem.id != this.id) {
-				//this.logInfo("makeRecurrenceRule: We have this.parentItem.id != this.id");
+				this.logInfo("makeRecurrenceRule: We have this.parentItem.id != this.id");
 			}
 			return;
 		}
 
 		var rrule = null;
 		for each (var ritem in this.recurrenceInfo.getRecurrenceItems({})) {
+				this.logInfo(" ||||| rrule:"+rrule.icalProperty.icalString);
 			if (ritem instanceof Ci.calIRecurrenceRule) {
 				rrule = ritem;
-				//this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
-				//break;
+				this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
+				break;
 			}
 		}
 
 		if (!rrule) {
 			// XXX exception?
-			//this.logInfo("makeRecurrenceRule: We have no rrule");
+			this.logInfo("makeRecurrenceRule: We have no rrule");
 			return;
 		}
 

@@ -118,7 +118,14 @@ mivExchangeRecurrenceInfo.prototype = {
   //calIRecurrenceInfo clone();
 	clone: function _clone()
 	{
-		return this._recurrenceInfo.clone();
+		var result = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
+				.createInstance(Ci.mivExchangeRecurrenceInfo);
+
+		result.item = this.item;
+		var count = {};
+		var myItems = this.getRecurrenceItems(count);
+		result.setRecurrenceItems(count, myItems);
+		return result;
 	},
 
   // initialize this with the item for which this recurrence
@@ -170,6 +177,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //void setRecurrenceItems(in unsigned long aCount, [array,size_is(aCount)] in calIRecurrenceItem aItems);
 	setRecurrenceItems: function _setRecurrenceItems(aCount, aItems)
 	{
+		this.logInfo("setRecurrenceItems.");
 		this._recurrenceInfo.setRecurrenceItems(aCount, aItems);
 	},
 
@@ -188,25 +196,28 @@ mivExchangeRecurrenceInfo.prototype = {
   //void appendRecurrenceItem(in calIRecurrenceItem aItem);
 	appendRecurrenceItem: function _appendRecurrenceItem(aItem)
 	{
+		this.logInfo("appendRecurrenceItem.");
 		this._recurrenceInfo.appendRecurrenceItem(aItem);
 	},
 
   //calIRecurrenceItem getRecurrenceItemAt(in unsigned long aIndex);
 	getRecurrenceItemAt: function _getRecurrenceItemAt(aIndex)
 	{
+		this.logInfo("getRecurrenceItemAt: aIndex:"+aIndex);
 		return this._recurrenceInfo.getRecurrenceItemAt(aIndex);
 	},
 
   //void deleteRecurrenceItemAt(in unsigned long aIndex);
 	deleteRecurrenceItemAt: function _deleteRecurrenceItemAt(aIndex)
 	{
+		this.logInfo("deleteRecurrenceItemAt: aIndex:"+aIndex);
 		this._recurrenceInfo.deleteRecurrenceItemAt(aIndex);
 	},
 
   //void deleteRecurrenceItem(in calIRecurrenceItem aItem);
 	deleteRecurrenceItem: function _deleteRecurrenceItem(aItem)
 	{
-		this.logInfo("deleteRecurrenceItem: item.title:"+aItem.title+", item.startDate:"+aItem.startDate.toString());
+		this.logInfo("deleteRecurrenceItem.");
 		this._recurrenceInfo.deleteRecurrenceItem(aItem);
 	},
 
@@ -214,6 +225,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //void insertRecurrenceItemAt(in calIRecurrenceItem aItem, in unsigned long aIndex);
 	insertRecurrenceItemAt: function _insertRecurrenceItemAt(aItem, aIndex)
 	{
+		this.logInfo("insertRecurrenceItemAt: aIndex:"+aIndex);
 		this._recurrenceInfo.insertRecurrenceItemAt(aItem, aIndex);
 	},
 
@@ -236,12 +248,15 @@ mivExchangeRecurrenceInfo.prototype = {
   //void removeOccurrenceAt(in calIDateTime aRecurrenceId);
 	removeOccurrenceAt: function _removeOccurrenceAt(aRecurrenceId)
 	{
+		this.logInfo("removeOccurrenceAt: aRecurrenceId:"+aRecurrenceId);
+		this.item.removeOccurrenceAt(aRecurrenceId);
 		this._recurrenceInfo.removeOccurrenceAt(aRecurrenceId);
 	},
 
   //void restoreOccurrenceAt(in calIDateTime aRecurrenceId);
 	restoreOccurrenceAt: function _restoreOccurrenceAt(aRecurrenceId)
 	{
+		this.logInfo("restoreOccurrenceAt: aRecurrenceId:"+aRecurrenceId);
 		this._recurrenceInfo.restoreOccurrenceAt(aRecurrenceId);
 	},
 
@@ -266,6 +281,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //void modifyException(in calIItemBase anItem, in boolean aTakeOverOwnership);
 	modifyException: function _modifyException(anItem, aTakeOverOwnership)
 	{
+		this.logInfo("modifyException: anItem:"+anItem.title);
 		this._recurrenceInfo.modifyException(anItem, aTakeOverOwnership);
 	},
 
@@ -276,6 +292,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //calIItemBase getExceptionFor(in calIDateTime aRecurrenceId);
 	getExceptionFor: function _getExceptionFor(aRecurrenceId)
 	{
+		this.logInfo("getExceptionFor: aRecurrenceId:"+aRecurrenceId);
 		return this._recurrenceInfo.getExceptionFor(aRecurrenceId);
 	},
 
@@ -286,6 +303,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //void removeExceptionFor(in calIDateTime aRecurrenceId);
 	removeExceptionFor: function _removeExceptionFor(aRecurrenceId)
 	{
+		this.logInfo("removeExceptionFor: aRecurrenceId:"+aRecurrenceId);
 		this._recurrenceInfo.removeExceptionFor(aRecurrenceId);
 	},
 

@@ -1505,7 +1505,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 							// was deleted. 
 							var removedOccurrence = this.getRemovedOccurrence(aOldItem, aNewItem);
 							if (removedOccurrence) {
-								// Delete this occurrence;
+								// Delete this occurrence; multi
 								var self = this;
 								this.addToQueue( erGetOccurrenceIndexRequest,
 									{user: this.user, 
@@ -2679,6 +2679,35 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		if (this.debug) this.logInfo("getRemovedOccurrence");
 		// When an occurences gets removed from we get an extra occurenceitem in the recurrenceinfo list.
 
+		var oldCount = {};
+		var oldOccurrences = aOldItem.getOccurrences(oldCount);
+
+		var newCount = {};
+		var newOccurrences = aNewItem.getOccurrences(newCount);
+
+		if (this.debug) this.logInfo("getRemovedOccurrence: oldCount.value="+oldCount.value);
+		if (this.debug) this.logInfo("getRemovedOccurrence: newCount.value="+newCount.value);
+		if (newCount.value < oldCount.value) {
+			if (this.debug) this.logInfo("getRemovedOccurrence: We have less occurrences than before.");
+
+			for each(var oldOccurrence in oldOccurrences) {
+				var foundOld = false;
+				for each(var newOccurrence in newOccurrences) {
+					if (oldOccurrence.id == newOccurrence.id) {
+						foundOld = true;
+						break;
+					}
+				}
+				if (foundOld == false) {
+					if (this.debug) this.logInfo("getRemovedOccurrence: We found the removed occurrence: startdate:"+oldOccurrence.startDate.toString());
+					return oldOccurrence;
+				}
+			}
+		}
+
+		return null;
+
+		// Rest is old code and can be removed.
 		var newRecurrenceItems;
 		newRecurrenceItems = aNewItem.recurrenceInfo.getRecurrenceItems({});
 
@@ -5282,6 +5311,10 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 	{
 //		if (this.debug) this.logInfo("getOccurrenceIndexOk index="+aIndex);
 		this.saveCredentials(erGetOccurrenceIndexRequest.argument);
+
+		this.notifyTheObservers("onDeleteItem", [erGetOccurrenceIndexRequest.argument.masterItem]);
+		this.itemCache[erGetOccurrenceIndexRequest.argument.masterItem.id]= null;
+
 		this.notConnected = false;
 		var self = this;
 		switch (erGetOccurrenceIndexRequest.argument.action) {
