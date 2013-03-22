@@ -548,7 +548,7 @@ mivFunctions.prototype = {
 	STACKshort: function _STACKshort() {
 
 	    let depth = 1;
-	    let skip = 3;
+	    let skip = 1;
 	    let stack = "";
 	    let frame = components.stack.caller;
 	    for (let i = 1; i <= depth + skip && frame; i++) {

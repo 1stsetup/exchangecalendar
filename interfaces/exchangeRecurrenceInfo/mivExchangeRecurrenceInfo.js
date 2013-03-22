@@ -118,6 +118,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //calIRecurrenceInfo clone();
 	clone: function _clone()
 	{
+		this.logInfo("clone 1.", 1, 2);
 		var result = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
 				.createInstance(Ci.mivExchangeRecurrenceInfo);
 
@@ -125,6 +126,7 @@ mivExchangeRecurrenceInfo.prototype = {
 		var count = {};
 		var myItems = this.getRecurrenceItems(count);
 		result.setRecurrenceItems(count, myItems);
+		this.logInfo("clone 2.");
 		return result;
 	},
 
@@ -177,8 +179,11 @@ mivExchangeRecurrenceInfo.prototype = {
   //void setRecurrenceItems(in unsigned long aCount, [array,size_is(aCount)] in calIRecurrenceItem aItems);
 	setRecurrenceItems: function _setRecurrenceItems(aCount, aItems)
 	{
-		this.logInfo("setRecurrenceItems.");
+		this.logInfo("setRecurrenceItems 1: title:"+this.item.title+", aItems.length:"+aItems.length, 1, 2);
 		this._recurrenceInfo.setRecurrenceItems(aCount, aItems);
+
+		var recItems = this.getRecurrenceItems({});
+		this.logInfo("setRecurrenceItems 2: title:"+this.item.title+", recItems.length:"+recItems.length);
 	},
 
   //unsigned long countRecurrenceItems();
@@ -402,7 +407,9 @@ mivExchangeRecurrenceInfo.prototype = {
 		return this._recurrenceInfo.getOccurrences(aRangeStart, aRangeEnd, aMaxCount, aCount);
 	},
 
-	logInfo: function _logInfo(message, aDebugLevel) {
+	logInfo: function _logInfo(message, aDebugLevel, aDepth) {
+
+		var depth = aDepth || 1;
 
 		if (!aDebugLevel) {
 			var debugLevel = 1;
@@ -414,7 +421,7 @@ mivExchangeRecurrenceInfo.prototype = {
 		this.storedDebugLevel = this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"debuglevel", 0, true);
 		this.storedDebugLevel = 2;
 		if (debugLevel <= this.storedDebugLevel) {
-			this.globalFunctions.LOG("[exchangeRecurrenceInfo] "+message + " ("+this.globalFunctions.STACKshort()+")");
+			this.globalFunctions.LOG("[exchangeRecurrenceInfo] "+message  + " ("+this.globalFunctions.STACK(depth, 1)+")");
 		}
 	},
 

@@ -404,8 +404,8 @@ try {
 			}
 		}
 
-
-		if (this._newRecurrenceInfo) result.recurrenceInfo = this.recurrenceInfo.clone();
+		result.recurrenceInfo;
+		if (this._newRecurrenceInfo !== undefined) result.recurrenceInfo = this._newRecurrenceInfo;
 
 		if (this._occurrences) {
 			for each(var occurrence in this._occurrences) {
@@ -931,47 +931,68 @@ catch(err){
 			recurrence = null;
 	
 			if (recrule) {
-				//this.logInfo("get recurrenceInfo 1: title:"+this.title+", recrule:"+recrule);
+				this.logInfo("get recurrenceInfo 1: title:"+this.title+", recrule:"+recrule);
 				//var recurrenceInfo = cal.createRecurrenceInfo(this);
-				var recurrenceInfo = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
+				this._recurrenceInfo = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
 							.createInstance(Ci.mivExchangeRecurrenceInfo);
 
-				recurrenceInfo.item = this;
+				this._recurrenceInfo.item = this;
 
-				recurrenceInfo.setRecurrenceItems(1, [recrule]);
-				this._recurrenceInfo = recurrenceInfo.clone();
-				this._calEvent.recurrenceInfo = recurrenceInfo;
+				this._recurrenceInfo.setRecurrenceItems(1, [recrule]);
+
+				this._calEvent.recurrenceInfo = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
+							.createInstance(Ci.mivExchangeRecurrenceInfo);
+
+				this._calEvent.recurrenceInfo.item = this;
+
+				this._calEvent.recurrenceInfo.setRecurrenceItems(1, [recrule]);
+
 			}
 			else {
 				this._recurrenceInfo = null;
-				//this.logInfo("get recurrenceInfo 2: title:"+this.title+", recrule:null");
+				this.logInfo("get recurrenceInfo 2: title:"+this.title+", recrule:null");
+			}
+		}
+		else {
+			if (this._recurrenceInfo) {
+				this.logInfo("get recurrenceInfo 0: title:"+this.title+", we al ready have recurrenceinfo.");
+			}
+			if (!this._exchangeData) {
+				this.logInfo("get recurrenceInfo 0: title:"+this.title+", we do not have _exchangeData.");
 			}
 		}
 
 		// For debugging
 		var recurrenceInfo = this._calEvent.recurrenceInfo;
 		if (recurrenceInfo) {
-			//this.logInfo("get recurrenceInfo 3: title:"+this.title+", this._calEvent.recurrenceInfo:"+this._calEvent.recurrenceInfo);
+			this.logInfo("get recurrenceInfo 3: title:"+this.title+", this._calEvent.recurrenceInfo:"+this._calEvent.recurrenceInfo, 1, 2);
+			this.logInfo("                    : recurrenceItems.length:"+recurrenceInfo.getRecurrenceItems({}).length);
 		}
 		else {
-			//this.logInfo("get recurrenceInfo 4: title:"+this.title+", this._calEvent.recurrenceInfo:null");
+			this.logInfo("get recurrenceInfo 4: title:"+this.title+", this._calEvent.recurrenceInfo:null");
 		}
 		return this._calEvent.recurrenceInfo;
 	},
 
 	set recurrenceInfo(aValue)
 	{
-		//this.logInfo("set recurrenceInfo 1: title:"+this.title+", aValue:"+aValue);
-		dump("set recurrenceInfo 1: title:"+this.title+", aValue:"+aValue+"\n");
+		this.logInfo("set recurrenceInfo 1: title:"+this.title+", aValue:"+aValue, 1, 2);
 		if (!this._recurrenceInfo) this.recurrenceInfo;
 
 		if (aValue) {
 			this._newRecurrenceInfo = aValue.clone();
+//			this._newRecurrenceInfo = aValue;
 		}
 		else {
 			this._newRecurrenceInfo = aValue;
 		}
-		this._calEvent.recurrenceInfo = aValue;
+
+		if (aValue) {
+			this._calEvent.recurrenceInfo = aValue.clone();
+		}
+		else {
+			this._calEvent.recurrenceInfo = aValue;
+		}
 	},
 
 	//readonly attribute calIDateTime recurrenceStartDate;
@@ -2519,12 +2540,19 @@ try{
 			return;
 		}
 
+		var recurrenceItems = this.recurrenceInfo.getRecurrenceItems({});
+		this.logInfo("Going to see if we have recurrenceItems:"+recurrenceItems.length);
 		var rrule = null;
-		for each (var ritem in this.recurrenceInfo.getRecurrenceItems({})) {
-				this.logInfo(" ||||| rrule:"+rrule.icalProperty.icalString);
+		for each (var ritem in recurrenceItems) {
+				this.logInfo(" ||||| ritem:"+ritem);
 			if (ritem instanceof Ci.calIRecurrenceRule) {
 				rrule = ritem;
-				this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
+				if (rrule) {
+					this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
+				}
+				else {
+					this.logInfo(" ;;;; rrule: null !!!!!!!!!!!!!!");
+				}
 				break;
 			}
 		}
@@ -2888,28 +2916,28 @@ try{
 			var recurrenceInfoChanged;
 			if (this._recurrenceInfo) {
 				// We had recurrenceInfo. Lets see if it changed.
-				//this.logInfo("We had recurrenceInfo. Lets see if it changed.");
+				this.logInfo("We had recurrenceInfo. Lets see if it changed.");
 				if (this._newRecurrenceInfo !== undefined) {
 					// It was changed or removed
 					if (this._newRecurrenceInfo === null) {
 						// It was removed
-						//this.logInfo("We had recurrenceInfo. And it is removed.");
+						this.logInfo("We had recurrenceInfo. And it is removed.");
 						recurrenceInfoChanged = false;
 						this._nonPersonalDataChanged = true;
 						this.addDeleteItemField(updates, "Recurrence");
 					}
 					else {
 						// See if something changed
-						//this.logInfo("We had recurrenceInfo. And it was changed.");
+						this.logInfo("We had recurrenceInfo. And it was changed.");
 						recurrenceInfoChanged = true;
 					}
 				}
 			}
 			else {
 				// We did not have recurrence info. Check if we have now
-				//this.logInfo("We did not have recurrenceInfo. See if it was added.");
+				this.logInfo("We did not have recurrenceInfo. See if it was added.");
 				if (this._newRecurrenceInfo) {
-					//this.logInfo("We did not have recurrenceInfo. But we do have now.");
+					this.logInfo("We did not have recurrenceInfo. But we do have now.");
 					recurrenceInfoChanged = true;
 				}
 			}
@@ -3334,10 +3362,12 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 					.createInstance(Ci.calIEvent);
 	},
 
-	logInfo: function _logInfo(aMsg, aDebugLevel) 
+	logInfo: function _logInfo(aMsg, aDebugLevel, aDepth) 
 	{
-			this.globalFunctions.LOG("mivExchangeEvent: "+aMsg+"("+this.globalFunctions.STACKshort()+")");
-		return;
+		//	this.globalFunctions.LOG("mivExchangeEvent: "+aMsg+"("+this.globalFunctions.STACKshort()+")");
+		//return;
+
+		var depth = aDepth || 1;
 
 		if (!aDebugLevel) aDebugLevel = 1;
 
@@ -3345,9 +3375,11 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 			.getService(Ci.nsIPrefBranch);
 
 		this.debugLevel = this.globalFunctions.safeGetBoolPref(prefB, "extensions.1st-setup.core.debuglevel", 0, true);
-		this.debugLevel = 0;
+		this.debugLevel = 1;
 		if (aDebugLevel <= this.debugLevel) {
-			this.globalFunctions.LOG("mivExchangeEvent: "+aMsg);
+//			this.globalFunctions.LOG("[mivExchangeEvent] "+aMsg + " ("+this.globalFunctions.STACKshort()+")");
+			this.globalFunctions.LOG("[mivExchangeEvent] "+aMsg + " ("+this.globalFunctions.STACK(depth, 1)+")");
+			//this.globalFunctions.LOG("mivExchangeEvent: "+aMsg);
 		}
 	},
 
