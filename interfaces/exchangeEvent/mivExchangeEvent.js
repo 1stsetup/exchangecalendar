@@ -2061,7 +2061,7 @@ catch(err){
 		if (!this._calendarItemType) {
 			this._calendarItemType = this.getTagValue("t:CalendarItemType", null);
 		}
-		dump("get calendarItemType: title:"+this.title+", this._calendarItemType:"+this._calendarItemType+", startdate="+this.startDate.toString()+"\n");
+		//dump("get calendarItemType: title:"+this.title+", this._calendarItemType:"+this._calendarItemType+", startdate="+this.startDate.toString()+"\n");
 		return this._calendarItemType;
 	},
 

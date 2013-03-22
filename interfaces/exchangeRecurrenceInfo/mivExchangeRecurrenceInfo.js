@@ -125,7 +125,8 @@ mivExchangeRecurrenceInfo.prototype = {
 		result.item = this.item;
 		var count = {};
 		var myItems = this.getRecurrenceItems(count);
-		result.setRecurrenceItems(count, myItems);
+		this.logInfo("clone 1: title:"+this.item.title+", myItems.length:"+myItems.length+", count.value:"+count.value, 1, 3);
+		result.setRecurrenceItems(count.value, myItems);
 		this.logInfo("clone 2.");
 		return result;
 	},
@@ -174,12 +175,14 @@ mivExchangeRecurrenceInfo.prototype = {
   //void getRecurrenceItems(out unsigned long aCount, [array,size_is(aCount),retval] out calIRecurrenceItem aItems);
 	getRecurrenceItems: function _getRecurrenceItems(aReturn)
 	{
-		return this._recurrenceInfo.getRecurrenceItems(aReturn);
+		var result = this._recurrenceInfo.getRecurrenceItems(aReturn);
+		this.logInfo("getRecurrenceItems 1: title:"+this.item.title+", result.length:"+result.length, 1, 3);
+		return result;
 	},
   //void setRecurrenceItems(in unsigned long aCount, [array,size_is(aCount)] in calIRecurrenceItem aItems);
 	setRecurrenceItems: function _setRecurrenceItems(aCount, aItems)
 	{
-		this.logInfo("setRecurrenceItems 1: title:"+this.item.title+", aItems.length:"+aItems.length, 1, 2);
+		this.logInfo("setRecurrenceItems 1: title:"+this.item.title+", aItems.length:"+aItems.length, 1, 3);
 		this._recurrenceInfo.setRecurrenceItems(aCount, aItems);
 
 		var recItems = this.getRecurrenceItems({});
