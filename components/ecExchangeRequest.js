@@ -714,7 +714,7 @@ catch(err){
                                 if (this.debug) this.logInfo(": isConnError req.status="+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText, 2);
 
 				if (this.tryNextURL()) {
-					return false;
+					return true;
 				}
 
  				this.fail(this.ER_ERROR_HTTP_ERROR4XX, "HTTP Client error "+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText.substr(0,300)+"\n\n");
@@ -795,7 +795,7 @@ catch(err){
                                 if (this.debug) this.logInfo(": isConnError req.status="+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText, 2);
 
 				if (this.tryNextURL()) {
-					return false;
+					return true;
 				}
 
  				this.fail(this.ER_ERROR_HTTP_ERROR4XX, "HTTP Server error "+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText.substr(0,300)+"\n\n");
@@ -803,7 +803,7 @@ catch(err){
                         }
 
 			if (this.tryNextURL()) {
-				return false;
+				return true;
 			}
                         // XXX parse it
  			this.fail(this.ER_ERROR_FROM_SERVER, "Unknown error from server"+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText.substr(0,300)+"\n\n");
