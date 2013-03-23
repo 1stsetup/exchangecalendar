@@ -2302,11 +2302,34 @@ catch(err){
 	//void addException(in mivExchangeEvent aItem);
 	addException: function _addException(aItem)
 	{
-		dump("addException: aItem.title:"+aItem.title+"\n");
+		this.logInfo("addException: aItem.title:"+aItem.title+"\n");
 		if ((aItem.calendarItemType == "Exception") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
 			aItem.parentItem = this;
 			this._exceptions[aItem.id] = aItem.clone();
 			this.recurrenceInfo.modifyException(aItem, true);
+
+			var itemAlarms = aItem.getAlarms({});
+			if ((itemAlarms.length > 0) && (aItem.startDate.compare(this.reminderDueBy) == 0)) {
+				this.setProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime, this.reminderSignalTime.getInTimezone(cal.UTC()).icalString);
+			}
+		}
+	},
+
+	//void modifyException(in mivExchangeEvent aItem);
+	modifyException: function _modifyException(aItem)
+	{
+		this.logInfo("modifyException: aItem.title:"+aItem.title+"\n");
+		if ((aItem.calendarItemType == "Exception") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
+
+			// Remove any alarms we might have for this exception.
+			if (this._exceptions[aItem.id]) {
+				var itemAlarms = this._exceptions[aItem.id].getAlarms({});
+				if ((itemAlarms.length > 0) && (aItem.startDate.compare(this.reminderDueBy) == 0)) {
+					this.deleteProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
+				}
+			}
+
+			this._exceptions[aItem.id] = aItem.clone();
 
 			var itemAlarms = aItem.getAlarms({});
 			if ((itemAlarms.length > 0) && (aItem.startDate.compare(this.reminderDueBy) == 0)) {
@@ -2331,12 +2354,31 @@ catch(err){
 		}
 	},
 
+	//void removeExceptionAt(in calIDateTime aRecurrenceId);
+	removeExceptionAt: function _removeExceptionAt(aRecurrenceId)
+	{
+		// Find item.
+		var item = null;
+		for each(var exception in this._exceptions) {
+			if (exception.recurrenceId.compare(aRecurrenceId) == 0) {
+				this.logInfo("item.removeExceptionAt: Found item for exception.\n");
+				item = exception;
+				break;
+			}
+		}
+		
+		if (item) {
+			this.removeException(item);
+		}
+
+	},
+
 	//void getOccurrences(out uint32_t count, [array,size_is(count),retval] out mivExchangeEvent aOccurrence);
 	getOccurrences: function _getOccurrences(aCount)
 	{
 		var result = [];
 		for each(var occurrence in this._occurrences) {
-		dump("getOccurrences: occurrence.title:"+occurrence.title+", startDate:"+occurrence.startDate.toString()+"\n");
+		//dump("getOccurrences: occurrence.title:"+occurrence.title+", startDate:"+occurrence.startDate.toString()+"\n");
 			result.push(occurrence);
 		}
 		aCount.value = result.length;
@@ -2346,7 +2388,7 @@ catch(err){
 	//void addOccurrence(in mivExchangeEvent aItem);
 	addOccurrence: function _addOccurrence(aItem)
 	{
-		dump("addOccurrence: aItem.title:"+aItem.title+", startDate:"+aItem.startDate.toString()+"\n");
+		this.logInfo("addOccurrence: aItem.title:"+aItem.title+", startDate:"+aItem.startDate.toString()+"\n");
 		if ((aItem.calendarItemType == "Occurrence") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
 			aItem.parentItem = this;
 			this._occurrences[aItem.id] = aItem.clone();
@@ -2363,21 +2405,16 @@ catch(err){
 	removeOccurrence: function _removeOccurrence(aItem)
 	{
 		if (aItem) {
-				dump("  --> 1.\n");
 			if ((aItem.calendarItemType == "Occurrence") && (this.calendarItemType == "RecurringMaster")) {
-				dump("  --> 2.\n");
 				if (this._occurrences[aItem.id]) {
-				dump("  --> 3.\n");
 					this._occurrences[aItem.id] = null;
 					if (this.hasProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime)) {
 						this.deleteProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
 					}
 					delete this._occurrences[aItem.id];
-				dump("  --> 4.\n");
 				}
 			}
 		}
-				dump("  --> 5.\n");
 	},
 
 	//void removeOccurrenceAt(in calIDateTime aRecurrenceId);
@@ -2387,7 +2424,7 @@ catch(err){
 		var item = null;
 		for each(var occurrence in this._occurrences) {
 			if (occurrence.recurrenceId.compare(aRecurrenceId) == 0) {
-				dump("item.removeOccurrenceAt: Found item for occurrence.\n");
+				this.logInfo("item.removeOccurrenceAt: Found item for occurrence.\n");
 				item = occurrence;
 				break;
 			}
@@ -2395,6 +2432,11 @@ catch(err){
 		
 		if (item) {
 			this.removeOccurrence(item);
+		}
+		else {
+			// This recurrenceId is not an occurrence. Maybe an exception.
+			this.logInfo("item.removeOccurrenceAt: Did not find an occurrence going to check exceptions.\n");
+			this.removeExceptionAt(aRecurrenceId);
 		}
 
 	},
@@ -2709,7 +2751,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		else {
 
 try{
-	dump(" == this.calendarItemType:"+this.calendarItemType+"\n");
+	//dump(" == this.calendarItemType:"+this.calendarItemType+"\n");
 
 			if (this._newTitle) {
 				this._nonPersonalDataChanged = true;
@@ -2957,7 +2999,7 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 }
 		}
 
-		dump("updates:"+updates.toString()+"\n");
+		this.logInfo("updates:"+updates.toString()+"\n");
 		return updates;
 	},
 
@@ -3374,7 +3416,7 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		var prefB = Cc["@mozilla.org/preferences-service;1"]
 			.getService(Ci.nsIPrefBranch);
 
-		this.debugLevel = this.globalFunctions.safeGetBoolPref(prefB, "extensions.1st-setup.core.debuglevel", 0, true);
+		this.debugLevel = this.globalFunctions.safeGetIntPref(prefB, "extensions.1st-setup.core.debuglevel", 0, true);
 		this.debugLevel = 1;
 		if (aDebugLevel <= this.debugLevel) {
 //			this.globalFunctions.LOG("[mivExchangeEvent] "+aMsg + " ("+this.globalFunctions.STACKshort()+")");

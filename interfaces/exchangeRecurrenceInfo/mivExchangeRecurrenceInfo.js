@@ -291,6 +291,7 @@ mivExchangeRecurrenceInfo.prototype = {
 	{
 		this.logInfo("modifyException: anItem:"+anItem.title);
 		this._recurrenceInfo.modifyException(anItem, aTakeOverOwnership);
+		this.item.modifyException(anItem);
 	},
 
   /**

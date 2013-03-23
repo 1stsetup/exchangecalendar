@@ -2677,8 +2677,8 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	getRemovedOccurrence: function _getRemovedOccurrence(aOldItem, aNewItem)
 	{
 		if (this.debug) this.logInfo("getRemovedOccurrence");
-		// When an occurences gets removed from we get an extra occurenceitem in the recurrenceinfo list.
 
+		// We first check if an occurrence was removed.
 		var oldCount = {};
 		var oldOccurrences = aOldItem.getOccurrences(oldCount);
 
@@ -2705,69 +2705,34 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			}
 		}
 
-		return null;
+		// No occurrence was removed. We check the exceptions.
+		var oldCount = {};
+		var oldExceptions = aOldItem.getExceptions(oldCount);
 
-		// Rest is old code and can be removed.
-		var newRecurrenceItems;
-		newRecurrenceItems = aNewItem.recurrenceInfo.getRecurrenceItems({});
+		var newCount = {};
+		var newExceptions = aNewItem.getExceptions(newCount);
 
-		var oldRecurrenceItems;
-		oldRecurrenceItems = aOldItem.recurrenceInfo.getRecurrenceItems({});
+		if (this.debug) this.logInfo("getRemovedOccurrence: oldCount.value="+oldCount.value);
+		if (this.debug) this.logInfo("getRemovedOccurrence: newCount.value="+newCount.value);
+		if (newCount.value < oldCount.value) {
+			if (this.debug) this.logInfo("getRemovedOccurrence: We have less exceptions than before.");
 
-		if (this.debug) this.logInfo("getRemovedOccurrence: newRecurrenceItems.length="+newRecurrenceItems.length);
-		if (this.debug) this.logInfo("getRemovedOccurrence: oldRecurrenceItems.length="+oldRecurrenceItems.length);
-
-		if ((!newRecurrenceItems) || (newRecurrenceItems.length == 0)) {
-			// No recurrenceItems in the new item
-			// Nothing can be checked if it is removed.
-			if (newRecurrenceItems) {
-				if (this.debug) this.logInfo("newRecurrenceItems.length="+newRecurrenceItems.length);
-			}
-			if (this.debug) this.logInfo("getRemovedOccurrence: newItem has occurrenceInfo but no recurrenceItems. newCount="+newRecurrenceItems.length+",oldCount="+oldRecurrenceItems.length);
-			return null;
-		}
-
-		if (newRecurrenceItems.length > oldRecurrenceItems.length) {
-			if (this.debug) this.logInfo("getRemovedOccurrence: a New occurrence. newCount="+newRecurrenceItems.length+",  oldCount="+oldRecurrenceItems.length);
-		}
-
-		var newException = aNewItem.recurrenceInfo.getExceptionIds({});
-		var oldException = aOldItem.recurrenceInfo.getExceptionIds({});
-		if (this.debug) this.logInfo("getRemovedOccurrence: newException.length="+newException.length);
-		if (this.debug) this.logInfo("getRemovedOccurrence: oldException.length="+oldException.length);
-		if (newException.length != oldException.length) {
-			if (this.debug) this.logInfo("getRemovedOccurrence: Exceptions count changed. newCount="+newException.length+",  oldCount="+oldException.length);
-		}
-		
-		var oldExceptions = this.getExceptions(oldRecurrenceItems);
-
-		var newExceptions = this.getExceptions(newRecurrenceItems);
-
-		// Check if the newExceptions allready exists in the oldExceptions. If so remove it.
-		for (var exceptionStr in newExceptions) {
-			if (oldExceptions[exceptionStr]) {
-				if (this.debug) this.logInfo("getRemovedOccurrence: '"+exceptionStr+"' also exists in the old occurrence list.");
-				delete newExceptions[exceptionStr];
-			}
-		}
-
-		// What we are left with is the removedOccurrence(s). It should be only one.
-		for each(var exception in newExceptions) {
-			if (exception) {
-				// Go find the item in the cache
-				for each(var item in this.itemCache) {
-					if ((item) &&
-					    (item.uid == aNewItem.uid) && 
-					    (item.parentItem != item) &&
-					    (item.recurrenceId.compare(exception) == 0)) {
-						if (this.debug) this.logInfo("getRemovedOccurrence: we found our removed occurrence");
-						return item;
+			for each(var oldException in oldExceptions) {
+				var foundOld = false;
+				for each(var newException in newExceptions) {
+					if (oldException.id == newException.id) {
+						foundOld = true;
+						break;
 					}
+				}
+				if (foundOld == false) {
+					if (this.debug) this.logInfo("getRemovedOccurrence: We found the removed exception: startdate:"+oldException.startDate.toString());
+					return oldException;
 				}
 			}
 		}
 
-		if (this.debug) this.logInfo("getRemovedOccurrence: we DID NOT FIND our removed occurrence");
+		if (this.debug) this.logInfo("getRemovedOccurrence: we DID NOT FIND our removed occurrence or exception");
 		return null;
 	},
 

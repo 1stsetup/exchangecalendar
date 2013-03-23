@@ -68,7 +68,9 @@ interface mivExchangeEvent : calIEvent
 
 	void getExceptions(out uint32_t count, [array,size_is(count),retval] out mivExchangeEvent aException);
 	void addException(in mivExchangeEvent aItem);
+	void modifyException(in mivExchangeEvent aItem);
 	void removeException(in mivExchangeEvent aItem);
+	void removeExceptionAt(in calIDateTime aRecurrenceId);
 	void getOccurrences(out uint32_t count, [array,size_is(count),retval] out mivExchangeEvent aOccurrence);
 	void addOccurrence(in mivExchangeEvent aItem);
 	void removeOccurrence(in mivExchangeEvent aItem);

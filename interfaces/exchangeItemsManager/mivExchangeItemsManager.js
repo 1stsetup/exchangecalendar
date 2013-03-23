@@ -229,7 +229,7 @@ mivExchangeItemsManager.prototype = {
 		var prefB = Cc["@mozilla.org/preferences-service;1"]
 			.getService(Ci.nsIPrefBranch);
 
-		this.debugLevel = this.globalFunctions.safeGetBoolPref(prefB, "extensions.1st-setup.core.debuglevel", 0, true);
+		this.debugLevel = this.globalFunctions.safeGetIntPref(prefB, "extensions.1st-setup.core.debuglevel", 0, true);
 		if (aDebugLevel <= this.debugLevel) {
 			this.globalFunctions.LOG("mivExchangeItemsManager: "+aMsg);
 		}
