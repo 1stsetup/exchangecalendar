@@ -1,12 +1,13 @@
-Version 3.2.0-Beta4:
-- Fixes bug 246 - Modifying recurring meeting resulted in "modification failed" errors 
-- Fixes bug 241 - Autodiscover RedirectAddr not followed 
-
 Version 3.2.0-Beta3:
 - Fixes bug 162 - Changing recurring meeting to Wednesdays, moved it to Thursday 
-- Fixes bug 229 - Creating a custom repeating event - creates event on following day 
+- Fixes Bug 180 - NTLM and Kerberos fail
+- Fixes Bug 228 - Password loop
+- Fixes bug 229 - Creating a custom repeating event - creates event on following day
 - Fixes bug 238 - "All day Event" created for day prior to selected date 
+- Fixes bug 241 - Autodiscover RedirectAddr not followed 
+- Fixes bug 246 - Modifying recurring meeting resulted in "modification failed" errors 
 - Moved exchangecalendar object into it's own interface.
+- Create our own recurrenceInfo object/interface.
 
 Version 3.2.0-Beta2:
 - Fixes bug 241 -  Autodiscover RedirectAddr not followed

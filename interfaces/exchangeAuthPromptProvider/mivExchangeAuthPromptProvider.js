@@ -28,7 +28,7 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
 function mivExchangeAuthPromptProvider() {
-	dump("\nmivExchangeAuthPromptProvider.init\n");
+	//dump("\nmivExchangeAuthPromptProvider.init\n");
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
 }

@@ -3544,7 +3544,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			this.calendarPoller.cancel();
 		}
 
-dump("\resetCalendar\n");
+//dump("\resetCalendar\n");
 			var myAuthPrompt2 = Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
 			myAuthPrompt2.removeUserCanceled(this.serverUrl);
 		}catch(err) { dump("\n EROROR:"+err+"\n"); }

@@ -235,6 +235,7 @@ try {
 			var aContext = request.context;
 			var level = request.level;
 			var authInfo = request.authInfo;
+			var canUseBasicAuth = false;
 
 			var username;
 			var password;
@@ -275,6 +276,7 @@ try {
 									realm = realm.replace('"', "");
 								}
 								this.logInfo("asyncPromptAuthNotifyCallback: Found a realm going to use it. realm="+realm);
+								canUseBasicAuth = true;
 							}
 						}
 					}
@@ -336,6 +338,17 @@ try {
 				this.logInfo("asyncPromptAuthNotifyCallback: authInfo{ password:"+authInfo.password+", username:"+authInfo.username+", domain:"+authInfo.domain+"}");
 				try {
 					this.logInfo("asyncPromptAuthNotifyCallback: Sending authInfo to callback function.");
+					if (canUseBasicAuth == true) {
+						this.logInfo("asyncPromptAuthNotifyCallback: We can also use Basic authorization going to add header.");
+						var tok = authInfo.username + ':' + authInfo.password;
+						var basicAuthHash = btoa(tok);
+						try {
+							aChannel.setRequestHeader('Authorization', "Basic " + basicAuthHash, true);
+						}
+						catch(err) {
+							this.logInfo("asyncPromptAuthNotifyCallback: Error adding Basic authorization header. err:"+err);
+						}
+					}
 					aCallback.onAuthAvailable(aContext, authInfo);
 				}
 				catch(err) {
@@ -639,7 +652,7 @@ try {
 
 		this.debug = this.globalFunctions.safeGetBoolPref(prefB, "extensions.1st-setup.authentication.debug", false, true);
 		if (this.debug) {
-			this.globalFunctions.LOG("mivExchangeAuthPrompt2: "+aMsg);
+			this.globalFunctions.LOG("mivExchangeAuthPrompt2: "+aMsg + " ("+this.globalFunctions.STACKshort()+")");
 		}
 	},
 

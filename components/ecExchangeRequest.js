@@ -180,12 +180,6 @@ ExchangeRequest.prototype = {
 		this.xmlReq.abort();
 	},
 
-	make_basic_auth: function _make_basic_auth(user, password) {
-	  var tok = user + ':' + password;
-	  var hash = btoa(tok);
-	  return "Basic " + hash;
-	},
-
 	sendRequest: function(aData, aUrl)
 	{
 		if (this.shutdown) {
@@ -261,6 +255,12 @@ ExchangeRequest.prototype = {
 			if (password) {
 				if (this.debug) this.logInfo("We have a prePassword: *******");
 				this.xmlReq.open("POST", this.currentUrl, true, openUser, password);
+
+				// If we have full credentials we are going to add a Basic auth header just for the case we support Basic.
+				var tok = openUser + ':' + password;
+				var basicAuthHash = btoa(tok);
+				this.xmlReq.setRequestHeader('Authorization', "Basic " + basicAuthHash);
+				
 				//this.xmlReq.open("POST", this.currentUrl, true, this.mArgument.user, password);
 			}
 			else {
