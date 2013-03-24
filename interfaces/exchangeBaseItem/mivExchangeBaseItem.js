@@ -937,6 +937,7 @@ catch(err){
 		if ((!this._recurrenceInfo) && (this._exchangeData)) {
 			var recurrence = this._exchangeData.XPath("/t:Recurrence/*");
 			if (recurrence) {
+				this.logInfo("Recurrence::"+recurrence);
 				var recrule = this.readRecurrenceRule(recurrence);
 				recurrence = null;
 	
@@ -3144,6 +3145,7 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 				comps['FREQ'] = "WEEKLY";
 				break;
 			case "DailyRecurrence":
+			case "DailyRegeneration":
 				comps['FREQ'] = "DAILY";
 				break;
 			case "NoEndRecurrence":
