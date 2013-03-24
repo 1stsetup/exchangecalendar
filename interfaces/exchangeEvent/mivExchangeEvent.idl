@@ -19,74 +19,39 @@
  *
  * ***** BEGIN LICENSE BLOCK *****/
 
-#include "calIEvent.idl"
+#include "mivExchangeBaseItem.idl"
 
 interface mivIxml2jxon;
 
 [scriptable, uuid(4cd0469e-093f-4f7c-8ace-68f6ec76b36e)]
-interface mivExchangeEvent : calIEvent
+interface mivExchangeEvent : mivExchangeBaseItem
 {
-	readonly attribute AUTF8String subject;
-	readonly attribute AUTF8String sensitivity;
-	readonly attribute calIDateTime dateTimeReceived;
-	readonly attribute calIDateTime dateTimeSent;
-	readonly attribute calIDateTime dateTimeCreated;
-	readonly attribute calIDateTime reminderDueBy;
-	readonly attribute calIDateTime reminderSignalTime;
-	readonly attribute boolean reminderIsSet;
-	readonly attribute long reminderMinutesBeforeStart;
-	readonly attribute long size;
-	readonly attribute calIDateTime originalStart;
-	readonly attribute boolean isAllDayEvent;
-	readonly attribute AUTF8String legacyFreeBusyStatus;
-	readonly attribute AUTF8String location;
+// calIEvent start.
 
-	readonly attribute AUTF8String changeKey;
-	readonly attribute AUTF8String uid;
-	readonly attribute AUTF8String calendarItemType;
-	readonly attribute AUTF8String itemClass;
-	readonly attribute boolean isCancelled;
-	readonly attribute boolean isMeeting;
-	readonly attribute boolean hasAttachments;
-	readonly attribute boolean isRecurring;
-	readonly attribute boolean meetingRequestWasSent;
-	readonly attribute boolean isResponseRequested;
-	readonly attribute AUTF8String myResponseType;
-	readonly attribute AUTF8String timeZone;
-	readonly attribute AUTF8String startTimeZoneName;
-	readonly attribute AUTF8String startTimeZoneId;
-	readonly attribute AUTF8String endTimeZoneName;
-	readonly attribute AUTF8String endTimeZoneId;
-	readonly attribute AUTF8String conferenceType;
-	readonly attribute boolean allowNewTimeProposal;
+	// these attributes are marked readonly, as the calIDates are owned
+	// by the event; however, the actual calIDate objects are not read
+	// only and are intended to be manipulated to adjust dates.
 
-	readonly attribute AUTF8String type;
-	readonly attribute AUTF8String parentId;
-	readonly attribute AUTF8String parentChangeKey;
+	/**
+	* The (inclusive) start of the event.
+	*/
+	attribute calIDateTime startDate;
 
-	readonly attribute jsval responseObjects;
+	/**
+	* The (non-inclusive) end of the event.
+	* Note that for all-day events, non-inclusive means that this will be set
+	* to the day after the last day of the event.
+	* If startDate.isDate is set, endDate.isDate must also be set.
+	*/
+	attribute calIDateTime endDate;
 
-	void getExceptions(out uint32_t count, [array,size_is(count),retval] out mivExchangeEvent aException);
-	void addException(in mivExchangeEvent aItem);
-	void modifyException(in mivExchangeEvent aItem);
-	void removeException(in mivExchangeEvent aItem);
-	void removeExceptionAt(in calIDateTime aRecurrenceId);
-	void getOccurrences(out uint32_t count, [array,size_is(count),retval] out mivExchangeEvent aOccurrence);
-	void addOccurrence(in mivExchangeEvent aItem);
-	void removeOccurrence(in mivExchangeEvent aItem);
-	void removeOccurrenceAt(in calIDateTime aRecurrenceId);
+	/**
+	* The duration of the event.
+	* equal to endDate - startDate
+	*/
+	readonly attribute calIDuration duration;
 
-	void cloneToCalEvent(in calIEvent aCalEvent);
+// calIEvent end.
 
-	attribute mivIxml2jxon exchangeData;
-	attribute uint32_t occurrenceIndex;
-	readonly attribute mivIxml2jxon updateXML;
 
-	readonly attribute boolean nonPersonalDataChanged;
-
-	readonly attribute boolean isInvitation;
-
-	mivIxml2jxon convertToExchange(); 
-
-	void addMailboxAlias(in AUTF8String aAlias);
 };

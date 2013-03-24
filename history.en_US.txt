@@ -1,3 +1,6 @@
+Version 3.2.0-Beta4:
+- Split mivExchangeEvent object into mivExchangeEvent and mivExchangeBaseItem. As preparation for mivExchangeTodo.
+
 Version 3.2.0-Beta3:
 - Fixes bug 162 - Changing recurring meeting to Wednesdays, moved it to Thursday 
 - Fixes Bug 180 - NTLM and Kerberos fail

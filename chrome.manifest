@@ -58,7 +58,10 @@ manifest interfaces/updater/mivUpdater.manifest
 manifest interfaces/exchangeLoadBalancer/mivExchangeLoadBalancer.manifest
 manifest interfaces/exchangeAuthPromptProvider/mivExchangeAuthPromptProvider.manifest
 manifest interfaces/exchangeAuthPrompt2/mivExchangeAuthPrompt2.manifest
+
+manifest interfaces/exchangeBaseItem/mivExchangeBaseItem.manifest
 manifest interfaces/exchangeEvent/mivExchangeEvent.manifest
+
 manifest interfaces/exchangeAbCard/mivExchangeAbCard.manifest
 manifest interfaces/exchangeRecurrenceInfo/mivExchangeRecurrenceInfo.manifest
 

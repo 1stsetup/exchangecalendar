@@ -73,7 +73,7 @@ Cu.import("resource://exchangecalendar/erCreateAttachment.js");
 Cu.import("resource://exchangecalendar/erDeleteAttachment.js");
 //Cu.import("resource://interfaces/xml.js");
 
-//Cu.import("resource://interfaces/exchangeRecurrenceInfo/mivExchangeRecurrenceInfo.js");
+//Cu.import("resource://interfaces/exchangeEvent/mivExchangeEvent.js");
 
 var globalStart = new Date().getTime();
 
@@ -6197,11 +6197,16 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 
 		//var item = createEvent();
+try {
 		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 				.createInstance(Ci.mivExchangeEvent);
+
 		item.addMailboxAlias(this.mailbox);
 		item.exchangeData = aCalendarItem;
-
+}
+catch(err) {
+	dump(" =================== ERR:"+err+"\n");
+}
 		item.calendar = this.superCalendar;
 //		item.calendar = this;
 
