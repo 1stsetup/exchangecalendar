@@ -6197,16 +6197,12 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 
 		//var item = createEvent();
-try {
 		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 				.createInstance(Ci.mivExchangeEvent);
 
 		item.addMailboxAlias(this.mailbox);
 		item.exchangeData = aCalendarItem;
-}
-catch(err) {
-	dump(" =================== ERR:"+err+"\n");
-}
+
 		item.calendar = this.superCalendar;
 //		item.calendar = this;
 
@@ -6409,17 +6405,24 @@ catch(err) {
 	convertExchangeTaskToCalTask: function _convertExchangeTaskToCalTask(aTask, erGetItemsRequest)
 	{
 		if (this.debug) this.logInfo("convertExchangeTaskToCalTask:"+String(aTask), 2);
-		var item = createTodo();
+		//var item = createTodo();
+		var item = Cc["@1st-setup.nl/exchange/calendartodo;1"]
+				.createInstance(Ci.mivExchangeTodo);
 
-		item.entryDate = this.tryToSetDateValue(aTask.getTagValue("t:StartDate"), null);
+		item.addMailboxAlias(this.mailbox);
+		item.exchangeData = aTask;
 
-		item.dueDate = this.tryToSetDateValue(aTask.getTagValue("t:DueDate"), item.dueDate);
-		item.completedDate = this.tryToSetDateValue(aTask.getTagValue("t:CompleteDate"), item.completedDate);
-		item.percentComplete = this.tryToSetValue(aTask.getTagValue("t:PercentComplete"), item.percentComplete);
 		item.calendar = this.superCalendar;
 
-		item.id = this.tryToSetValue(aTask.getAttributeByTag("t:ItemId", "Id"), item.id);
-		item.setProperty("X-ChangeKey", aTask.getAttributeByTag("t:ItemId", "ChangeKey"));
+		//item.entryDate = this.tryToSetDateValue(aTask.getTagValue("t:StartDate"), null);
+
+		//item.dueDate = this.tryToSetDateValue(aTask.getTagValue("t:DueDate"), item.dueDate);
+		//item.completedDate = this.tryToSetDateValue(aTask.getTagValue("t:CompleteDate"), item.completedDate);
+		//item.percentComplete = this.tryToSetValue(aTask.getTagValue("t:PercentComplete"), item.percentComplete);
+		//item.calendar = this.superCalendar;
+
+		//item.id = this.tryToSetValue(aTask.getAttributeByTag("t:ItemId", "Id"), item.id);
+		//item.setProperty("X-ChangeKey", aTask.getAttributeByTag("t:ItemId", "ChangeKey"));
 
 		if (this.itemCache[item.id]) {
 			if (this.itemCache[item.id].changeKey == aTask.getAttributeByTag("t:ItemId", "ChangeKey")) {
@@ -6429,13 +6432,13 @@ catch(err) {
 		}
 
 
-		item.setProperty("X-UID", "dummy");
+		//item.setProperty("X-UID", "dummy");
 
-		item.title = this.tryToSetValue(aTask.getTagValue("t:Subject"), item.title);
+		//item.title = this.tryToSetValue(aTask.getTagValue("t:Subject"), item.title);
 
-		this.setCommonValues(item, aTask);
+		//??? this.setCommonValues(item, aTask);
 
-		var cats = [];
+/*		var cats = [];
 		var strings = aTask.XPath("/t:Categories/t:String");
 		for each (var cat in strings) {
 			cats.push(cat.value);
@@ -6532,7 +6535,7 @@ catch(err) {
 		}
 
 		item.setProperty("DESCRIPTION", aTask.getTagValue("t:Body"));
-
+*/
 		//item.parentItem = item;
 
 		// See if this is a delegated task.
@@ -6579,8 +6582,8 @@ catch(err) {
 			item.setProperty("X-exchWebService-IsTeamTask",aTask.getTagValue("t:IsTeamTask"));
 		}
 		
-		this.setAlarm(item, aTask);  
-		this.setSnoozeTime(item, null);
+//		this.setAlarm(item, aTask);  
+//		this.setSnoozeTime(item, null);
 
 /*		if (isNotAccepted == 3) {
 			item.makeImmutable();

@@ -154,6 +154,45 @@ mivExchangeEvent.prototype = {
 		//this.logInfo("get duration: title:"+this.title+", value:"+this._calEvent.duration);
 		return this._calEvent.duration;
 	},
+
+	// status of the event
+	//attribute AUTF8String status;
+	get status()
+	{
+		if (!this._status) {
+			this._status = this.myResponseType;
+
+			const statusMap = {
+				"Unknown"	: "NONE",
+				"NoResponseReceived" : "NONE",
+				"Tentative"	: "TENTATIVE",
+				"Accept"	: "CONFIRMED",
+				"Decline"	: "CANCELLED",
+				"Organizer"	: "CONFIRMED",
+				null: null
+			};
+
+			this._calEvent.status = statusMap[this._status];
+		}
+		//this.logInfo("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
+		return this._calEvent.status;
+	},
+
+	set status(aValue)
+	{
+		this.logInfo("set status: title:"+this.title+", aValue:"+aValue);
+		if (aValue != this.status) {
+			const statuses = { "NONE": "NoResponseReceived",
+					"TENTATIVE": "Tentative", 
+					"CONFIRMED" : "Accept",
+					"CANCELLED" : "Decline",
+					null: null };
+
+			this._newStatus = statuses[aValue];
+			this._calEvent.status = aValue;
+		}
+	},
+
 };
 
 function NSGetFactory(cid) {

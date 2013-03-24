@@ -61,6 +61,7 @@ manifest interfaces/exchangeAuthPrompt2/mivExchangeAuthPrompt2.manifest
 
 manifest interfaces/exchangeBaseItem/mivExchangeBaseItem.manifest
 manifest interfaces/exchangeEvent/mivExchangeEvent.manifest
+manifest interfaces/exchangeTodo/mivExchangeTodo.manifest
 
 manifest interfaces/exchangeAbCard/mivExchangeAbCard.manifest
 manifest interfaces/exchangeRecurrenceInfo/mivExchangeRecurrenceInfo.manifest

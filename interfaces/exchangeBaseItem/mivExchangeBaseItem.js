@@ -727,38 +727,13 @@ catch(err){
 	//attribute AUTF8String status;
 	get status()
 	{
-		if (!this._status) {
-			this._status = this.myResponseType;
-
-			const statusMap = {
-				"Unknown"	: "NONE",
-				"NoResponseReceived" : "NONE",
-				"Tentative"	: "TENTATIVE",
-				"Accept"	: "CONFIRMED",
-				"Decline"	: "CANCELLED",
-				"Organizer"	: "CONFIRMED",
-				null: null
-			};
-
-			this._calEvent.status = statusMap[this._status];
-		}
 		//this.logInfo("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
 		return this._calEvent.status;
 	},
 
 	set status(aValue)
 	{
-		this.logInfo("set status: title:"+this.title+", aValue:"+aValue);
-		if (aValue != this.status) {
-			const statuses = { "NONE": "NoResponseReceived",
-					"TENTATIVE": "Tentative", 
-					"CONFIRMED" : "Accept",
-					"CANCELLED" : "Decline",
-					null: null };
-
-			this._newStatus = statuses[aValue];
-			this._calEvent.status = aValue;
-		}
+		this._calEvent.status = aValue;
 	},
 
 	// ical interop; writing this means parsing
@@ -805,30 +780,50 @@ catch(err){
 	//void getAlarms(out PRUint32 count, [array, size_is(count), retval] out calIAlarm aAlarms);
 	getAlarms: function _getAlarms(count)
 	{
-		//this.logInfo("getAlarms: title:"+this.title);
+		this.logInfo("getAlarms 1: title:"+this.title);
 		if (!this._alarm) {
-			if ((this.reminderIsSet) && (this.reminderDueBy.compare(this.startDate) < 1) && (this.calendarItemType != "RecurringMaster")) {
-				//this.logInfo("Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType);
-				var alarm = cal.createAlarm();
-				alarm.action = "DISPLAY";
-				alarm.repeat = 0;
+			switch (this._className) {
+			case "mivExchangeTodo":
+				if ((this.reminderIsSet) && (this.calendarItemType != "RecurringMaster")) {
+					this.logInfo("Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType);
+					var alarm = cal.createAlarm();
+					alarm.action = "DISPLAY";
+					alarm.repeat = 0;
+					alarm.alarmDate = this.reminderDueBy.clone();
 
-				var alarmOffset = cal.createDuration();
-				alarmOffset.minutes = -1 * this.reminderMinutesBeforeStart;
+					alarm.related = Ci.calIAlarm.ALARM_RELATED_ABSOLUTE;
 
-				// This is a bug fix for when the offset is more than a year)
-				if (alarmOffset.minutes < (-60*24*365)) {
-					alarmOffset.minutes = -5;
+					this.logInfo("Alarm set with an alarmDate of "+alarm.alarmDate+".");
+
+					this._alarm = alarm.clone();
+					this._calEvent.addAlarm(alarm);
 				}
-				alarmOffset.normalize();
+				break;
+			case "mivExchangeEvent":
+				if ((this.reminderIsSet) && (this.reminderDueBy.compare(this.startDate) < 1) && (this.calendarItemType != "RecurringMaster")) {
+					this.logInfo("Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType);
+					var alarm = cal.createAlarm();
+					alarm.action = "DISPLAY";
+					alarm.repeat = 0;
 
-				alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
-				alarm.offset = alarmOffset;
+					var alarmOffset = cal.createDuration();
+					alarmOffset.minutes = -1 * this.reminderMinutesBeforeStart;
 
-				//this.logInfo("Alarm set with an offset of "+alarmOffset.minutes+" minutes from the start");
+					// This is a bug fix for when the offset is more than a year)
+					if (alarmOffset.minutes < (-60*24*365)) {
+						alarmOffset.minutes = -5;
+					}
+					alarmOffset.normalize();
 
-				this._alarm = alarm.clone();
-				this._calEvent.addAlarm(alarm);
+					alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
+					alarm.offset = alarmOffset;
+
+					this.logInfo("Alarm set with an offset of "+alarmOffset.minutes+" minutes from the start");
+
+					this._alarm = alarm.clone();
+					this._calEvent.addAlarm(alarm);
+				}
+				break;
 			}
 		}
 		return this._calEvent.getAlarms(count);
@@ -941,30 +936,35 @@ catch(err){
 	{
 		if ((!this._recurrenceInfo) && (this._exchangeData)) {
 			var recurrence = this._exchangeData.XPath("/t:Recurrence/*");
-			var recrule = this.readRecurrenceRule(recurrence);
-			recurrence = null;
+			if (recurrence) {
+				var recrule = this.readRecurrenceRule(recurrence);
+				recurrence = null;
 	
-			if (recrule) {
-				this.logInfo("get recurrenceInfo 1: title:"+this.title+", recrule:"+recrule);
-				//var recurrenceInfo = cal.createRecurrenceInfo(this);
-				this._recurrenceInfo = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
-							.createInstance(Ci.mivExchangeRecurrenceInfo);
+				if (recrule) {
+					this.logInfo("get recurrenceInfo 1: title:"+this.title+", recrule:"+recrule);
+					//var recurrenceInfo = cal.createRecurrenceInfo(this);
+					this._recurrenceInfo = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
+								.createInstance(Ci.mivExchangeRecurrenceInfo);
 
-				this._recurrenceInfo.item = this;
+					this._recurrenceInfo.item = this;
 
-				this._recurrenceInfo.setRecurrenceItems(1, [recrule]);
+					this._recurrenceInfo.setRecurrenceItems(1, [recrule]);
 
-				this._calEvent.recurrenceInfo = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
-							.createInstance(Ci.mivExchangeRecurrenceInfo);
+					this._calEvent.recurrenceInfo = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
+								.createInstance(Ci.mivExchangeRecurrenceInfo);
 
-				this._calEvent.recurrenceInfo.item = this;
+					this._calEvent.recurrenceInfo.item = this;
 
-				this._calEvent.recurrenceInfo.setRecurrenceItems(1, [recrule]);
+					this._calEvent.recurrenceInfo.setRecurrenceItems(1, [recrule]);
 
+				}
+				else {
+					this._recurrenceInfo = null;
+					this.logInfo("get recurrenceInfo 2: title:"+this.title+", recrule:null");
+				}
 			}
 			else {
-				this._recurrenceInfo = null;
-				this.logInfo("get recurrenceInfo 2: title:"+this.title+", recrule:null");
+				this.logInfo("No Recurrence tag.");
 			}
 		}
 		else {
@@ -1092,6 +1092,15 @@ catch(err){
 				}
 			}
 			break;
+		case "CREATED": 
+			if (!this._created) {
+				this._created = this.dateTimeCreated;
+				//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
+				if (this._created) {
+					this._calEvent.setProperty(name, this._created);
+				}
+			}
+			break;
 		case "LOCATION": 
 			if ((this.location) && (!this._newLocation)) this._calEvent.setProperty(name, this.location);
 			break;
@@ -1180,6 +1189,11 @@ catch(err){
 		case "DESCRIPTION": 
 			if (value != this._newBody) {
 				this._newBody = value;
+			}
+			break;
+		case "CREATED": 
+			if (value != this._newCreated) {
+				this._newCreated = value;
 			}
 			break;
 		case "LOCATION": 
@@ -1359,8 +1373,10 @@ catch(err){
 	{
 		if (!this._organizer) {
 			this._organizer = this.createAttendee(this.getTag("t:Organizer"), "CHAIR");
-			this._organizer.isOrganizer = true;
-			if (this._organizer) this._calEvent.organizer = this._organizer;
+			if (this._organizer) {
+				this._organizer.isOrganizer = true;
+				this._calEvent.organizer = this._organizer;
+			}
 		}
 
 		//this.logInfo("get organizer: title:"+this.title+", value:"+this._calEvent.organizer);
