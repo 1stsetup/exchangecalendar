@@ -938,7 +938,7 @@ catch(err){
 		if ((!this._recurrenceInfo) && (this._exchangeData)) {
 			var recurrence = this._exchangeData.XPath("/t:Recurrence/*");
 			if (recurrence) {
-				this.logInfo("Recurrence::"+recurrence);
+				//this.logInfo("Recurrence::"+recurrence);
 				var recrule = this.readRecurrenceRule(recurrence);
 				recurrence = null;
 	
@@ -1739,13 +1739,13 @@ catch(err){
 			break;
 		case "RecurringMaster":
 			for each(var exception in this._exceptions) {
-				if ( ((aStartDate == null) || (exception.compare(aStartDate) >= 0)) && ((aEndDate == null) || (exception.compare(aEndDate) < 0)) ) {
+				if ( ((aStartDate == null) || (exception.startDate.compare(aStartDate) >= 0)) && ((aEndDate == null) || (exception.endDate.compare(aEndDate) < 0)) ) {
 					//this.logInfo("getOccurrencesBetween 0d: inserting myself into list.");
 					occurrences.push(exception);
 				}
 			}
 			for each(var occurrence in this._occurrences) {
-				if ( ((aStartDate == null) || (occurrence.compare(aStartDate) >= 0)) && ((aEndDate == null) || (occurrence.compare(aEndDate) < 0)) ) {
+				if ( ((aStartDate == null) || (occurrence.startDate.compare(aStartDate) >= 0)) && ((aEndDate == null) || (occurrence.endDate.compare(aEndDate) < 0)) ) {
 					//this.logInfo("getOccurrencesBetween 0e: inserting myself into list.");
 					occurrences.push(occurrence);
 				}
@@ -3251,7 +3251,7 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		for each(var alias in this.mailboxAliases) {
 			if (mbox.getTagValue("t:EmailAddress","unknown").toLowerCase() == alias.toLowerCase()) {
 				me = true;
-				dump("createAttendee: Title:"+this.title+", email:"+mbox.getTagValue("t:EmailAddress","unknown")+". This address is mine ("+alias+").\n");
+				this.logInfo("createAttendee: Title:"+this.title+", email:"+mbox.getTagValue("t:EmailAddress","unknown")+". This address is mine ("+alias+").\n");
 				break;
 			}
 		}

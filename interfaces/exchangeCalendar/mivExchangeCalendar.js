@@ -1506,7 +1506,11 @@ if (this.debug) this.logInfo("singleModified doNotify");
 							var removedOccurrence = this.getRemovedOccurrence(aOldItem, aNewItem);
 							if (removedOccurrence) {
 								// Delete this occurrence; multi
-								var self = this;
+								this.notifyTheObservers("onDeleteItem", [removedOccurrence]);
+								this.deleteItem(removedOccurrence);
+								result = Cr.NS_OK;
+
+/*								var self = this;
 								this.addToQueue( erGetOccurrenceIndexRequest,
 									{user: this.user, 
 									 mailbox: this.mailbox,
@@ -1521,12 +1525,12 @@ if (this.debug) this.logInfo("singleModified doNotify");
 									 whichOccurrence: "single_occurence" },//dialogArg.answer}, 
 									function(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey) { self.getOccurrenceIndexOk(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey);}, 
 									function(erGetOccurrenceIndexRequest, aCode, aMsg) { self.getOccurrenceIndexError(erGetOccurrenceIndexRequest, aCode, aMsg);},
-									null);
+									null); */
 							}
 							else {
 								// Could be an alarm dismiss or snooze
+								this.masterModified(aNewItem);
 							}
-							this.masterModified(aNewItem);
 							result = Cr.NS_OK;
 						}
 					}
@@ -1720,22 +1724,26 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	        }
 
 		if (aItem.id == null) {
-			this.notifyOperationComplete(aListener,
-                                         Ci.calIErrors.MODIFICATION_FAILED,
-                                         Ci.calIOperationListener.DELETE,
-                                         null,
-                                         "ID is null for deleteItem");
+			if (aListener) {
+				this.notifyOperationComplete(aListener,
+		                                 Ci.calIErrors.MODIFICATION_FAILED,
+		                                 Ci.calIOperationListener.DELETE,
+		                                 null,
+		                                 "ID is null for deleteItem");
+			}
 			return;
 		}
 
 		// Check if this item is still in cache
 		if ((aItem.id == aItem.parentItem.id) && (!this.itemCache[aItem.id]) && (!this.recurringMasterCache[aItem.uid]))	 {
 			if (this.debug) this.logInfo("Item is not in itemCache anymore. Probably not removed from view by Lightning..");
-			this.notifyOperationComplete(aListener,
-                                         Cr.NS_OK,
-                                         Ci.calIOperationListener.DELETE,
-                                         aItem.id,
-                                         aItem);
+			if (aListener) {
+				this.notifyOperationComplete(aListener,
+		                                 Cr.NS_OK,
+		                                 Ci.calIOperationListener.DELETE,
+		                                 aItem.id,
+		                                 aItem);
+			}
 			return;
 		}
 
@@ -1757,19 +1765,23 @@ if (this.debug) this.logInfo("singleModified doNotify");
 
 				if (!this.sendMeetingRespons(aOldItem, null, "exisiting", "DECLINED")) {
 					if (this.debug) this.logInfo("deleteItem: canceled by user.");
-					this.notifyOperationComplete(erDeleteItemRequest.listener,
-					      Ci.calIErrors.OPERATION_CANCELLED,
-					      Ci.calIOperationListener.DELETE,
-					      aItem.id,
-					      aItem);
+					if (aListener) {
+						this.notifyOperationComplete(aListener,
+						      Ci.calIErrors.OPERATION_CANCELLED,
+						      Ci.calIOperationListener.DELETE,
+						      aItem.id,
+						      aItem);
+					}
 					return;
 				}
 				else {
-					this.notifyOperationComplete(erDeleteItemRequest.listener,
-					      Cr.NS_OK,
-					      Ci.calIOperationListener.DELETE,
-					      aItem.id,
-					      aItem);
+					if (aListener) {
+						this.notifyOperationComplete(aListener,
+						      Cr.NS_OK,
+						      Ci.calIOperationListener.DELETE,
+						      aItem.id,
+						      aItem);
+					}
 					return;
 				}
 
@@ -2533,7 +2545,6 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			if ((attendee.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) ||
 				(attendee.id.replace(/^exchangecalendar:/, '').toLowerCase() == this.mailbox.toLowerCase()) ) {
 //				if (this.debug) this.logInfo("getInvitedAttendee FOUND myself:"+aItem.title);
-				dump("getInvitedAttendee FOUND myself:"+aItem.title+"\n");
 //				attendee.participationStatus = participationMap[aItem.myResponseType];
 				return attendee; //.clone();
 			}
@@ -2547,13 +2558,11 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			tmpAttendee.rsvp = "FALSE";
 			tmpAttendee.userType = "INDIVIDUAL";
 			tmpAttendee.role = "REQ-PARTICIPANT";
-//			tmpAttendee.participationStatus = "NEEDS-ACTION";
 			tmpAttendee.participationStatus = aItem.participationStatus;
-				dump("getInvitedAttendee Invitation adding myself myself:"+aItem.title+"\n");
 			return tmpAttendee;
 		}
 		
-		dump("Did not find an attendee.!\n");
+		//dump("Did not find an attendee.!\n");
 
 	},
 // End calISchedulingSupport
@@ -5279,7 +5288,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 	getOccurrenceIndexOk: function _getOccurrenceIndexOk(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey)
 	{
-//		if (this.debug) this.logInfo("getOccurrenceIndexOk index="+aIndex);
+		if (this.debug) this.logInfo("getOccurrenceIndexOk index="+aIndex);
 		this.saveCredentials(erGetOccurrenceIndexRequest.argument);
 
 		this.notifyTheObservers("onDeleteItem", [erGetOccurrenceIndexRequest.argument.masterItem]);
@@ -6947,12 +6956,12 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			if (deletions.length > 0) {
 				for each (var deleted in deletions) {
 					var item = this.itemCache[deleted.Id];
-					if (item) {
+					if ((item) && (item.calendarItemType != "RecurringMaster")) {
 						// We have this one. Remove it.
 						if (this.debug) this.logInfo("Going to remove an item");
 						// Single item or occurrence.
 						if (item.parentItem.id == item.id) {
-							if (this.debug) this.logInfo("This is a Single to delete");
+							if (this.debug) this.logInfo("This is a Single to delete. Title:"+item.title+", calendarItemType:"+item.calendarItemType);
 						}
 						else {
 							if (this.debug) this.logInfo("This is a Occurrence or Exception to delete. THIS SHOULD NEVER HAPPEN.");
