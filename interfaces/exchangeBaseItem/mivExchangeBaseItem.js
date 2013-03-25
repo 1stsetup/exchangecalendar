@@ -727,12 +727,13 @@ catch(err){
 	//attribute AUTF8String status;
 	get status()
 	{
-		//this.logInfo("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
+		this.logInfo("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
 		return this._calEvent.status;
 	},
 
 	set status(aValue)
 	{
+		this._newStatus = aValue;
 		this._calEvent.status = aValue;
 	},
 
@@ -780,7 +781,7 @@ catch(err){
 	//void getAlarms(out PRUint32 count, [array, size_is(count), retval] out calIAlarm aAlarms);
 	getAlarms: function _getAlarms(count)
 	{
-		this.logInfo("getAlarms 1: title:"+this.title);
+		//this.logInfo("getAlarms 1: title:"+this.title);
 		if (!this._alarm) {
 			switch (this._className) {
 			case "mivExchangeTodo":
@@ -1120,7 +1121,7 @@ catch(err){
 			}
 			break;
 		case "STATUS": 
-		        //this.logInfo("get property X: title:"+this.title+", name:"+name+", value:"+this._calEvent.getProperty(name)+", _newLocation:"+this._newLocation);
+		        this.logInfo("get property STATUS: title:"+this.title+", name:"+name+", value:"+this._calEvent.getProperty(name)+", startDate:"+this.startDate);
 			if (!this._myResponseType) {
 				if (this.isCancelled) {
 					this._calEvent.setProperty(name, "CANCELLED");
@@ -2101,6 +2102,11 @@ catch(err){
 		}
 		
 		return this._myResponseType;
+	},
+
+	get participationStatus()
+	{
+		return participationMap[this.myResponseType];
 	},
 
 	//readonly attribute AUTF8String timeZone;
@@ -3245,8 +3251,8 @@ this.logInfo("Error:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		for each(var alias in this.mailboxAliases) {
 			if (mbox.getTagValue("t:EmailAddress","unknown").toLowerCase() == alias.toLowerCase()) {
 				me = true;
-				//dump("createAttendee: Title:"+this.title+", email:"+mbox.getTagValue("t:EmailAddress","unknown")+". This address is mine ("+alias+").\n");
-				//break;
+				dump("createAttendee: Title:"+this.title+", email:"+mbox.getTagValue("t:EmailAddress","unknown")+". This address is mine ("+alias+").\n");
+				break;
 			}
 		}
 

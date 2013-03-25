@@ -2532,7 +2532,8 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			if (this.debug) this.logInfo("getInvitedAttendee 2:"+attendee.id);
 			if ((attendee.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) ||
 				(attendee.id.replace(/^exchangecalendar:/, '').toLowerCase() == this.mailbox.toLowerCase()) ) {
-				if (this.debug) this.logInfo("getInvitedAttendee FOUND myself:"+aItem.title);
+//				if (this.debug) this.logInfo("getInvitedAttendee FOUND myself:"+aItem.title);
+				dump("getInvitedAttendee FOUND myself:"+aItem.title+"\n");
 //				attendee.participationStatus = participationMap[aItem.myResponseType];
 				return attendee; //.clone();
 			}
@@ -2546,9 +2547,13 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			tmpAttendee.rsvp = "FALSE";
 			tmpAttendee.userType = "INDIVIDUAL";
 			tmpAttendee.role = "REQ-PARTICIPANT";
-			tmpAttendee.participationStatus = "NEEDS-ACTION";
+//			tmpAttendee.participationStatus = "NEEDS-ACTION";
+			tmpAttendee.participationStatus = aItem.participationStatus;
+				dump("getInvitedAttendee Invitation adding myself myself:"+aItem.title+"\n");
 			return tmpAttendee;
 		}
+		
+		dump("Did not find an attendee.!\n");
 
 	},
 // End calISchedulingSupport

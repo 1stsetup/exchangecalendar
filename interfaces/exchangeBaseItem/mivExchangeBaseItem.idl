@@ -53,6 +53,7 @@ interface mivExchangeBaseItem : calIItemBase
 	readonly attribute boolean meetingRequestWasSent;
 	readonly attribute boolean isResponseRequested;
 	readonly attribute AUTF8String myResponseType;
+	readonly attribute AUTF8String participationStatus;
 	readonly attribute AUTF8String timeZone;
 	readonly attribute AUTF8String startTimeZoneName;
 	readonly attribute AUTF8String startTimeZoneId;
