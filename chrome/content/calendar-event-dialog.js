@@ -57,6 +57,11 @@ exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 1a");
 			var item = args.calendarEvent;
 			if ((!cal.isEvent(item)) && (item.calendar.type == "exchangecalendar")) {
 
+				var ownerLabel = document.getElementById("exchWebService-owner-label");
+				if (ownerLabel) {
+					ownerLabel.value = item.owner;
+				}
+
 exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 2");
 				var tmpDatePicker = document.createElement("datepicker");
 				tmpDatePicker.setAttribute("type","popup");

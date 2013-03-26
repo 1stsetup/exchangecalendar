@@ -387,6 +387,8 @@ try {
 					.createInstance(Ci.mivExchangeEvent);
 		}
 		else {
+			var result = Cc[this.contractID]
+					.createInstance(Ci.mivExchangeTodo);
 		}
 
 		for each(var alias in this.mailboxAliases) {
@@ -489,6 +491,14 @@ try {
 
 		if (this._newParentItem) result.parentItem =this.parentItem;
 		if (this._newAlarmLastAck) result.alarmLastAck = this.alarmLastAck;
+
+		if (this.contractID == "@1st-setup.nl/exchange/calendartodo;1") {
+			if (this._newEntryDate) result.entryDate = this.entryDate.clone();
+			if (this._newDueDate) result.dueDate = this.dueDate.clone();
+			if (this._newCompletedDate) result.completedDate = this.completedDate.clone();
+			if (this._newPercentComplete) result.percentComplete = this.percentComplete;
+			if (this._newDuration) result.duration = this.duration;
+		}
 
 		//this.logInfo("clone 99: title:"+this.title+", startDate:"+result.startDate, -1);
 }
@@ -1388,8 +1398,14 @@ catch(err){
 	set organizer(aValue)
 	{
 		//this.logInfo("set organizer: title:"+this.title+", aValue:"+aValue);
-		if ((!this.organizer) || (aValue.toString() != this.organizer.toString())) {
-			this._newOrganizer = aValue.clone();
+		this.organizer;
+		if (aValue) {
+			if ((!this.organizer) || (aValue.toString() != this.organizer.toString())) {
+				this._newOrganizer = aValue.clone();
+				this._calEvent.organizer = aValue;
+			}
+		}
+		else {
 			this._calEvent.organizer = aValue;
 		}
 	},

@@ -45,6 +45,14 @@
     <script type="application/javascript" src="chrome://exchangecalendar/content/calendar-event-dialog.js"/> 
 
 	<rows id="event-grid-rows">
+		<row id="event-grid-startdate-row" collapsed="false">
+			<hbox id="event-grid-startdate-picker-box">
+				<hbox id="exchWebService-owner-hbox">
+					<label value="Owner:"/>
+					<label id="exchWebService-owner-label" value=""/>
+				</hbox>
+			</hbox>
+		</row>
 		<row id="exchWebService-attachments-row"
 			flex="1"
 			collapsed="true" insertbefore="event-grid-link-separator">

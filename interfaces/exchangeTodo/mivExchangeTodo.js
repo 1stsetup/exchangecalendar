@@ -175,8 +175,13 @@ mivExchangeTodo.prototype = {
 	set completedDate(aValue)
 	{
 		//this.logInfo("set completedDate: title:"+this.title+", aValue:"+aValue);
-		if (aValue.toString() != this.completedDate.toString()) {
-			this._newCompletedDate = aValue;
+		if (aValue) {
+			if (aValue.toString() != this.completedDate.toString()) {
+				this._newCompletedDate = aValue;
+				this._calEvent.completedDate = aValue;
+			}
+		}
+		else {
 			this._calEvent.completedDate = aValue;
 		}
 	},
@@ -263,6 +268,16 @@ mivExchangeTodo.prototype = {
 			this._newStatus = statuses[aValue];
 			this._calEvent.status = aValue;
 		}
+	},
+
+	//readonly attribute AUTF8String owner;
+	get owner()
+	{
+		if (!this._owner) {
+			this._owner = this.getTagValue("t:Owner", "(unknown)");
+		}
+
+		return this._owner;
 	},
 
 };

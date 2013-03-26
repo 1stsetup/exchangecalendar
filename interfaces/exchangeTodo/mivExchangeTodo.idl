@@ -86,5 +86,6 @@ interface mivExchangeTodo : mivExchangeBaseItem
 
 // calITodo end.
 
+	readonly attribute AUTF8String owner;
 
 };
