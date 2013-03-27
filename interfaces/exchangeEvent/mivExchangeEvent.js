@@ -60,6 +60,7 @@ mivExchangeEvent.prototype = {
 				Ci.nsISupports]),
 
 	_className : "mivExchangeEvent",
+	_mainTag : "CalendarItem",
 
 	classDescription : "Exchange calendar event.",
 
@@ -192,6 +193,272 @@ mivExchangeEvent.prototype = {
 			this._calEvent.status = aValue;
 		}
 	},
+
+	get updateXML()
+	{
+		this._nonPersonalDataChanged = false;
+
+		var updates = this.globalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+
+		if (this.isInvitation) {
+			// Only can accept/decline/tentative
+			if ((this._newMyResponseType) && (this._newMyResponseType != this._myResponseType)) {
+				this._nonPersonalDataChanged = true;
+				this.addSetItemField(updates, "MyResponseType", this._newMyResponseType);
+			}
+
+			// Or change alarm.
+			this.checkAlarmChange(updates);
+			
+		}
+		else {
+
+			if (this._newTitle) {
+				this._nonPersonalDataChanged = true;
+				this.addSetItemField(updates, "Subject", this._newTitle);
+			}
+			if (this._newPrivacy) {
+				this.addSetItemField(updates, "Sensitivity", this._newPrivacy);
+			}
+			if (this._newBody) {
+				this._nonPersonalDataChanged = true;
+				this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
+			}
+			// Categories
+			if (this._changesCategories) {
+				var categoriesXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
+							.createInstance(Ci.mivIxml2jxon);
+				var categories = this.getCategories({});
+				var first = true;
+				for each(var category in categories) {
+					if (first) {
+						first = false;
+						categoriesXML.processXMLString("<t:String>"+category+"</t:String>", 0, null);
+					}
+					else {
+						categoriesXML.addSibblingTag("String", "t", category);
+					}
+				}
+				if (categories.length > 0) {
+					this.addSetItemField(updates, "Categories", categoriesXML);
+				}
+				else {
+					if (this._categories.length > 0) {
+						this.addDeleteItemField(updates, "Categories");
+					}
+				}
+			}
+
+			if (this._newPriority) {
+				this.addSetItemField(updates, "Importance", this._newPriority);
+			}
+
+
+			if (this._newStartDate) {
+				var tmpStart = this._newStartDate.clone();
+				if (this._newStartDate.isDate) {
+					tmpStart.isDate = false;
+					var tmpDuration = cal.createDuration();
+					tmpDuration.minutes = -60;
+					tmpStart.addDuration(tmpDuration);
+
+					// We make a non-UTC datetime value for this.globalFunctions.
+					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
+					var exchStart = cal.toRFC3339(tmpStart).substr(0, 19)+"Z"; //cal.toRFC3339(tmpStart).length-6);
+				}
+				else {
+					// We set in bias advanced to UCT datetime values for this.globalFunctions.
+					var exchStart = cal.toRFC3339(tmpStart);
+				}
+				this._nonPersonalDataChanged = true;
+				this.addSetItemField(updates, "Start", exchStart);
+
+				if (!this.calendar.isVersion2007) {
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:StartTimeZone Id="'+this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl)+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+
+					this.addSetItemField(updates, "StartTimeZone", tmpTimeZone, null, true);
+				}
+			}
+
+			if (this._newEndDate) {
+				var tmpEnd = this._newEndDate.clone();
+
+				if (this._newEndDate.isDate) {
+					tmpEnd.isDate = false;
+					var tmpDuration = cal.createDuration();
+					tmpDuration.minutes = -61;
+					tmpEnd.addDuration(tmpDuration);
+
+					// We make a non-UTC datetime value for this.globalFunctions.
+					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
+					var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19)+"Z"; //cal.toRFC3339(tmpEnd).length-6);
+				}
+				else {
+					// We set in bias advanced to UCT datetime values for this.globalFunctions.
+					var exchEnd = cal.toRFC3339(tmpEnd);
+				}
+				this._nonPersonalDataChanged = true;
+				this.addSetItemField(updates, "End", exchEnd);
+
+				if (!this.calendar.isVersion2007) {
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:EndTimeZone Id="'+this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newEndDate.timezone, this.calendar.serverUrl)+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+
+					this.addSetItemField(updates, "EndTimeZone", tmpTimeZone, null, true);
+				}
+			}
+
+			if (this._newStartDate) {
+				this._nonPersonalDataChanged = true;
+				if (this._newStartDate.isDate) {
+					this.addSetItemField(updates, "IsAllDayEvent", "true");
+				}
+				else {
+					this.addSetItemField(updates, "IsAllDayEvent", "false");
+				}
+	
+			}
+			else {
+				if (this._newEndDate) {
+					this._nonPersonalDataChanged = true;
+					if (this._newEndDate.isDate) {
+						this.addSetItemField(updates, "IsAllDayEvent", "true");
+					}
+					else {
+						this.addSetItemField(updates, "IsAllDayEvent", "false");
+					}
+	
+				}
+			}
+
+			if (this._newLegacyFreeBusyStatus) {
+				this.addSetItemField(updates, "LegacyFreeBusyStatus", this._newLegacyFreeBusyStatus);
+			}
+
+			if (this._newLocation) {
+				this._nonPersonalDataChanged = true;
+				this.addSetItemField(updates, "Location", this._newLocation);
+			}
+
+			// Attendees
+			if (this._changesAttendees.length > 0) {
+				var reqAttendeeCount = 0;
+				var optAttendeeCount = 0;
+				var attendees = this.getAttendees({});
+				if (attendees.length > 0) {
+
+					const attendeeStatus = {
+						"NEEDS-ACTION"	: "Unknown",
+						"TENTATIVE"	: "Tentative",
+						"ACCEPTED"	: "Accept",
+						"DECLINED"	: "Decline",
+						null		: "Unknown"
+					};
+
+					for each(var attendee in attendees) {
+						switch (attendee.role) {
+						case "REQ-PARTICIPANT":
+							if (reqAttendeeCount == 0) {
+								var reqAttendees = this.globalFunctions.xmlToJxon('<t:Attendee xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+								var ae = reqAttendees;
+							}
+							else {
+								var ae = reqAttendees.addSibblingTag("Attendee", "t", null);
+							}
+							reqAttendeeCount++;
+							break;
+						case "OPT-PARTICIPANT":
+							if (optAttendeeCount == 0) {
+								var optAttendees = this.globalFunctions.xmlToJxon('<t:Attendee xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+								var ae = optAttendees;
+							}
+							else {
+								var ae = optAttendees.addSibblingTag("Attendee", "t", null);
+							}
+							optAttendeeCount++;
+							break;
+						}
+						var mailbox = ae.addChildTag("Mailbox", "t", null);
+						mailbox.addChildTag("Name", "t", attendee.commonName);
+
+						var tmpEmailAddress = attendee.id.replace(/^mailto:/, '');
+						if (tmpEmailAddress.indexOf("@") > 0) {
+							mailbox.addChildTag("EmailAddress", "t", tmpEmailAddress);
+						}
+						else {
+							mailbox.addChildTag("EmailAddress", "t", "unknown@somewhere.com");
+						}
+						ae.addChildTag("ResponseType", "t", attendeeStatus[attendee.participationStatus]);
+
+					}
+					if (reqAttendeeCount > 0) {
+						this._nonPersonalDataChanged = true;
+						this.addSetItemField(updates, "RequiredAttendees", reqAttendees);
+					}
+					else {
+						if (this._reqParticipants) {
+							this._nonPersonalDataChanged = true;
+							this.addDeleteItemField(updates, "RequiredAttendees");
+						}
+					}
+					if (optAttendeeCount > 0) {
+						this._nonPersonalDataChanged = true;
+						this.addSetItemField(updates, "OptionalAttendees", optAttendees);
+					}
+					else {
+						if (this._optParticipants) {
+							this._nonPersonalDataChanged = true;
+							this.addDeleteItemField(updates, "OptionalAttendees");
+						}
+					}
+				}
+			}
+
+
+			// Recurrence rule. Michel
+			var recurrenceInfoChanged;
+			if (this._recurrenceInfo) {
+				// We had recurrenceInfo. Lets see if it changed.
+				this.logInfo("We had recurrenceInfo. Lets see if it changed.");
+				if (this._newRecurrenceInfo !== undefined) {
+					// It was changed or removed
+					if (this._newRecurrenceInfo === null) {
+						// It was removed
+						this.logInfo("We had recurrenceInfo. And it is removed.");
+						recurrenceInfoChanged = false;
+						this._nonPersonalDataChanged = true;
+						this.addDeleteItemField(updates, "Recurrence");
+					}
+					else {
+						// See if something changed
+						this.logInfo("We had recurrenceInfo. And it was changed.");
+						recurrenceInfoChanged = true;
+					}
+				}
+			}
+			else {
+				// We did not have recurrence info. Check if we have now
+				this.logInfo("We did not have recurrenceInfo. See if it was added.");
+				if (this._newRecurrenceInfo) {
+					this.logInfo("We did not have recurrenceInfo. But we do have now.");
+					recurrenceInfoChanged = true;
+				}
+			}
+			if (recurrenceInfoChanged) {
+				
+				var recurrenceXML = this.makeRecurrenceRule();
+				this._nonPersonalDataChanged = true;
+				this.addSetItemField(updates, "Recurrence", recurrenceXML, null, true);
+			}
+			
+
+			// Alarms and snoozes
+			this.checkAlarmChange(updates);
+		}
+
+		this.logInfo("updates:"+updates.toString()+"\n");
+		return updates;
+	},
+
 
 };
 

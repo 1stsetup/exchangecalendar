@@ -29,6 +29,8 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 
+Cu.import("resource://calendar/modules/calProviderUtils.jsm");
+
 Cu.import("resource://interfaces/exchangeBaseItem/mivExchangeBaseItem.js");
 
 function mivExchangeTodo() {
@@ -36,6 +38,8 @@ function mivExchangeTodo() {
 	this.initialize();
 
 	this.initExchangeBaseItem();
+
+	this.miv = this.globalFunctions.getUUID();
 
 	//this.logInfo("mivExchangeTodo: init");
 
@@ -56,6 +60,7 @@ mivExchangeTodo.prototype = {
 				Ci.nsISupports]),
 
 	_className : "mivExchangeTodo",
+	_mainTag : "Task",
 
 	classDescription : "Exchange calendar todo/task.",
 
@@ -112,9 +117,17 @@ mivExchangeTodo.prototype = {
 	set entryDate(aValue)
 	{
 		//this.logInfo("set entryDate: title:"+this.title+", aValue:"+aValue);
-		if (aValue.toString() != this.entryDate.toString()) {
-			this._newEntryDate = aValue;
-			this._calEvent.entryDate = aValue;
+		if (aValue) {
+			if ((!this._newEntryDate) || (aValue.compare(this._newEntryDate) != 0)) {
+				this._newEntryDate = aValue;
+				this._calEvent.entryDate = aValue;
+			}
+		}
+		else {
+			if (this.entryDate !== null) {
+				this._newEntryDate = aValue;
+				this._calEvent.entryDate = aValue;
+			}
 		}
 	},
 
@@ -145,10 +158,21 @@ mivExchangeTodo.prototype = {
 
 	set dueDate(aValue)
 	{
-		//this.logInfo("set dueDate: title:"+this.title+", aValue:"+aValue);
-		if (aValue.toString() != this.dueDate.toString()) {
-			this._newDueDate = aValue;
-			this._calEvent.dueDate = aValue;
+		this.logInfo("set dueDate: title:"+this.title+", aValue:"+aValue);
+		dump("set dueDate: title:"+this.title+", aValue:"+aValue+", miv:"+this.miv+"\n");
+		if (aValue) {
+			if ((!this._newDueDate) || (aValue.compare(this._newDueDate) != 0)) {
+				this._newDueDate = aValue;
+				this._calEvent.dueDate = aValue;
+			}
+		}
+		else {
+			dump("set dueDate: title:"+this.title+", this._dueDate:"+this._dueDate+", miv:"+this.miv+"\n");
+			dump("set dueDate: title:"+this.title+", this._newDueDate:"+this._newDueDate+", miv:"+this.miv+"\n");
+			if (this.dueDate !== null) {
+				this._newDueDate = aValue;
+				this._calEvent.dueDate = aValue;
+			}
 		}
 	},
 
@@ -174,15 +198,18 @@ mivExchangeTodo.prototype = {
 
 	set completedDate(aValue)
 	{
-		//this.logInfo("set completedDate: title:"+this.title+", aValue:"+aValue);
+		this.logInfo("set completedDate: title:"+this.title+", aValue:"+aValue);
 		if (aValue) {
-			if (aValue.toString() != this.completedDate.toString()) {
+			if ((!this._newCompletedDate) || (aValue.compare(this._newCompletedDate) != 0)) {
 				this._newCompletedDate = aValue;
 				this._calEvent.completedDate = aValue;
 			}
 		}
 		else {
-			this._calEvent.completedDate = aValue;
+			if (this.completedDate !== null) {
+				this._newCompletedDate = aValue;
+				this._calEvent.completedDate = aValue;
+			}
 		}
 	},
 
@@ -223,6 +250,7 @@ mivExchangeTodo.prototype = {
 
 	set duration(aValue)
 	{
+		dump("set duration: aValue:"+aValue+"\n");
 		if (aValue.toString() != this.duration.toString()) {
 			this._newDuration = aValue;
 			this._calEvent.duration = aValue;
@@ -278,6 +306,227 @@ mivExchangeTodo.prototype = {
 		}
 
 		return this._owner;
+	},
+
+	get updateXML()
+	{
+		this._nonPersonalDataChanged = false;
+
+		var updates = this.globalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+
+		if (this._newTitle) {
+			this._nonPersonalDataChanged = true;
+			this.addSetItemField(updates, "Subject", this._newTitle);
+		}
+		if (this._newPrivacy) {
+			this.addSetItemField(updates, "Sensitivity", this._newPrivacy);
+		}
+		if (this._newBody) {
+			this._nonPersonalDataChanged = true;
+			this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
+		}
+
+		if (this._newPercentComplete) {
+			this._nonPersonalDataChanged = true;
+			this.addSetItemField(updates, "PercentComplete", this._newPercentComplete);
+		}
+
+		if (this._newStatus) {
+			this._nonPersonalDataChanged = true;
+			this.addSetItemField(updates, "Status", this._newStatus);
+		}
+
+		// Categories
+		if (this._changesCategories) {
+			var categoriesXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
+						.createInstance(Ci.mivIxml2jxon);
+			var categories = this.getCategories({});
+			var first = true;
+			for each(var category in categories) {
+				if (first) {
+					first = false;
+					categoriesXML.processXMLString("<t:String>"+category+"</t:String>", 0, null);
+				}
+				else {
+					categoriesXML.addSibblingTag("String", "t", category);
+				}
+			}
+			if (categories.length > 0) {
+				this.addSetItemField(updates, "Categories", categoriesXML);
+			}
+			else {
+				if (this._categories.length > 0) {
+					this.addDeleteItemField(updates, "Categories");
+				}
+			}
+		}
+
+		if (this._newPriority) {
+			this.addSetItemField(updates, "Importance", this._newPriority);
+		}
+
+
+		this.entryDate;
+		if (this._newEntryDate) {
+			var tmpStart = this._newEntryDate.clone().getInTimezone(this.globalFunctions.ecUTC());
+			if (this._newEntryDate.isDate) {
+				tmpStart.isDate = false;
+				var tmpDuration = cal.createDuration();
+				tmpDuration.minutes = -60;
+				tmpStart.addDuration(tmpDuration);
+
+				// We make a non-UTC datetime value for this.globalFunctions.
+				// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
+				var exchStart = cal.toRFC3339(tmpStart).substr(0, 19)+"Z"; //cal.toRFC3339(tmpStart).length-6);
+			}
+			else {
+				// We set in bias advanced to UCT datetime values for this.globalFunctions.
+				var exchStart = cal.toRFC3339(tmpStart).substr(0, 19)+"Z";
+			}
+			this._nonPersonalDataChanged = true;
+			this.addSetItemField(updates, "StartDate", exchStart);
+		}
+		else {
+			if (((this._entryDate) && (this._newEntryDate === null)) || (this._entryDate === undefined)) {
+				this._nonPersonalDataChanged = true;
+				this.addDeleteItemField(updates, "StartDate");
+			}
+		}
+
+		this.dueDate;
+		dump(" == __dueDate:"+this._dueDate+", miv:"+this.miv+"\n");
+		dump(" == _newDueDate:"+this._newDueDate+", miv:"+this.miv+"\n");
+		dump(" == exchangeData:"+this.exchangeData+"\n");
+		if (this._newDueDate) {
+			var tmpEnd = this._newDueDate.clone().getInTimezone(this.globalFunctions.ecUTC());
+
+			if (this._newDueDate.isDate) {
+				tmpEnd.isDate = false;
+				var tmpDuration = cal.createDuration();
+				tmpDuration.minutes = -61;
+				tmpEnd.addDuration(tmpDuration);
+
+				// We make a non-UTC datetime value for this.globalFunctions.
+				// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
+				var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19)+"Z"; //cal.toRFC3339(tmpEnd).length-6);
+			}
+			else {
+				// We set in bias advanced to UCT datetime values for this.globalFunctions.
+				var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19)+"Z";
+			}
+			this._nonPersonalDataChanged = true;
+			this.addSetItemField(updates, "DueDate", exchEnd);
+		}
+		else {
+			if (((this._dueDate) && (this._newDueDate === null)) || (this._dueDate === undefined)) {
+				this._nonPersonalDataChanged = true;
+				this.addDeleteItemField(updates, "DueDate");
+			}
+		}
+
+		this.completionDate;
+		if (this._newCompletedDate) {
+			var tmpEnd = this._newCompletedDate.clone().getInTimezone(this.globalFunctions.ecUTC());
+
+			if (this._newCompletedDate.isDate) {
+				tmpEnd.isDate = false;
+				var tmpDuration = cal.createDuration();
+				tmpDuration.minutes = -61;
+				tmpEnd.addDuration(tmpDuration);
+
+				// We make a non-UTC datetime value for this.globalFunctions.
+				// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
+				var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19)+"Z"; //cal.toRFC3339(tmpEnd).length-6);
+			}
+			else {
+				// We set in bias advanced to UCT datetime values for this.globalFunctions.
+				var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19)+"Z";
+			}
+			this._nonPersonalDataChanged = true;
+			this.addSetItemField(updates, "CompleteDate", exchEnd);
+		}
+		else {
+			if (((this._completedDate) && (this._newCompletedDate === null)) || (this._completedDate === undefined)) {
+				this._nonPersonalDataChanged = true;
+				this.addDeleteItemField(updates, "CompleteDate");
+			}
+		}
+
+
+/*		if (this._newStartDate) {
+			this._nonPersonalDataChanged = true;
+			if (this._newStartDate.isDate) {
+				this.addSetItemField(updates, "IsAllDayEvent", "true");
+			}
+			else {
+				this.addSetItemField(updates, "IsAllDayEvent", "false");
+			}
+
+		}
+		else {
+			if (this._newEndDate) {
+				this._nonPersonalDataChanged = true;
+				if (this._newEndDate.isDate) {
+					this.addSetItemField(updates, "IsAllDayEvent", "true");
+				}
+				else {
+					this.addSetItemField(updates, "IsAllDayEvent", "false");
+				}
+
+			}
+		}
+*/
+		if (this._newLegacyFreeBusyStatus) {
+			this.addSetItemField(updates, "LegacyFreeBusyStatus", this._newLegacyFreeBusyStatus);
+		}
+
+		if (this._newLocation) {
+			this._nonPersonalDataChanged = true;
+			this.addSetItemField(updates, "Location", this._newLocation);
+		}
+
+		// Recurrence rule. Michel
+		var recurrenceInfoChanged;
+		if (this._recurrenceInfo) {
+			// We had recurrenceInfo. Lets see if it changed.
+			this.logInfo("We had recurrenceInfo. Lets see if it changed.");
+			if (this._newRecurrenceInfo !== undefined) {
+				// It was changed or removed
+				if (this._newRecurrenceInfo === null) {
+					// It was removed
+					this.logInfo("We had recurrenceInfo. And it is removed.");
+					recurrenceInfoChanged = false;
+					this._nonPersonalDataChanged = true;
+					this.addDeleteItemField(updates, "Recurrence");
+				}
+				else {
+					// See if something changed
+					this.logInfo("We had recurrenceInfo. And it was changed.");
+					recurrenceInfoChanged = true;
+				}
+			}
+		}
+		else {
+			// We did not have recurrence info. Check if we have now
+			this.logInfo("We did not have recurrenceInfo. See if it was added.");
+			if (this._newRecurrenceInfo) {
+				this.logInfo("We did not have recurrenceInfo. But we do have now.");
+				recurrenceInfoChanged = true;
+			}
+		}
+		if (recurrenceInfoChanged) {
+			
+			var recurrenceXML = this.makeRecurrenceRule();
+			this._nonPersonalDataChanged = true;
+			this.addSetItemField(updates, "Recurrence", recurrenceXML, null, true);
+		}
+		
+
+		// Alarms and snoozes
+		this.checkAlarmChange(updates);
+
+		dump("updates:"+updates.toString()+"\n");
+		return updates;
 	},
 
 };
