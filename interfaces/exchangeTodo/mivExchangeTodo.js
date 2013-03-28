@@ -219,11 +219,11 @@ mivExchangeTodo.prototype = {
 		//this.logInfo("get percentComplete 1: title:"+this.title);
 		if (!this._percentComplete) {
 			this._percentComplete = this.getTagValue("t:PercentComplete", 0);
-			if (this._completedDate) {
-				this._calEvent.completedDate = this._completedDate.clone();
+			if (this._percentComplete) {
+				this._calEvent.percentComplete = this._percentComplete;
 			}
 		}
-		return this._calEvent.completedDate;
+		return this._calEvent.percentComplete;
 	},
 
 	set percentComplete(aValue)
@@ -379,12 +379,11 @@ mivExchangeTodo.prototype = {
 
 			const statusMap = {
 				"NotStarted"	: "NONE",
-				"NoResponseReceived" : "NONE",
-				"Tentative"	: "TENTATIVE",
-				"Accept"	: "CONFIRMED",
-				"Decline"	: "CANCELLED",
-				"Organizer"	: "CONFIRMED",
-				null: null
+				"InProgress" : "IN-PROCESS",
+				"Completed"	: "COMPLETED",
+				"WaitingOnOthers"	: "NEEDS-ACTION",
+				"Deferred"	: "CANCELLED",
+				null: "NONE"
 			};
 
 			this._calEvent.status = statusMap[this._status];
@@ -395,7 +394,7 @@ mivExchangeTodo.prototype = {
 
 	set status(aValue)
 	{
-		this.logInfo("set status: title:"+this.title+", aValue:"+aValue);
+		dump("set status: title:"+this.title+", aValue:"+aValue+"\n");
 		if (aValue != this.status) {
 
 			const statuses = { "NONE": "NotStarted",

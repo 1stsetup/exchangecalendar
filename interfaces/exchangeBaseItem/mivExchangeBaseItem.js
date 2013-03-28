@@ -1098,6 +1098,9 @@ catch(err){
 	{
 		//this.logInfo("get property 1: title:"+this.title+", name:"+name);
 		switch (name) {
+		case "PERCENT-COMPLETE":
+			this._calEvent.setProperty(name, this.percentComplete);
+			break;
 		case "DESCRIPTION": 
 			if (!this._body) {
 				this._body = this.getTagValue("t:Body", null);
@@ -1135,35 +1138,40 @@ catch(err){
 			break;
 		case "STATUS": 
 		        this.logInfo("get property STATUS: title:"+this.title+", name:"+name+", value:"+this._calEvent.getProperty(name)+", startDate:"+this.startDate);
-			if (!this._myResponseType) {
-				if (this.isCancelled) {
-					this._calEvent.setProperty(name, "CANCELLED");
-				}
-				else {
-					switch (this.myResponseType) {
-					case "Unknown" : 
-						this._calEvent.setProperty(name, "NONE");
-						break;
-					case "Organizer" : 
-						this._calEvent.setProperty(name, "CONFIRMED");
-						break;
-					case "Tentative" : 
-						this._calEvent.setProperty(name, "TENTATIVE");
-						break;
-					case "Accept" : 
-						this._calEvent.setProperty(name, "CONFIRMED");
-						break;
-					case "Decline" : 
+			if (this._className == "mivExchangeEvent") {
+				if (!this._myResponseType) {
+					if (this.isCancelled) {
 						this._calEvent.setProperty(name, "CANCELLED");
-						break;
-					case "NoResponseReceived" : 
-						this._calEvent.setProperty(name, "NONE");
-						break;
-					default:
-						//this._calEvent.setProperty(name, "NONE");
-						break;
+					}
+					else {
+						switch (this.myResponseType) {
+						case "Unknown" : 
+							this._calEvent.setProperty(name, "NONE");
+							break;
+						case "Organizer" : 
+							this._calEvent.setProperty(name, "CONFIRMED");
+							break;
+						case "Tentative" : 
+							this._calEvent.setProperty(name, "TENTATIVE");
+							break;
+						case "Accept" : 
+							this._calEvent.setProperty(name, "CONFIRMED");
+							break;
+						case "Decline" : 
+							this._calEvent.setProperty(name, "CANCELLED");
+							break;
+						case "NoResponseReceived" : 
+							this._calEvent.setProperty(name, "NONE");
+							break;
+						default:
+							//this._calEvent.setProperty(name, "NONE");
+							break;
+						}
 					}
 				}
+			}
+			else {
+				this._calEvent.setProperty(name, this.status);
 			}
 			break;
 		case "X-MOZ-SEND-INVITATIONS": 
@@ -1201,6 +1209,9 @@ catch(err){
 	{
 		//this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
 		switch (name) {
+		case "PERCENT-COMPLETE":
+			this.percentComplete = value;
+			break;
 		case "DESCRIPTION": 
 			if (value != this._newBody) {
 				this._newBody = value;
@@ -1239,24 +1250,30 @@ catch(err){
 			break;
 		case "STATUS": 
 			//this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
-			if (value != this.getProperty(name)) {
-				switch (value) {
-				case "NONE":
-					this._newMyResponseType = "Unknown";
-					break;
-				case "CONFIRMED":
-					this._newMyResponseType = "Accept";
-					break;
-				case "TENTATIVE":
-					this._newMyResponseType = "Tentative";
-					break;
-				case "CANCELLED":
-					this._newMyResponseType = "Decline";
-					break;
-				default:
-					this._newMyResponseType = "Unknown";
-					break;
+			dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
+			if (this._className == "mivExchangeEvent") {
+				if (value != this.getProperty(name)) {
+					switch (value) {
+					case "NONE":
+						this._newMyResponseType = "Unknown";
+						break;
+					case "CONFIRMED":
+						this._newMyResponseType = "Accept";
+						break;
+					case "TENTATIVE":
+						this._newMyResponseType = "Tentative";
+						break;
+					case "CANCELLED":
+						this._newMyResponseType = "Decline";
+						break;
+					default:
+						this._newMyResponseType = "Unknown";
+						break;
+					}
 				}
+			}
+			else {
+				this.status = value;
 			}
 			break;
 		case "X-MOZ-SEND-INVITATIONS": 
