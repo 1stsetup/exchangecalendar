@@ -88,4 +88,15 @@ interface mivExchangeTodo : mivExchangeBaseItem
 
 	readonly attribute AUTF8String owner;
 
+	// totalWork is in minutes
+	attribute long totalWork;
+	// actualwork is in minutes
+	attribute long actualWork;
+	attribute AUTF8String mileage;
+	attribute AUTF8String billingInformation;
+	void getCompanies(out uint32_t count, [array, size_is(count), retval] out AUTF8String aCompanies);
+	void addCompany(in AUTF8String aCompany);
+	void clearCompanies();
+
+
 };

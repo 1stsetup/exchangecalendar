@@ -235,6 +235,118 @@ mivExchangeTodo.prototype = {
 		}
 	},
 
+	//attribute long totalWork;
+	get totalWork()
+	{
+		//this.logInfo("get totalWork 1: title:"+this.title);
+		if (!this._totalWork) {
+			this._totalWork = this.getTagValue("t:TotalWork", 0);
+		}
+		return this._totalWork;
+	},
+
+	set totalWork(aValue)
+	{
+		//this.logInfo("set totalWork: title:"+this.title+", aValue:"+aValue);
+		if (aValue != this.totalWork) {
+			this._newTotalWork = aValue;
+			this._totalWork = aValue;
+		}
+	},
+
+	//attribute long totalWork;
+	get actualWork()
+	{
+		//this.logInfo("get actualWork 1: title:"+this.title);
+		if (!this._actualWork) {
+			this._actualWork = this.getTagValue("t:ActualWork", 0);
+		}
+		return this._actualWork;
+	},
+
+	set actualWork(aValue)
+	{
+		//this.logInfo("set actualWork: title:"+this.title+", aValue:"+aValue);
+		if (aValue != this.actualWork) {
+			this._newActualWork = aValue;
+			this._actualWork = aValue;
+		}
+	},
+
+	//attribute AUTF8String mileage;
+	get mileage()
+	{
+		//this.logInfo("get mileage 1: title:"+this.title);
+		if (!this._mileage) {
+			this._mileage = this.getTagValue("t:Mileage", 0);
+		}
+		return this._mileage;
+	},
+
+	set mileage(aValue)
+	{
+		//this.logInfo("set mileage: title:"+this.title+", aValue:"+aValue);
+		if (aValue != this.mileage) {
+			this._newMileage = aValue;
+			this._mileage = aValue;
+		}
+	},
+
+	//attribute AUTF8String billingInformation;
+	get billingInformation()
+	{
+		//this.logInfo("get billingInformation 1: title:"+this.title);
+		if (!this._billingInformation) {
+			this._billingInformation = this.getTagValue("t:BillingInformation", 0);
+		}
+		return this._billingInformation;
+	},
+
+	set billingInformation(aValue)
+	{
+		//this.logInfo("set billingInformation: title:"+this.title+", aValue:"+aValue);
+		if (aValue != this.billingInformation) {
+			this._newBillingInformation = aValue;
+			this._billingInformation = aValue;
+		}
+	},
+
+	//void getCompanies(out PRUint32 count, [array, size_is(count), retval] out AUTF8String aCompanies);
+	getCompanies: function _getCompanies(aCount)
+	{
+		if (!this._companies) {
+			this._companies = new Array();
+			var tmpStr = this._exchangeData.XPath("/t:Companies/t:String");
+			for each(var string in tmpStr) {
+				this._companies.push(string.value);
+			}
+		}
+
+		if (this._newCompanies) {
+			aCount.value = this._newCompanies.length;
+			return this._newCompanies;
+		}
+		
+		aCount.value = this._companies.length;
+		return this._companies;
+	},
+
+	//void addCompany(in AUTF8String aCompany);
+	addCompany: function _addCompany(aCompany)
+	{
+		if (!this._newCompany) {
+			this._newCompany = new Array();
+		}
+
+		this._newCompany.push(aCompany);
+	},
+
+	//void clearCompanies();
+	clearCompanies: function _clearCompanies()
+	{
+		this._newCompanies = new Array();
+	},
+
 	get duration()
 	{
 		if ((!this._duration) && (!this._newEndDate) && (!this._newStartDate)) {
