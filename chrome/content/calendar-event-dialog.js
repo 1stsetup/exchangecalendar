@@ -62,6 +62,21 @@ exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 1a");
 					ownerLabel.value = item.owner;
 				}
 
+				try {
+					document.getElementById("exchWebService-details-row1").removeAttribute("collapsed");
+					document.getElementById("exchWebService-details-row2").removeAttribute("collapsed");
+					document.getElementById("exchWebService-details-row3").removeAttribute("collapsed");
+				}
+				catch (ex) {}
+
+				document.getElementById("exchWebService-owner-hbox").hidden = false;
+				document.getElementById("exchWebService-details-separator").hidden = false;
+
+				document.getElementById("exchWebService-totalWork-count").value = item.totalWork;
+				document.getElementById("exchWebService-actualWork-count").value = item.actualWork;
+				document.getElementById("exchWebService-mileage-count").value = item.mileage;
+				document.getElementById("exchWebService-billingInformation-count").value = item.billingInformation;
+
 exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 2");
 				var tmpDatePicker = document.createElement("datepicker");
 				tmpDatePicker.setAttribute("type","popup");
@@ -87,9 +102,9 @@ exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 3");
 				document.getElementById("event-grid-enddate-picker-box").replaceChild(tmpDatePicker, document.getElementById("todo-duedate"));
 exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 4");
 
-				document.getElementById("link-image-top").hidden = true;
-				document.getElementById("link-image-bottom").hidden = true;
-				document.getElementById("keepduration-button").hidden = true;
+				//document.getElementById("link-image-top").hidden = true;
+				//document.getElementById("link-image-bottom").hidden = true;
+				//document.getElementById("keepduration-button").hidden = true;
 				document.getElementById("timezone-starttime").hidden = true;
 				document.getElementById("timezone-endtime").hidden = true;
 

@@ -35,6 +35,8 @@
 <!DOCTYPE dialog [
     <!ENTITY % eventDialogDTD SYSTEM "chrome://calendar/locale/calendar-event-dialog.dtd">
     %eventDialogDTD;
+    <!ENTITY % dtd1 SYSTEM "chrome://exchangecalendar/locale/calendar-event-dialog.dtd" > 
+    %dtd1;
 ]>
 
 <?xul-overlay href="chrome://exchangecalendar/content/attachments-view.xul"?>
@@ -47,11 +49,42 @@
 	<rows id="event-grid-rows">
 		<row id="event-grid-startdate-row" collapsed="false">
 			<hbox id="event-grid-startdate-picker-box">
-				<hbox id="exchWebService-owner-hbox">
-					<label value="Owner:"/>
+				<hbox id="exchWebService-owner-hbox" hidden="true">
+					<label value="&exchWebService.owner.label;"/>
 					<label id="exchWebService-owner-label" value=""/>
 				</hbox>
 			</hbox>
+		</row>
+		<separator id="exchWebService-details-separator" hidden="true" class="groove" insertafter="event-grid-todo-status-row"/>
+		<row id="exchWebService-details-row1" align="center"
+			collapsed="true" insertafter="exchWebService-details-separator">
+			<label value="&exchWebService.totalWork.label;"
+				disable-on-readonly="true"/>
+			<hbox  align="center">
+				<textbox id="exchWebService-totalWork-count"
+					increment="10" min="0" type="number" size="3" value="0" disable-on-readonly="true"/>
+				<label value="&exchWebService.mileage.label;"
+					disable-on-readonly="true"/>
+				<textbox id="exchWebService-mileage-count" value="" disable-on-readonly="true"/>
+			</hbox>
+		</row>
+		<row id="exchWebService-details-row2" align="center"
+			collapsed="true" insertafter="exchWebService-details-row1">
+			<label value="&exchWebService.actualWork.label;"
+				disable-on-readonly="true"/>
+			<hbox  align="center">
+				<textbox id="exchWebService-actualWork-count"
+					increment="10" min="0" type="number" size="3" value="0" disable-on-readonly="true"/>
+				<label value="&exchWebService.billingInformation.label;"
+					disable-on-readonly="true"/>
+				<textbox id="exchWebService-billingInformation-count" value="" disable-on-readonly="true"/>
+			</hbox>
+		</row>
+		<row id="exchWebService-details-row3" align="center"
+			collapsed="true" insertafter="exchWebService-details-row2">
+			<label value="&exchWebService.companies.label;"
+				disable-on-readonly="true"/>
+			<textbox id="exchWebService-companies-count" value="" disable-on-readonly="true"/>
 		</row>
 		<row id="exchWebService-attachments-row"
 			flex="1"
