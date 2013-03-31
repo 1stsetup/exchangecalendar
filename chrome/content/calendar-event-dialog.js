@@ -40,18 +40,39 @@ if (! exchWebService) var exchWebService = {};
 exchWebService.eventDialog = {
 
 	_initialized: false,
+	_oldCallback: null,
+
+	onAcceptCallback: function _onAcceptCallback(aItem, aCalendar, aOriginalItem, aIsClosing)
+	{
+		if (aItem.className == "mivExchangeTodo") {
+//		if ((!cal.isEvent(aItem)) && (aCalendar.type == "exchangecalendar")) {
+			// Save extra exchange fields to item.
+			aItem.totalWork = document.getElementById("exchWebService-totalWork-count").value;
+			aItem.actualWork = document.getElementById("exchWebService-actualWork-count").value;
+			aItem.mileage = document.getElementById("exchWebService-mileage-count").value;
+			aItem.billingInformation = document.getElementById("exchWebService-billingInformation-count").value;
+			aItem.companies = document.getElementById("exchWebService-companies-count").value;
+		}
+
+		if (this._oldCallback) {
+			this._oldCallback(aItem, aCalendar, aOriginalItem, aIsClosing);
+		}
+	},
+
 	onLoad: function _onLoad()
 	{
-		if (this._initialized) return;
+		onLoad();
 
-exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 1");
+		if (this._initialized) return;
 
 		if (document.getElementById("todo-entrydate")) {
 			this._initialized = true;
 			// nuke the onload, or we get called every time there's
 			// any load that occurs
-exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 1a");
 			window.removeEventListener("load", exchWebService.eventDialog.onLoad, false);
+
+			this._oldCallback = window.onAcceptCallback;
+			window.onAcceptCallback = exchWebService.eventDialog.onAcceptCallback;
 
 			var args = window.arguments[0];
 			var item = args.calendarEvent;
@@ -76,8 +97,8 @@ exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 1a");
 				document.getElementById("exchWebService-actualWork-count").value = item.actualWork;
 				document.getElementById("exchWebService-mileage-count").value = item.mileage;
 				document.getElementById("exchWebService-billingInformation-count").value = item.billingInformation;
+				document.getElementById("exchWebService-companies-count").value = item.companies;
 
-exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 2");
 				var tmpDatePicker = document.createElement("datepicker");
 				tmpDatePicker.setAttribute("type","popup");
 				tmpDatePicker.setAttribute("id","todo-entrydate");
@@ -89,7 +110,6 @@ exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 2");
 				}
 				document.getElementById("event-grid-startdate-picker-box").replaceChild(tmpDatePicker, document.getElementById("todo-entrydate"));
 
-exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 3");
 				var tmpDatePicker = document.createElement("datepicker");
 				tmpDatePicker.setAttribute("type","popup");
 				tmpDatePicker.setAttribute("id","todo-duedate");
@@ -100,7 +120,6 @@ exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 3");
 					tmpDatePicker.setAttribute("disabled","true");
 				}
 				document.getElementById("event-grid-enddate-picker-box").replaceChild(tmpDatePicker, document.getElementById("todo-duedate"));
-exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 4");
 
 				//document.getElementById("link-image-top").hidden = true;
 				//document.getElementById("link-image-bottom").hidden = true;
@@ -115,13 +134,12 @@ exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 4");
 				exchWebService.eventDialog.updateRepeat();
 			}
 		}
-exchWebService.commonFunctions.LOG(" !! exchWebService.eventDialog.onLoad 5");
 	},
 
 	setRealEndtime: function _setRealEndTime()
 	{
 		dump(" ~~ ga 1.document.getElementById('event-endtime').value:"+document.getElementById("event-endtime").value+"\n");
-		dump(" ~~ ga 1a.document.getElementById('todo-duedate')..dateValue.jsDate:"+document.getElementById("todo-duedate").value+"\n");
+		dump(" ~~ ga 1a.document.getElementById('todo-duedate').dateValue.jsDate:"+document.getElementById("todo-duedate").value+"\n");
 		document.getElementById("event-endtime").value = document.getElementById("todo-duedate").value; 
 		dump(" ~~ ga 2.\n");
 	},

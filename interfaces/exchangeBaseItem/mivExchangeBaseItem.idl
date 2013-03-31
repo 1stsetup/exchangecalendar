@@ -92,4 +92,6 @@ interface mivExchangeBaseItem : calIItemBase
 
 	void addMailboxAlias(in AUTF8String aAlias);
 
+	readonly attribute AUTF8String className;
+
 };

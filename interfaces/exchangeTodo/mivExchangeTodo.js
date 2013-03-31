@@ -159,7 +159,6 @@ mivExchangeTodo.prototype = {
 	set dueDate(aValue)
 	{
 		this.logInfo("set dueDate: title:"+this.title+", aValue:"+aValue);
-		dump("set dueDate: title:"+this.title+", aValue:"+aValue+", miv:"+this.miv+"\n");
 		if (aValue) {
 			if ((!this._newDueDate) || (aValue.compare(this._newDueDate) != 0)) {
 				this._newDueDate = aValue;
@@ -167,8 +166,6 @@ mivExchangeTodo.prototype = {
 			}
 		}
 		else {
-			dump("set dueDate: title:"+this.title+", this._dueDate:"+this._dueDate+", miv:"+this.miv+"\n");
-			dump("set dueDate: title:"+this.title+", this._newDueDate:"+this._newDueDate+", miv:"+this.miv+"\n");
 			if (this.dueDate !== null) {
 				this._newDueDate = aValue;
 				this._calEvent.dueDate = aValue;
@@ -312,6 +309,47 @@ mivExchangeTodo.prototype = {
 	},
 
 	//void getCompanies(out PRUint32 count, [array, size_is(count), retval] out AUTF8String aCompanies);
+	get companies()
+	{
+		var tmpCompanies = this.getCompanies({});
+		result = "";
+		for (var index in tmpCompanies) {
+			if (result != "") {
+				result += ", ";
+			}
+			result += tmpCompanies[index];
+		}
+
+		return result;
+	},
+
+	set companies(aValue)
+	{
+		// Replace ", " (comma + space) by only comma.
+		var tmpStr = aValue;
+
+		while (tmpStr.indexOf(", ") >= 0) {
+			tmpStr = tmpStr.replace(/, /g, ",");
+		}
+		
+		var newArray = tmpStr.split(",");
+		newResult = "";
+		for (var index in newArray) {
+			if (newResult != "") {
+				newResult += ", ";
+			}
+			newResult += newArray[index];
+		}
+
+		if (this.companies != newResult) {
+			this.clearCompanies();
+			for (var index in newArray) {
+				this.addCompany(newArray[index]);
+			}
+		}
+		
+	},
+
 	getCompanies: function _getCompanies(aCount)
 	{
 		if (!this._companies) {
@@ -334,11 +372,11 @@ mivExchangeTodo.prototype = {
 	//void addCompany(in AUTF8String aCompany);
 	addCompany: function _addCompany(aCompany)
 	{
-		if (!this._newCompany) {
-			this._newCompany = new Array();
+		if (!this._newCompanies) {
+			this._newCompanies = new Array();
 		}
 
-		this._newCompany.push(aCompany);
+		this._newCompanies.push(aCompany);
 	},
 
 	//void clearCompanies();
@@ -362,7 +400,6 @@ mivExchangeTodo.prototype = {
 
 	set duration(aValue)
 	{
-		dump("set duration: aValue:"+aValue+"\n");
 		if (aValue.toString() != this.duration.toString()) {
 			this._newDuration = aValue;
 			this._calEvent.duration = aValue;
@@ -394,7 +431,6 @@ mivExchangeTodo.prototype = {
 
 	set status(aValue)
 	{
-		dump("set status: title:"+this.title+", aValue:"+aValue+"\n");
 		if (aValue != this.status) {
 
 			const statuses = { "NONE": "NotStarted",
@@ -447,6 +483,26 @@ mivExchangeTodo.prototype = {
 			this.addSetItemField(updates, "Status", this._newStatus);
 		}
 
+		if (this._newTotalWork) {
+			this._nonPersonalDataChanged = true;
+			this.addSetItemField(updates, "TotalWork", this._newTotalWork);
+		}
+
+		if (this._newActualWork) {
+			this._nonPersonalDataChanged = true;
+			this.addSetItemField(updates, "ActualWork", this._newActualWork);
+		}
+
+		if (this._newMileage) {
+			this._nonPersonalDataChanged = true;
+			this.addSetItemField(updates, "Mileage", this._newMileage);
+		}
+
+		if (this._newBillingInformation) {
+			this._nonPersonalDataChanged = true;
+			this.addSetItemField(updates, "BillingInformation", this._newBillingInformation);
+		}
+
 		// Categories
 		if (this._changesCategories) {
 			var categoriesXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
@@ -468,6 +524,31 @@ mivExchangeTodo.prototype = {
 			else {
 				if (this._categories.length > 0) {
 					this.addDeleteItemField(updates, "Categories");
+				}
+			}
+		}
+
+		// Companies
+		if (this._newCompanies) {
+			var companiesXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
+						.createInstance(Ci.mivIxml2jxon);
+			var companies = this.getCompanies({});
+			var first = true;
+			for each(var company in companies) {
+				if (first) {
+					first = false;
+					companiesXML.processXMLString("<t:String>"+company+"</t:String>", 0, null);
+				}
+				else {
+					companiesXML.addSibblingTag("String", "t", company);
+				}
+			}
+			if (companies.length > 0) {
+				this.addSetItemField(updates, "Companies", companiesXML);
+			}
+			else {
+				if (this._companies.length > 0) {
+					this.addDeleteItemField(updates, "Companies");
 				}
 			}
 		}
@@ -505,9 +586,6 @@ mivExchangeTodo.prototype = {
 		}
 
 		this.dueDate;
-		dump(" == __dueDate:"+this._dueDate+", miv:"+this.miv+"\n");
-		dump(" == _newDueDate:"+this._newDueDate+", miv:"+this.miv+"\n");
-		dump(" == exchangeData:"+this.exchangeData+"\n");
 		if (this._newDueDate) {
 			var tmpEnd = this._newDueDate.clone().getInTimezone(this.globalFunctions.ecUTC());
 
@@ -636,7 +714,7 @@ mivExchangeTodo.prototype = {
 		// Alarms and snoozes
 		this.checkAlarmChange(updates);
 
-		dump("updates:"+updates.toString()+"\n");
+		//dump("updates:"+updates.toString()+"\n");
 		return updates;
 	},
 

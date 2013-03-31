@@ -156,7 +156,7 @@ mivExchangeTimeZones.prototype = {
 			//this.logInfo("tmpBiasValues.standard="+tmpBiasValues.standard);
 			if (tmpBiasValues.daylight) {
 				if (tmpBiasValues.daylight == tmpBiasValues.standard) {
-					//if (this.debug) this.logInfo("tmpBiasValues.daylight == tmpBiasValues.standard Not going to use daylight value.");
+					if (this.debug) this.logInfo("tmpBiasValues.daylight == tmpBiasValues.standard Not going to use daylight value.");
 					tmpBiasValues.daylight = null;
 				}
 				else {
@@ -208,7 +208,7 @@ mivExchangeTimeZones.prototype = {
 					}
 	
 					if ((standardMatch) && ((!tmpBiasValues.daylight) || (daylightMatch))) {
-						//this.logInfo("WE HAVE A TIMEZONE MATCH BETWEEN LIGHTNING AND this.globalFunctions. Cal:"+aCalTimeZone.tzid+", EWS:"+timeZoneDefinition.getAttribute("Name"));
+						this.logInfo("WE HAVE A TIMEZONE MATCH BETWEEN LIGHTNING AND this.globalFunctions. Cal:"+aCalTimeZone.tzid+", EWS:"+timeZoneDefinition.getAttribute("Name"));
 	
 						// If we also found the place name this will overrule everything else.
 						if ((placeNameMatch) || (idMatch) || (!weHaveAMatch)) {
@@ -294,10 +294,10 @@ mivExchangeTimeZones.prototype = {
 					}
 
 					if (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.standard) == standardBias) {
-						if ((tmpBiasValues.daylight == null) || (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.daylight) == daylightBias)) {
+						if (((tmpBiasValues.daylight == null) && (daylightBias == null)) || (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.daylight) == daylightBias)) {
 							result = tmpResult;
 							zoneScore = tmpScore;
-							//this.logInfo("  --> a. We have a match between Lightning '"+tmpZone+"' and Exchange '"+exchangeZoneId+"/"+exchangeZoneName+"'  on Bias values.");
+							this.logInfo("  --> a. We have a match between Lightning '"+tmpZone+"' and Exchange '"+exchangeZoneId+"/"+exchangeZoneName+"'  on Bias values.");
 						}
 					}
 				}
@@ -319,10 +319,17 @@ mivExchangeTimeZones.prototype = {
 				}
 
 				if (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.standard) == standardBias) {
-					if ((tmpBiasValues.daylight == null) || (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.daylight) == daylightBias)) {
+//					if ((tmpBiasValues.daylight == null) || (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.daylight) == daylightBias)) {
+					if ((tmpBiasValues.daylight == null) && (daylightBias == null)) {
 						result = tmpResult;
-						weHaveAMatch = true;
-						//this.logInfo("  --> b. We have a match between Lightning '"+tmpZone+"' and Exchange '"+exchangeZoneId+"/"+exchangeZoneName+"' on Bias values.");
+						this.logInfo("  --> b. We have a match between Lightning '"+tmpZone+"' and Exchange '"+exchangeZoneId+"/"+exchangeZoneName+"' on Bias values.");
+					}
+					else {
+						if ((daylightBias != null) && (tmpBiasValues != null) && (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.daylight) == daylightBias)) {
+							result = tmpResult;
+							weHaveAMatch = true;
+							this.logInfo("  --> c. We have a match between Lightning '"+tmpZone+"' and Exchange '"+exchangeZoneId+"/"+exchangeZoneName+"' on Bias values.");
+						}
 					}
 				}
 

@@ -94,6 +94,7 @@ interface mivExchangeTodo : mivExchangeBaseItem
 	attribute long actualWork;
 	attribute AUTF8String mileage;
 	attribute AUTF8String billingInformation;
+	attribute AUTF8String companies;
 	void getCompanies(out uint32_t count, [array, size_is(count), retval] out jsval aCompanies);
 	void addCompany(in AUTF8String aCompany);
 	void clearCompanies();

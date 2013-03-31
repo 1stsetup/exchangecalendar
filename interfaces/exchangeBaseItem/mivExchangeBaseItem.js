@@ -494,13 +494,16 @@ try {
 		if (this._newAlarmLastAck) result.alarmLastAck = this.alarmLastAck;
 
 		if (this.contractID == "@1st-setup.nl/exchange/calendartodo;1") {
-			dump("????? Cloning: this.dueDate:"+this.dueDate+"\n");
-			dump("????? Cloning: this._newDueDate:"+this._newDueDate+"\n");
 			if (this._newEntryDate !== undefined) result.entryDate = this._newEntryDate;
 			if (this._newDueDate !== undefined) result.dueDate = this._newDueDate;
 			if (this._newCompletedDate !== undefined) result.completedDate = this._newCompletedDate;
-			if (this._newPercentComplete) result.percentComplete = this.percentComplete;
-			if (this._newDuration) result.duration = this.duration;
+			if (this._newPercentComplete) result.percentComplete = this._newPercentComplete;
+			if (this._newDuration) result.duration = this._newDuration;
+			if (this._newTotalWork) result.totalWork = this._newTotalWork;
+			if (this._newActualWork) result.actualWork = this._newActualWork;
+			if (this._newMileage) result.mileage = this._newMileage;
+			if (this._newBillingInformation) result.billingInformation = this._newBillingInformation;
+			if (this._newCompanies) result.companies = this.companies;
 		}
 
 		//this.logInfo("clone 99: title:"+this.title+", startDate:"+result.startDate, -1);
@@ -3117,6 +3120,11 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		//this.logInfo("getAttributeByTag 3: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
 
 		return aDefaultValue;
+	},
+
+	get className()
+	{
+		return this._className;
 	},
 
 	initialize: function _initialize()

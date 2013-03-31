@@ -41,7 +41,7 @@
 
 <?xul-overlay href="chrome://exchangecalendar/content/attachments-view.xul"?>
 
-<overlay id="calendar-event-dialog.xul"
+<overlay id="exchWebService-calendar-event-dialog.xul"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
     <script type="application/javascript" src="chrome://exchangecalendar/content/calendar-event-dialog.js"/> 
