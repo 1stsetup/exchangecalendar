@@ -4479,11 +4479,11 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			this.makeRecurrenceRule(aItem, e);
 	
 			if (this.isVersion2007) {
-				e.addChildTag("MeetingTimeZone", "nsTypes", null).setAttribute("TimeZoneName", this.getEWSTimeZoneId(tmpStart.timezone));
+				e.addChildTag("MeetingTimeZone", "nsTypes", null).setAttribute("TimeZoneName", this.getEWSTimeZoneId(tmpStart.timezone, tmpStart));
 			}
 			else {
-				e.addChildTag("StartTimeZone", "nsTypes", null).setAttribute("Id", this.getEWSTimeZoneId(tmpStart.timezone));
-				e.addChildTag("EndTimeZone", "nsTypes", null).setAttribute("Id", this.getEWSTimeZoneId(tmpEnd.timezone));
+				e.addChildTag("StartTimeZone", "nsTypes", null).setAttribute("Id", this.getEWSTimeZoneId(tmpStart.timezone, tmpStart));
+				e.addChildTag("EndTimeZone", "nsTypes", null).setAttribute("Id", this.getEWSTimeZoneId(tmpEnd.timezone, tmpEnd));
 			}
 
 		}
@@ -4521,11 +4521,11 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				this.makeRecurrenceRule(aItem, e);
 	
 				if (this.isVersion2007) {
-					e.addChildTag("MeetingTimeZone", "nsTypes", null).setAttribute("TimeZoneName", this.getEWSTimeZoneId(tmpStart.timezone));
+					e.addChildTag("MeetingTimeZone", "nsTypes", null).setAttribute("TimeZoneName", this.getEWSTimeZoneId(tmpStart.timezone, tmpStart));
 				}
 				else {
-					e.addChildTag("StartTimeZone", "nsTypes", null).setAttribute("Id", this.getEWSTimeZoneId(tmpStart.timezone));
-					e.addChildTag("EndTimeZone", "nsTypes", null).setAttribute("Id", this.getEWSTimeZoneId(tmpEnd.timezone));
+					e.addChildTag("StartTimeZone", "nsTypes", null).setAttribute("Id", this.getEWSTimeZoneId(tmpStart.timezone, tmpStart));
+					e.addChildTag("EndTimeZone", "nsTypes", null).setAttribute("Id", this.getEWSTimeZoneId(tmpEnd.timezone, tmpEnd));
 				}
 
 			}
@@ -7261,11 +7261,11 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		this.timeZones.addURL(this.serverUrl, this.user, this);
 	},
 
-	getEWSTimeZoneId: function _getEWSTimeZoneId(aCalTimeZone)
+	getEWSTimeZoneId: function _getEWSTimeZoneId(aCalTimeZone, aDate)
 	{
 		if (this.debug) this.logInfo("getEWSTimeZoneId:"+aCalTimeZone.tzid);
 
-		return this.timeZones.getExchangeTimeZoneIdByCalTimeZone(aCalTimeZone, this.serverUrl);
+		return this.timeZones.getExchangeTimeZoneIdByCalTimeZone(aCalTimeZone, this.serverUrl, aDate);
 	},
 
 	doDeleteCalendar: function _doDeleteCalendar()

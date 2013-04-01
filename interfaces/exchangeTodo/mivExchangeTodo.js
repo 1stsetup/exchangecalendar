@@ -103,7 +103,7 @@ mivExchangeTodo.prototype = {
 			if (this._entryDate) {
 				if (this.isAllDayEvent) this._entryDate.isDate = true;
 
-				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "");
+				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._entryDate);
 				if (timezone) {
 					this._entryDate = this._entryDate.getInTimezone(timezone);
 				}
@@ -145,7 +145,7 @@ mivExchangeTodo.prototype = {
 			if (this._dueDate) {
 				if (this.isAllDayEvent) this._dueDate.isDate = true;
 
-				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "");
+				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._dueDate);
 				if (timezone) {
 					this._dueDate = this._dueDate.getInTimezone(timezone);
 				}
@@ -182,7 +182,7 @@ mivExchangeTodo.prototype = {
 			if (this._completedDate) {
 				if (this.isAllDayEvent) this._completedDate.isDate = true;
 
-				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "");
+				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._completedDate);
 				if (timezone) {
 					this._completedDate = this._completedDate.getInTimezone(timezone);
 				}

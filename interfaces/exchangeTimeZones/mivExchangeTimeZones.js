@@ -117,7 +117,7 @@ mivExchangeTimeZones.prototype = {
 
 	},
 
-	getExchangeTimeZoneIdByCalTimeZone: function _getExchangeTimeZoneIdByCalTimeZone(aCalTimeZone, aURL)
+	getExchangeTimeZoneIdByCalTimeZone: function _getExchangeTimeZoneIdByCalTimeZone(aCalTimeZone, aURL, aIndexDate)
 	{
 
 		var version = this.exchangeStatistics.getServerVersion(aURL);
@@ -134,102 +134,42 @@ mivExchangeTimeZones.prototype = {
 				var tmpZone = aCalTimeZone;
 			}
 
+			var calTimeZone = this.getTimeZone(tmpZone, aIndexDate);
+
+			var tmpArray = calTimeZone.id.split("/");
+
 			var weHaveAMatch = null;
-			var tmpPlaceName = null;
-			var tmpId = null;
-			if (tmpZone.tzid.indexOf("/") > -1) {
-				// Get City/Place name from tzid.
-				tmpPlaceName = tmpZone.tzid.substr(tmpZone.tzid.indexOf("/")+1);
-			}
-			else {
-				tmpId = tmpZone.tzid.toString();
-			}
 
-
-			var tmpBiasValues = this.calculateBiasOffsets(tmpZone);
-			if (!tmpBiasValues.standard) {
-				return "UTC";
-			}
-
-			//if (tmpBiasValues.standard.indexOf("PT0") == 0) {
-			//	if (this.debug) this.logInfo("Changing tmpBiasValues.standard="+tmpBiasValues.standard+ " -> PT0H");
-			//	tmpBiasValues.standard = "PT0H";
-			//}
-			//this.logInfo("tmpBiasValues.standard="+tmpBiasValues.standard);
-			if (tmpBiasValues.daylight) {
-				if (tmpBiasValues.daylight == tmpBiasValues.standard) {
-					if (this.debug) this.logInfo("tmpBiasValues.daylight == tmpBiasValues.standard Not going to use daylight value.");
-					tmpBiasValues.daylight = null;
-				}
-				else {
-					//if (this.debug) this.logInfo("tmpBiasValues.daylight="+tmpBiasValues.daylight);
-				}
-			}
-
+			var finalScore = -1;
 			for each(var timeZoneDefinition in this._timeZones[version]) {
 				//if (this.debug) this.logInfo("timeZoneDefinition.@Name="+timeZoneDefinition.@Name);
-				var placeNameMatch = false;
-				if ((tmpPlaceName) && (timeZoneDefinition.getAttribute("Name", "").indexOf(tmpPlaceName) > -1)) {
-					// We found our placename in the name of the timezonedefinition
-					placeNameMatch = true;
-				}
 
-				var idMatch = false;
-				if ((tmpId) && (timeZoneDefinition.getAttribute("Id", "") == tmpId)) {
-					// We found our tmpId in the id of the timezonedefinition
-					idMatch = true;
-				}
-
-				var standardMatch = null;
-				var periods = timeZoneDefinition.XPath("/t:Periods/t:Period[@Name = 'Standard']");
-				if (periods.length > 0) {
-					for (var index in periods) {
-						//if (this.debug) this.logInfo("xx period.@Bias="+period.@Bias.toString());
-						if (this.globalFunctions.convertDurationToSeconds(periods[index].getAttribute("Bias")) == this.globalFunctions.convertDurationToSeconds(tmpBiasValues.standard)) {
-							standardMatch = periods[index].getAttribute("Bias", null);
-							break;
+				// First we match on values.
+				var exchangeTimeZone = this.getTimeZone(timeZoneDefinition, aIndexDate);
+				//dump(" Going to match exchange:"+exchangeTimeZone.id+", cal:"+calTimeZone.id+"\n");
+				if (exchangeTimeZone.equal(calTimeZone)) {
+					//dump("  timezones match on values. exchange:"+exchangeTimeZone.id+", cal:"+calTimeZone.id+"\n");
+					
+					// Now we see if we have also a match on name.
+					var tmpScore = 0;
+					for each(var zonePart in tmpArray) {
+						if (exchangeTimeZone.id.indexOf(zonePart) > -1) {
+							tmpScore = tmpScore + 1;
+						}
+						if (exchangeTimeZone.name.indexOf(zonePart) > -1) {
+							tmpScore = tmpScore + 1;
 						}
 					}
-				}
-				periods = null;
-
-				if (standardMatch) {
-					var daylightMatch = null;
-					if (tmpBiasValues.daylight) {
-						var periods = timeZoneDefinition.XPath("/t:Periods/t:Period[@Name = 'Daylight']");
-						if (periods.length > 0) {
-							for (var index in periods) {
-								//if (this.debug) this.logInfo("yy period.@Bias="+period.@Bias.toString());
-								if (this.globalFunctions.convertDurationToSeconds(periods[index].getAttribute("Bias")) == this.globalFunctions.convertDurationToSeconds(tmpBiasValues.daylight)) {
-									daylightMatch = periods[index].getAttribute("Bias", null);
-									break;
-								}
-							}
-						}
-						periods = null;
-					}
-	
-					if ((standardMatch) && ((!tmpBiasValues.daylight) || (daylightMatch))) {
-						this.logInfo("WE HAVE A TIMEZONE MATCH BETWEEN LIGHTNING AND this.globalFunctions. Cal:"+aCalTimeZone.tzid+", EWS:"+timeZoneDefinition.getAttribute("Name"));
-	
-						// If we also found the place name this will overrule everything else.
-						if ((placeNameMatch) || (idMatch) || (!weHaveAMatch)) {
-							weHaveAMatch = timeZoneDefinition.getAttribute("Id");
-	
-							if (placeNameMatch) {
-								//this.logInfo("We have a timzonematch on place name");
-								break;
-							}
-							if (idMatch) {
-								//this.logInfo("We have a timzonematch on id");
-								break;
-							}
-						}
+					
+					if (tmpScore > finalScore) {
+						//dump("   We also have name matching elements.\n");
+						finalScore = tmpScore;
+						weHaveAMatch = exchangeTimeZone.id;
 					}
 				}
-
 			}
 
+			//dump(" Matching ID:"+weHaveAMatch+"\n");
 			return weHaveAMatch;
 		}
 
@@ -238,10 +178,14 @@ mivExchangeTimeZones.prototype = {
 
 	getTimeZone: function _getTimeZone(aTimeZone, aIndexDate)
 	{
-		var timeZoneId = null;
+		if (!aTimeZone) return null;
 
-		if (aTimeZone instanceof Ci.mivIxml2jxon) {
+		var timeZoneId = null;
+//dump("   getTimeZone: aTimeZone:"+aTimeZone+"\n");
+		if (aTimeZone["getAttribute"]) {
+//		if (aTimeZone instanceof Ci.mivIxml2jxon) {
 			timeZoneId = aTimeZone.getAttribute("Id", null);
+//dump("       timeZoneId:"+timeZoneId+"\n");
 		}
 		if (aTimeZone instanceof Ci.calITimezone) {
 			timeZoneId = aTimeZone.tzid;
@@ -262,7 +206,6 @@ mivExchangeTimeZones.prototype = {
 				.createInstance(Ci.mivExchangeTimeZone);
 
 		this._tzCache[timeZoneId].indexDate = aIndexDate;
-
 		this._tzCache[timeZoneId].timeZone = aTimeZone;
 
 		return this._tzCache[timeZoneId];
@@ -300,7 +243,7 @@ mivExchangeTimeZones.prototype = {
 				var tmpZoneId = timezones.getNext();
 				var tmpZone = this.timezoneService.getTimezone(tmpZoneId);
 
-				var calTimeZone = this.getTimeZone(tmpZone);
+				var calTimeZone = this.getTimeZone(tmpZone, aIndexDate);
 
 				var tmpArray = calTimeZone.id.split("/");
 

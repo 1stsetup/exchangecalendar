@@ -387,7 +387,8 @@ mivExchangeTimeZone.prototype = {
 	set timeZone(aValue)
 	{
 		this._timeZone = aValue;
-		if (aValue instanceof Ci.mivIxml2jxon) {
+		if (aValue["getAttribute"]) {
+		//if (aValue instanceof Ci.mivIxml2jxon) {
 			this.setExchangeTimezone(aValue, this._indexDate);
 		}
 		if (aValue instanceof Ci.calITimezone) {
