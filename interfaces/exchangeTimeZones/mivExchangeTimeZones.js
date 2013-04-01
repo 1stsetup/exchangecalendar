@@ -14,7 +14,7 @@
  * Author: Michel Verbraak (info@1st-setup.nl)
  * Website: http://www.1st-setup.nl/
  *
- * This interface/service is used for loadBalancing Request to Exchange
+ * This interface/service is used for TimeZone conversions to Exchange
  *
  * ***** BEGIN LICENSE BLOCK *****/
 
@@ -30,6 +30,8 @@ Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://calendar/modules/calProviderUtils.jsm");
 
 Cu.import("resource://exchangecalendar/erGetTimeZones.js");
+
+//Cu.import("resource://interfaces/exchangeTimeZones//mivExchangeTimeZone.js");
 
 function mivExchangeTimeZones() {
 	this._timeZones = {};
@@ -234,71 +236,91 @@ mivExchangeTimeZones.prototype = {
 		return "UTC";
 	},
 
-	getCalTimeZoneByExchangeTimeZone: function _getCalTimeZoneByExchangeTimeZone(aExchangeTimeZone, aURL)
+	getTimeZone: function _getTimeZone(aTimeZone, aIndexDate)
 	{
-		if (aExchangeTimeZone == null) return null;
+		var timeZoneId = null;
+
+		if (aTimeZone instanceof Ci.mivIxml2jxon) {
+			timeZoneId = aTimeZone.getAttribute("Id", null);
+		}
+		if (aTimeZone instanceof Ci.calITimezone) {
+			timeZoneId = aTimeZone.tzid;
+		}
+
+
+		if (!timeZoneId) return null;
+
+		if (!this._tzCache) {
+			this._tzCache = {};
+		}
+
+		if (this._tzCache[timeZoneId]) {
+			return this._tzCache[timeZoneId];
+		}
+
+		this._tzCache[timeZoneId] = Cc["@1st-setup.nl/exchange/timezone;1"]
+				.createInstance(Ci.mivExchangeTimeZone);
+
+		this._tzCache[timeZoneId].indexDate = aIndexDate;
+
+		this._tzCache[timeZoneId].timeZone = aTimeZone;
+
+		return this._tzCache[timeZoneId];
+	},
+
+	getCalTimeZoneByExchangeTimeZone: function _getCalTimeZoneByExchangeTimeZone(aExchangeTimeZone, aURL, aIndexDate)
+	{
+		var exchangeTimeZone = this.getTimeZone(aExchangeTimeZone, aIndexDate);
+
+		if (exchangeTimeZone == null) return null;
 
 		var result = null;
 
-		var exchangeZoneId = aExchangeTimeZone.getAttribute("Id", "??");
-
-		if (this.exchangeToLightningMemory[exchangeZoneId]) {
+		if (this.exchangeToLightningMemory[exchangeTimeZone.id]) {
 			//this.logInfo("Exchange timezone:"+exchangeZoneId+" is stored in memory. Going to use the memory value.");
-			return this.exchangeToLightningMemory[exchangeZoneId];
+			return this.exchangeToLightningMemory[exchangeTimeZone.id];
 		}
 
-		var exchangeZoneName = aExchangeTimeZone.getAttribute("Name", "??");
-		//this.logInfo("Exchange timezone:"+exchangeZoneId+"/"+exchangeZoneName);
-
-		var standardPeriods = aExchangeTimeZone.XPath("/t:Periods/t:Period[@Name = 'Standard']");
-		var standardBias = null;
-		if (standardPeriods.length > 0) {
-			// Get last period. Most of the time this is the last in the list.
-			standardBias = this.globalFunctions.convertDurationToSeconds(standardPeriods[standardPeriods.length-1].getAttribute("Bias"));
+		// See if the Lightning default timezone matches.
+		var defaultTimeZone = this.getTimeZone(this.globalFunctions.ecDefaultTimeZone());
+		if (defaultTimeZone.equal(exchangeTimeZone)) {
+			return this.globalFunctions.ecDefaultTimeZone();
 		}
 
-		var daylightPeriods = aExchangeTimeZone.XPath("/t:Periods/t:Period[@Name = 'Daylight']");
-		var daylightBias = null;
-		if (daylightPeriods.length > 0) {
-			// Get last period. Most of the time this is the last in the list.
-			daylightBias = this.globalFunctions.convertDurationToSeconds(daylightPeriods[daylightPeriods.length-1].getAttribute("Bias"));
-		}
+		//dump(" standardBias:"+exchangeTimeZone.standardBias+"\n");
+		//dump(" daylightBias:"+exchangeTimeZone.daylightBias+"\n");
 
 		// Loop through the lightning timezones.
 		// First we try to do a fast detection by name
 		var zoneScore = 0;
-		if ((exchangeZoneId != "??") || (exchangeZoneName != "??")) {
+		if ((exchangeTimeZone.id != "??") || (exchangeTimeZone.name != "??")) {
 			var timezones = this.timezoneService.timezoneIds;
 			var tmpResult = null;
 			while (timezones.hasMore()) {
-				var tmpZone = timezones.getNext();
-				var zoneParts = tmpZone.split("/");
+				var tmpZoneId = timezones.getNext();
+				var tmpZone = this.timezoneService.getTimezone(tmpZoneId);
+
+				var calTimeZone = this.getTimeZone(tmpZone);
+
+				var tmpArray = calTimeZone.id.split("/");
 
 				var tmpScore = 0;
-				for each(var zonePart in zoneParts) {
-					if (exchangeZoneId.indexOf(zonePart) > -1) {
+				for each(var zonePart in tmpArray) {
+					if (exchangeTimeZone.id.indexOf(zonePart) > -1) {
 						tmpScore = tmpScore + 1;
 					}
-					if (exchangeZoneName.indexOf(zonePart) > -1) {
+					if (exchangeTimeZone.name.indexOf(zonePart) > -1) {
 						tmpScore = tmpScore + 1;
 					}
 				}
-
-				if (tmpScore > zoneScore) {
-					//this.logInfo("  --> We have a match between Lightning '"+tmpZone+"' and Exchange '"+exchangeZoneId+"/"+exchangeZoneName+"' on id and name.");
-					tmpResult = this.timezoneService.getTimezone(tmpZone);
-
-					var tmpBiasValues = this.calculateBiasOffsets(tmpResult);
-					if (!tmpBiasValues.standard) {
-						tmpBiasValues.standard = "PT0H";
-					}
-
-					if (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.standard) == standardBias) {
-						if (((tmpBiasValues.daylight == null) && (daylightBias == null)) || (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.daylight) == daylightBias)) {
-							result = tmpResult;
-							zoneScore = tmpScore;
-							this.logInfo("  --> a. We have a match between Lightning '"+tmpZone+"' and Exchange '"+exchangeZoneId+"/"+exchangeZoneName+"'  on Bias values.");
-						}
+				if ((tmpScore > zoneScore) && (tmpScore > 0)) {
+					//this.logInfo("  --> We have a match between Lightning '"+tmpZone+"' and Exchange '"+exchangeTimeZone.id+"/"+exchangeTimeZone.name+"' on id and name.");
+					//dump("  --> We have a match between Lightning '"+tmpZoneId+"' and Exchange '"+exchangeTimeZone.id+"/"+exchangeTimeZone.name+"' on id and name.\n");
+					if (calTimeZone.equal(exchangeTimeZone)) {
+						result = tmpZone;
+						zoneScore = tmpScore;
+						//this.logInfo("  --> a. We have a match between Lightning '"+tmpZoneId+"' and Exchange '"+exchangeTimeZone.id+"/"+exchangeTimeZone.name+"'  on Bias values.");
+						//dump("  --> a. We have a match between Lightning '"+tmpZoneId+"' and Exchange '"+exchangeTimeZone.id+"/"+exchangeTimeZone.name+"'  on Bias values.\n");
 					}
 				}
 			}
@@ -307,40 +329,29 @@ mivExchangeTimeZones.prototype = {
 		var weHaveAMatch = false;
 		if (result == null) {
 			// We scan the while list to find a match.
+			//dump("We do not have a match on name and timezone values. Going only on values\n");
 			var timezones = this.timezoneService.timezoneIds;
 			var tmpResult = null;
 			while (timezones.hasMore() && (!weHaveAMatch)) {
-				var tmpZone = timezones.getNext();
-				tmpResult = this.timezoneService.getTimezone(tmpZone);
+				var tmpZoneId = timezones.getNext();
+				var tmpZone = this.timezoneService.getTimezone(tmpZoneId);
 
-				var tmpBiasValues = this.calculateBiasOffsets(tmpResult);
-				if (!tmpBiasValues.standard) {
-					tmpBiasValues.standard = "PT0H";
-				}
-
-				if (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.standard) == standardBias) {
-//					if ((tmpBiasValues.daylight == null) || (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.daylight) == daylightBias)) {
-					if ((tmpBiasValues.daylight == null) && (daylightBias == null)) {
-						result = tmpResult;
-						this.logInfo("  --> b. We have a match between Lightning '"+tmpZone+"' and Exchange '"+exchangeZoneId+"/"+exchangeZoneName+"' on Bias values.");
-					}
-					else {
-						if ((daylightBias != null) && (tmpBiasValues != null) && (this.globalFunctions.convertDurationToSeconds(tmpBiasValues.daylight) == daylightBias)) {
-							result = tmpResult;
-							weHaveAMatch = true;
-							this.logInfo("  --> c. We have a match between Lightning '"+tmpZone+"' and Exchange '"+exchangeZoneId+"/"+exchangeZoneName+"' on Bias values.");
-						}
-					}
+				var calTimeZone = this.getTimeZone(tmpZone);
+				if (calTimeZone.equal(exchangeTimeZone)) {
+					result = tmpZone;
+					weHaveAMatch = true;
+					//this.logInfo("  --> b. We have a match between Lightning '"+tmpZoneId+"' and Exchange '"+exchangeTimeZone.id+"/"+exchangeTimeZone.name+"'  on Bias values.");
+					//dump("  --> b. We have a match between Lightning '"+tmpZoneId+"' and Exchange '"+exchangeTimeZone.id+"/"+exchangeTimeZone.name+"'  on Bias values.\n");
 				}
 
 			}
 		}
 
 		if (result == null) {
-			//this.logInfo("  --> c. Could not find a matching lightning timezone.");
+			dump("  --> c. Could not find a matching lightning timezone.\n");
 		}
 		else {
-			this.exchangeToLightningMemory[exchangeZoneId] = result;
+			this.exchangeToLightningMemory[exchangeTimeZone.id] = result;
 		}
 
 		return result;

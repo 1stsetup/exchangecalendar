@@ -1,0 +1,47 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: GPL 3.0
+ *
+ * The contents of this file are subject to the General Public License
+ * 3.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Author: Michel Verbraak (info@1st-setup.nl)
+ * Website: http://www.1st-setup.nl/
+ * email: info@1st-setup.nl
+ *
+ * This interface can be used to for updates
+ *
+ * ***** BEGIN LICENSE BLOCK *****/
+
+#include "nsISupports.idl"
+#include "calITimezone.idl"
+#include "calIDateTime.idl"
+
+interface mivIxml2jxon;
+
+[scriptable, uuid(7621c4ee-d6fb-445a-80f3-4786d2ad5903)]
+interface mivExchangeTimeZone : nsISupports
+{
+
+	attribute jsval timeZone;
+	attribute calIDateTime indexDate;
+
+	readonly attribute AUTF8String id;
+	readonly attribute AUTF8String name;
+	void getNames(out uint32_t count, [array, size_is(count), retval] out jsval nameArray);
+	readonly attribute long long standardBias; 
+	readonly attribute long long daylightBias; 
+
+	readonly attribute boolean hasDaylight;
+	readonly attribute AUTF8String standardRRule;
+	readonly attribute AUTF8String daylightRRule;
+
+	boolean equal(in mivExchangeTimeZone aTimeZone);
+	
+};

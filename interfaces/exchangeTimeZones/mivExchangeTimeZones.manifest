@@ -4,4 +4,7 @@ interfaces mivExchangeTimeZones.xpt
 component {16093d9f-a9ac-41ab-9995-0a3a7423b45c} mivExchangeTimeZones.js
 contract @1st-setup.nl/exchange/timezones;1 {16093d9f-a9ac-41ab-9995-0a3a7423b45c}
 
+interfaces mivExchangeTimeZone.xpt
+component {7621c4ee-d6fb-445a-80f3-4786d2ad5903} mivExchangeTimeZone.js
+contract @1st-setup.nl/exchange/timezone;1 {7621c4ee-d6fb-445a-80f3-4786d2ad5903}
 
