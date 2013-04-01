@@ -779,11 +779,11 @@ mivIxml2jxon.prototype = {
 			var tmpResult = false;
 
 			if (compareList[index].subCondition) {
-				//this.logInfo(" ------------------------------------1",level);
+				//dump(" ------------------------------------1"+"\n");
 				tmpResult = this.if(compareList[index].left);
 			}
 			else {
-				//this.logInfo(" ------------------------------------2: compareList[index].left:"+compareList[index].left+", compareList[index].right:"+compareList[index].right, level);
+				//dump(" ------------------------------------2: compareList[index].left:"+compareList[index].left+", compareList[index].right:"+compareList[index].right+"\n");
 				var tmpLeft = this.convertComparisonPart(compareList[index].left);
 				var tmpRight = this.convertComparisonPart(compareList[index].right);
 
@@ -819,9 +819,9 @@ mivIxml2jxon.prototype = {
 										var evalConditionRight = tmpRight[y].value.toString();
 									}
 
-									//this.logInfo(" +++ Going to compare:'"+evalConditionLeft+compareList[index].comparison+evalConditionRight+"'",level);
-									//this.logInfo("   + typeof evalConditionLeft:"+typeof evalConditionLeft, level);
-									//this.logInfo("   + typeof evalConditionRight:"+typeof evalConditionRight, level);
+									//dump(" +++ Going to compare:'"+evalConditionLeft+compareList[index].comparison+evalConditionRight+"'"+"\n");
+									//dump("   + typeof evalConditionLeft:"+typeof evalConditionLeft+"\n");
+									//dump("   + typeof evalConditionRight:"+typeof evalConditionRight+"\n");
 									switch (compareList[index].comparison) {
 									case "!=":
 										tmpResult = (evalConditionLeft != evalConditionRight);
@@ -842,6 +842,7 @@ mivIxml2jxon.prototype = {
 										tmpResult = (evalConditionLeft > evalConditionRight);
 										break;
 									}
+									//dump("   + tmpResult:"+tmpResult+"\n");
 
 									y++;
 								}
@@ -874,6 +875,8 @@ mivIxml2jxon.prototype = {
 				totalResult = tmpResult;
 				break;
 			}
+			//dump("    + totalResult:"+totalResult+"\n");
+
 			if (compareList[index].operator) {
 				if ((compareList[index].operator == "and") && (!totalResult)) { // We are done false is the endresult.
 					return false;
@@ -987,17 +990,22 @@ mivIxml2jxon.prototype = {
 			}
 
 			tmpPath = tmpPath.substr(index.length+2);
-			//this.logInfo("Condition: ["+index+"], tmpPath:"+tmpPath,0);
+			//dump("~ Condition: ["+index+"], tmpPath:"+tmpPath+"\n");
 
 			index = this.trim(index); 
 
 			if (index != "") {
 
-				//this.logInfo("Going to see what condition we have. index="+index);
+				//dump("  ^ 1 Going to see what condition we have. index="+index+"\n");
 				if (this.if(index)) {
-					//this.logInfo(" %%%%%%%%%%%%%% -------- MATCHFOUND ---------- %%%%%%%%%%%%%%", 2);
+					//dump(" %%%%%%%%%%%%%% -------- MATCHFOUND ---------- %%%%%%%%%%%%%%"+"\n");
 					result.push(this);
 				}
+				else {
+					//dump(" ************** -------- MATCHFOUND ---------- **************"+"\n");
+					return result;
+				}
+				//dump("  ^ 2 Going to see what condition we have. index="+index+"\n");
 
 			}
 			else {
