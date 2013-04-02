@@ -2755,13 +2755,21 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 					if ((!this._alarm) || (this._alarm.offset != alarm.offset)) {
 						// Exchange alarm is always an offset to the start.
+
+						var referenceDate = this.startDate;
 						switch (alarm.related) {
 						case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
 							//this.logInfo("ALARM_RELATED_ABSOLUTE we are going to calculate a offset from the start.");
 							var newAlarmTime = alarm.alarmDate.clone();
 
 							// Calculate offset from start of item.
-							var offset = newAlarmTime.subtractDate(this.startDate);
+							if (this.className == "mivExchangeEvent") {
+								var offset = newAlarmTime.subtractDate(this.startDate);
+							}
+							else {
+								//var offset = 0;
+								reference = newAlarmTime;
+							}
 							break;
 						case Ci.calIAlarm.ALARM_RELATED_START:
 							//this.logInfo("ALARM_RELATED_START this is easy exchange does the same.");
@@ -2777,9 +2785,10 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 							break;
 						}
 
-						this.addSetItemField(updates, "ReminderDueBy", cal.toRFC3339(this.startDate.getInTimezone(cal.UTC())));
+//						this.addSetItemField(updates, "ReminderDueBy", cal.toRFC3339(this.startDate.getInTimezone(cal.UTC())));
+						this.addSetItemField(updates, "ReminderDueBy", cal.toRFC3339(reference));
 					
-						if (offset.inSeconds != 0) {
+						if ((offset) && (offset.inSeconds != 0)) {
 							this.addSetItemField(updates, "ReminderMinutesBeforeStart", String((offset.inSeconds / 60) * -1));
 						}
 						else {
