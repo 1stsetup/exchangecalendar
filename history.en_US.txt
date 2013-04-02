@@ -1,10 +1,18 @@
 Version 3.2.0-Beta4:
 - Split mivExchangeEvent object into mivExchangeEvent and mivExchangeBaseItem. As preparation for mivExchangeTodo.
+- Improved the conversion from Exchange Timezone to Lightning timezone and from Lightning timezone to Exchange timezone.
+- Added the Exchange task/todo detail fields. Lightning does not known about the by default.
+- Fixes Bug 63 - Repeating tasks posted to Exchange Server have incorrect due date/time
+- Fixes Bug 107 - Snooze state of tasks gets lost after restart
+- Fixes Bug 194 - Tasks appear at wrong date
+- Fixes Bug 215 - Snoozed task reminders continually pop up, dismissing task reminders takes 2 clicks of Dismiss
+- Fixes Bug 235 - Try to set a task due date aways sets the current date time
+- Fixes Bug 250 - No tasks with current 3.2.0 beta
 
 Version 3.2.0-Beta3:
+- Fixes Bug 150 - Dismissing reminders asks to send update for meeting
 - Fixes bug 162 - Changing recurring meeting to Wednesdays, moved it to Thursday 
 - Fixes Bug 180 - NTLM and Kerberos fail
-- Fixes Bug 228 - Password loop
 - Fixes bug 229 - Creating a custom repeating event - creates event on following day
 - Fixes bug 238 - "All day Event" created for day prior to selected date 
 - Fixes bug 241 - Autodiscover RedirectAddr not followed 
