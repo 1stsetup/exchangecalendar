@@ -4878,6 +4878,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		var onlySnoozeChanged = true;
 
 		var updateObject = aNewItem.updateXML;
+
 		if (updateObject.toString() == '<t:Updates xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"/>') {
 			// Nothing changed
 			return {changes: null, onlySnoozeChanged: false};

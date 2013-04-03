@@ -31,36 +31,42 @@ var Cu = Components.utils;
 var Ci = Components.interfaces;
 var Cc = Components.classes;
 
-Cu.import("resource://exchangecalendar/ecFunctions.js");
 Cu.import("resource://calendar/modules/calUtils.jsm");
 
 if (! exchWebService) var exchWebService = {};
 
-exchWebService.changeCalendarPropertiesReminder={
+function exchChangeCalendarPropertiesReminder(aDocument, aArgument)
+{
+	this._document = aDocument;
+	this._argument = aArgument;
 
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+}
+
+exchChangeCalendarPropertiesReminder.prototype = {
 	onLoad : function _onLoad(){
-		window.removeEventListener("load", exchWebService.changeCalendarPropertiesReminder.onLoad, false);
 
-		if ((window.arguments[0].item.className) && (window.arguments[0].item.className == "mivExchangeTodo")) {
-			document.getElementById("reminder-relative-box").hidden = true;
+		if ((!cal.isEvent(this._argument.item)) && (this._argument.item.calendar.type == "exchangecalendar")) {
+			this._document.getElementById("reminder-relative-box").hidden = true;
 
-			document.getElementById("reminder-relative-radio").selected = false;
-			document.getElementById("reminder-relative-radio").disabled = true;
+			this._document.getElementById("reminder-relative-radio").selected = false;
+			this._document.getElementById("reminder-relative-radio").disabled = true;
 
-			document.getElementById("reminder-absolute-radio").selected = true;
-			document.getElementById("reminder-absolute-radio").hidden = true;
+			this._document.getElementById("reminder-absolute-radio").selected = true;
+			this._document.getElementById("reminder-absolute-radio").hidden = true;
 		}
 
-		if ((window.arguments[0].item.className) && ((window.arguments[0].item.className == "mivExchangeTodo") || (window.arguments[0].item.className == "mivExchangeEvent"))) {
-			document.getElementById("reminder-actions-caption").hidden = true;
-			document.getElementById("reminder-actions-menulist").hidden = true;
+		if (this._argument.item.calendar.type == "exchangecalendar") {
+			this._document.getElementById("reminder-actions-caption").hidden = true;
+			this._document.getElementById("reminder-actions-menulist").hidden = true;
 		}
 	},
 
 	onNewReminder: function _onNewReminder() {
-		if ((window.arguments[0].item.className) && (window.arguments[0].item.className == "mivExchangeTodo")) {
-			let itemType = (isEvent(window.arguments[0].item) ? "event" : "todo");
-			let listbox = document.getElementById("reminder-listbox");
+		if ((!cal.isEvent(this._argument.item)) && (this._argument.item.calendar.type == "exchangecalendar")) {
+			let itemType = (isEvent(this._argument.item) ? "event" : "todo");
+			let listbox = this._document.getElementById("reminder-listbox");
 
 			let reminder = cal.createAlarm();
 			let alarmlen = getPrefSafe("calendar.alarms." + itemType + "alarmlen", 15);
@@ -68,21 +74,21 @@ exchWebService.changeCalendarPropertiesReminder={
 			// Default is an absolute DISPLAY alarm, |alarmlen| minutes before the event.
 			// If DISPLAY is not supported by the provider, then pick the provider's
 			// first alarm type.
-			var absDate = document.getElementById("reminder-absolute-date");
+			var absDate = this._document.getElementById("reminder-absolute-date");
 			reminder.related = reminder.ALARM_RELATED_ABSOLUTE;
 			reminder.alarmDate = cal.jsDateToDateTime(absDate.value,
-		                                              window.arguments[0].timezone);
+		                                              this._argument.timezone);
 			//reminder.offset = 0;
 			if ("DISPLAY" in allowedActionsMap) {
 				reminder.action = "DISPLAY";
 			} else {
-				let calendar = window.arguments[0].calendar
+				let calendar = this._argument.calendar
 				let actions = calendar.getProperty("capabilities.alarms.actionValues") || [];
 				reminder.action = actions[0];
 			}
 
 			// Set up the listbox
-			let listitem = setupListItem(null, reminder, window.arguments[0].item);
+			let listitem = setupListItem(null, reminder, this._argument.item);
 			listbox.appendChild(listitem);
 			listbox.selectItem(listitem);
 
@@ -97,10 +103,12 @@ exchWebService.changeCalendarPropertiesReminder={
 			onNewReminder();
 		}
 
-		if ((window.arguments[0].item.className) && ((window.arguments[0].item.className == "mivExchangeTodo") || (window.arguments[0].item.className == "mivExchangeEvent"))) {
+		if (this._argument.item.calendar.type == "exchangecalendar") {
 			disableElement("reminder-new-button");
 		}
 	},
 
 }
-window.addEventListener("load", exchWebService.changeCalendarPropertiesReminder.onLoad, true);
+
+var tmpChangeCalendarPropertiesReminder = new exchChangeCalendarPropertiesReminder(document, window.arguments[0]);
+window.addEventListener("load", function _onLoad() { window.removeEventListener("load",arguments.callee,false); tmpChangeCalendarPropertiesReminder.onLoad(); }, true);

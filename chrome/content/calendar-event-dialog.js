@@ -31,27 +31,32 @@ var Cu = Components.utils;
 var Ci = Components.interfaces;
 var Cc = Components.classes;
 
-//Cu.import("resource://gre/modules/XPCOMUtils.jsm");
-Cu.import("resource://exchangecalendar/ecFunctions.js");
 Cu.import("resource://calendar/modules/calUtils.jsm");
 
-if (! exchWebService) var exchWebService = {};
+function exchEventDialog(aDocument, aWindow)
+{
+	this._document = aDocument;
+	this._window = aWindow;
 
-exchWebService.eventDialog = {
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+}
+
+exchEventDialog.prototype = {
 
 	_initialized: false,
 	_oldCallback: null,
 
 	onAcceptCallback: function _onAcceptCallback(aItem, aCalendar, aOriginalItem, aIsClosing)
 	{
-		if (aItem.className == "mivExchangeTodo") {
-//		if ((!cal.isEvent(aItem)) && (aCalendar.type == "exchangecalendar")) {
+//		if (aItem.className == "mivExchangeTodo") {
+		if ((!cal.isEvent(aItem)) && (aCalendar.type == "exchangecalendar")) {
 			// Save extra exchange fields to item.
-			aItem.totalWork = document.getElementById("exchWebService-totalWork-count").value;
-			aItem.actualWork = document.getElementById("exchWebService-actualWork-count").value;
-			aItem.mileage = document.getElementById("exchWebService-mileage-count").value;
-			aItem.billingInformation = document.getElementById("exchWebService-billingInformation-count").value;
-			aItem.companies = document.getElementById("exchWebService-companies-count").value;
+			aItem.totalWork = this._document.getElementById("exchWebService-totalWork-count").value;
+			aItem.actualWork = this._document.getElementById("exchWebService-actualWork-count").value;
+			aItem.mileage = this._document.getElementById("exchWebService-mileage-count").value;
+			aItem.billingInformation = this._document.getElementById("exchWebService-billingInformation-count").value;
+			aItem.companies = this._document.getElementById("exchWebService-companies-count").value;
 		}
 
 		if (this._oldCallback) {
@@ -65,117 +70,109 @@ exchWebService.eventDialog = {
 
 		if (this._initialized) return;
 
-		if (document.getElementById("todo-entrydate")) {
+		if (this._document.getElementById("todo-entrydate")) {
 			this._initialized = true;
-			// nuke the onload, or we get called every time there's
-			// any load that occurs
-			window.removeEventListener("load", exchWebService.eventDialog.onLoad, false);
 
-			this._oldCallback = window.onAcceptCallback;
-			window.onAcceptCallback = exchWebService.eventDialog.onAcceptCallback;
+			this._oldCallback = this._window.onAcceptCallback;
+			var self = this;
+			this._window.onAcceptCallback = function(aItem, aCalendar, aOriginalItem, aIsClosing) { self.onAcceptCallback(aItem, aCalendar, aOriginalItem, aIsClosing); };
 
-			var args = window.arguments[0];
+			var args = this._window.arguments[0];
 			var item = args.calendarEvent;
 			if ((!cal.isEvent(item)) && (item.calendar.type == "exchangecalendar")) {
 
-				var ownerLabel = document.getElementById("exchWebService-owner-label");
+				var ownerLabel = this._document.getElementById("exchWebService-owner-label");
 				if (ownerLabel) {
 					ownerLabel.value = item.owner;
 				}
 
 				try {
-					document.getElementById("exchWebService-details-row1").removeAttribute("collapsed");
-					document.getElementById("exchWebService-details-row2").removeAttribute("collapsed");
-					document.getElementById("exchWebService-details-row3").removeAttribute("collapsed");
+					this._document.getElementById("exchWebService-details-row1").removeAttribute("collapsed");
+					this._document.getElementById("exchWebService-details-row2").removeAttribute("collapsed");
+					this._document.getElementById("exchWebService-details-row3").removeAttribute("collapsed");
 				}
 				catch (ex) {}
 
-				document.getElementById("exchWebService-owner-hbox").hidden = false;
-				document.getElementById("exchWebService-details-separator").hidden = false;
+				this._document.getElementById("exchWebService-owner-hbox").hidden = false;
+				this._document.getElementById("exchWebService-details-separator").hidden = false;
 
-				document.getElementById("exchWebService-totalWork-count").value = item.totalWork;
-				document.getElementById("exchWebService-actualWork-count").value = item.actualWork;
-				document.getElementById("exchWebService-mileage-count").value = item.mileage;
-				document.getElementById("exchWebService-billingInformation-count").value = item.billingInformation;
-				document.getElementById("exchWebService-companies-count").value = item.companies;
+				this._document.getElementById("exchWebService-totalWork-count").value = item.totalWork;
+				this._document.getElementById("exchWebService-actualWork-count").value = item.actualWork;
+				this._document.getElementById("exchWebService-mileage-count").value = item.mileage;
+				this._document.getElementById("exchWebService-billingInformation-count").value = item.billingInformation;
+				this._document.getElementById("exchWebService-companies-count").value = item.companies;
 
 				// Clear reminder select list for todo
-				document.getElementById("reminder-none-separator").hidden = true;
-				document.getElementById("reminder-0minutes-menuitem").hidden = true;
-				document.getElementById("reminder-5minutes-menuitem").hidden = true;
-				document.getElementById("reminder-15minutes-menuitem").hidden = true;
-				document.getElementById("reminder-30minutes-menuitem").hidden = true;
-				document.getElementById("reminder-minutes-separator").hidden = true;
-				document.getElementById("reminder-1hour-menuitem").hidden = true;
-				document.getElementById("reminder-2hours-menuitem").hidden = true;
-				document.getElementById("reminder-12hours-menuitem").hidden = true;
-				document.getElementById("reminder-hours-separator").hidden = true;
-				document.getElementById("reminder-1day-menuitem").hidden = true;
-				document.getElementById("reminder-2days-menuitem").hidden = true;
-				document.getElementById("reminder-1week-menuitem").hidden = true;
+				this._document.getElementById("reminder-none-separator").hidden = true;
+				this._document.getElementById("reminder-0minutes-menuitem").hidden = true;
+				this._document.getElementById("reminder-5minutes-menuitem").hidden = true;
+				this._document.getElementById("reminder-15minutes-menuitem").hidden = true;
+				this._document.getElementById("reminder-30minutes-menuitem").hidden = true;
+				this._document.getElementById("reminder-minutes-separator").hidden = true;
+				this._document.getElementById("reminder-1hour-menuitem").hidden = true;
+				this._document.getElementById("reminder-2hours-menuitem").hidden = true;
+				this._document.getElementById("reminder-12hours-menuitem").hidden = true;
+				this._document.getElementById("reminder-hours-separator").hidden = true;
+				this._document.getElementById("reminder-1day-menuitem").hidden = true;
+				this._document.getElementById("reminder-2days-menuitem").hidden = true;
+				this._document.getElementById("reminder-1week-menuitem").hidden = true;
 				
-				var tmpDatePicker = document.createElement("datepicker");
+				var tmpDatePicker = this._document.createElement("datepicker");
 				tmpDatePicker.setAttribute("type","popup");
 				tmpDatePicker.setAttribute("id","todo-entrydate");
-				tmpDatePicker.setAttribute("value",document.getElementById("todo-entrydate").value);
+				tmpDatePicker.setAttribute("value",this._document.getElementById("todo-entrydate").value);
 				tmpDatePicker.setAttribute("onchange","dateTimeControls2State(true);");
-				tmpDatePicker.addEventListener("change", exchWebService.eventDialog.updateTime, false);
-				if (!document.getElementById("todo-has-entrydate").checked) {
+				tmpDatePicker.addEventListener("change", function() { self.updateTime(); }, false);
+				if (!this._document.getElementById("todo-has-entrydate").checked) {
 					tmpDatePicker.setAttribute("disabled","true");
 				}
-				document.getElementById("event-grid-startdate-picker-box").replaceChild(tmpDatePicker, document.getElementById("todo-entrydate"));
+				this._document.getElementById("event-grid-startdate-picker-box").replaceChild(tmpDatePicker, this._document.getElementById("todo-entrydate"));
 
-				var tmpDatePicker = document.createElement("datepicker");
+				var tmpDatePicker = this._document.createElement("datepicker");
 				tmpDatePicker.setAttribute("type","popup");
 				tmpDatePicker.setAttribute("id","todo-duedate");
-				tmpDatePicker.setAttribute("value",document.getElementById("todo-duedate").value);
+				tmpDatePicker.setAttribute("value",this._document.getElementById("todo-duedate").value);
 				tmpDatePicker.setAttribute("onchange","dateTimeControls2State(false);");
-				tmpDatePicker.addEventListener("change", exchWebService.eventDialog.updateTime, false);
-				if (!document.getElementById("todo-has-duedate").checked) {
+				tmpDatePicker.addEventListener("change", function() { self.updateTime(); }, false);
+				if (!this._document.getElementById("todo-has-duedate").checked) {
 					tmpDatePicker.setAttribute("disabled","true");
 				}
-				document.getElementById("event-grid-enddate-picker-box").replaceChild(tmpDatePicker, document.getElementById("todo-duedate"));
+				this._document.getElementById("event-grid-enddate-picker-box").replaceChild(tmpDatePicker, this._document.getElementById("todo-duedate"));
 
-				//document.getElementById("link-image-top").hidden = true;
-				//document.getElementById("link-image-bottom").hidden = true;
-				//document.getElementById("keepduration-button").hidden = true;
-				document.getElementById("timezone-starttime").hidden = true;
-				document.getElementById("timezone-endtime").hidden = true;
+				this._document.getElementById("timezone-starttime").hidden = true;
+				this._document.getElementById("timezone-endtime").hidden = true;
 
-				if (document.getElementById("item-repeat")) {
-					document.getElementById("item-repeat").addEventListener("command", exchWebService.eventDialog.updateRepeat, false);
+				if (this._document.getElementById("item-repeat")) {
+					this._document.getElementById("item-repeat").addEventListener("command", function() { self.updateRepeat(); }, false);
 				}
-				exchWebService.eventDialog.updateTime();
-				exchWebService.eventDialog.updateRepeat();
+				this.updateTime();
+				this.updateRepeat();
 			}
 		}
 	},
 
 	setRealEndtime: function _setRealEndTime()
 	{
-		dump(" ~~ ga 1.document.getElementById('event-endtime').value:"+document.getElementById("event-endtime").value+"\n");
-		dump(" ~~ ga 1a.document.getElementById('todo-duedate').dateValue.jsDate:"+document.getElementById("todo-duedate").value+"\n");
-		document.getElementById("event-endtime").value = document.getElementById("todo-duedate").value; 
-		dump(" ~~ ga 2.\n");
+		this._document.getElementById("event-endtime").value = this._document.getElementById("todo-duedate").value; 
 	},
 
 	updateTime: function _updateTime()
 	{
-		dump(" ===++ calendar-event-dialog.js\n");
-		if (document.getElementById("todo-entrydate").dateValue) {
-			document.getElementById("todo-entrydate").dateValue.setHours(12);
+		//dump(" ===++ calendar-event-dialog.js\n");
+		if (this._document.getElementById("todo-entrydate").dateValue) {
+			this._document.getElementById("todo-entrydate").dateValue.setHours(12);
 		}
-		if (document.getElementById("todo-duedate").dateValue) {
-			document.getElementById("todo-duedate").dateValue.setHours(13);
+		if (this._document.getElementById("todo-duedate").dateValue) {
+			this._document.getElementById("todo-duedate").dateValue.setHours(13);
 		}
 	},
 
 	// This will remove the time value from the repeat part and tooltip.
 	updateRepeat: function _updateRepeat()
 	{
-		var repeatDetails = document.getElementById("repeat-details").childNodes;
+		var repeatDetails = this._document.getElementById("repeat-details").childNodes;
 		if (repeatDetails.length == 3) {
-			document.getElementById("repeat-details").removeChild(repeatDetails[2]);
+			this._document.getElementById("repeat-details").removeChild(repeatDetails[2]);
 			var toolTip = repeatDetails[0].getAttribute("tooltiptext");
 			var tmpArray = toolTip.split("\n");
 			tmpArray.splice(2,1);
@@ -187,5 +184,6 @@ exchWebService.eventDialog = {
 
 }
 
-window.addEventListener("load", exchWebService.eventDialog.onLoad, false);
+var tmpEventDialog = new exchEventDialog(document, window);
+window.addEventListener("load", function _onLoad() { window.removeEventListener("load",arguments.callee,false); tmpEventDialog.onLoad(); }, true);
 

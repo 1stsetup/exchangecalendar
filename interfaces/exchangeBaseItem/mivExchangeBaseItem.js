@@ -2481,7 +2481,13 @@ catch(err){
 		var setItemField = parentItem.addChildTag(updateType, "t", null);
 		if (aField != "ExtendedFieldURI") {
 			var fieldURI = setItemField.addChildTag("FieldURI", "t", null);
-			fieldURI.setAttribute("FieldURI", fieldPathMap[aField]+":"+aField);
+
+			if ((this.className == "mivExchangeTodo") && (aField == "Recurrence")) {
+				fieldURI.setAttribute("FieldURI", "task:"+aField);
+			}
+			else {
+				fieldURI.setAttribute("FieldURI", fieldPathMap[aField]+":"+aField);
+			}
 
 			if (aValue) {
 				try {
@@ -2769,7 +2775,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 					if ((!this._alarm) || (this._alarm.offset != alarm.offset)) {
 						// Exchange alarm is always an offset to the start.
 
-						var referenceDate = this.startDate;
+						var referenceDate = this.startDate.getInTimezone(cal.UTC());
 						switch (alarm.related) {
 						case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
 							//this.logInfo("ALARM_RELATED_ABSOLUTE we are going to calculate a offset from the start.");
@@ -2778,10 +2784,11 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 							// Calculate offset from start of item.
 							if (this.className == "mivExchangeEvent") {
 								var offset = newAlarmTime.subtractDate(this.startDate);
+dump("  -+- newAlarmTime:"+newAlarmTime+", startDate:"+this.startDate+", offset:"+offset+"\n");
 							}
 							else {
 								//var offset = 0;
-								reference = newAlarmTime;
+								referenceDate = newAlarmTime.getInTimezone(cal.UTC());
 							}
 							break;
 						case Ci.calIAlarm.ALARM_RELATED_START:
@@ -2799,7 +2806,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 						}
 
 //						this.addSetItemField(updates, "ReminderDueBy", cal.toRFC3339(this.startDate.getInTimezone(cal.UTC())));
-						this.addSetItemField(updates, "ReminderDueBy", cal.toRFC3339(reference));
+						this.addSetItemField(updates, "ReminderDueBy", cal.toRFC3339(referenceDate));
 					
 						if ((offset) && (offset.inSeconds != 0)) {
 							this.addSetItemField(updates, "ReminderMinutesBeforeStart", String((offset.inSeconds / 60) * -1));

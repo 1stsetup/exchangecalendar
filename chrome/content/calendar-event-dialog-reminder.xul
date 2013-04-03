@@ -43,6 +43,6 @@
 
 	<script type="application/javascript" src="chrome://exchangecalendar/content/calendar-event-dialog-reminder.js"/> 
 
-	<button id="reminder-new-button" oncommand="exchWebService.changeCalendarPropertiesReminder.onNewReminder()"/>
+	<button id="reminder-new-button" oncommand="tmpChangeCalendarPropertiesReminder.onNewReminder()"/>
 	
 </overlay>

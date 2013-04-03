@@ -52,13 +52,13 @@
     <!-- Commands -->
     <commandset id="itemCommands">
         <command id="exchWebService_openAttachment"
-                 oncommand="exchWebService.attachments.openAttachment();"/> 
+                 oncommand="tmpAttachment.openAttachment();"/> 
         <command id="exchWebService_saveAttachment"
-                 oncommand="exchWebService.attachments.saveAttachment();"/> 
+                 oncommand="tmpAttachment.saveAttachment();"/> 
         <command id="exchWebService_deleteAttachment"
-                 oncommand="exchWebService.attachments.deleteAttachment();"/> 
+                 oncommand="tmpAttachment.deleteAttachment();"/> 
 	<command id="exchWebService_addAttachmentDialog"
-		 oncommand="exchWebService.attachments.addAttachmentDialog();"/>
+		 oncommand="tmpAttachment.addAttachmentDialog();"/>
     </commandset>
 
     <popupset id="event-dialog-popupset">
@@ -87,7 +87,7 @@
 			disable-on-readonly="true"
 			removable="true"
 			command="exchWebService_addAttachmentDialog"
-			oncommand="exchWebService.attachments.addAttachmentDialog();" 
+			oncommand="tmpAttachment.addAttachmentDialog();" 
 			hidden="true"/>
 	</toolbarpalette>
      <toolbar id="event-toolbar" defaultset="button-save,button-attendees,button-privacy,button-url,exchWebService-add-attachment-button,button-delete"> 
@@ -96,9 +96,9 @@
 	<listbox id="exchWebService-attachment-link"
 		context="exchWebService-attachment-popup"
 		rows="2"
-		onkeypress="exchWebService.attachments.onKeyPress(event);"
-		ondblclick="exchWebService.attachments.onDblClick(event);"
-		onselect="exchWebService.attachments.onSelect(event);"/>
+		onkeypress="tmpAttachment.onKeyPress(event);"
+		ondblclick="tmpAttachment.onDblClick(event);"
+		onselect="tmpAttachment.onSelect(event);"/>
 
 </overlay>
 

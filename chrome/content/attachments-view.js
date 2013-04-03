@@ -32,15 +32,18 @@ var Ci = Components.interfaces;
 var Cc = Components.classes;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
-Cu.import("resource://exchangecalendar/ecFunctions.js");
 Cu.import("resource://exchangecalendar/erGetAttachments.js");
 
-if (! exchWebService) var exchWebService = {};
+function exchAttachments(aDocument, aWindow)
+{
+	this._document = aDocument;
+	this._window = aWindow;
 
-exchWebService.attachments = {
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+}
 
-	globalFunctions : Cc["@1st-setup.nl/global/functions;1"]
-				.getService(Ci.mivFunctions),
+exchAttachments.prototype = {
 
 	addAttachmentDialog: function _addAttachmentDialog()
 	{
@@ -50,12 +53,12 @@ exchWebService.attachments = {
 
 		var title = "Select attachment";
 
-		fp.init(window, title, nsIFilePicker.modeOpen);
+		fp.init(this._window, title, nsIFilePicker.modeOpen);
 
 		var ret = fp.show();
 
 		if (ret == nsIFilePicker.returnOK) {
-			exchWebService.commonFunctions.LOG("[["+fp.fileURL.spec+"]]");
+			this.globalFunctions.LOG("[["+fp.fileURL.spec+"]]");
 
 			// Create attachment for item.
 			var newAttachment = createAttachment();
@@ -93,9 +96,9 @@ exchWebService.attachments = {
 				 pkcs12: "certificate.png",
 				 };
 
-		exchWebService.commonFunctions.LOG("exchWebService.attachments.addAttachment");
+		this.globalFunctions.LOG("exchWebService.attachments.addAttachment");
 		if (aAttachment.uri) {
-			let documentLink = document.getElementById("exchWebService-attachment-link");
+			let documentLink = this._document.getElementById("exchWebService-attachment-link");
 			let item = documentLink.appendChild(createXULElement("listitem"));
 			item.setAttribute("crop", "end");
 			item.setAttribute("class", "listitem-iconic");
@@ -103,7 +106,7 @@ exchWebService.attachments = {
 			var extension = "";
 			var stringForExtension = "";
 
-			let getParams = exchWebService.commonFunctions.splitUriGetParams(aAttachment.uri);
+			let getParams = this.globalFunctions.splitUriGetParams(aAttachment.uri);
 			if (getParams) {
 				// Set listitem attributes
 				var fileSize = getParams.size;
@@ -136,15 +139,15 @@ exchWebService.attachments = {
 
 			}
 			else {
-				exchWebService.commonFunctions.LOG("DID NOT FIND VALID get FIELDS FOR ATTACHMENT");
+				this.globalFunctions.LOG("DID NOT FIND VALID get FIELDS FOR ATTACHMENT");
 				if (aAttachment.uri.spec.indexOf("file://") > -1) {
-					exchWebService.commonFunctions.LOG("Attachment is a local file:"+aAttachment.uri.spec);
+					this.globalFunctions.LOG("Attachment is a local file:"+aAttachment.uri.spec);
 					// We have a local file url
 					item.setAttribute("label", decodeURIComponent(aAttachment.uri.path));
 					stringForExtension = decodeURIComponent(aAttachment.uri.path);
 				}
 				else {
-					exchWebService.commonFunctions.LOG("It is not a valid local file spec");
+					this.globalFunctions.LOG("It is not a valid local file spec");
 					return;
 				}
 			}
@@ -154,7 +157,7 @@ exchWebService.attachments = {
 				extension = stringForExtension.substr(counter-1,1) + extension;
 				counter--;
 			}
-			exchWebService.commonFunctions.LOG(" == extension:"+extension);
+			this.globalFunctions.LOG(" == extension:"+extension);
 
 			if (ext2file[extension]) {
 				item.setAttribute("image", "chrome://exchangecalendar/skin/" + ext2file[extension]);
@@ -178,16 +181,13 @@ exchWebService.attachments = {
 
 			this.showAttachmentListbox();
 
-/*			if (isFirst) {
-				document.getElementById("exchWebService-attachment-link").selectedItem = item;
-			} */
 		}
 
 	},
 
 	deleteAttachment: function deleteAttachment()
 	{
-		var documentLink = document.getElementById("exchWebService-attachment-link");
+		var documentLink = this._document.getElementById("exchWebService-attachment-link");
 		delete gAttachMap[documentLink.selectedItem.attachment.hashId];
 		documentLink.removeItemAt(documentLink.selectedIndex);
 	},
@@ -200,182 +200,179 @@ exchWebService.attachments = {
 
 		// calendar-event-dialog (show our attachment view)
 		try {
-			document.getElementById("exchWebService-attachments-row").removeAttribute("collapsed");
+			this._document.getElementById("exchWebService-attachments-row").removeAttribute("collapsed");
 		}
 		catch (ex) {}
 		// calendar-summary-dialog (show our attachment view)
 		try {
-			document.getElementById("exchWebService-attachment-summary-space").hidden=false;
-			document.getElementById("exchWebService-attachment-summary-caption").hidden=false;
-			document.getElementById("exchWebService-attachment-summary-box").hidden=false;
-			document.getElementById("item-description-box").hidden=false;
+			this._document.getElementById("exchWebService-attachment-summary-space").hidden=false;
+			this._document.getElementById("exchWebService-attachment-summary-caption").hidden=false;
+			this._document.getElementById("exchWebService-attachment-summary-box").hidden=false;
+			this._document.getElementById("item-description-box").hidden=false;
 
 		}
 		catch (ex) {}
 
-		window.sizeToContent();
+		this._window.sizeToContent();
 	},
 
 	removeItemsFromListbox: function _removeItemsFromListbox()
 	{
-		var documentLink = document.getElementById("exchWebService-attachment-link");
+		var documentLink = this._document.getElementById("exchWebService-attachment-link");
 		while (documentLink.itemCount > 0) {
-			exchWebService.commonFunctions.LOG(" == Removing item from listbox");
+			this.globalFunctions.LOG(" == Removing item from listbox");
 			documentLink.removeItemAt(0);
 		}
 	},
 
 	onLoad: function _onLoad()
 	{
-		// nuke the onload, or we get called every time there's
-		// any load that occurs
-		window.removeEventListener("load", exchWebService.attachments.onLoad, false);
-
-		if (document.getElementById("calendar-task-tree")) {
-			exchWebService.commonFunctions.LOG("  -- calendar-task-tree --");
-			document.getElementById("calendar-task-tree").addEventListener("select", exchWebService.attachments.onSelectTask, true);
+		if (this._document.getElementById("calendar-task-tree")) {
+			this.globalFunctions.LOG("  -- calendar-task-tree --");
+			var self = this;
+			this._document.getElementById("calendar-task-tree").addEventListener("select", function(){ self.onSelectTask();}, true);
 			return;
 		} 
 
-		var args = window.arguments[0];
+		var args = this._window.arguments[0];
 		var item = args.calendarEvent;
 
-		exchWebService.commonFunctions.LOG("  -- onLoad 2 ("+exchWebService.commonFunctions.STACKshort()+")");
+		this.globalFunctions.LOG("  -- onLoad 2 ("+this.globalFunctions.STACKshort()+")");
 		this.attachmentListboxVisible = false;
 
 		if ((item.calendar) && (item.calendar.type == "exchangecalendar")) {
-			exchWebService.commonFunctions.LOG("  -- It is an Exchange Calendar event:"+item.title);
+			this.globalFunctions.LOG("  -- It is an Exchange Calendar event:"+item.title);
 
 			
 			try {
 				// Hide Lightning URL button 
-				document.getElementById("button-url").hidden = true;
-				document.getElementById("event-toolbar").setAttribute("currentset", "button-save,button-attendees,button-privacy,button-url,exchWebService-add-attachment-button,button-delete");
-				document.getElementById("exchWebService-add-attachment-button").hidden = false;
-				document.getElementById("options-attachments-menuitem").setAttribute("label", document.getElementById("exchWebService-add-attachment-button").getAttribute("label"));
-				document.getElementById("options-attachments-menuitem").setAttribute("command", "exchWebService_addAttachmentDialog");
+				this._document.getElementById("button-url").hidden = true;
+				this._document.getElementById("event-toolbar").setAttribute("currentset", "button-save,button-attendees,button-privacy,button-url,exchWebService-add-attachment-button,button-delete");
+				this._document.getElementById("exchWebService-add-attachment-button").hidden = false;
+				this._document.getElementById("options-attachments-menuitem").setAttribute("label", this._document.getElementById("exchWebService-add-attachment-button").getAttribute("label"));
+				this._document.getElementById("options-attachments-menuitem").setAttribute("command", "exchWebService_addAttachmentDialog");
 			}
-			catch (ex) {exchWebService.commonFunctions.LOG("  -- Could not add exchange attachment buttons:"+ex.toString());}
+			catch (ex) {this.globalFunctions.LOG("  -- Could not add exchange attachment buttons:"+ex.toString());}
 
 			// calendar-event-dialog (hide existing attachment view)
 			try {
-				document.getElementById("event-grid-attachment-row").setAttribute("collapsed", "true");
+				this._document.getElementById("event-grid-attachment-row").setAttribute("collapsed", "true");
 			}
 			catch (ex) {}
 
-			exchWebService.attachments.addAttachmentsFromItem(item);
+			this.addAttachmentsFromItem(item);
 		}
 	},
 
 	addAttachmentsFromItem: function _addAttachmentsFromItem(aItem)
 	{
 		try {
-		exchWebService.attachments.removeItemsFromListbox();
+			this.removeItemsFromListbox();
 		}
-		catch(ex) {exchWebService.commonFunctions.LOG("exchWebService.attachments.addAttachmentsFromItem: foutje:"+ex);}
-		exchWebService.commonFunctions.LOG("exchWebService.attachments.addAttachmentsFromItem: title:"+aItem.title);
+		catch(ex) {this.globalFunctions.LOG("exchWebService.attachments.addAttachmentsFromItem: foutje:"+ex);}
+		this.globalFunctions.LOG("exchWebService.attachments.addAttachmentsFromItem: title:"+aItem.title);
 		var attachments = aItem.getAttachments({});
 		if (attachments.length > 0) {
-			exchWebService.commonFunctions.LOG("  -- We have attachments:"+attachments.length+" ("+exchWebService.commonFunctions.STACKshort()+")");
+			this.globalFunctions.LOG("  -- We have attachments:"+attachments.length+" ("+this.globalFunctions.STACKshort()+")");
 			var first = true;
 			for (var index in attachments) {
-				exchWebService.commonFunctions.LOG("  -- processing attachment: "+index);
-				exchWebService.attachments.addAttachment(attachments[index], first);
+				this.globalFunctions.LOG("  -- processing attachment: "+index);
+				this.addAttachment(attachments[index], first);
 				if (first) {
 					first = false;
 				}
 			}
 
-			exchWebService.commonFunctions.LOG("  -- processed attachment.");
+			this.globalFunctions.LOG("  -- processed attachment.");
 		}
 		else {
-			exchWebService.commonFunctions.LOG("No attachments");
+			this.globalFunctions.LOG("No attachments");
 		}
 	},
 
 	onKeyPress: function _onKeyPress(aEvent)
 	{
-		exchWebService.commonFunctions.LOG("exchWebService.attachments.onKeyPress");
+		this.globalFunctions.LOG("exchWebService.attachments.onKeyPress");
 		const kKE = Components.interfaces.nsIDOMKeyEvent;
 		switch (aEvent.keyCode) {
 			case kKE.DOM_VK_BACK_SPACE:
 			case kKE.DOM_VK_DELETE:
-				if (document.getElementById("calendar-task-details-attachment-rows")) break;
+				if (this._document.getElementById("calendar-task-details-attachment-rows")) break;
 
-				exchWebService.commonFunctions.LOG("exchWebService.attachments.onKeyPress: Delete");
+				this.globalFunctions.LOG("exchWebService.attachments.onKeyPress: Delete");
 				this.deleteAttachment();
 				break;
 			case 13: 
 			case kKE.DOM_VK_ENTER:
-				exchWebService.commonFunctions.LOG("exchWebService.attachments.onKeyPress: Enter");
+				this.globalFunctions.LOG("exchWebService.attachments.onKeyPress: Enter");
 				this.openAttachment();
 				break;
 			default:
-				exchWebService.commonFunctions.LOG("exchWebService.attachments.onKeyPress: unknown:"+aEvent.keyCode);
+				this.globalFunctions.LOG("exchWebService.attachments.onKeyPress: unknown:"+aEvent.keyCode);
 
 		}
 	},
 
 	onDblClick: function _onDblClick(aEvent)
 	{
-		exchWebService.commonFunctions.LOG("exchWebService.attachments.onDblClick");
+		this.globalFunctions.LOG("exchWebService.attachments.onDblClick");
 		this.openAttachment();
 	},
 
 	onSelectTask: function _onSelectTask()
 	{
-		exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask");
+		this.globalFunctions.LOG("exchWebService.attachments.onSelectTask");
 
-		var taskTree = document.getElementById("calendar-task-tree");
+		var taskTree = this._document.getElementById("calendar-task-tree");
 		var item = taskTree.currentTask;
 
 		if ((item.calendar) && (item.calendar.type == "exchangecalendar")) {
 			// calendar-task-view (hide existing attachment view)
-			exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 1.");
+			this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 1.");
 			try {
-				document.getElementById("calendar-task-details-attachment-rows").setAttribute("hidden", "true");
-				document.getElementById("calendar-task-details-attachment-rows").removeAttribute("flex");
-				document.getElementById("calendar-task-details-attachment-rows").setAttribute("width","0px");
+				this._document.getElementById("calendar-task-details-attachment-rows").setAttribute("hidden", "true");
+				this._document.getElementById("calendar-task-details-attachment-rows").removeAttribute("flex");
+				this._document.getElementById("calendar-task-details-attachment-rows").setAttribute("width","0px");
 			}
-			catch (ex) {exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje:");}
+			catch (ex) {this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje:");}
 
-			exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 2.");
-
-			try {
-				document.getElementById("exchWebService-attachments-row").setAttribute("collapsed", "false");
-			}
-			catch (ex) {exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje Y:");}
+			this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 2.");
 
 			try {
-			exchWebService.attachments.addAttachmentsFromItem(item);
+				this._document.getElementById("exchWebService-attachments-row").setAttribute("collapsed", "false");
 			}
-			catch(ex) { exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje2:"+ex);}
-			exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 3.");
+			catch (ex) {this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje Y:");}
+
+			try {
+				this.addAttachmentsFromItem(item);
+			}
+			catch(ex) { this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje2:"+ex);}
+			this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 3.");
 		}
 		else {
 			try {
-				document.getElementById("calendar-task-details-attachment-rows").setAttribute("hidden", "false");
-				document.getElementById("calendar-task-details-attachment-rows").setAttribute("flex", "1");
-				document.getElementById("calendar-task-details-attachment-rows").removeAttribute("width");
+				this._document.getElementById("calendar-task-details-attachment-rows").setAttribute("hidden", "false");
+				this._document.getElementById("calendar-task-details-attachment-rows").setAttribute("flex", "1");
+				this._document.getElementById("calendar-task-details-attachment-rows").removeAttribute("width");
 			}
-			catch (ex) {exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje X:");}
+			catch (ex) {this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje X:");}
 
 			try {
-				document.getElementById("exchWebService-attachments-row").setAttribute("collapsed", "true");
+				this._document.getElementById("exchWebService-attachments-row").setAttribute("collapsed", "true");
 			}
-			catch (ex) {exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje Y:");}
+			catch (ex) {this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje Y:");}
 			this.attachmentListboxVisible = false;
 		}
 	},
 
 	onSelect: function _onSelect(aEvent)
 	{
-		exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelect");
+		this.globalFunctions.LOG("exchWebService.attachments.onSelect");
 
-		let documentLink = document.getElementById("exchWebService-attachment-link");
+		let documentLink = this._document.getElementById("exchWebService-attachment-link");
 
 		var isReadOnly = "true";
-		if ((document.getElementById("calendar-event-dialog")) || (document.getElementById("calendar-task-dialog"))) {
+		if ((this._document.getElementById("calendar-event-dialog")) || (this._document.getElementById("calendar-task-dialog"))) {
 			isReadOnly = "false";
 		}
 
@@ -387,28 +384,28 @@ exchWebService.attachments = {
 		if ((documentLink.selectedItem) && (documentLink.selectedItem.attachment)) {
 			var attURI = documentLink.selectedItem.attachment.uri;
 			if (attURI.spec.indexOf("file://") == 0) {
-					exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelect: localfile");
-					document.getElementById("exchWebService-attachment-popup-open").setAttribute("disabled", "false");
-					document.getElementById("exchWebService_openAttachment").setAttribute("disabled", "false");
-					document.getElementById("exchWebService-attachment-popup-save").setAttribute("disabled", "true");
-					document.getElementById("exchWebService_saveAttachment").setAttribute("disabled", "true");
-					document.getElementById("exchWebService-attachment-popup-delete").setAttribute("disabled", isReadOnly);
-					document.getElementById("exchWebService_deleteAttachment").setAttribute("disabled", isReadOnly);
+					this.globalFunctions.LOG("exchWebService.attachments.onSelect: localfile");
+					this._document.getElementById("exchWebService-attachment-popup-open").setAttribute("disabled", "false");
+					this._document.getElementById("exchWebService_openAttachment").setAttribute("disabled", "false");
+					this._document.getElementById("exchWebService-attachment-popup-save").setAttribute("disabled", "true");
+					this._document.getElementById("exchWebService_saveAttachment").setAttribute("disabled", "true");
+					this._document.getElementById("exchWebService-attachment-popup-delete").setAttribute("disabled", isReadOnly);
+					this._document.getElementById("exchWebService_deleteAttachment").setAttribute("disabled", isReadOnly);
 			}
 			else {
 				if (attURI.spec.indexOf("http") == 0) {
-					exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelect: remotefile");
-					document.getElementById("exchWebService-attachment-popup-open").setAttribute("disabled", "false");
-					document.getElementById("exchWebService_openAttachment").setAttribute("disabled", "false");
-					document.getElementById("exchWebService-attachment-popup-save").setAttribute("disabled", "false");
-					document.getElementById("exchWebService_saveAttachment").setAttribute("disabled", "false");
-					document.getElementById("exchWebService-attachment-popup-delete").setAttribute("disabled", isReadOnly);
-					document.getElementById("exchWebService_deleteAttachment").setAttribute("disabled", isReadOnly);
+					this.globalFunctions.LOG("exchWebService.attachments.onSelect: remotefile");
+					this._document.getElementById("exchWebService-attachment-popup-open").setAttribute("disabled", "false");
+					this._document.getElementById("exchWebService_openAttachment").setAttribute("disabled", "false");
+					this._document.getElementById("exchWebService-attachment-popup-save").setAttribute("disabled", "false");
+					this._document.getElementById("exchWebService_saveAttachment").setAttribute("disabled", "false");
+					this._document.getElementById("exchWebService-attachment-popup-delete").setAttribute("disabled", isReadOnly);
+					this._document.getElementById("exchWebService_deleteAttachment").setAttribute("disabled", isReadOnly);
 				}
 				else {
-					exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelect: Unknown attachment URI. Cannot open:"+attURI.spec);
-					document.getElementById("exchWebService-attachment-popup-open").setAttribute("disabled", "true");
-					document.getElementById("exchWebService-attachment-popup-save").setAttribute("disabled", "true");
+					this.globalFunctions.LOG("exchWebService.attachments.onSelect: Unknown attachment URI. Cannot open:"+attURI.spec);
+					this._document.getElementById("exchWebService-attachment-popup-open").setAttribute("disabled", "true");
+					this._document.getElementById("exchWebService-attachment-popup-save").setAttribute("disabled", "true");
 				}
 			}
 		}
@@ -416,15 +413,8 @@ exchWebService.attachments = {
 
 	openAttachment: function _openAttachment()
 	{
-		exchWebService.commonFunctions.LOG("exchWebService.attachments.openAttachment");
-		let documentLink = document.getElementById("exchWebService-attachment-link");
-
-dump(" ++ documentLink:"+documentLink+"\n");
-dump(" ++ documentLink.id:"+documentLink.id+"\n");
-dump(" ++ documentLink.selectedItem:"+documentLink.selectedItem+"\n");
-		if (!documentLink.selectedItem) {
-			dump(" -- documentLink.itemCount:"+documentLink.itemCount+"\n");
-		}
+		this.globalFunctions.LOG("exchWebService.attachments.openAttachment");
+		let documentLink = this._document.getElementById("exchWebService-attachment-link");
 
 		if (documentLink.selectedItem.attachment) {
 			var attURI = documentLink.selectedItem.attachment.uri;
@@ -436,7 +426,7 @@ dump(" ++ documentLink.selectedItem:"+documentLink.selectedItem+"\n");
 					this.downloadAttachment(documentLink.selectedItem.attachment, false);
 				}
 				else {
-					exchWebService.commonFunctions.LOG("exchWebService.attachments.openAttachment: Unknown attachment URI. Cannot open:"+attURI.spec);
+					this.globalFunctions.LOG("exchWebService.attachments.openAttachment: Unknown attachment URI. Cannot open:"+attURI.spec);
 				}
 			}
 		}
@@ -444,19 +434,19 @@ dump(" ++ documentLink.selectedItem:"+documentLink.selectedItem+"\n");
 
 	saveAttachment: function _saveAttachment()
 	{
-		exchWebService.commonFunctions.LOG("exchWebService.attachments.saveAttachment");
-		let documentLink = document.getElementById("exchWebService-attachment-link");
+		this.globalFunctions.LOG("exchWebService.attachments.saveAttachment");
+		let documentLink = this._document.getElementById("exchWebService-attachment-link");
 		this.downloadAttachment(documentLink.selectedItem.attachment, true);
 	},
 
 	openLocalAttachment: function _openLocalAttachment(aAttachment)
 	{
-		exchWebService.commonFunctions.LOG("exchWebService.attachments.openLocalAttachment");
+		this.globalFunctions.LOG("exchWebService.attachments.openLocalAttachment");
 		if (! aAttachment) { return; }
 
 		var URL = aAttachment.uri;  
 
-		exchWebService.commonFunctions.LOG(" == Going to open:"+URL.prePath + URL.path);
+		this.globalFunctions.LOG(" == Going to open:"+URL.prePath + URL.path);
 
 		var externalLoader = Cc["@mozilla.org/uriloader/external-protocol-service;1"]
 				.getService(Ci.nsIExternalProtocolService);
@@ -464,17 +454,17 @@ dump(" ++ documentLink.selectedItem:"+documentLink.selectedItem+"\n");
 		try {
 			externalLoader.loadUrl(URL);
 		}
-		catch (ex) { exchWebService.commonFunctions.LOG(" == ERROR:"+ex); }
+		catch (ex) { this.globalFunctions.LOG(" == ERROR:"+ex); }
 	},
 
 	downloadAttachment: function _downloadAttachment(aAttachment, doSave)
 	{
-		exchWebService.commonFunctions.LOG("exchWebService.attachments.downloadAttachment");
+		this.globalFunctions.LOG("exchWebService.attachments.downloadAttachment");
 		if (! aAttachment) { return; }
 
 		var self = this;
 
-		let getParams = exchWebService.commonFunctions.splitUriGetParams(aAttachment.uri);
+		let getParams = this.globalFunctions.splitUriGetParams(aAttachment.uri);
 
 		var prefs = "extensions.exchangecalendar@extensions.1st-setup.nl."+getParams.calendarid+".";
 
@@ -497,14 +487,17 @@ dump(" ++ documentLink.selectedItem:"+documentLink.selectedItem+"\n");
 
 	onDownloadAttachmentOk: function _onDownloadAttachmentOk(aExchangeRequest, aAttachments)
 	{
-		exchWebService.commonFunctions.LOG("exchWebService.attachments.onDownloadAttachmentOk:"+aAttachments.length);
+		var globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+
+		globalFunctions.LOG("exchWebService.attachments.onDownloadAttachmentOk:"+aAttachments.length);
 
 		if (aAttachments.length > 0) {
 			for (var index in aAttachments) {
-				exchWebService.commonFunctions.LOG(" == Going to decode:"+aAttachments[index].name);
-				exchWebService.commonFunctions.LOG(" == content:"+aAttachments[index].content.length+" bytes");  
+				globalFunctions.LOG(" == Going to decode:"+aAttachments[index].name);
+				globalFunctions.LOG(" == content:"+aAttachments[index].content.length+" bytes");  
 				var fileData = window.atob(aAttachments[index].content);
-				exchWebService.commonFunctions.LOG(" == Decoded:"+aAttachments[index].name);
+				globalFunctions.LOG(" == Decoded:"+aAttachments[index].name);
 
 				if (aExchangeRequest.argument.doSave) {
 					var fp = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
@@ -526,14 +519,14 @@ dump(" ++ documentLink.selectedItem:"+documentLink.selectedItem+"\n");
 				}
 				//file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0666);  
 				// do whatever you need to the created file  
-				exchWebService.commonFunctions.LOG(" == new tmp filename:"+file.path);  
+				globalFunctions.LOG(" == new tmp filename:"+file.path);  
 
 				var stream = Cc["@mozilla.org/network/safe-file-output-stream;1"].  
 						createInstance(Ci.nsIFileOutputStream);  
 				stream.init(file, 0x04 | 0x08 | 0x20, 384, 0); // readwrite, create, truncate  
               
-				exchWebService.commonFunctions.LOG(" == writing file:"+file.path);  
-				exchWebService.commonFunctions.LOG(" == writing:"+fileData.length+" bytes");  
+				globalFunctions.LOG(" == writing file:"+file.path);  
+				globalFunctions.LOG(" == writing:"+fileData.length+" bytes");  
 				stream.write(fileData, fileData.length);  
 				if (stream instanceof Ci.nsISafeOutputStream) {  
 					stream.finish();  
@@ -544,8 +537,8 @@ dump(" ++ documentLink.selectedItem:"+documentLink.selectedItem+"\n");
 				// Dispose of the converted data in memory;
 				//delete fileData;
 
-				exchWebService.commonFunctions.LOG(" == written file:"+file.path);  
-				exchWebService.commonFunctions.LOG(" == written:"+fileData.length+" bytes");  
+				globalFunctions.LOG(" == written file:"+file.path);  
+				globalFunctions.LOG(" == written:"+fileData.length+" bytes");  
 
 				if (! aExchangeRequest.argument.doSave) {
 					// file is nsIFile  
@@ -553,7 +546,7 @@ dump(" ++ documentLink.selectedItem:"+documentLink.selectedItem+"\n");
 							getService(Ci.nsIIOService);  
 					var URL = ios.newFileURI(file);  
 	
-					exchWebService.commonFunctions.LOG(" == Going to open:"+URL.prePath + URL.path);
+					globalFunctions.LOG(" == Going to open:"+URL.prePath + URL.path);
 
 					var externalLoader = Cc["@mozilla.org/uriloader/external-protocol-service;1"]
 							.getService(Ci.nsIExternalProtocolService);
@@ -561,7 +554,7 @@ dump(" ++ documentLink.selectedItem:"+documentLink.selectedItem+"\n");
 					try {
 						externalLoader.loadUrl(URL);
 					}
-					catch (ex) { exchWebService.commonFunctions.LOG(" == ERROR:"+ex); }
+					catch (ex) { globalFunctions.LOG(" == ERROR:"+ex); }
 				}
 			}
 		}
@@ -569,11 +562,14 @@ dump(" ++ documentLink.selectedItem:"+documentLink.selectedItem+"\n");
 
 	onDownloadAttachmentError: function _onDownloadAttachmentError(aExchangeRequest, aCode, aMsg)
 	{
-		exchWebService.commonFunctions.LOG("exchWebService.attachments.onDownloadAttachmentError: aCode:"+aCode+", aMsg:"+aMsg);
+		var globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+		globalFunctions.LOG("exchWebService.attachments.onDownloadAttachmentError: aCode:"+aCode+", aMsg:"+aMsg);
 	},
 
 }
 
-window.addEventListener("load", exchWebService.attachments.onLoad, true);
+var tmpAttachment = new exchAttachments(document, window);
+window.addEventListener("load", function _onLoad() { window.removeEventListener("load",arguments.callee,false); tmpAttachment.onLoad(); }, true);
 
 

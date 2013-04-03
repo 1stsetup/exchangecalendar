@@ -45,13 +45,13 @@
     <!-- Commands -->
     <commandset id="mailCommands">
         <command id="exchWebService_openAttachment"
-                 oncommand="exchWebService.attachments.openAttachment();"/> 
+                 oncommand="tmpAttachment.openAttachment();"/> 
         <command id="exchWebService_saveAttachment"
-                 oncommand="exchWebService.attachments.saveAttachment();"/> 
+                 oncommand="tmpAttachment.saveAttachment();"/> 
         <command id="exchWebService_deleteAttachment"
-                 oncommand="exchWebService.attachments.deleteAttachment();"/> 
+                 oncommand="tmpAttachment.deleteAttachment();"/> 
 	<command id="exchWebService_addAttachmentDialog"
-		 oncommand="exchWebService.attachments.addAttachmentDialog();"/>
+		 oncommand="tmpAttachment.addAttachmentDialog();"/>
     </commandset>
 
     <popupset id="mainPopupSet">

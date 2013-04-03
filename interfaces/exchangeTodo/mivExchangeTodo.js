@@ -657,30 +657,6 @@ mivExchangeTodo.prototype = {
 			}
 		}
 
-
-/*		if (this._newStartDate) {
-			this._nonPersonalDataChanged = true;
-			if (this._newStartDate.isDate) {
-				this.addSetItemField(updates, "IsAllDayEvent", "true");
-			}
-			else {
-				this.addSetItemField(updates, "IsAllDayEvent", "false");
-			}
-
-		}
-		else {
-			if (this._newEndDate) {
-				this._nonPersonalDataChanged = true;
-				if (this._newEndDate.isDate) {
-					this.addSetItemField(updates, "IsAllDayEvent", "true");
-				}
-				else {
-					this.addSetItemField(updates, "IsAllDayEvent", "false");
-				}
-
-			}
-		}
-*/
 		if (this._newLegacyFreeBusyStatus) {
 			this.addSetItemField(updates, "LegacyFreeBusyStatus", this._newLegacyFreeBusyStatus);
 		}
