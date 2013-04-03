@@ -975,7 +975,7 @@ catch(err){
 
 					this._calEvent.recurrenceInfo.setRecurrenceItems(1, [recrule]);
 
-					this.parentItem = this;
+					//this.parentItem = this;
 
 				}
 				else {
@@ -3166,7 +3166,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 			.getService(Ci.nsIPrefBranch);
 
 		this.debugLevel = this.globalFunctions.safeGetIntPref(prefB, "extensions.1st-setup."+this._className+".debuglevel", 0, true);
-		this.debugLevel = 1;
+		//this.debugLevel = 1;
 		if (aDebugLevel <= this.debugLevel) {
 			this.globalFunctions.LOG("["+this._className+"] "+aMsg + " ("+this.globalFunctions.STACKshort()+")");
 //			this.globalFunctions.LOG("["+this._className+"] "+aMsg + " ("+this.globalFunctions.STACK(depth, 1)+")");

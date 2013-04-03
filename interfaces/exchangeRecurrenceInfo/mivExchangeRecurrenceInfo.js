@@ -430,7 +430,7 @@ mivExchangeRecurrenceInfo.prototype = {
 		}
 
 		this.storedDebugLevel = this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"debuglevel", 0, true);
-		this.storedDebugLevel = 2;
+		//this.storedDebugLevel = 2;
 		if (debugLevel <= this.storedDebugLevel) {
 			this.globalFunctions.LOG("[exchangeRecurrenceInfo] "+message  + " ("+this.globalFunctions.STACK(depth, 1)+")");
 		}

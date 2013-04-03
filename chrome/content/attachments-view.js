@@ -65,8 +65,10 @@ exchWebService.attachments = {
 
 	},
 
-	addAttachment: function _addAttachment(aAttachment)
+	addAttachment: function _addAttachment(aAttachment, isFirst)
 	{
+		if ((isFirst === undefined) || (isFirst === null)) isFirst = false;
+
 		// We currently only support uri attachments
 		var ext2file = { exe: "document-binary.png",
 				 xls: "document-excel.png",
@@ -175,6 +177,10 @@ exchWebService.attachments = {
 			}
 
 			this.showAttachmentListbox();
+
+/*			if (isFirst) {
+				document.getElementById("exchWebService-attachment-link").selectedItem = item;
+			} */
 		}
 
 	},
@@ -271,9 +277,13 @@ exchWebService.attachments = {
 		var attachments = aItem.getAttachments({});
 		if (attachments.length > 0) {
 			exchWebService.commonFunctions.LOG("  -- We have attachments:"+attachments.length+" ("+exchWebService.commonFunctions.STACKshort()+")");
+			var first = true;
 			for (var index in attachments) {
 				exchWebService.commonFunctions.LOG("  -- processing attachment: "+index);
-				exchWebService.attachments.addAttachment(attachments[index]);
+				exchWebService.attachments.addAttachment(attachments[index], first);
+				if (first) {
+					first = false;
+				}
 			}
 
 			exchWebService.commonFunctions.LOG("  -- processed attachment.");
@@ -330,11 +340,31 @@ exchWebService.attachments = {
 			catch (ex) {exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje:");}
 
 			exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 2.");
+
+			try {
+				document.getElementById("exchWebService-attachments-row").setAttribute("collapsed", "false");
+			}
+			catch (ex) {exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje Y:");}
+
 			try {
 			exchWebService.attachments.addAttachmentsFromItem(item);
 			}
 			catch(ex) { exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje2:"+ex);}
 			exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 3.");
+		}
+		else {
+			try {
+				document.getElementById("calendar-task-details-attachment-rows").setAttribute("hidden", "false");
+				document.getElementById("calendar-task-details-attachment-rows").setAttribute("flex", "1");
+				document.getElementById("calendar-task-details-attachment-rows").removeAttribute("width");
+			}
+			catch (ex) {exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje X:");}
+
+			try {
+				document.getElementById("exchWebService-attachments-row").setAttribute("collapsed", "true");
+			}
+			catch (ex) {exchWebService.commonFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje Y:");}
+			this.attachmentListboxVisible = false;
 		}
 	},
 
@@ -390,7 +420,11 @@ exchWebService.attachments = {
 		let documentLink = document.getElementById("exchWebService-attachment-link");
 
 dump(" ++ documentLink:"+documentLink+"\n");
+dump(" ++ documentLink.id:"+documentLink.id+"\n");
 dump(" ++ documentLink.selectedItem:"+documentLink.selectedItem+"\n");
+		if (!documentLink.selectedItem) {
+			dump(" -- documentLink.itemCount:"+documentLink.itemCount+"\n");
+		}
 
 		if (documentLink.selectedItem.attachment) {
 			var attURI = documentLink.selectedItem.attachment.uri;
