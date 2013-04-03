@@ -87,13 +87,13 @@
 			<textbox id="exchWebService-companies-count" value="" disable-on-readonly="true"/>
 		</row>
 		<row id="exchWebService-attachments-row"
-			flex="1"
+			
 			collapsed="true" insertbefore="event-grid-link-separator">
 			<label value="&event.attachments.label;"
 				accesskey="&event.attachments.accesskey;"
 				disable-on-readonly="true"/>
 
-			<listbox id="exchWebService-attachment-link" rows="3" flex="1"/>
+			<listbox id="exchWebService-attachment-link" rows="2" flex="1"/>
 
 		</row>
 	</rows>

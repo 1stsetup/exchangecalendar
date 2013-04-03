@@ -975,6 +975,8 @@ catch(err){
 
 					this._calEvent.recurrenceInfo.setRecurrenceItems(1, [recrule]);
 
+					this.parentItem = this;
+
 				}
 				else {
 					this._recurrenceInfo = null;
@@ -1763,8 +1765,12 @@ catch(err){
 	//	              [array,size_is(aCount),retval] out calIItemBase aOccurrences);
 	getOccurrencesBetween: function _getOccurrencesBetween(aStartDate, aEndDate, aCount)
 	{
-		if (aStartDate == null) aStartDate = this.startDate.clone();
-		if (aEndDate == null) aEndDate = this.endDate.clone();
+		if (aStartDate == null) {
+			if (this.startDate) aStartDate = this.startDate.clone();
+		}
+		if (aEndDate == null) {
+			if (this.endDate) aEndDate = this.endDate.clone();
+		}
 
 		var occurrences = [];
 		switch (this.calendarItemType) {
@@ -1792,9 +1798,16 @@ catch(err){
 			break;
 		default:
 			if (this.recurrenceInfo) {
-				occurrences = this.recurrenceInfo.getOccurrences(aStartDate, aEndDate, 0, aCount);
-				//this.logInfo("getOccurrencesBetween 0b: title:"+this.title+", this.calendarItemType:"+this.calendarItemType+", aStartDate:"+aStartDate+", aEndDate:"+aEndDate+", occurrences.length:"+occurrences.length);
-				return this.recurrenceInfo.getOccurrences(aStartDate, aEndDate, 0, aCount);
+				if (this.className == "mivExchangeTodo") {
+					//dump("  : getOccurrencesBetween mivExchangeTodo\n");
+					occurrences.push(this);
+				}
+				else {
+					//dump("  : getOccurrencesBetween mivExchangeEvent\n");
+					occurrences = this.recurrenceInfo.getOccurrences(aStartDate, aEndDate, 0, aCount);
+					//this.logInfo("getOccurrencesBetween 0b: title:"+this.title+", this.calendarItemType:"+this.calendarItemType+", aStartDate:"+aStartDate+", aEndDate:"+aEndDate+", occurrences.length:"+occurrences.length);
+					return this.recurrenceInfo.getOccurrences(aStartDate, aEndDate, 0, aCount);
+				}
 			}
 		}
 		//this.logInfo("getOccurrencesBetween 1: title:"+this.title+", aStartDate:"+aStartDate+", aEndDate:"+aEndDate+", occurrences.length:"+occurrences.length);

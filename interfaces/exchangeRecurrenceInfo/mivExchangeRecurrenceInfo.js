@@ -408,6 +408,13 @@ mivExchangeRecurrenceInfo.prototype = {
   //                     out unsigned long aCount, [array,size_is(aCount),retval] out calIItemBase aItems);
 	getOccurrences: function _getOccurrences(aRangeStart, aRangeEnd, aMaxCount, aCount)
 	{
+/*		if (this.className == "mivExchangeTodo") {
+			var occurrences = new Array();
+			occurrences.push(this.item);
+			aCount.value = occurrences.length;
+			return occurrences;
+		}
+*/
 		return this._recurrenceInfo.getOccurrences(aRangeStart, aRangeEnd, aMaxCount, aCount);
 	},
 

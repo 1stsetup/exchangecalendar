@@ -41,7 +41,7 @@ exchWebService.changeCalendarPropertiesReminder={
 	onLoad : function _onLoad(){
 		window.removeEventListener("load", exchWebService.changeCalendarPropertiesReminder.onLoad, false);
 
-		if ((window.arguments[0].item.className) && (window.arguments[0].item.className = "mivExchangeTodo")) {
+		if ((window.arguments[0].item.className) && (window.arguments[0].item.className == "mivExchangeTodo")) {
 			document.getElementById("reminder-relative-box").hidden = true;
 
 			document.getElementById("reminder-relative-radio").selected = false;
@@ -51,17 +51,14 @@ exchWebService.changeCalendarPropertiesReminder={
 			document.getElementById("reminder-absolute-radio").hidden = true;
 		}
 
-		if ((window.arguments[0].item.className) && ((window.arguments[0].item.className = "mivExchangeTodo") || (window.arguments[0].item.className = "mivExchangeEvent"))) {
-			document.getElementById("reminder-relative-box").hidden = false;
-			document.getElementById("reminder-relative-radio").disabled = false;
-			document.getElementById("reminder-absolute-radio").hidden = false;
+		if ((window.arguments[0].item.className) && ((window.arguments[0].item.className == "mivExchangeTodo") || (window.arguments[0].item.className == "mivExchangeEvent"))) {
 			document.getElementById("reminder-actions-caption").hidden = true;
 			document.getElementById("reminder-actions-menulist").hidden = true;
 		}
 	},
 
 	onNewReminder: function _onNewReminder() {
-		if ((window.arguments[0].item.className) && (window.arguments[0].item.className = "mivExchangeTodo")) {
+		if ((window.arguments[0].item.className) && (window.arguments[0].item.className == "mivExchangeTodo")) {
 			let itemType = (isEvent(window.arguments[0].item) ? "event" : "todo");
 			let listbox = document.getElementById("reminder-listbox");
 
@@ -100,8 +97,8 @@ exchWebService.changeCalendarPropertiesReminder={
 			onNewReminder();
 		}
 
-		if ((window.arguments[0].item.className) && ((window.arguments[0].item.className = "mivExchangeTodo") || (window.arguments[0].item.className = "mivExchangeEvent"))) {
-			document.getElementById("reminder-new-button").enabled = false;
+		if ((window.arguments[0].item.className) && ((window.arguments[0].item.className == "mivExchangeTodo") || (window.arguments[0].item.className == "mivExchangeEvent"))) {
+			disableElement("reminder-new-button");
 		}
 	},
 

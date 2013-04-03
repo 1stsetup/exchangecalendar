@@ -99,6 +99,21 @@ exchWebService.eventDialog = {
 				document.getElementById("exchWebService-billingInformation-count").value = item.billingInformation;
 				document.getElementById("exchWebService-companies-count").value = item.companies;
 
+				// Clear reminder select list for todo
+				document.getElementById("reminder-none-separator").hidden = true;
+				document.getElementById("reminder-0minutes-menuitem").hidden = true;
+				document.getElementById("reminder-5minutes-menuitem").hidden = true;
+				document.getElementById("reminder-15minutes-menuitem").hidden = true;
+				document.getElementById("reminder-30minutes-menuitem").hidden = true;
+				document.getElementById("reminder-minutes-separator").hidden = true;
+				document.getElementById("reminder-1hour-menuitem").hidden = true;
+				document.getElementById("reminder-2hours-menuitem").hidden = true;
+				document.getElementById("reminder-12hours-menuitem").hidden = true;
+				document.getElementById("reminder-hours-separator").hidden = true;
+				document.getElementById("reminder-1day-menuitem").hidden = true;
+				document.getElementById("reminder-2days-menuitem").hidden = true;
+				document.getElementById("reminder-1week-menuitem").hidden = true;
+				
 				var tmpDatePicker = document.createElement("datepicker");
 				tmpDatePicker.setAttribute("type","popup");
 				tmpDatePicker.setAttribute("id","todo-entrydate");

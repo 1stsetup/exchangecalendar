@@ -95,7 +95,7 @@
 
 	<listbox id="exchWebService-attachment-link"
 		context="exchWebService-attachment-popup"
-		rows="3"
+		rows="2"
 		onkeypress="exchWebService.attachments.onKeyPress(event);"
 		ondblclick="exchWebService.attachments.onDblClick(event);"
 		onselect="exchWebService.attachments.onSelect(event);"/>
