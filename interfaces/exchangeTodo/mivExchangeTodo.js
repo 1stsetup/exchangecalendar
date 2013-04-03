@@ -232,6 +232,21 @@ mivExchangeTodo.prototype = {
 		}
 	},
 
+	get isCompleted()
+	{
+		return (this.percentComplete == 100);
+	},
+
+	set isCompleted(aValue)
+	{
+		if (aValue) {
+			this.percentComplete = 100;
+		}
+		else {
+			this.status = "NONE";
+		}
+	},
+
 	//attribute long totalWork;
 	get totalWork()
 	{
@@ -442,6 +457,7 @@ mivExchangeTodo.prototype = {
 
 			this._newStatus = statuses[aValue];
 			this._calEvent.status = aValue;
+			this._calEvent.setProperty("STATUS", aValue);
 		}
 	},
 

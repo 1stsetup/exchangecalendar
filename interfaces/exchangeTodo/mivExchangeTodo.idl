@@ -99,5 +99,4 @@ interface mivExchangeTodo : mivExchangeBaseItem
 	void addCompany(in AUTF8String aCompany);
 	void clearCompanies();
 
-
 };

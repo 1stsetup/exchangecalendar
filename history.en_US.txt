@@ -1,3 +1,6 @@
+Version 3.2.0-Beta5:
+- Fixes Bug 256 - Set custom reminder on task created in outlook without due or entry date not possible
+
 Version 3.2.0-Beta4:
 - Split mivExchangeEvent object into mivExchangeEvent and mivExchangeBaseItem. As preparation for mivExchangeTodo.
 - Improved the conversion from Exchange Timezone to Lightning timezone and from Lightning timezone to Exchange timezone.

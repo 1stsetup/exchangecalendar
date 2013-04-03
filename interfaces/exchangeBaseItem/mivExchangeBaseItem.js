@@ -1254,7 +1254,7 @@ catch(err){
 		case "STATUS": 
 			//this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
 			dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
-			if (this._className == "mivExchangeEvent") {
+			if (this.className == "mivExchangeEvent") {
 				if (value != this.getProperty(name)) {
 					switch (value) {
 					case "NONE":

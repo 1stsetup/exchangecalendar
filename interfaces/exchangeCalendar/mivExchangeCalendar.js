@@ -2344,9 +2344,17 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			}
 			else {
 				if (isToDo(this.itemCache[index])) {
-					if ( ((this.itemCache[index].status == "COMPLETED") && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_YES)) ||
-					     ((this.itemCache[index].status != "COMPLETED") && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_NO)) ||
-					     (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_ALL) ) {
+dump(" == title:"+this.itemCache[index].title+"== this.itemCache[index].isCompleted:"+this.itemCache[index].isCompleted+", this.itemCache[index].status:"+this.itemCache[index].status+", this.itemCache[index].percentComplete:"+this.itemCache[index].percentComplete+"\n");
+if (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_YES) dump(" -- ITEM_FILTER_COMPLETED_YES\n");
+if (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_NO) dump(" -- ITEM_FILTER_COMPLETED_NO\n");
+if (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_ALL) dump(" -- ITEM_FILTER_COMPLETED_ALL\n");
+
+					if ( ((this.itemCache[index].isCompleted) && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_YES)) ||
+					     ((!this.itemCache[index].isCompleted) && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_NO)) ) {
+//					if ( ((this.itemCache[index].status == "COMPLETED") && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_YES)) ||
+//					     ((this.itemCache[index].status != "COMPLETED") && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_NO)) ||
+//					     (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_ALL) ) {
+dump(" ++ title:"+this.itemCache[index].title+"== this.itemCache[index].isCompleted:"+this.itemCache[index].isCompleted+", this.itemCache[index].status:"+this.itemCache[index].status+", this.itemCache[index].percentComplete:"+this.itemCache[index].percentComplete+"\n");
 						tasks.push(this.itemCache[index]);
 					}
 				}
@@ -2366,12 +2374,19 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			}
 			
 			if ((tasks.length > 0) && (wantTodos)) {
+dump(" ||| Notify listener: tasks.length:"+tasks.length+"\n");
+dump("  ~~ aListener.onGetResult:"+aListener.onGetResult+"\n");
+try {
 				aListener.onGetResult(this,
 					     Cr.NS_OK,
 					     Ci.calITodo,
 					     null,
 					     tasks.length,
 					     tasks);
+}
+catch(err) {
+	dump(" ERRRRR:"+err+"\n");
+}
 			}
 
 			this.notifyOperationComplete(aListener,
