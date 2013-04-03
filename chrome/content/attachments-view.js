@@ -389,6 +389,9 @@ exchWebService.attachments = {
 		exchWebService.commonFunctions.LOG("exchWebService.attachments.openAttachment");
 		let documentLink = document.getElementById("exchWebService-attachment-link");
 
+dump(" ++ documentLink:"+documentLink+"\n");
+dump(" ++ documentLink.selectedItem:"+documentLink.selectedItem+"\n");
+
 		if (documentLink.selectedItem.attachment) {
 			var attURI = documentLink.selectedItem.attachment.uri;
 			if (attURI.spec.indexOf("file://") == 0) {
