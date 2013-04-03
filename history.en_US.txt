@@ -1,4 +1,7 @@
 Version 3.2.0-Beta5:
+- Fixed working with attachments lists in the different views/dialogs/panes
+- Customized settings reminders on events and tasks according to what is possible in Exchange.
+- Fixes Bug 255 - Complete state of tasks not working in today pane
 - Fixes Bug 256 - Set custom reminder on task created in outlook without due or entry date not possible
 
 Version 3.2.0-Beta4:
