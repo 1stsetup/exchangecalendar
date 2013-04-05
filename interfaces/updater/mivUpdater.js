@@ -136,6 +136,8 @@ mivUpdater.prototype = {
 
 	_refCount: 0,
 
+	_lastCheckDate: null,
+
 	//nsrefcnt AddRef();
 	AddRef: function _AddRef()
 	{
@@ -180,7 +182,7 @@ mivUpdater.prototype = {
 	classDescription: "Extensions update checker.",
 	classID: components.ID("{"+mivUpdateGUID+"}"),
 	contractID: "@1st-setup.nl/checkers/updater;1",
-	flags: Ci.nsIClassInfo.THREADSAFE,
+	flags: Ci.nsIClassInfo.SINGLETON || Ci.nsIClassInfo.THREADSAFE,
 	implementationLanguage: Ci.nsIProgrammingLanguage.JAVASCRIPT,
 
 	// External methods
@@ -203,6 +205,18 @@ mivUpdater.prototype = {
 	// boolean checkForUpdate(in AUTF8String aExtension, in jsval aCallBack);
 	checkForUpdate: function _checkForUpdate(aExtensionID, aCallBack)
 	{
+		if (this._lastCheckDate) {
+			var now = new Date();
+
+			// If we are called within the hour again we do not check.
+			if ((now.getTime() - this._lastCheckDate.getTime()) < 3600000) {
+				dump(" !!!!!!! WHOA another check within the hour.\n");
+				return false;
+			}
+		}
+
+		this._lastCheckDate = new Date();
+
 		this._callBack = aCallBack;
 		this._extensionID = aExtensionID;
 
