@@ -234,17 +234,22 @@ mivExchangeTodo.prototype = {
 
 	get isCompleted()
 	{
-		return (this.percentComplete == 100);
+		if (!this._isCompleted) {
+			this._isCompleted = (this.status == "COMPLETED");
+			this._calEvent.isCompleted = this._isCompleted;
+		}
+
+		return this._calEvent.isCompleted;
 	},
 
 	set isCompleted(aValue)
 	{
-		if (aValue) {
-			this.percentComplete = 100;
+		if (aValue != this.isCompleted) {
+			this._newIsCompleted = aValue;
 		}
-		else {
-			this.status = "NONE";
-		}
+
+
+		this._calEvent.isCompleted = aValue;
 	},
 
 	//attribute long totalWork;
