@@ -47,10 +47,10 @@
 
 	<commandset id="calendar_commands" commandupdater="true"
 		events="calendar_commands" oncommandupdate="calendarController.updateCommands()">
-		<command id="calendar_forward_event_command" oncommand="exchWebService.forewardEvent.onForEve()" />
+		<command id="calendar_forward_event_command" oncommand="tmpForewardEvent.onForEve()" />
 	</commandset>
 
-	<menupopup id="calendar-item-context-menu" onpopupshowing="exchWebService.forewardEvent.checkAllowForwardItem(); return setupContextItemType(event, currentView().getSelectedItems({}));">
+	<menupopup id="calendar-item-context-menu" onpopupshowing="tmpForewardEvent.checkAllowForwardItem(); return setupContextItemType(event, currentView().getSelectedItems({}));">
 		
 			<menuitem id="calendar-item-forward" acceltext="Fwd"
 					label="Forward Event" observes="calendar_forward_event_command" accesskey="f" hidden="true"/>
@@ -58,7 +58,7 @@
 	</menupopup>	
 	
 	<!--<keyset>
- 		 <key id="forward-key" modifiers="control" key="f" oncommand="exchWebService.forewardEvent.onForEve();"/>
+ 		 <key id="forward-key" modifiers="control" key="f" oncommand="tmpForewardEvent.onForEve();"/>
 	</keyset>-->	
 
 </overlay>

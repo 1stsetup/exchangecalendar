@@ -97,7 +97,7 @@ exchWebService.commonFunctions = {
 		return toId;
 	},
 
-	addCalendarById: function _addCalendarById(aId)
+/*	addCalendarById: function _addCalendarById(aId)
 	{
 		var ioService = Cc["@mozilla.org/network/io-service;1"]  
 				.getService(Ci.nsIIOService);  
@@ -110,7 +110,7 @@ exchWebService.commonFunctions = {
 		newCal.id = aId;
 
 		calManager.registerCalendar(newCal);
-	},
+	},*/
 
 }
 
@@ -142,5 +142,6 @@ exchWebService.commonFunctions.trim				= mivFunctions.trim;
 exchWebService.commonFunctions.copyPreferences			= mivFunctions.copyPreferences;
 exchWebService.commonFunctions.xmlToJxon			= mivFunctions.xmlToJxon;
 exchWebService.commonFunctions.splitOnCharacter			= mivFunctions.splitOnCharacter;
+exchWebService.commonFunctions.addCalendarById			= mivFunctions.addCalendarById;
 
 

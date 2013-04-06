@@ -46,14 +46,14 @@
     <script type="application/javascript" src="chrome://exchangecalendar/content/calendar-calendars-list.js"/>
 
   <commandset id="calendar_commands">
-    <command id="exchWebService_convert_calendar_command" oncommand="exchWebService.calPopUpMenu.convertSettings()"/>
-    <command id="exchWebService_edit_calendar_command" oncommand="exchWebService.calPopUpMenu.editExchangeSettings()"/>
-    <command id="exchWebService_oof_settings_command" oncommand="exchWebService.calPopUpMenu.editOofSettings()"/>
-    <command id="exchWebService_clone_settings_command" oncommand="exchWebService.calPopUpMenu.cloneSettings()"/>
+    <command id="exchWebService_convert_calendar_command" oncommand="tmpCalPopUpMenu.convertSettings()"/>
+    <command id="exchWebService_edit_calendar_command" oncommand="tmpCalPopUpMenu.editExchangeSettings()"/>
+    <command id="exchWebService_oof_settings_command" oncommand="tmpCalPopUpMenu.editOofSettings()"/>
+    <command id="exchWebService_clone_settings_command" oncommand="tmpCalPopUpMenu.cloneSettings()"/>
   </commandset>
 
     <menupopup id="list-calendars-context-menu"
-		onpopupshown="exchWebService.calPopUpMenu.checkForExchangeCalendar()">
+		onpopupshown="tmpCalPopUpMenu.checkForExchangeCalendar()">
       <menuitem id="exchWebService-list-calendars-context-convertFromOldAddOn"
                 label="&calendar.context.exchange.convert.label;"
                 observes="exchWebService_convert_calendar_command"/>

@@ -43,8 +43,6 @@ var components = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
-Cu.import("resource://exchangecalendar/ecFunctions.js");
-
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/erBrowseFolder.js");
 
@@ -52,7 +50,10 @@ if (! exchWebService) var exchWebService = {};
 
 function exchWebService_browseTreeView(aProperties) {
 
-	exchWebService.commonFunctions.LOG("browseTreeView 1");
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+
+	this.globalFunctions.LOG("browseTreeView 1");
 
 	this.ecProperties= {};
 	this.ecProperties["user"] = aProperties.user;
@@ -75,7 +76,7 @@ function exchWebService_browseTreeView(aProperties) {
 
 	this.getChildFolders(this.ecProperties);
 
-	exchWebService.commonFunctions.LOG("browseTreeView 2");
+	this.globalFunctions.LOG("browseTreeView 2");
 				
 };
 
@@ -248,7 +249,7 @@ exchWebService_browseTreeView.prototype = {
 	getChildFolders: function _getChildFolders(aParent)
 	{
 		var self = this;
-		exchWebService.commonFunctions.LOG("getChildFolders");
+		this.globalFunctions.LOG("getChildFolders");
 
 		window.setCursor("wait");
 		
@@ -259,7 +260,7 @@ exchWebService_browseTreeView.prototype = {
 
 	addChild: function _addChild(aParent, aChild)
 	{
-		exchWebService.commonFunctions.LOG("addChild:"+aChild.foldername);
+		this.globalFunctions.LOG("addChild:"+aChild.foldername);
 
 		if ((aParent.isContainer) && (aParent.isContainerOpen)) {
 			// Set index of child and update index of following items
@@ -289,7 +290,7 @@ exchWebService_browseTreeView.prototype = {
 
 	browseFolderError: function _browseFolderError(erUpdateItemRequest, aCode, aMsg)
 	{
-		exchWebService.commonFunctions.LOG("browseFolderError");
+		this.globalFunctions.LOG("browseFolderError");
 		window.setCursor("auto");
 	},
 
@@ -300,7 +301,7 @@ exchWebService_browseTreeView.prototype = {
 		while (currentNode) {
 			if (result != "") {
 				if (currentNode.foldername != "/") {
-					result = exchWebService.commonFunctions.encodeFolderSpecialChars(currentNode.foldername) + "/" + result;
+					result = this.globalFunctions.encodeFolderSpecialChars(currentNode.foldername) + "/" + result;
 				}
 				else {
 					// We reached the top root.
@@ -309,7 +310,7 @@ exchWebService_browseTreeView.prototype = {
 			}
 			else {
 				if (currentNode.foldername != "/") {
-					result = exchWebService.commonFunctions.encodeFolderSpecialChars(currentNode.foldername);
+					result = this.globalFunctions.encodeFolderSpecialChars(currentNode.foldername);
 				}
 				else {
 					result = currentNode.foldername;
@@ -358,43 +359,53 @@ exchWebService_browseTreeView.prototype = {
 };
 
 
+function exchBrowseFolder(aDocument, aWindow)
+{
+	this._document = aDocument;
+	this._window = aWindow;
 
-exchWebService.browseFolder = {
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+}
+
+exchBrowseFolder.prototype = {
 
 	folderBrowserTreeView: null,
 
 	onAccept: function _onAccept()
 	{
-		window.arguments[0].answer = "select";
+		this._window.arguments[0].answer = "select";
 
-		var treeIndex = document.getElementById('exchWebService_foldertree').currentIndex;
-		window.arguments[0].fullPath = this.folderBrowserTreeView.getFullPathByIndex(treeIndex);
-		window.arguments[0].selectedFolder = this.folderBrowserTreeView.folders[treeIndex];
+		var treeIndex = this._document.getElementById('exchWebService_foldertree').currentIndex;
+		this._window.arguments[0].fullPath = this.folderBrowserTreeView.getFullPathByIndex(treeIndex);
+		this._window.arguments[0].selectedFolder = this.folderBrowserTreeView.folders[treeIndex];
 
-		exchWebService.commonFunctions.LOG("onAccept");
+		this.globalFunctions.LOG("onAccept");
 
 		return true;
 	},
 
 	onLoad: function _onLoad()
 	{
-		exchWebService.commonFunctions.LOG("onLoad");
-		var parentFolder = window.arguments[0].parentFolder;
-		exchWebService.commonFunctions.LOG("parentFolder.user:"+parentFolder.user);
+		this.globalFunctions.LOG("onLoad");
+		var parentFolder = this._window.arguments[0].parentFolder;
+		this.globalFunctions.LOG("parentFolder.user:"+parentFolder.user);
 
 		try {
 			this.folderBrowserTreeView = new exchWebService_browseTreeView(parentFolder);
-		} catch(err) { exchWebService.commonFunctions.LOG("ERROR:"+err);}
+		} catch(err) { this.globalFunctions.LOG("ERROR:"+err);}
 
-		document.getElementById('exchWebService_foldertree').treeBoxObject.view = this.folderBrowserTreeView;
+		this._document.getElementById('exchWebService_foldertree').treeBoxObject.view = this.folderBrowserTreeView;
 	},
 
 	doOnSelect: function _doOnSelect() 
 	{
-		var treeIndex = document.getElementById('exchWebService_foldertree').currentIndex;
+		var treeIndex = this._document.getElementById('exchWebService_foldertree').currentIndex;
 	
-		document.getElementById('exchWebService_currentSelectedPath').value = this.folderBrowserTreeView.getFullPathByIndex(treeIndex);
+		this._document.getElementById('exchWebService_currentSelectedPath').value = this.folderBrowserTreeView.getFullPathByIndex(treeIndex);
 	},
 }
 
+var tmpBrowseFolder = new exchBrowseFolder(document, window);
+window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpBrowseFolder.onLoad(); }, true);
 

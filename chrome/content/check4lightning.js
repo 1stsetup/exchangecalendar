@@ -31,14 +31,16 @@ var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils;
 
-Cu.import("resource://exchangecalendar/ecFunctions.js");
+function exchCheck4Lightning(aDocument, aWindow)
+{
+	this._document = aDocument;
+	this._window = aWindow;
 
-if (! exchWebService) var exchWebService = {};
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+}
 
-var globalUpdateCheckDone = false;
-
-exchWebService.check4Lightning = {
-
+exchCheck4Lightning.prototype = {
 
 	lightningIsInstalled: -1,
 	// -1 = Check for Lightning has not yet run.
@@ -47,6 +49,8 @@ exchWebService.check4Lightning = {
 	// 2 = Lightning is installed and active.
 	checkingIfLightnigIsInstalled: false,
 
+	updateCheckDone: false,
+
 	lightningAlertTimer: Cc["@mozilla.org/timer;1"]
 					.createInstance(Ci.nsITimer),
 	lightningAlertTimer2: Cc["@mozilla.org/timer;1"]
@@ -54,14 +58,14 @@ exchWebService.check4Lightning = {
 
 	lightningAlertCallback: function _lightningAlertCallback() 
 	{
-		exchWebService.commonFunctions.LOG("lightningAlertCallback.");
+		this.globalFunctions.LOG("lightningAlertCallback.");
 
 		var prefB = Cc["@mozilla.org/preferences-service;1"].
 				getService(Ci.nsIPrefBranch);
 		var promptStr = "";
 		var promptTitle = "";
 
-		switch (exchWebService.check4Lightning.lightningIsInstalled) {
+		switch (this.lightningIsInstalled) {
 			case 0:
 				promptTitle = "Lightning is not installed.";
 				promptStr = "Please install the Lightning Add-on if you wish\nto use the Exchange 2007/2010 Calendar and Tasks add-on.";
@@ -72,8 +76,8 @@ exchWebService.check4Lightning = {
 				break;
 		}
 
-		if (!exchWebService.commonFunctions.safeGetBoolPref(prefB, "extensions.1st-setup.lightningCheck.showWarning", true)) {
-			exchWebService.commonFunctions.LOG("lightningAlertCallback: Not showing warning dialog:"+promptStr);
+		if (!this.globalFunctions.safeGetBoolPref(prefB, "extensions.1st-setup.lightningCheck.showWarning", true)) {
+			this.globalFunctions.LOG("lightningAlertCallback: Not showing warning dialog:"+promptStr);
 			return;
 		}
 
@@ -82,11 +86,11 @@ exchWebService.check4Lightning = {
 
 		var answer = { value: false };
 		prompts.alertCheck(null, promptTitle, promptStr, "Do not show this prompt anymore.", answer); 
-		exchWebService.commonFunctions.LOG("lightningAlertCallback. Answer:"+answer.value); 		
+		this.globalFunctions.LOG("lightningAlertCallback. Answer:"+answer.value); 		
 
 		prefB.setBoolPref("extensions.1st-setup.lightningCheck.showWarning", !answer.value);
 
-		switch (exchWebService.check4Lightning.lightningIsInstalled) {
+		switch (this.lightningIsInstalled) {
 			case 0:
 				openContentTab("https://addons.mozilla.org/en-US/thunderbird/addon/lightning/", "tab", "addons.mozilla.org");
 				break;
@@ -95,96 +99,97 @@ exchWebService.check4Lightning = {
 				break;
 		}
 
-		exchWebService.check4Lightning.checkingIfLightnigIsInstalled = false;
+		this.checkingIfLightnigIsInstalled = false;
 	},
 
 	checkLightningIsInstalledCallback: function _checkLightningIsInstalledCallback(aAddOn)
 	{
 		if (!aAddOn) {
-			exchWebService.check4Lightning.lightningIsInstalled = 0;
+			this.lightningIsInstalled = 0;
 		}
 		else {
-			exchWebService.check4Lightning.lightningIsInstalled = 1;
-			exchWebService.commonFunctions.LOG("Lightning is installed.");
+			this.lightningIsInstalled = 1;
+			this.globalFunctions.LOG("Lightning is installed.");
 		}
 
-		if (exchWebService.check4Lightning.lightningIsInstalled == 0) {
+		var self = this;
+		if (this.lightningIsInstalled == 0) {
 			// Lightning is not installed. Try to install it.
-			exchWebService.commonFunctions.WARN("Lightning is not installed.");
-			exchWebService.check4Lightning.lightningAlertTimer.initWithCallback(exchWebService.check4Lightning.lightningAlertCallback, 1500, exchWebService.check4Lightning.lightningAlertTimer.TYPE_ONE_SHOT);
+			this.globalFunctions.WARN("Lightning is not installed.");
+			this.lightningAlertTimer.initWithCallback(function (){ self.lightningAlertCallback();}, 1500, this.lightningAlertTimer.TYPE_ONE_SHOT);
 
 		}
 		else {
 			// Ligntning is installed check if it is enabled.
 			try {
-				exchWebService.commonFunctions.LOG("Lightning was installed from:"+aAddOn.sourceURI.prePath+aAddOn.sourceURI.path);
+				this.globalFunctions.LOG("Lightning was installed from:"+aAddOn.sourceURI.prePath+aAddOn.sourceURI.path);
 			}
 			catch(er) {
-				exchWebService.commonFunctions.LOG("Lightning was installed from unknown source. Probably manualy outside the AddOnManager.");
+				this.globalFunctions.LOG("Lightning was installed from unknown source. Probably manualy outside the AddOnManager.");
 			}
 			if (aAddOn.isActive) {
-				exchWebService.check4Lightning.lightningIsInstalled = 2;
+				this.lightningIsInstalled = 2;
 			}
 			else {
 				// Not Active.  
-				exchWebService.commonFunctions.WARN("Lightning is not active.1");
-				exchWebService.check4Lightning.lightningAlertTimer.initWithCallback(exchWebService.check4Lightning.lightningAlertCallback, 1500, exchWebService.check4Lightning.lightningAlertTimer.TYPE_ONE_SHOT);
+				this.globalFunctions.WARN("Lightning is not active.1");
+				this.lightningAlertTimer.initWithCallback(function (){ self.lightningAlertCallback();}, 1500, this.lightningAlertTimer.TYPE_ONE_SHOT);
 			}
 		}
 	},
 
 	checkLightningIsInstalled: function _checkLightningIsInstalled()
 	{
-		if (exchWebService.check4Lightning.lightningIsInstalled > 1) {
+		if (this.lightningIsInstalled > 1) {
 			// Lightning is allready installed.
 			return;
 		}
 
-		if (exchWebService.check4Lightning.checkingIfLightnigIsInstalled) {
+		if (this.checkingIfLightnigIsInstalled) {
 			return;
 		}
 
-		exchWebService.check4Lightning.checkingIfLightnigIsInstalled = true;
+		this.checkingIfLightnigIsInstalled = true;
 
-		if (exchWebService.check4Lightning.lightningIsInstalled == -1) {
+		if (this.lightningIsInstalled == -1) {
 			Cu.import("resource://gre/modules/AddonManager.jsm");
 		}
-		AddonManager.getAddonByID("{e2fda1a4-762b-4020-b5ad-a41df1933103}", exchWebService.check4Lightning.checkLightningIsInstalledCallback);
+		var self = this;
+		AddonManager.getAddonByID("{e2fda1a4-762b-4020-b5ad-a41df1933103}", function(aAddon){ self.checkLightningIsInstalledCallback(aAddon);});
 	},
 
 	onLoad: function _onLoad(event) {
 
-		if ((exchWebService) && (exchWebService.check4Lightning)) {
-			document.removeEventListener("load", exchWebService.check4Lightning.onLoad, true);
-			exchWebService.check4Lightning.checkLightningIsInstalled();
+		this.checkLightningIsInstalled();
 			
-			if ((exchWebService.commonFunctions.safeGetBoolPref(null, "extensions.1st-setup.others.checkForNewAddOnVersion", true, true)) && (!globalUpdateCheckDone)) {
-				globalUpdateCheckDone = true;
-				var updatecheck = Cc["@1st-setup.nl/checkers/updater;1"]
-							       .getService(Ci.mivUpdater);
-				updatecheck.checkForUpdate("exchangecalendar@extensions.1st-setup.nl" , exchWebService.check4Lightning.updaterCallBack);
-			}
+		if ((this.globalFunctions.safeGetBoolPref(null, "extensions.1st-setup.others.checkForNewAddOnVersion", true, true)) && (!this.updateCheckDone)) {
+			var updatecheck = Cc["@1st-setup.nl/checkers/updater;1"]
+						       .getService(Ci.mivUpdater);
+			var self = this;
+			updatecheck.checkForUpdate("exchangecalendar@extensions.1st-setup.nl" , function(aResult){ self.updaterCallBack(aResult);});
+			this.updateCheckDone = true;
 		}
 	},
 
 	updaterCallBack: function _updaterCallBack(aResult)
 	{
 				if (aResult.versionChanged <= 0) {
-					exchWebService.commonFunctions.LOG("No new version available.");
+					this.globalFunctions.LOG("No new version available.");
 				}
 				else {
-					exchWebService.commonFunctions.LOG("New version available.");
-					exchWebService.commonFunctions.LOG(" ++ Version:"+aResult.updateDetails.newVersion);
-					exchWebService.commonFunctions.LOG(" ++ URL:"+aResult.updateDetails.updateURL);
-					if (exchWebService.commonFunctions.safeGetBoolPref(null, "extensions.1st-setup.others.warnAboutNewAddOnVersion", true, true)) {
-						exchWebService.check4Lightning.lightningAlertTimer2.initWithCallback(function(){ exchWebService.check4Lightning.lightningAlertCallback2(aResult);}, 15000, exchWebService.check4Lightning.lightningAlertTimer2.TYPE_ONE_SHOT);
+					this.globalFunctions.LOG("New version available.");
+					this.globalFunctions.LOG(" ++ Version:"+aResult.updateDetails.newVersion);
+					this.globalFunctions.LOG(" ++ URL:"+aResult.updateDetails.updateURL);
+					var self = this;
+					if (this.globalFunctions.safeGetBoolPref(null, "extensions.1st-setup.others.warnAboutNewAddOnVersion", true, true)) {
+						this.lightningAlertTimer2.initWithCallback(function(aResult){ self.lightningAlertCallback2(aResult);}, 15000, this.lightningAlertTimer2.TYPE_ONE_SHOT);
 					}
 				}
 	},
 
 	lightningAlertCallback2: function _lightningAlertCallback2(aResult) 
 	{
-		exchWebService.commonFunctions.LOG("lightningAlertCallback2.");
+		this.globalFunctions.LOG("lightningAlertCallback2.");
 
 		var prefB = Cc["@mozilla.org/preferences-service;1"].
 				getService(Ci.nsIPrefBranch);
@@ -208,7 +213,7 @@ exchWebService.check4Lightning = {
 
 		var button = prompts.confirmEx(null, promptTitle, promptStr, flags, "", "", "Info", "Do not show this prompt anymore.", answer);
 
-		exchWebService.commonFunctions.LOG("lightningAlertCallback2. button:"+button); 		
+		this.globalFunctions.LOG("lightningAlertCallback2. button:"+button); 		
 		prefB.setBoolPref("extensions.1st-setup.others.warnAboutNewAddOnVersion", !answer.value);
 
 		if (button == 0) {
@@ -222,4 +227,6 @@ exchWebService.check4Lightning = {
 
 }
 
-document.addEventListener("load", exchWebService.check4Lightning.onLoad, true);
+var tmpCheck4Lightning = new exchCheck4Lightning(document, window);
+window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpCheck4Lightning.onLoad(); }, true);
+

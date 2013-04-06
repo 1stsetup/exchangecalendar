@@ -769,6 +769,21 @@ mivFunctions.prototype = {
 		}
 	},
 
+	addCalendarById: function _addCalendarById(aId)
+	{
+		var ioService = Cc["@mozilla.org/network/io-service;1"]  
+				.getService(Ci.nsIIOService);  
+		var tmpURI = ioService.newURI("https://auto/"+aId, null, null);  
+
+		var calManager = Cc["@mozilla.org/calendar/manager;1"]
+			.getService(Ci.calICalendarManager);
+		var newCal = calManager.createCalendar("exchangecalendar", tmpURI);
+
+		newCal.id = aId;
+
+		calManager.registerCalendar(newCal);
+	},
+
 }
 
 function NSGetFactory(cid) {

@@ -51,8 +51,6 @@
 <overlay id="exchangeWebService_cache_preferences_overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-	<script type="application/javascript" src="chrome://exchangecalendar/content/cachePreferences.js"/>
-
     <vbox id="exchangeWebService_cache_preferences_vbox">
 
         <preferences>

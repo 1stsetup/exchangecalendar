@@ -31,11 +31,20 @@ var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils;
 
-Cu.import("resource://exchangecalendar/ecFunctions.js");
+//Cu.import("resource://exchangecalendar/ecFunctions.js");
 
-if (! exchWebService) var exchWebService = {};
+//if (! exchWebService) var exchWebService = {};
 
-exchWebService.progressPanel = {
+function exchProgressPanel(aDocument, aWindow)
+{
+	this._document = aDocument;
+	this._window = aWindow;
+
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+}
+
+exchProgressPanel.prototype = {
 
 	queueSizeTotal: 0,
 	calendarQueues: {},
@@ -55,9 +64,9 @@ exchWebService.progressPanel = {
 
 	notify: function _notify() 
 	{
-		if (exchWebService.progressPanel.isLoaded) {
+		if (this.isLoaded) {
 
-			var jobList = exchWebService.progressPanel.loadBalancer.jobList;
+			var jobList = this.loadBalancer.jobList;
 			var running = 0;
 			var waiting = 0;
 
@@ -128,14 +137,19 @@ exchWebService.progressPanel = {
 
 			if ((waiting == 0) && (running == 0)) {
 				document.getElementById("exchWebService-progress-panel").hidden = true;
-				exchWebService.progressPanel.timer.cancel();
-				exchWebService.progressPanel.timerRunning = false;
+dump(" CLOCK OFF\n");
+				this.timer.cancel();
+				this.timerRunning = false;
 			}
 			else {
 				if (document.getElementById("exchWebService-progress-panel").hidden) {
 					if ((waiting > 1) || (running > 0)) {
 						document.getElementById("exchWebService-progress-panel").hidden = false;
-						exchWebService.progressPanel.timer.initWithCallback(exchWebService.progressPanel, 200, exchWebService.progressPanel.timer.TYPE_REPEATING_SLACK);
+						if (!this.timerRunning) {
+							this.timerRunning = true;
+dump(" CLOCK ON 2\n");
+							this.timer.initWithCallback(this, 200, this.timer.TYPE_REPEATING_SLACK);
+						}
 					}
 				}
 				var tmpStr = running + "/" + waiting + " (r/w job";
@@ -147,12 +161,12 @@ exchWebService.progressPanel = {
 			}
 
 
-			exchWebService.progressPanel.imageCounter = Number(exchWebService.progressPanel.imageCounter) + Number(1);
-			if (exchWebService.progressPanel.imageCounter > 4) {
-				exchWebService.progressPanel.imageCounter = 1;
+			this.imageCounter = Number(this.imageCounter) + Number(1);
+			if (this.imageCounter > 4) {
+				this.imageCounter = 1;
 			}
 			if (document) {
-				document.getElementById("exchWebService-progress-image").style.listStyleImage = "url('"+exchWebService.progressPanel.imageList["image"+exchWebService.progressPanel.imageCounter]+"')";
+				document.getElementById("exchWebService-progress-image").style.listStyleImage = "url('"+this.imageList["image"+this.imageCounter]+"')";
 			}
 		}
 	},
@@ -166,56 +180,44 @@ exchWebService.progressPanel = {
 		}
 
 		if (topic == "onExchangeProgressChange") {
-			if (!exchWebService.progressPanel.timerRunning) {
-				exchWebService.progressPanel.timerRunning = true;
-				exchWebService.progressPanel.timer.initWithCallback(exchWebService.progressPanel, 200, exchWebService.progressPanel.timer.TYPE_REPEATING_SLACK);
+			if ((!this.timerRunning) && (!this.timerRunning)) {
+				this.timerRunning = true;
+dump(" CLOCK ON 1\n");
+				this.timer.initWithCallback(this, 200, this.timer.TYPE_REPEATING_SLACK);
 			}
 		}
         },
 
 	init: function _init()
 	{
-		exchWebService.progressPanel.observerService = Cc["@mozilla.org/observer-service;1"]  
+		this.observerService = Cc["@mozilla.org/observer-service;1"]  
                           .getService(Ci.nsIObserverService);
 
-		exchWebService.progressPanel.observerService.addObserver(exchWebService.progressPanel, "onExchangeProgressChange", false);
-		exchWebService.progressPanel.observerService.addObserver(exchWebService.progressPanel, "onExchangeReadOnlyChange", false);
+		this.observerService.addObserver(this, "onExchangeProgressChange", false);
+		this.observerService.addObserver(this, "onExchangeReadOnlyChange", false);
 
-		exchWebService.progressPanel.timer = Cc["@mozilla.org/timer;1"]
+		this.timer = Cc["@mozilla.org/timer;1"]
 				.createInstance(Ci.nsITimer);
-		exchWebService.progressPanel.timerRunning = false;
+		this.timerRunning = false;
 
 	},
 
 	destroy: function _destroy()
 	{
-		exchWebService.progressPanel.observerService.removeObserver(exchWebService.progressPanel, "onExchangeProgressChange");
-		exchWebService.progressPanel.observerService.removeObserver(exchWebService.progressPanel, "onExchangeReadOnlyChange");
-	},
-
-	loaded: function ecProgressPanel_loaded()
-	{
-		exchWebService.progressPanel.isLoaded = true;
+		this.observerService.removeObserver(this, "onExchangeProgressChange");
+		this.observerService.removeObserver(this, "onExchangeReadOnlyChange");
 	},
 
 	onLoad: function _onLoad(event) {
-
-		// nuke the onload, or we get called every time there's
-		// any load that occurs
-		document.removeEventListener("load", exchWebService.progressPanel.onLoad, true);
+		this.init();
 
 		// Do init
-		exchWebService.progressPanel.loaded();
+		this.isLoaded = true;
 
 		// Add an unload function to the window so we don't leak any listeners
-		window.addEventListener("unload", exchWebService.progressPanel.onFinish, false);
+		var self = this;
+		window.addEventListener("unload", function(){ window.removeEventListener("unload",arguments.callee,false); self.destroy();}, false);
 
-
-	},
-
-	onFinish: function _onFinish() {
-		// Do some cleanup
-		exchWebService.progressPanel.destroy();
 	},
 
 	openProgressDialog: function _openProgressDialog()
@@ -223,5 +225,6 @@ exchWebService.progressPanel = {
 	},
 }
 
-exchWebService.progressPanel.init();
-document.addEventListener("load", exchWebService.progressPanel.onLoad, true);
+var myExchProgressPanel = new exchProgressPanel(document, window);
+window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); myExchProgressPanel.onLoad(); }, true);
+

@@ -237,7 +237,7 @@ exchAttachments.prototype = {
 		var args = this._window.arguments[0];
 		var item = args.calendarEvent;
 
-		this.globalFunctions.LOG("  -- onLoad 2 ("+this.globalFunctions.STACKshort()+")");
+		//this.globalFunctions.LOG("  -- onLoad 2 ("+this.globalFunctions.STACKshort()+")");
 		this.attachmentListboxVisible = false;
 
 		if ((item.calendar) && (item.calendar.type == "exchangecalendar")) {
@@ -328,7 +328,7 @@ exchAttachments.prototype = {
 
 		if ((item.calendar) && (item.calendar.type == "exchangecalendar")) {
 			// calendar-task-view (hide existing attachment view)
-			this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 1.");
+			//this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 1.");
 			try {
 				this._document.getElementById("calendar-task-details-attachment-rows").setAttribute("hidden", "true");
 				this._document.getElementById("calendar-task-details-attachment-rows").removeAttribute("flex");
@@ -336,7 +336,7 @@ exchAttachments.prototype = {
 			}
 			catch (ex) {this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje:");}
 
-			this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 2.");
+			//this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 2.");
 
 			try {
 				this._document.getElementById("exchWebService-attachments-row").setAttribute("collapsed", "false");
@@ -347,7 +347,7 @@ exchAttachments.prototype = {
 				this.addAttachmentsFromItem(item);
 			}
 			catch(ex) { this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje2:"+ex);}
-			this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 3.");
+			//this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 3.");
 		}
 		else {
 			try {

@@ -40,21 +40,31 @@ var Cu = Components.utils;
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
-Cu.import("resource://exchangecalendar/ecFunctions.js");
+//Cu.import("resource://exchangecalendar/ecFunctions.js");
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/erForewardItem.js");
 
 
-if (! exchWebService) var exchWebService = {};
+//if (! exchWebService) var exchWebService = {};
 
+function exchForewardEvent(aDocument, aWindow)
+{
+	this._document = aDocument;
+	this._window = aWindow;
 
-exchWebService.forewardEvent = {
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+}
+
+exchForewardEvent.prototype = {
+
+//exchWebService.forewardEvent = {
 	currentView: function _currentView() {
-		    return document.getElementById("view-deck").selectedPanel;
+		    return this._document.getElementById("view-deck").selectedPanel;
 	},
 
 	onForEve : function _onForEve(){		
-		var item = exchWebService.forewardEvent.currentView().getSelectedItems({})[0];
+		var item = this.currentView().getSelectedItems({})[0];
 		var calendar = item.calendar;
 		var args = new Object();
 		args.startTime = item.startDate;
@@ -63,25 +73,25 @@ exchWebService.forewardEvent = {
 		args.item = item;
 		args.attendees =item.organizer;
 		args.calendar =calendar;
-		args.onOk = exchWebService.forewardEvent.callOnRightClick;
+		args.onOk = this.callOnRightClick;
 		args.opener="exchWebService-onForEve";
-		window.openDialog("chrome://calendar/content/calendar-event-dialog-attendees.xul","_blank", "chrome,titlebar,modal,resizable",args);
+		this._window.openDialog("chrome://calendar/content/calendar-event-dialog-attendees.xul","_blank", "chrome,titlebar,modal,resizable",args);
 
 	},
 
 	callOnRightClick : function(attendee,organizer,startTime,endTime){		
-		var item =exchWebService.forewardEvent.currentView().getSelectedItems({})[0];
+		var item = this.currentView().getSelectedItems({})[0];
 		var calendar = item.calendar;
 		var calId = calendar.id;
 		var calPrefs = Cc["@mozilla.org/preferences-service;1"]
 		            .getService(Ci.nsIPrefService)
 			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+calId+".");
 		var tmpObject = new erForewardItemRequest(
-			{user: exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecDomain")+"\\"+exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecUser"), 
-			 mailbox: exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecMailbox"),
-			 serverUrl: exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecServer"), item: item, attendees: attendee, 
+			{user: this.globalFunctions.safeGetCharPref(calPrefs, "ecDomain")+"\\"+this.globalFunctions.safeGetCharPref(calPrefs, "ecUser"), 
+			 mailbox: this.globalFunctions.safeGetCharPref(calPrefs, "ecMailbox"),
+			 serverUrl: this.globalFunctions.safeGetCharPref(calPrefs, "ecServer"), item: item, attendees: attendee, 
 			changeKey :  item.changeKey, description : item.getProperty("description")}, 		
-			exchWebService.forewardEvent.erForewardItemRequestOK, exchWebService.forewardEvent.erForewardItemRequestError);
+			this.erForewardItemRequestOK, this.erForewardItemRequestError);
 		return true;
 	},
 
@@ -97,14 +107,16 @@ exchWebService.forewardEvent = {
 
 	checkAllowForwardItem: function _checkAllowForwardItem()
 	{
-		var item = exchWebService.forewardEvent.currentView().getSelectedItems({})[0];
+		var item = this.currentView().getSelectedItems({})[0];
 		if ((item.calendar.type == "exchangecalendar") && (item.responseObjects.ForwardItem)) {
-			document.getElementById("calendar-item-forward").hidden = false;
+			this._document.getElementById("calendar-item-forward").hidden = false;
 		}
 		else {
-			document.getElementById("calendar-item-forward").hidden = true;
+			this._document.getElementById("calendar-item-forward").hidden = true;
 		}
 	},
 
 }
+
+var tmpForewardEvent = new exchForewardEvent(document, window);
 

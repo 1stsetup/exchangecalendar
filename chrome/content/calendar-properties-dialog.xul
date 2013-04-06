@@ -49,7 +49,7 @@
 				align="center">
 				<spacer/>
 				<checkbox id="exchange-cache"
-					  label="exchange-cache" oncommand="return exchWebService.changeCalendarProperties.changeCachePref();"/>
+					  label="exchange-cache" oncommand="return tmpChangeCalendarProperties.changeCachePref();"/>
 			</row>
 		     
 		</rows>

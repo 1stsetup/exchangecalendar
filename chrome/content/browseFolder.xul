@@ -52,15 +52,14 @@
   buttons="accept,cancel"
   buttonlabelaccept="&label.acceptbutton;"
   buttonlabelcancel="&label.cancelbutton;"
-  ondialogaccept="return exchWebService.browseFolder.onAccept();"
-  onload="exchWebService.browseFolder.onLoad();"
+  ondialogaccept="return tmpBrowseFolder.onAccept();"
   width="640" height="380">
 
 	<script type="application/javascript" src="chrome://exchangecalendar/content/browseFolder.js"/>
 
 	<vbox flex="1">
 		<label id="exchWebService_currentSelectedPath"/>
-		<tree id="exchWebService_foldertree" flex="1" seltype="single" onselect="exchWebService.browseFolder.doOnSelect();" sortResource="foldername"  sortDirection="natural">
+		<tree id="exchWebService_foldertree" flex="1" seltype="single" onselect="tmpBrowseFolder.doOnSelect();" sortResource="foldername"  sortDirection="natural">
 			<treecols>
 				<treecol id="exchWebService_foldername" label="&treecol.label.foldername;" primary="true" flex="2" fixed="false"/>
 				<treecol id="exchWebService_folderclass" label="&treecol.label.folderclass;" primary="false" flex="1" fixed="false"/>

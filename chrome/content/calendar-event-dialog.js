@@ -185,5 +185,5 @@ exchEventDialog.prototype = {
 }
 
 var tmpEventDialog = new exchEventDialog(document, window);
-window.addEventListener("load", function _onLoad() { window.removeEventListener("load",arguments.callee,false); tmpEventDialog.onLoad(); }, true);
+window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpEventDialog.onLoad(); }, true);
 
