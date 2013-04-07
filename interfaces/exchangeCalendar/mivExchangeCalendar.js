@@ -2500,8 +2500,16 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	},
 
 	//  void startBatch();
+	startBatch: function _startBatch()
+	{
+		dump("Start batch\n");
+	},
 
 	//  void endBatch();
+	endBatch: function _endBatch()
+	{
+		dump("End batch\n");
+	},
 // End calICalendar
 
 // Begin calISchedulingSupport
@@ -6705,6 +6713,10 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 	updateCalendar: function _updateCalendar(erGetItemsRequest, aItems, doNotify)
 	{
+/*		this.observers.notify("onStartBatch");
+		this.updateCalendar2(erGetItemsRequest, aItems,doNotify);
+		this.observers.notify("onEndBatch");
+return;*/
 		for (var index in aItems) {
 			this.updateCalendarItems.push({ request: erGetItemsRequest,
 							item: aItems[index],
