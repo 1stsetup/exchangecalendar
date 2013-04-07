@@ -797,7 +797,8 @@ catch(err){
 	//void getAlarms(out PRUint32 count, [array, size_is(count), retval] out calIAlarm aAlarms);
 	getAlarms: function _getAlarms(count)
 	{
-		//this.logInfo("getAlarms 1: title:"+this.title);
+
+		dump("getAlarms 1: title:"+this.title+"\n");
 		if (!this._alarm) {
 			switch (this._className) {
 			case "mivExchangeTodo":
@@ -854,7 +855,7 @@ catch(err){
 	//void addAlarm(in calIAlarm aAlarm);
 	addAlarm: function _addAlarm(aAlarm)
 	{
-		//this.logInfo("addAlarm: title:"+this.title);
+		dump("addAlarm: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"\n");
 		this.getAlarms({}); // Preload
 
 		if (this._newAlarm) {
@@ -874,7 +875,7 @@ catch(err){
 	//void deleteAlarm(in calIAlarm aAlarm);
 	deleteAlarm: function _deleteAlarm(aAlarm)
 	{
-		//this.logInfo("deleteAlarm: title:"+this.title);
+		dump("deleteAlarm: title:"+this.title+"\n");
 		this._changesAlarm.push({ action: "remove", alarm: this._newAlarm});
 		this._newAlarm = null;
 		this._calEvent.deleteAlarm(aAlarm);
@@ -886,7 +887,7 @@ catch(err){
 	//void clearAlarms();
 	clearAlarms: function _clearAlarms()
 	{
-		//this.logInfo("clearAlarms: title:"+this.title);
+		dump("clearAlarms: title:"+this.title+"\n");
 		var oldAlarms = this.getAlarms({});
 		for each(var alarm in oldAlarms) {
 			this._changesAlarm.push({ action: "remove", alarm: alarm});
@@ -1950,16 +1951,23 @@ catch(err){
 			if (tmpObject.length > 0) {
 				this._reminderSignalTime = this.tryToSetDateValueUTC(tmpObject[0].getTagValue("t:Value", null), null);
 				//this.logInfo("Setting X-MOZ-SNOOZE-TIME by data in exchangedata", -1);
-				switch (this.calendarItemType) {
-				case "RecurringMaster":
-					this._xMozSnoozeTime = this._reminderSignalTime.icalString;
-					break;
-				case "Single":
+				if (this.className == "mivExchangeEvent") {
+					switch (this.calendarItemType) {
+					case "RecurringMaster":
+						this._xMozSnoozeTime = this._reminderSignalTime.icalString;
+						break;
+					case "Single":
+						this.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
+						this._xMozSnoozeTime = this._reminderSignalTime.icalString;
+						break;
+					default:
+						//this.logInfo("Would like to set X-MOZ-SNOOZE-TIME for this.calendarItemType:"+this.calendarItemType);
+					}
+				}
+
+				if (this.className == "mivExchangeTodo") {
 					this.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
 					this._xMozSnoozeTime = this._reminderSignalTime.icalString;
-					break;
-				default:
-					//this.logInfo("Would like to set X-MOZ-SNOOZE-TIME for this.calendarItemType:"+this.calendarItemType);
 				}
 			}
 		}
@@ -2772,10 +2780,15 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 					var alarm = alarms[0];
 
-					if ((!this._alarm) || (this._alarm.offset != alarm.offset)) {
+					if ((!this._alarm) || (this._alarm.offset != alarm.offset) || (this.className == "mivExchangeTodo")) {
+dump(" We have alarms."+alarms[0].alarmDate+", alarm:"+alarm+", alarm.offset:"+alarm.offset+", X-MOZ-SNOOZE-TIME:"+this.getProperty("X-MOZ-SNOOZE-TIME")+"\n");
 						// Exchange alarm is always an offset to the start.
+						// A Todo always has an alarm.related of ALARM_RELATED_ABSOLUTE
+						// So referenceDate is set there.
+						if (this.className == "mivExchangeEvent") {
+							var referenceDate = this.startDate.getInTimezone(cal.UTC());
+						}
 
-						var referenceDate = this.startDate.getInTimezone(cal.UTC());
 						switch (alarm.related) {
 						case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
 							//this.logInfo("ALARM_RELATED_ABSOLUTE we are going to calculate a offset from the start.");
@@ -2784,7 +2797,6 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 							// Calculate offset from start of item.
 							if (this.className == "mivExchangeEvent") {
 								var offset = newAlarmTime.subtractDate(this.startDate);
-dump("  -+- newAlarmTime:"+newAlarmTime+", startDate:"+this.startDate+", offset:"+offset+"\n");
 							}
 							else {
 								//var offset = 0;
