@@ -137,7 +137,6 @@ exchProgressPanel.prototype = {
 
 			if ((waiting == 0) && (running == 0)) {
 				document.getElementById("exchWebService-progress-panel").hidden = true;
-dump(" CLOCK OFF\n");
 				this.timer.cancel();
 				this.timerRunning = false;
 			}
@@ -147,7 +146,6 @@ dump(" CLOCK OFF\n");
 						document.getElementById("exchWebService-progress-panel").hidden = false;
 						if (!this.timerRunning) {
 							this.timerRunning = true;
-dump(" CLOCK ON 2\n");
 							this.timer.initWithCallback(this, 200, this.timer.TYPE_REPEATING_SLACK);
 						}
 					}
@@ -182,7 +180,6 @@ dump(" CLOCK ON 2\n");
 		if (topic == "onExchangeProgressChange") {
 			if ((!this.timerRunning) && (!this.timerRunning)) {
 				this.timerRunning = true;
-dump(" CLOCK ON 1\n");
 				this.timer.initWithCallback(this, 200, this.timer.TYPE_REPEATING_SLACK);
 			}
 		}
