@@ -289,7 +289,6 @@ const MAPI_PidLidReminderSet = "34051";
 //var EXPORTED_SYMBOLS = ["calExchangeCalendar"];
 
 function calExchangeCalendar() {
-
 	this.myId = null;
 
 	this.initProviderBase();
@@ -8465,7 +8464,7 @@ function convertToVersion1()
 				var tmpURI = mivFunctions.safeGetCharPref(null, "calendar.registry."+children[index], null, false);
 				if ((tmpURI != "https://auto/"+tmpUUID) && (tmpType == "exchangecalendar")) {
 					// update uri preference
-					this.globalFunctions.LOG("Going to upgrade calendar registry '"+tmpUUID+"'");
+					mivFunctions.LOG("Going to upgrade calendar registry '"+tmpUUID+"'");
 					
 					var updatePrefs = Cc["@mozilla.org/preferences-service;1"]
 						    .getService(Ci.nsIPrefService)
@@ -8476,7 +8475,7 @@ function convertToVersion1()
 						    .getService(Ci.nsIPrefService)
 						    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+tmpUUID+".");
 					updatePrefs.setIntPref("exchangePrefVersion", 1);
-					tmpPrefService.savePrefFile(nsnull);
+					tmpPrefService.savePrefFile(null);
 				}
 			}
 		}
@@ -8533,7 +8532,6 @@ exchWebService.check4addon = {
 }
 
 function NSGetFactory(cid) {
-
 	try {
 		if (!NSGetFactory.mainEC) {
 			// Load main script from lightning that we need.
