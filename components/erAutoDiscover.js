@@ -45,8 +45,6 @@ Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 
 var EXPORTED_SYMBOLS = ["erAutoDiscoverRequest"];
 
-var nsAutodiscoverResponse = new Namespace("nsAutodiscoverResponse", "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a");
-
 function erAutoDiscoverRequest(aArgument, aCbOk, aCbError, aListener)
 {
 	this.mCbOk = aCbOk;
