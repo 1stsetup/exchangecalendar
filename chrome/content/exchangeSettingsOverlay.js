@@ -33,7 +33,6 @@
  * the Initial Developer. All Rights Reserved.
  *
  * ***** BEGIN LICENSE BLOCK *****/
-
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils;
@@ -41,9 +40,6 @@ var Cu = Components.utils;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
-//Cu.import("resource://calendar/modules/calUtils.jsm");
-
-//Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/erAutoDiscover.js");
 Cu.import("resource://exchangecalendar/erAutoDiscoverySOAP.js");
 Cu.import("resource://exchangecalendar/erPrimarySMTPCheck.js");
@@ -51,817 +47,837 @@ Cu.import("resource://exchangecalendar/erConvertID.js");
 Cu.import("resource://exchangecalendar/erFindFolder.js");
 Cu.import("resource://exchangecalendar/erGetFolder.js");
 
-Cu.import("resource://exchangecalendar/ecFunctions.js");
-
-if (! exchWebService) var exchWebService = {};
-
-var gexchWebServicesDetailsChecked = false;
-var gexchWebServices2ndDetailsChecked = true;
-
-var exchWebServicesgAutoDiscover = false;
-var exchWebServicesgServer = "";
-var exchWebServicesgMailbox = "";
-var exchWebServicesgDisplayName = "";
-var exchWebServicesgUser = "";
-var exchWebServicesgDomain = "";
-var exchWebServicesgFolderIdOfShare = "";
-var exchWebServicesgFolderBase = "calendar";
-var exchWebServicesgFolderPath = "/";
-var exchWebServicesgFolderID = "";
-var exchWebServicesgChangeKey = "";
-
-function exchWebServicesValidUsernameDomain()
+function exchSettingsOverlay(aDocument, aWindow)
 {
-	return true;
+	this._document = aDocument;
+	this._window = aWindow;
 
-/*	if ((document.getElementById("exchWebService_windowsuser").value.indexOf("@") > -1) &&
-		(document.getElementById("exchWebService_windowsdomain").value == "")) {
-		return true;
-	}
-
-	if ((document.getElementById("exchWebService_windowsuser").value.indexOf("@") == -1) &&
-		(document.getElementById("exchWebService_windowsdomain").value != "")) {
-		return true;
-	}
-
-	return false; */
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
 }
 
-function exchWebServicesCheckRequired() {
+exchSettingsOverlay.prototype = {
+	gexchWebServicesDetailsChecked : false,
+	gexchWebServices2ndDetailsChecked : true,
 
-	if (!gexchWebServicesDetailsChecked) {
-		document.getElementById("exchWebService_folderbaserow").hidden = true;
-		document.getElementById("exchWebService_folderpathrow").hidden = true;
-		document.getElementById("exchWebServices-SharedFolderID").hidden = true;
-		document.getElementById("exchWebServices-UserAvailability").hidden = true;
-	}
+	exchWebServicesgAutoDiscover : false,
+	exchWebServicesgServer : "",
+	exchWebServicesgMailbox : "",
+	exchWebServicesgDisplayName : "",
+	exchWebServicesgUser : "",
+	exchWebServicesgDomain : "",
+	exchWebServicesgFolderIdOfShare : "",
+	exchWebServicesgFolderBase : "calendar",
+	exchWebServicesgFolderPath : "/",
+	exchWebServicesgFolderID : "",
+	exchWebServicesgChangeKey : "",
 
-	if ((!gexchWebServices2ndDetailsChecked) || (!gexchWebServicesDetailsChecked)) {
-		document.getElementById("exchWebService_detailschecked").setAttribute("required", true);
-	}
-	else {
-		document.getElementById("exchWebService_detailschecked").setAttribute("required", false);
-	}
+	exchWebServicesValidUsernameDomain: function _exchWebServicesValidUsernameDomain()
+	{
+		return true;
 
-	if (document.getElementById("exchWebService_autodiscover").checked) {
+	/*	if ((this._document.getElementById("exchWebService_windowsuser").value.indexOf("@") > -1) &&
+			(this._document.getElementById("exchWebService_windowsdomain").value == "")) {
+			return true;
+		}
 
-		exchWebServicesChangeFolderbaseMenuItemAvailability(false);
+		if ((this._document.getElementById("exchWebService_windowsuser").value.indexOf("@") == -1) &&
+			(this._document.getElementById("exchWebService_windowsdomain").value != "")) {
+			return true;
+		}
 
-		document.getElementById("exchWebService_mailbox").setAttribute("required", true);
-		document.getElementById("exchWebService_servercheckrow").hidden = true;
+		return false; */
+	},
 
-		if ( (document.getElementById("exchWebService_mailbox").value == "") ||
-		     (!exchWebServicesValidUsernameDomain()) ) {
-			document.getElementById("exchWebService_autodiscovercheckrow").hidden = true;
-			document.getElementById("exchWebService_serverandmailboxcheckrow").hidden = true;
+	exchWebServicesCheckRequired: function _exchWebServicesCheckRequired() {
+
+		if (!this.gexchWebServicesDetailsChecked) {
+			this._document.getElementById("exchWebService_folderbaserow").hidden = true;
+			this._document.getElementById("exchWebService_folderpathrow").hidden = true;
+			this._document.getElementById("exchWebServices-SharedFolderID").hidden = true;
+			this._document.getElementById("exchWebServices-UserAvailability").hidden = true;
+		}
+
+		if ((!this.gexchWebServices2ndDetailsChecked) || (!this.gexchWebServicesDetailsChecked)) {
+			this._document.getElementById("exchWebService_detailschecked").setAttribute("required", true);
 		}
 		else {
-			document.getElementById("exchWebService_autodiscovercheckrow").hidden = false;
-			document.getElementById("exchWebService_serverandmailboxcheckrow").hidden = true;
+			this._document.getElementById("exchWebService_detailschecked").setAttribute("required", false);
 		}
-		document.getElementById("exchWebService_server").disabled = true;
-	}
-	else {
-		document.getElementById("exchWebService_mailbox").setAttribute("required", false);
 
-		if (document.getElementById("exchWebService_mailbox").value == "") {
+		if (this._document.getElementById("exchWebService_autodiscover").checked) {
 
-			if (document.getElementById("exchWebService_mailbox").value == "") {
-				exchWebServicesChangeFolderbaseMenuItemAvailability(true);
-				document.getElementById("menuitem.label.ecfolderbase.publicfoldersroot").disabled = false;
-			}
+			this.exchWebServicesChangeFolderbaseMenuItemAvailability(false);
 
-			// No mailbox specified. We only do server check.
-			if ( (document.getElementById("exchWebService_server").value == "") ||
-			     (!exchWebServicesValidUsernameDomain()) ) {
-				document.getElementById("exchWebService_autodiscovercheckrow").hidden = true;
-				document.getElementById("exchWebService_serverandmailboxcheckrow").hidden = true;
-				document.getElementById("exchWebService_servercheckrow").hidden = true;
+			this._document.getElementById("exchWebService_mailbox").setAttribute("required", true);
+			this._document.getElementById("exchWebService_servercheckrow").hidden = true;
+
+			if ( (this._document.getElementById("exchWebService_mailbox").value == "") ||
+			     (!this.exchWebServicesValidUsernameDomain()) ) {
+				this._document.getElementById("exchWebService_autodiscovercheckrow").hidden = true;
+				this._document.getElementById("exchWebService_serverandmailboxcheckrow").hidden = true;
 			}
 			else {
-				document.getElementById("exchWebService_autodiscovercheckrow").hidden = true;
-				document.getElementById("exchWebService_serverandmailboxcheckrow").hidden = true;
-				document.getElementById("exchWebService_servercheckrow").hidden = false;
+				this._document.getElementById("exchWebService_autodiscovercheckrow").hidden = false;
+				this._document.getElementById("exchWebService_serverandmailboxcheckrow").hidden = true;
 			}
+			this._document.getElementById("exchWebService_server").disabled = true;
 		}
 		else {
-			exchWebServicesChangeFolderbaseMenuItemAvailability(false);
+			this._document.getElementById("exchWebService_mailbox").setAttribute("required", false);
+			if (this._document.getElementById("exchWebService_mailbox").value == "") {
 
-			// No mailbox specified. We do server and mailbox check
-			// No mailbox specified. We only do server check.
-			if ( (document.getElementById("exchWebService_server").value == "") ||
-			     (!exchWebServicesValidUsernameDomain()) ) {
-				document.getElementById("exchWebService_autodiscovercheckrow").hidden = true;
-				document.getElementById("exchWebService_serverandmailboxcheckrow").hidden = true;
-				document.getElementById("exchWebService_servercheckrow").hidden = true;
+				if (this._document.getElementById("exchWebService_mailbox").value == "") {
+					this.exchWebServicesChangeFolderbaseMenuItemAvailability(true);
+					this._document.getElementById("menuitem.label.ecfolderbase.publicfoldersroot").disabled = false;
+				}
+
+				// No mailbox specified. We only do server check.
+				if ( (this._document.getElementById("exchWebService_server").value == "") ||
+				     (!this.exchWebServicesValidUsernameDomain()) ) {
+					this._document.getElementById("exchWebService_autodiscovercheckrow").hidden = true;
+					this._document.getElementById("exchWebService_serverandmailboxcheckrow").hidden = true;
+					this._document.getElementById("exchWebService_servercheckrow").hidden = true;
+				}
+				else {
+					this._document.getElementById("exchWebService_autodiscovercheckrow").hidden = true;
+					this._document.getElementById("exchWebService_serverandmailboxcheckrow").hidden = true;
+					this._document.getElementById("exchWebService_servercheckrow").hidden = false;
+				}
 			}
 			else {
-				document.getElementById("exchWebService_autodiscovercheckrow").hidden = true;
-				document.getElementById("exchWebService_serverandmailboxcheckrow").hidden = false;
-				document.getElementById("exchWebService_servercheckrow").hidden = true;
-			}
-		}
+				this.exchWebServicesChangeFolderbaseMenuItemAvailability(false);
 
-		document.getElementById("exchWebService_server").disabled = false;
-	}
+				// No mailbox specified. We do server and mailbox check
+				// No mailbox specified. We only do server check.
+				if ( (this._document.getElementById("exchWebService_server").value == "") ||
+				     (!this.exchWebServicesValidUsernameDomain()) ) {
+					this._document.getElementById("exchWebService_autodiscovercheckrow").hidden = true;
+					this._document.getElementById("exchWebService_serverandmailboxcheckrow").hidden = true;
+					this._document.getElementById("exchWebService_servercheckrow").hidden = true;
+				}
+				else {
+					this._document.getElementById("exchWebService_autodiscovercheckrow").hidden = true;
+					this._document.getElementById("exchWebService_serverandmailboxcheckrow").hidden = false;
+					this._document.getElementById("exchWebService_servercheckrow").hidden = true;
+				}
+			}
+
+			this._document.getElementById("exchWebService_server").disabled = false;
+		}
 	
-	if (gexchWebServicesDetailsChecked) {
-		document.getElementById("exchWebService_autodiscovercheckrow").hidden = true;
-		document.getElementById("exchWebService_serverandmailboxcheckrow").hidden = true;
-		document.getElementById("exchWebService_servercheckrow").hidden = true;
+		if (this.gexchWebServicesDetailsChecked) {
+			this._document.getElementById("exchWebService_autodiscovercheckrow").hidden = true;
+			this._document.getElementById("exchWebService_serverandmailboxcheckrow").hidden = true;
+			this._document.getElementById("exchWebService_servercheckrow").hidden = true;
 
-		document.getElementById("exchWebService_folderbaserow").hidden = (exchWebServicesgFolderIdOfShare != "");
-		document.getElementById("exchWebService_folderpathrow").hidden = (exchWebServicesgFolderIdOfShare != "");
+			this._document.getElementById("exchWebService_folderbaserow").hidden = (this.exchWebServicesgFolderIdOfShare != "");
+			this._document.getElementById("exchWebService_folderpathrow").hidden = (this.exchWebServicesgFolderIdOfShare != "");
 
-		document.getElementById("exchWebServices-SharedFolderID").hidden = (exchWebServicesgFolderIdOfShare == "");
+			this._document.getElementById("exchWebServices-SharedFolderID").hidden = (this.exchWebServicesgFolderIdOfShare == "");
 		
-	}
+		}
 
-	// We determine which to use on the dialog id which is active for the current document.
-	if (document.getElementById("exchWebService_ContactSettings_dialog")) {   // Contact settings dialog.
-		exchWebService.exchangeContactSettings.checkRequired();
-	}
-	else {
-		if (document.getElementById("exchWebService_ExchangeSettings_dialog")) { // EWS Settings dialog.
-			exchWebService.exchangeSettings.checkRequired();
+		// We determine which to use on the dialog id which is active for the current this._document.
+		if (this._document.getElementById("exchWebService_ContactSettings_dialog")) {   // Contact settings dialog.
+			exchWebService.exchangeContactSettings.checkRequired();
 		}
 		else {
-			if (document.getElementById("exchWebService_CloneSettings_dialog")) { // Clone Settings dialog.
-				exchWebService.exchangeCloneSettings.checkRequired();
+			if (this._document.getElementById("exchWebService_ExchangeSettings_dialog")) { // EWS Settings dialog.
+				exchWebService.exchangeSettings.checkRequired();
 			}
 			else {
-				try {
-					checkRequired();  // On creating a new calendar. Default Lightning create calendar wizard.
+				if (this._document.getElementById("exchWebService_CloneSettings_dialog")) { // Clone Settings dialog.
+					exchWebService.exchangeCloneSettings.checkRequired();
 				}
-				catch(ex) {
-					exchWebService.commonFunctions.LOG("NO checkRequired found.");
+				else {
+					try {
+						checkRequired();  // On creating a new calendar. Default Lightning create calendar wizard.
+					}
+					catch(ex) {
+						this.globalFunctions.LOG("NO checkRequired found.");
+					}
 				}
 			}
 		}
-	}
 
-	if (window) {
-		window.sizeToContent();
-	}
-}
-
-function exchWebServicesAutodiscoverCheckbox(aCheckBox)
-{
-	exchWebServicesgAutoDiscover = aCheckBox.checked;
-	gexchWebServicesDetailsChecked = false;
-	exchWebServicesCheckRequired();
-}
-
-function exchWebServicesInitMailbox(aNewValue)
-{
-	exchWebServicesgMailbox = aNewValue;
-	gexchWebServicesDetailsChecked = false;
-	exchWebServicesCheckRequired();
-}
-
-function exchWebServicesDoMailboxChanged(aTextBox)
-{
-	exchWebServicesgMailbox = aTextBox.value;
-	document.getElementById("exchWebService_displayname").value = "";
-	exchWebServicesgDisplayName = "";
-	gexchWebServicesDetailsChecked = false;
-	exchWebServicesCheckRequired();
-}
-
-function exchWebServicesDoUserChanged(aTextBox)
-{
-	exchWebServicesgUser = aTextBox.value;
-	if (exchWebServicesgUser.indexOf("@") > -1) {
-		document.getElementById("exchWebService_windowsdomain").disabled = true;
-		document.getElementById("exchWebService_windowsdomain").value = "";
-		//document.getElementById("exchWebService_windowsdomain").setAttribute("required", false);
-		exchWebServicesgDomain = "";
-	}
-	else {
-		document.getElementById("exchWebService_windowsdomain").disabled = false;
-		//document.getElementById("exchWebService_windowsdomain").setAttribute("required", true);
-	}
-
-	gexchWebServicesDetailsChecked = false;
-	exchWebServicesCheckRequired();
-}
-
-function exchWebServicesDoDomainChanged(aTextBox)
-{
-	exchWebServicesgDomain = aTextBox.value;
-	gexchWebServicesDetailsChecked = false;
-	exchWebServicesCheckRequired();
-}
-
-function exchWebServicesDoFolderIdOfShareChanged(aTextBox)
-{
-	exchWebServicesgFolderIdOfShare = aTextBox.value;
-	gexchWebServicesDetailsChecked = false;
-	exchWebServicesCheckRequired();
-}
-
-function exchWebServicesDoServerChanged(aTextBox)
-{
-	exchWebServicesgServer = aTextBox.value;
-	gexchWebServicesDetailsChecked = false;
-	exchWebServicesCheckRequired();
-}
-
-// newStatus = true will disable folderbase menuitems
-// newStatus = false will enable all folderbase menuitems
-
-function exchWebServicesChangeFolderbaseMenuItemAvailability(newStatus)
-{
-	var menuItem = document.getElementById("menupopup.ecfolderbase").firstChild;
-	while (menuItem) {
-		if (! menuItem.hasAttribute("donotchange")) {
-			menuItem.disabled = newStatus;
+		if (this._window) {
+			this._window.sizeToContent();
 		}
-		menuItem = menuItem.nextSibling;
-	}
-	
-}
+	},
 
-function exchWebServicesDoFolderBaseChanged(aMenuList)
-{
-	exchWebServicesgFolderBase = aMenuList.value;
+	exchWebServicesAutodiscoverCheckbox: function _exchWebServicesAutodiscoverCheckbox(aCheckBox)
+	{
+		this.exchWebServicesgAutoDiscover = aCheckBox.checked;
+		this.gexchWebServicesDetailsChecked = false;
+		this.exchWebServicesCheckRequired();
+	},
 
-	// Reset folder path
-	document.getElementById("exchWebService_folderpath").value = "/";
-	exchWebServicesgFolderPath = "/";
+	exchWebServicesInitMailbox: function _exchWebServicesInitMailbox(aNewValue)
+	{
+		this.exchWebServicesgMailbox = aNewValue;
+		this.gexchWebServicesDetailsChecked = false;
+		this.exchWebServicesCheckRequired();
+	},
 
-	exchWebServicesgFolderID = "";
-	exchWebServicesgChangeKey = "";
+	exchWebServicesDoMailboxChanged: function _exchWebServicesDoMailboxChanged(aTextBox)
+	{
+		this.exchWebServicesgMailbox = aTextBox.value;
+		this._document.getElementById("exchWebService_displayname").value = "";
+		this.exchWebServicesgDisplayName = "";
+		this.gexchWebServicesDetailsChecked = false;
+		this.exchWebServicesCheckRequired();
+	},
 
-	if (document.getElementById("exchWebService_folderpath").value != "/") {
-		gexchWebServices2ndDetailsChecked = false;
-	}
-	else {
-		gexchWebServices2ndDetailsChecked = true;
-	}
-	exchWebServicesCheckRequired();
-}
-
-function exchWebServicesGetUsername()
-{
-	if (exchWebServicesgUser.indexOf("@") > -1) {
-		return exchWebServicesgUser;
-	}
-	else {
-		if (exchWebServicesgDomain == "") {
-			return exchWebServicesgUser;
+	exchWebServicesDoUserChanged: function _exchWebServicesDoUserChanged(aTextBox)
+	{
+		this.exchWebServicesgUser = aTextBox.value;
+		if (this.exchWebServicesgUser.indexOf("@") > -1) {
+			this._document.getElementById("exchWebService_windowsdomain").disabled = true;
+			this._document.getElementById("exchWebService_windowsdomain").value = "";
+			//this._document.getElementById("exchWebService_windowsdomain").setAttribute("required", false);
+			this.exchWebServicesgDomain = "";
 		}
 		else {
-			return exchWebServicesgDomain+"\\"+exchWebServicesgUser;
+			this._document.getElementById("exchWebService_windowsdomain").disabled = false;
+			//this._document.getElementById("exchWebService_windowsdomain").setAttribute("required", true);
 		}
-	}
-}
 
-function exchWebServicesDoCheckServerAndMailbox()
-{
-	document.getElementById("exchWebService_serverandmailboxcheckbutton").disabled = true;
+		this.gexchWebServicesDetailsChecked = false;
+		this.exchWebServicesCheckRequired();
+	},
 
-	var folderIdOfShare = exchWebServicesgFolderIdOfShare;
+	exchWebServicesDoDomainChanged: function _exchWebServicesDoDomainChanged(aTextBox)
+	{
+		this.exchWebServicesgDomain = aTextBox.value;
+		this.gexchWebServicesDetailsChecked = false;
+		this.exchWebServicesCheckRequired();
+	},
 
-	try {
-		window.setCursor("wait");
-		if ((folderIdOfShare) && (folderIdOfShare != "")) {
-			var tmpObject = new erConvertIDRequest(
-				{user: exchWebServicesGetUsername(), 
-				 mailbox: exchWebServicesgMailbox,
-				 serverUrl: exchWebServicesgServer,
-				 folderId: folderIdOfShare}, exchWebServicesConvertIDOK, exchWebServicesConvertIDError);
+	exchWebServicesDoFolderIdOfShareChanged: function _exchWebServicesDoFolderIdOfShareChanged(aTextBox)
+	{
+		this.exchWebServicesgFolderIdOfShare = aTextBox.value;
+		this.gexchWebServicesDetailsChecked = false;
+		this.exchWebServicesCheckRequired();
+	},
+
+	exchWebServicesDoServerChanged: function _exchWebServicesDoServerChanged(aTextBox)
+	{
+		this.exchWebServicesgServer = aTextBox.value;
+		this.gexchWebServicesDetailsChecked = false;
+		this.exchWebServicesCheckRequired();
+	},
+
+	// newStatus = true will disable folderbase menuitems
+	// newStatus = false will enable all folderbase menuitems
+
+	exchWebServicesChangeFolderbaseMenuItemAvailability: function _exchWebServicesChangeFolderbaseMenuItemAvailability(newStatus)
+	{
+		var menuItem = this._document.getElementById("menupopup.ecfolderbase").firstChild;
+		while (menuItem) {
+			if (! menuItem.hasAttribute("donotchange")) {
+				menuItem.disabled = newStatus;
+			}
+			menuItem = menuItem.nextSibling;
+		}
+	
+	},
+
+	exchWebServicesDoFolderBaseChanged: function _exchWebServicesDoFolderBaseChanged(aMenuList)
+	{
+		this.exchWebServicesgFolderBase = aMenuList.value;
+
+		// Reset folder path
+		this._document.getElementById("exchWebService_folderpath").value = "/";
+		this.exchWebServicesgFolderPath = "/";
+
+		this.exchWebServicesgFolderID = "";
+		this.exchWebServicesgChangeKey = "";
+
+		if (this._document.getElementById("exchWebService_folderpath").value != "/") {
+			this.gexchWebServices2ndDetailsChecked = false;
 		}
 		else {
-			var tmpObject = new erPrimarySMTPCheckRequest(
-				{user: exchWebServicesGetUsername(), 
-				 mailbox: exchWebServicesgMailbox,
-				 serverUrl: exchWebServicesgServer,
-				 folderBase: "calendar"}, exchWebServicesCheckServerAndMailboxOK, exchWebServicesCheckServerAndMailboxError);
+			this.gexchWebServices2ndDetailsChecked = true;
 		}
-	}
-	catch(err) {
-		window.setCursor("auto");
-		exchWebService.commonFunctions.ERROR("Warning: Error during creation of erPrimarySMTPCheckRequest. Err="+err+"\n");
-	}
-}
+		this.exchWebServicesCheckRequired();
+	},
 
-function exchWebServicesConvertIDOK(aFolderID, aMailbox)
-{
-	exchWebService.commonFunctions.LOG("exchWebServicesConvertIDOK: aFolderID:"+aFolderID+", aMailbox:"+aMailbox);
-
-	try {
-		window.setCursor("wait");
-		var tmpObject = new erGetFolderRequest(
-			{user: exchWebServicesGetUsername(), 
-			 mailbox: aMailbox,
-			 serverUrl: exchWebServicesgServer,
-			 folderID: aFolderID}, exchWebServicesGetFolderOK, exchWebServicesGetFolderError);
-	}
-	catch(err) {
-		window.setCursor("auto");
-		exchWebService.commonFunctions.ERROR("Warning: Error during creation of erPrimarySMTPCheckRequest (2). Err="+err+"\n");
-	}
-}
-
-function exchWebServicesConvertIDError(aExchangeRequest, aCode, aMsg)
-{
-	gexchWebServicesDetailsChecked = false;
-	switch (aCode) {
-	case -20:
-	case -30:
-		break;
-	case -6:
-		alert(exchWebService.commonFunctions.getString("calExchangeCalendar", "ecErrorServerCheckURLInvalid", [exchWebServicesgServer], "exchangecalendar"));
-		break;
-	default:
-		alert(exchWebService.commonFunctions.getString("calExchangeCalendar", "ecErrorServerAndMailboxCheck", [aMsg, aCode], "exchangecalendar"));
-	}
-	document.getElementById("exchWebService_serverandmailboxcheckbutton").disabled = false;
-	exchWebServicesCheckRequired();
-	window.setCursor("auto");
-}
-
-function exchWebServicesGetFolderOK(aExchangeRequest, aFolderID, aChangeKey, aFolderClass)
-{
-	exchWebService.commonFunctions.LOG("exchWebServicesGetFolderOK: aFolderID:"+aFolderID+", aChangeKey:"+aChangeKey+", aFolderClass:"+aFolderClass);
-
-	if (aFolderClass == "IPF.Appointment") {
-		exchWebServicesgFolderID = aFolderID;
-		exchWebServicesgChangeKey = aChangeKey;
-		gexchWebServicesDetailsChecked = true;
-		gexchWebServices2ndDetailsChecked = true;
-		document.getElementById("exchWebServices-SharedFolderID-label").value = aExchangeRequest.displayName;
-	}
-	else {
-		alert(exchWebService.commonFunctions.getString("calExchangeCalendar", "ecErrorServerAndMailboxCheck", [aMsg, aCode], "exchangecalendar"));
-	}
-	
-	document.getElementById("exchWebService_serverandmailboxcheckbutton").disabled = false;
-
-	exchWebServicesCheckRequired();
-	window.setCursor("auto");
-}
-
-function exchWebServicesGetFolderError(aExchangeRequest, aCode, aMsg)
-{
-	gexchWebServicesDetailsChecked = false;
-	switch (aCode) {
-	case -20:
-	case -30:
-		break;
-	case -6:
-		alert(exchWebService.commonFunctions.getString("calExchangeCalendar", "ecErrorServerCheckURLInvalid", [exchWebServicesgServer], "exchangecalendar"));
-		break;
-	default:
-		alert(exchWebService.commonFunctions.getString("calExchangeCalendar", "ecErrorServerAndMailboxCheck", [aMsg, aCode], "exchangecalendar"));
-	}
-	document.getElementById("exchWebService_serverandmailboxcheckbutton").disabled = false;
-	exchWebServicesCheckRequired();
-	window.setCursor("auto");
-}
-
-function exchWebServicesCheckServerAndMailboxOK(newPrimarySMTP)
-{
-
-	if (newPrimarySMTP) {
-		exchWebServicesgMailbox = newPrimarySMTP
-		document.getElementById("exchWebService_mailbox").value = newPrimarySMTP;
-	}
-
-	gexchWebServicesDetailsChecked = true;
-	document.getElementById("exchWebService_serverandmailboxcheckbutton").disabled = false;
-
-	exchWebServicesCheckRequired();
-	window.setCursor("auto");
-}
-
-function exchWebServicesCheckServerAndMailboxError(aExchangeRequest, aCode, aMsg)
-{
-	exchWebService.commonFunctions.LOG("exchWebServicesCheckServerAndMailboxError");
-	gexchWebServicesDetailsChecked = false;
-	switch (aCode) {
-	case -20:
-	case -30:
-		break;
-	case -6:
-		alert(exchWebService.commonFunctions.getString("calExchangeCalendar", "ecErrorServerCheckURLInvalid", [exchWebServicesgServer], "exchangecalendar"));
-		break;
-	case -208:  // folderNotFound. 
-		alert(exchWebService.commonFunctions.getString("calExchangeCalendar", "ecErrorServerAndMailboxCheckFolderNotFound", [aMsg, aCode], "exchangecalendar"));
-		exchWebServicesCheckServerAndMailboxOK();
-		document.getElementById("exchWebService_folderbaserow").hidden = true;
-		document.getElementById("exchWebService_folderpathrow").hidden = true;
-		document.getElementById("exchWebServices-UserAvailability").hidden = false;
-		return;
-	default:
-		alert(exchWebService.commonFunctions.getString("calExchangeCalendar", "ecErrorServerAndMailboxCheck", [aMsg, aCode], "exchangecalendar"));
-	}
-	document.getElementById("exchWebService_serverandmailboxcheckbutton").disabled = false;
-	exchWebServicesCheckRequired();
-	window.setCursor("auto");
-}
-
-function exchWebServicesDoCheckServer()
-{
-	document.getElementById("exchWebService_servercheckbutton").disabled = true;
-
-	
-	try {
-		window.setCursor("wait");
-	var tmpObject = new erGetFolderRequest(
-		{user: exchWebServicesGetUsername(), 
-		 mailbox: "",
-		 folderBase: "publicfoldersroot",
-		 folderPath: "/",
-		 serverUrl: exchWebServicesgServer}, exchWebServicesCheckServerOK, exchWebServicesCheckServerError)
-	}
-	catch(err) {
-		window.setCursor("auto");
-		exchWebService.commonFunctions.ERROR("Warning: Error during creation of erGetFolderRequest. Err="+err+"\n");
-	}
-}
-
-function exchWebServicesCheckServerOK( folderID, changeKey, folderClass)
-{
-
-	gexchWebServicesDetailsChecked = true;
-	document.getElementById("exchWebService_servercheckbutton").disabled = false;
-//	exchWebServicesChangeFolderbaseMenuItemAvailability(true);
-//	document.getElementById("menuitem.label.ecfolderbase.publicfoldersroot").disabled = false;
-
-	if (exchWebServicesgFolderBase != "publicfoldersroot") {
-		exchWebServicesgFolderBase = "publicfoldersroot";
-		document.getElementById("exchWebService_folderbase").value = "publicfoldersroot";
-		document.getElementById("exchWebService_folderpath").value = "/";
-	}
-
-	exchWebServicesCheckRequired();
-	window.setCursor("auto");
-}
-
-function exchWebServicesCheckServerError(aExchangeRequest, aCode, aMsg)
-{
-	exchWebService.commonFunctions.LOG("exchWebServicesCheckServerError");
-	gexchWebServicesDetailsChecked = false;
-	switch (aCode) {
-	case -20:
-	case -30:
-		break;
-	case -6:
-		alert(exchWebService.commonFunctions.getString("calExchangeCalendar", "ecErrorServerCheckURLInvalid", [exchWebServicesgServer], "exchangecalendar"));
-		break;
-	default:
-		alert(exchWebService.commonFunctions.getString("calExchangeCalendar", "ecErrorServerCheck", [aMsg, aCode], "exchangecalendar"));
-	}
-	document.getElementById("exchWebService_servercheckbutton").disabled = false;
-
-//	exchWebServicesChangeFolderbaseMenuItemAvailability(false);
-
-	exchWebServicesCheckRequired();
-	window.setCursor("auto");
-}
-
-var exchAutoDiscovery2010 = true;
-
-function exchWebServicesDoAutodiscoverCheck()
-{
-	document.getElementById("exchWebService_autodiscovercheckbutton").disabled = true;
-
-	try {
-		window.setCursor("wait");
-		exchAutoDiscovery2010 = true;  // We first try Autodiscovery for Exchange2010 and higher. 
-		var tmpObject = new erAutoDiscoverySOAPRequest( 
-			{user: exchWebServicesGetUsername(), 
-			 mailbox: exchWebServicesgMailbox}, 
-			 exchWebServicesAutodiscoveryOK, 
-			 exchWebServicesAutodiscoveryError, null);
-	}
-	catch(err) {
-		window.setCursor("auto");
-		exchWebService.commonFunctions.ERROR("Warning: Could not create erAutoDiscoverRequest. Err="+err+"\n");
-	}
-}
-
-function exchWebServicesAutodiscoveryOK(ewsUrls, DisplayName, SMTPAddress, redirectAddr)
-{
-	exchWebService.commonFunctions.LOG("ecAutodiscoveryOK");
-
-	if (redirectAddr) {
-		// We have an redirectAddr. Go use the new email address as primary.
-		exchWebService.commonFunctions.LOG("ecAutodiscoveryOK: We received an redirectAddr:"+redirectAddr);
-		exchWebServicesgMailbox = redirectAddr;
-		document.getElementById("exchWebService_mailbox").value = redirectAddr;
-		exchWebServicesDoAutodiscoverCheck();
-		return;
-	}
-
-	var selectedEWSUrl = {value:undefined};
-	var userCancel = false;
-
-	if (ewsUrls) {
-		if (ewsUrls.length > 1) {
-			// We have got multiple ews urls returned. Let the user choose.
-
-			window.openDialog("chrome://exchangecalendar/content/selectEWSUrl.xul",
-				"selectfrommultipleews",
-				"chrome,titlebar,toolbar,centerscreen,dialog,modal=yes,resizable=no",
-				ewsUrls, selectedEWSUrl); 
-
-			if ((!selectedEWSUrl.value) || (selectedEWSUrl.value == "")) {
-				exchWebService.commonFunctions.LOG("  ++++ Selection canceled by user");
-				userCancel = true;
+	exchWebServicesGetUsername: function _exchWebServicesGetUsername()
+	{
+		if (this.exchWebServicesgUser.indexOf("@") > -1) {
+			return this.exchWebServicesgUser;
+		}
+		else {
+			if (this.exchWebServicesgDomain == "") {
+				return this.exchWebServicesgUser;
+			}
+			else {
+				return this.exchWebServicesgDomain+"\\"+this.exchWebServicesgUser;
 			}
 		}
-		else {
-			// We only have one url. Use it.
-//			selectedEWSUrl.value = ewsUrls.text();
-			selectedEWSUrl.value = ewsUrls[0].value;
-		}
+	},
 
-	}
+	exchWebServicesDoCheckServerAndMailbox: function _exchWebServicesDoCheckServerAndMailbox()
+	{
+		this._document.getElementById("exchWebService_serverandmailboxcheckbutton").disabled = true;
 
-	if (!userCancel) {
-		exchWebServicesgDisplayName = DisplayName;
-		document.getElementById("exchWebService_displayname").value = DisplayName;
-
-		if ((SMTPAddress) && (SMTPAddress != '')) {
-			exchWebServicesgMailbox = SMTPAddress;
-			document.getElementById("exchWebService_mailbox").value = SMTPAddress;
-		}
-	
-		exchWebServicesgServer = selectedEWSUrl.value;
-		document.getElementById("exchWebService_server").value = selectedEWSUrl.value; 
-
-		gexchWebServicesDetailsChecked = true;
-		document.getElementById("exchWebService_autodiscovercheckbutton").disabled = false;
-		document.getElementById("exchWebService_autodiscover").checked = false;
-	}
-	else {
-		document.getElementById("exchWebService_autodiscovercheckbutton").disabled = false;
-	}
-
-	exchWebServicesCheckRequired();
-	window.setCursor("auto");
-}
-
-function exchWebServicesAutodiscoveryError(aExchangeRequest, aCode, aMsg)
-{
-	exchWebService.commonFunctions.LOG("ecAutodiscoveryError. aCode:"+aCode+", aMsg:"+aMsg);
-
-	if (exchAutoDiscovery2010 == true) {
-		exchAutoDiscovery2010 = false; // AutoDiscovery for Exchange2010 and higher failed. Next try old POX Autodiscovery.
+		var folderIdOfShare = this.exchWebServicesgFolderIdOfShare;
 
 		try {
-			var tmpObject = new erAutoDiscoverRequest( 
-				{user: exchWebServicesGetUsername(), 
-				 mailbox: exchWebServicesgMailbox}, 
-				 exchWebServicesAutodiscoveryOK, 
-				 exchWebServicesAutodiscoveryError, null);
-			return;
+			this._window.setCursor("wait");
+			var self = this;
+			if ((folderIdOfShare) && (folderIdOfShare != "")) {
+				var tmpObject = new erConvertIDRequest(
+					{user: this.exchWebServicesGetUsername(), 
+					 mailbox: this.exchWebServicesgMailbox,
+					 serverUrl: this.exchWebServicesgServer,
+					 folderId: folderIdOfShare}, 
+					function(aFolderID, aMailbox) { self.exchWebServicesConvertIDOK(aFolderID, aMailbox);}, 
+					function(aExchangeRequest, aCode, aMsg) { self.exchWebServicesConvertIDError(aExchangeRequest, aCode, aMsg);});
+			}
+			else {
+				var tmpObject = new erPrimarySMTPCheckRequest(
+					{user: this.exchWebServicesGetUsername(), 
+					 mailbox: this.exchWebServicesgMailbox,
+					 serverUrl: this.exchWebServicesgServer,
+					 folderBase: "calendar"}, 
+					function(newPrimarySMTP) { self.exchWebServicesCheckServerAndMailboxOK(newPrimarySMTP);}, 
+					function(aExchangeRequest, aCode, aMsg) { self.exchWebServicesCheckServerAndMailboxError(aExchangeRequest, aCode, aMsg);});
+			}
 		}
 		catch(err) {
-			window.setCursor("auto");
-			exchWebService.commonFunctions.ERROR("Warning: Could not create erAutoDiscoverRequest. Err="+err+"\n");
-			return;
+			this._window.setCursor("auto");
+			this.globalFunctions.ERROR("Warning: Error during creation of erPrimarySMTPCheckRequest. Err="+err+"\n");
 		}
-	}
+	},
 
-	switch (aCode) {
-	case -20:
-	case -30:
-		break;
-	case -6:
-	case -9:
-	case -10:
-	case -14:
-	case -15:
-	case -16:
-	case -17:
-	case -18:
-		alert(exchWebService.commonFunctions.getString("calExchangeCalendar", "ecErrorAutodiscoveryURLInvalid", [exchWebServicesgMailbox], "exchangecalendar"));
-		break;
-	default:
-		alert(exchWebService.commonFunctions.getString("calExchangeCalendar", "ecErrorAutodiscovery", [aMsg, aCode], "exchangecalendar"));
-	}
+	exchWebServicesConvertIDOK: function _exchWebServicesConvertIDOK(aFolderID, aMailbox)
+	{
+		this.globalFunctions.LOG("exchWebServicesConvertIDOK: aFolderID:"+aFolderID+", aMailbox:"+aMailbox);
 
-	document.getElementById("exchWebService_autodiscovercheckbutton").disabled = false;
-	exchWebServicesCheckRequired();
-	window.setCursor("auto");
-}
-
-function exchWebServicesLoadExchangeSettingsByCalId(aCalId)
-{
-	var exchWebServicesCalPrefs = Cc["@mozilla.org/preferences-service;1"]
-                    .getService(Ci.nsIPrefService)
-		    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+aCalId+".");
-
-	if (exchWebServicesCalPrefs) {
-		document.getElementById("exchWebService_server").value = exchWebServicesCalPrefs.getCharPref("ecServer");
-		document.getElementById("exchWebService_windowsuser").value = exchWebServicesCalPrefs.getCharPref("ecUser");
-		if (document.getElementById("exchWebService_windowsuser").value.indexOf("@") > -1) {
-			//document.getElementById("exchWebService_windowsdomain").setAttribute("required", false);
-			document.getElementById("exchWebService_windowsdomain").disabled = true;
-		}
-		document.getElementById("exchWebService_windowsdomain").value = exchWebServicesCalPrefs.getCharPref("ecDomain");
-		document.getElementById("exchWebService_folderpath").value = exchWebServicesCalPrefs.getCharPref("ecFolderpath");
-
-		for (var i=0; i < document.getElementById("exchWebService_folderbase").itemCount; i++) {
-			if (document.getElementById("exchWebService_folderbase").getItemAtIndex(i).value == exchWebServicesCalPrefs.getCharPref("ecFolderbase")) {
-				document.getElementById("exchWebService_folderbase").selectedIndex = i;
-			}
-		}
-		document.getElementById("exchWebService_mailbox").value = exchWebServicesCalPrefs.getCharPref("ecMailbox");
-		if (document.getElementById("exchWebService_mailbox").value == "") {
-			exchWebServicesChangeFolderbaseMenuItemAvailability(true);
-			document.getElementById("menuitem.label.ecfolderbase.publicfoldersroot").disabled = false;
-		}
-
-
-
-		exchWebServicesgServer = exchWebServicesCalPrefs.getCharPref("ecServer");
-		exchWebServicesgUser = exchWebServicesCalPrefs.getCharPref("ecUser");
-		exchWebServicesgDomain = exchWebServicesCalPrefs.getCharPref("ecDomain");
-
-		exchWebServicesgFolderBase = exchWebServicesCalPrefs.getCharPref("ecFolderbase");
-		exchWebServicesgFolderPath = exchWebServicesCalPrefs.getCharPref("ecFolderpath");
-		exchWebServicesgMailbox = exchWebServicesCalPrefs.getCharPref("ecMailbox");
 		try {
-			exchWebServicesgFolderID = exchWebServicesCalPrefs.getCharPref("ecFolderID");
-		} catch(err) { exchWebServicesgFolderID = ""; }
-		try {
-			exchWebServicesgChangeKey = exchWebServicesCalPrefs.getCharPref("ecChangeKey");
-		} catch(err) { exchWebServicesgChangeKey = ""; }
-		try {
-			exchWebServicesgFolderIdOfShare = exchWebServicesCalPrefs.getCharPref("ecFolderIDOfShare");
-			document.getElementById("exchWebService_folderidofshare").value = exchWebServicesgFolderIdOfShare;
-		} catch(err) { exchWebServicesgFolderIdOfShare = ""; }
-	}
+			this._window.setCursor("wait");
+			var self = this;
+			var tmpObject = new erGetFolderRequest(
+				{user: this.exchWebServicesGetUsername(), 
+				 mailbox: aMailbox,
+				 serverUrl: this.exchWebServicesgServer,
+				 folderID: aFolderID}, 
+				function(aExchangeRequest, aFolderID, aChangeKey, aFolderClass){ self.exchWebServicesGetFolderOK(aExchangeRequest, aFolderID, aChangeKey, aFolderClass);}, 
+				function(aExchangeRequest, aCode, aMsg){ self.exchWebServicesGetFolderError(aExchangeRequest, aCode, aMsg);});
+		}
+		catch(err) {
+			this._window.setCursor("auto");
+			this.globalFunctions.ERROR("Warning: Error during creation of erPrimarySMTPCheckRequest (2). Err="+err+"\n");
+		}
+	},
 
-	gexchWebServicesDetailsChecked = true;
-	gexchWebServices2ndDetailsChecked = true;
+	exchWebServicesConvertIDError: function _exchWebServicesConvertIDError(aExchangeRequest, aCode, aMsg)
+	{
+		this.gexchWebServicesDetailsChecked = false;
+		switch (aCode) {
+		case -20:
+		case -30:
+			break;
+		case -6:
+			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorServerCheckURLInvalid", [this.exchWebServicesgServer], "exchangecalendar"));
+			break;
+		default:
+			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorServerAndMailboxCheck", [aMsg, aCode], "exchangecalendar"));
+		}
+		this._document.getElementById("exchWebService_serverandmailboxcheckbutton").disabled = false;
+		this.exchWebServicesCheckRequired();
+		this._window.setCursor("auto");
+	},
 
-	exchWebServicesCheckRequired();
-}
+	exchWebServicesGetFolderOK: function _exchWebServicesGetFolderOK(aExchangeRequest, aFolderID, aChangeKey, aFolderClass)
+	{
+		this.globalFunctions.LOG("exchWebServicesGetFolderOK: aFolderID:"+aFolderID+", aChangeKey:"+aChangeKey+", aFolderClass:"+aFolderClass);
 
-function exchWebServicesSaveExchangeSettingsByCalId(aCalId)
-{
-	var exchWebServicesCalPrefs = Cc["@mozilla.org/preferences-service;1"]
-                    .getService(Ci.nsIPrefService)
-		    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+aCalId+".");
-
-	if (exchWebServicesCalPrefs) {
-		exchWebServicesCalPrefs.setCharPref("ecServer", exchWebServicesgServer);
-		exchWebServicesCalPrefs.setCharPref("ecUser", exchWebServicesgUser);
-		exchWebServicesCalPrefs.setCharPref("ecDomain", exchWebServicesgDomain);
-		exchWebServicesCalPrefs.setCharPref("ecFolderpath", exchWebServicesgFolderPath);
-		exchWebServicesCalPrefs.setCharPref("ecFolderbase", exchWebServicesgFolderBase);
-		exchWebServicesCalPrefs.setCharPref("ecMailbox", exchWebServicesgMailbox);
-	}
-
-	if ((exchWebServicesgFolderPath == "/") && (exchWebServicesgFolderIdOfShare == "")) {
-		exchWebServicesgFolderID = "";
-		exchWebServicesgChangeKey = "";
-	}
-	exchWebServicesCalPrefs.setCharPref("ecFolderID", exchWebServicesgFolderID);
-	exchWebServicesCalPrefs.setCharPref("ecChangeKey", exchWebServicesgChangeKey);
-
-	exchWebServicesCalPrefs.setCharPref("ecFolderIDOfShare", exchWebServicesgFolderIdOfShare);
-
-}
-
-function exchWebServicesDoFolderBrowse()
-{
-	var input = { answer: "",
-			parentFolder: {user: exchWebServicesGetUsername(), 
-					mailbox: exchWebServicesgMailbox,
-					folderBase: exchWebServicesgFolderBase,
-					serverUrl: exchWebServicesgServer,
-					folderID: null,
-					changeKey: null} 
-			};
-
-	window.openDialog("chrome://exchangecalendar/content/browseFolder.xul",
-			"browseFolder",
-			"chrome,titlebar,toolbar,centerscreen,dialog,modal=yes,resizable=no",
-			input); 
-
-	if (input.answer == "select") {
-		document.getElementById("exchWebService_folderpath").value = input.fullPath;
-		exchWebServicesgFolderPath = input.fullPath;
-
-		gexchWebServices2ndDetailsChecked = true;
-
-		if (input.fullPath == "/") {
-			exchWebServicesgFolderID = "";
-			exchWebServicesgChangeKey = "";
+		if (aFolderClass == "IPF.Appointment") {
+			this.exchWebServicesgFolderID = aFolderID;
+			this.exchWebServicesgChangeKey = aChangeKey;
+			this.gexchWebServicesDetailsChecked = true;
+			this.gexchWebServices2ndDetailsChecked = true;
+			this._document.getElementById("exchWebServices-SharedFolderID-label").value = aExchangeRequest.displayName;
 		}
 		else {
-			exchWebServicesgFolderID = input.selectedFolder.folderID;
-			exchWebServicesgChangeKey = input.selectedFolder.changeKey;
+			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorServerAndMailboxCheck", [aMsg, aCode], "exchangecalendar"));
 		}
-		exchWebServicesCheckRequired();
-	}
-}
+	
+		this._document.getElementById("exchWebService_serverandmailboxcheckbutton").disabled = false;
 
-function exchWebServicesLoadExchangeSettingsByContactUUID(aUUID)
-{
-	var exchWebServicesCalPrefs = Cc["@mozilla.org/preferences-service;1"]
-                    .getService(Ci.nsIPrefService)
-		    .getBranch("extensions.exchangecontacts@extensions.1st-setup.nl.account."+aUUID+".");
+		this.exchWebServicesCheckRequired();
+		this._window.setCursor("auto");
+	},
 
-	if (exchWebServicesCalPrefs) {
+	exchWebServicesGetFolderError: function _exchWebServicesGetFolderError(aExchangeRequest, aCode, aMsg)
+	{
+		this.gexchWebServicesDetailsChecked = false;
+		switch (aCode) {
+		case -20:
+		case -30:
+			break;
+		case -6:
+			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorServerCheckURLInvalid", [this.exchWebServicesgServer], "exchangecalendar"));
+			break;
+		default:
+			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorServerAndMailboxCheck", [aMsg, aCode], "exchangecalendar"));
+		}
+		this._document.getElementById("exchWebService_serverandmailboxcheckbutton").disabled = false;
+		this.exchWebServicesCheckRequired();
+		this._window.setCursor("auto");
+	},
 
-		document.getElementById("exchWebService_contact_description").value = exchWebServicesCalPrefs.getCharPref("description");
-		document.getElementById("exchWebService_mailbox").value = exchWebServicesCalPrefs.getCharPref("mailbox");
-                if (document.getElementById("exchWebService_mailbox").value == "") {
-                        exchWebServicesChangeFolderbaseMenuItemAvailability(true);
-                        document.getElementById("menuitem.label.ecfolderbase.publicfoldersroot").disabled = false;
-                }
+	exchWebServicesCheckServerAndMailboxOK: function _exchWebServicesCheckServerAndMailboxOK(newPrimarySMTP)
+	{
 
-		document.getElementById("exchWebService_server").value = exchWebServicesCalPrefs.getCharPref("server");
-		document.getElementById("exchWebService_windowsuser").value = exchWebServicesCalPrefs.getCharPref("user");
-                if (document.getElementById("exchWebService_windowsuser").value.indexOf("@") > -1) {
-                        //document.getElementById("exchWebService_windowsdomain").setAttribute("required", false);
-                        document.getElementById("exchWebService_windowsdomain").disabled = true;
-                }
-		document.getElementById("exchWebService_windowsdomain").value = exchWebServicesCalPrefs.getCharPref("domain");
+		if (newPrimarySMTP) {
+			this.exchWebServicesgMailbox = newPrimarySMTP
+			this._document.getElementById("exchWebService_mailbox").value = newPrimarySMTP;
+		}
 
-		document.getElementById("exchWebService_folderpath").value = exchWebServicesCalPrefs.getCharPref("folderpath");
+		this.gexchWebServicesDetailsChecked = true;
+		this._document.getElementById("exchWebService_serverandmailboxcheckbutton").disabled = false;
 
-		for (var i=0; i < document.getElementById("exchWebService_folderbase").itemCount; i++) {
-			if (document.getElementById("exchWebService_folderbase").getItemAtIndex(i).value == exchWebServicesCalPrefs.getCharPref("folderbase")) {
-				document.getElementById("exchWebService_folderbase").selectedIndex = i;
-				break;
+		this.exchWebServicesCheckRequired();
+		this._window.setCursor("auto");
+	},
+
+	exchWebServicesCheckServerAndMailboxError: function _exchWebServicesCheckServerAndMailboxError(aExchangeRequest, aCode, aMsg)
+	{
+		this.globalFunctions.LOG("exchWebServicesCheckServerAndMailboxError");
+		this.gexchWebServicesDetailsChecked = false;
+		switch (aCode) {
+		case -20:
+		case -30:
+			break;
+		case -6:
+			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorServerCheckURLInvalid", [this.exchWebServicesgServer], "exchangecalendar"));
+			break;
+		case -208:  // folderNotFound. 
+			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorServerAndMailboxCheckFolderNotFound", [aMsg, aCode], "exchangecalendar"));
+			exchWebServicesCheckServerAndMailboxOK();
+			this._document.getElementById("exchWebService_folderbaserow").hidden = true;
+			this._document.getElementById("exchWebService_folderpathrow").hidden = true;
+			this._document.getElementById("exchWebServices-UserAvailability").hidden = false;
+			return;
+		default:
+			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorServerAndMailboxCheck", [aMsg, aCode], "exchangecalendar"));
+		}
+		this._document.getElementById("exchWebService_serverandmailboxcheckbutton").disabled = false;
+		this.exchWebServicesCheckRequired();
+		this._window.setCursor("auto");
+	},
+
+	exchWebServicesDoCheckServer: function _exchWebServicesDoCheckServer()
+	{
+		this._document.getElementById("exchWebService_servercheckbutton").disabled = true;
+
+	
+		try {
+			this._window.setCursor("wait");
+			var self = this;
+			var tmpObject = new erGetFolderRequest(
+				{user: this.exchWebServicesGetUsername(), 
+				 mailbox: "",
+				 folderBase: "publicfoldersroot",
+				 folderPath: "/",
+				 serverUrl: this.exchWebServicesgServer}, 
+				function(folderID, changeKey, folderClass){ self.exchWebServicesCheckServerOK(folderID, changeKey, folderClass);}, 
+				function(aExchangeRequest, aCode, aMsg){ self.exchWebServicesCheckServerError(aExchangeRequest, aCode, aMsg);})
+		}
+		catch(err) {
+			this._window.setCursor("auto");
+			this.globalFunctions.ERROR("Warning: Error during creation of erGetFolderRequest. Err="+err+"\n");
+		}
+	},
+
+	exchWebServicesCheckServerOK: function _exchWebServicesCheckServerOK(folderID, changeKey, folderClass)
+	{
+
+		this.gexchWebServicesDetailsChecked = true;
+		this._document.getElementById("exchWebService_servercheckbutton").disabled = false;
+	//	exchWebServicesChangeFolderbaseMenuItemAvailability(true);
+	//	this._document.getElementById("menuitem.label.ecfolderbase.publicfoldersroot").disabled = false;
+
+		if (this.exchWebServicesgFolderBase != "publicfoldersroot") {
+			this.exchWebServicesgFolderBase = "publicfoldersroot";
+			this._document.getElementById("exchWebService_folderbase").value = "publicfoldersroot";
+			this._document.getElementById("exchWebService_folderpath").value = "/";
+		}
+
+		this.exchWebServicesCheckRequired();
+		this._window.setCursor("auto");
+	},
+
+	exchWebServicesCheckServerError: function _exchWebServicesCheckServerError(aExchangeRequest, aCode, aMsg)
+	{
+		this.globalFunctions.LOG("exchWebServicesCheckServerError");
+		this.gexchWebServicesDetailsChecked = false;
+		switch (aCode) {
+		case -20:
+		case -30:
+			break;
+		case -6:
+			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorServerCheckURLInvalid", [this.exchWebServicesgServer], "exchangecalendar"));
+			break;
+		default:
+			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorServerCheck", [aMsg, aCode], "exchangecalendar"));
+		}
+		this._document.getElementById("exchWebService_servercheckbutton").disabled = false;
+
+	//	exchWebServicesChangeFolderbaseMenuItemAvailability(false);
+
+		this.exchWebServicesCheckRequired();
+		this._window.setCursor("auto");
+	},
+
+	exchAutoDiscovery2010 : true,
+
+	exchWebServicesDoAutodiscoverCheck: function _exchWebServicesDoAutodiscoverCheck()
+	{
+		this._document.getElementById("exchWebService_autodiscovercheckbutton").disabled = true;
+
+		try {
+			this._window.setCursor("wait");
+			this.exchAutoDiscovery2010 = true;  // We first try Autodiscovery for Exchange2010 and higher.
+			var self = this; 
+			var tmpObject = new erAutoDiscoverySOAPRequest( 
+				{user: this.exchWebServicesGetUsername(), 
+				 mailbox: this.exchWebServicesgMailbox}, 
+				 function(ewsUrls, DisplayName, SMTPAddress, redirectAddr){ self.exchWebServicesAutodiscoveryOK(ewsUrls, DisplayName, SMTPAddress, redirectAddr);}, 
+				 function(aExchangeRequest, aCode, aMsg){ self.exchWebServicesAutodiscoveryError(aExchangeRequest, aCode, aMsg);}, null);
+		}
+		catch(err) {
+			this._window.setCursor("auto");
+			this.globalFunctions.ERROR("Warning: Could not create erAutoDiscoverRequest. Err="+err+"\n");
+		}
+	},
+
+	exchWebServicesAutodiscoveryOK: function _exchWebServicesAutodiscoveryOK(ewsUrls, DisplayName, SMTPAddress, redirectAddr)
+	{
+		this.globalFunctions.LOG("ecAutodiscoveryOK");
+
+		if (redirectAddr) {
+			// We have an redirectAddr. Go use the new email address as primary.
+			this.globalFunctions.LOG("ecAutodiscoveryOK: We received an redirectAddr:"+redirectAddr);
+			this.exchWebServicesgMailbox = redirectAddr;
+			this._document.getElementById("exchWebService_mailbox").value = redirectAddr;
+			this.exchWebServicesDoAutodiscoverCheck();
+			return;
+		}
+
+		var selectedEWSUrl = {value:undefined};
+		var userCancel = false;
+
+		if (ewsUrls) {
+			if (ewsUrls.length > 1) {
+				// We have got multiple ews urls returned. Let the user choose.
+
+				this._window.openDialog("chrome://exchangecalendar/content/selectEWSUrl.xul",
+					"selectfrommultipleews",
+					"chrome,titlebar,toolbar,centerscreen,dialog,modal=yes,resizable=no",
+					ewsUrls, selectedEWSUrl); 
+
+				if ((!selectedEWSUrl.value) || (selectedEWSUrl.value == "")) {
+					this.globalFunctions.LOG("  ++++ Selection canceled by user");
+					userCancel = true;
+				}
+			}
+			else {
+				// We only have one url. Use it.
+	//			selectedEWSUrl.value = ewsUrls.text();
+				selectedEWSUrl.value = ewsUrls[0].value;
+			}
+
+		}
+
+		if (!userCancel) {
+			this.exchWebServicesgDisplayName = DisplayName;
+			this._document.getElementById("exchWebService_displayname").value = DisplayName;
+
+			if ((SMTPAddress) && (SMTPAddress != '')) {
+				this.exchWebServicesgMailbox = SMTPAddress;
+				this._document.getElementById("exchWebService_mailbox").value = SMTPAddress;
+			}
+	
+			this.exchWebServicesgServer = selectedEWSUrl.value;
+			this._document.getElementById("exchWebService_server").value = selectedEWSUrl.value; 
+
+			this.gexchWebServicesDetailsChecked = true;
+			this._document.getElementById("exchWebService_autodiscovercheckbutton").disabled = false;
+			this._document.getElementById("exchWebService_autodiscover").checked = false;
+		}
+		else {
+			this._document.getElementById("exchWebService_autodiscovercheckbutton").disabled = false;
+		}
+
+		this.exchWebServicesCheckRequired();
+		this._window.setCursor("auto");
+	},
+
+	exchWebServicesAutodiscoveryError: function _exchWebServicesAutodiscoveryError(aExchangeRequest, aCode, aMsg)
+	{
+		this.globalFunctions.LOG("ecAutodiscoveryError. aCode:"+aCode+", aMsg:"+aMsg);
+
+		if (this.exchAutoDiscovery2010 == true) {
+			this.exchAutoDiscovery2010 = false; // AutoDiscovery for Exchange2010 and higher failed. Next try old POX Autodiscovery.
+
+			try {
+				var self = this;
+				var tmpObject = new erAutoDiscoverRequest( 
+					{user: this.exchWebServicesGetUsername(), 
+					 mailbox: this.exchWebServicesgMailbox}, 
+					 function(ewsUrls, DisplayName, SMTPAddress, redirectAddr){ self.exchWebServicesAutodiscoveryOK(ewsUrls, DisplayName, SMTPAddress, redirectAddr);}, 
+					 function(aExchangeRequest, aCode, aMsg){ self.exchWebServicesAutodiscoveryError(aExchangeRequest, aCode, aMsg);}, null);
+				return;
+			}
+			catch(err) {
+				this._window.setCursor("auto");
+				this.globalFunctions.ERROR("Warning: Could not create erAutoDiscoverRequest. Err="+err+"\n");
+				return;
 			}
 		}
 
-		exchWebServicesgServer = exchWebServicesCalPrefs.getCharPref("server");
-		exchWebServicesgUser = exchWebServicesCalPrefs.getCharPref("user");
-		exchWebServicesgDomain = exchWebServicesCalPrefs.getCharPref("domain");
+		switch (aCode) {
+		case -20:
+		case -30:
+			break;
+		case -6:
+		case -9:
+		case -10:
+		case -14:
+		case -15:
+		case -16:
+		case -17:
+		case -18:
+			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorAutodiscoveryURLInvalid", [this.exchWebServicesgMailbox], "exchangecalendar"));
+			break;
+		default:
+			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorAutodiscovery", [aMsg, aCode], "exchangecalendar"));
+		}
 
-		exchWebServicesgFolderBase = exchWebServicesCalPrefs.getCharPref("folderbase");
-		exchWebServicesgFolderPath = exchWebServicesCalPrefs.getCharPref("folderpath");
-		exchWebServicesgMailbox = exchWebServicesCalPrefs.getCharPref("mailbox");
-		try {
-			exchWebServicesgFolderID = exchWebServicesCalPrefs.getCharPref("folderid");
-		} catch(err) { exchWebServicesgFolderID = ""; }
-		try {
-			exchWebServicesgChangeKey = exchWebServicesCalPrefs.getCharPref("changekey");
-		} catch(err) { exchWebServicesgChangeKey = ""; }
-                try {
-                        exchWebServicesgFolderIdOfShare = exchWebServicesCalPrefs.getCharPref("folderIDOfShare");
-                        document.getElementById("exchWebService_folderidofshare").value = exchWebServicesgFolderIdOfShare;
-                } catch(err) { exchWebServicesgFolderIdOfShare = ""; }
-	}
+		this._document.getElementById("exchWebService_autodiscovercheckbutton").disabled = false;
+		this.exchWebServicesCheckRequired();
+		this._window.setCursor("auto");
+	},
 
-	gexchWebServicesDetailsChecked = true;
-	gexchWebServices2ndDetailsChecked = true;
-
-	exchWebServicesCheckRequired();
-}
-
-function exchWebServicesSaveExchangeSettingsByContactUUID(isNewDirectory, aUUID)
-{
-
-	if (!isNewDirectory) {
+	exchWebServicesLoadExchangeSettingsByCalId: function _exchWebServicesLoadExchangeSettingsByCalId(aCalId)
+	{
 		var exchWebServicesCalPrefs = Cc["@mozilla.org/preferences-service;1"]
-	                    .getService(Ci.nsIPrefService)
+		            .getService(Ci.nsIPrefService)
+			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+aCalId+".");
+
+		if (exchWebServicesCalPrefs) {
+			this._document.getElementById("exchWebService_server").value = exchWebServicesCalPrefs.getCharPref("ecServer");
+			this._document.getElementById("exchWebService_windowsuser").value = exchWebServicesCalPrefs.getCharPref("ecUser");
+			if (this._document.getElementById("exchWebService_windowsuser").value.indexOf("@") > -1) {
+				//this._document.getElementById("exchWebService_windowsdomain").setAttribute("required", false);
+				this._document.getElementById("exchWebService_windowsdomain").disabled = true;
+			}
+			this._document.getElementById("exchWebService_windowsdomain").value = exchWebServicesCalPrefs.getCharPref("ecDomain");
+			this._document.getElementById("exchWebService_folderpath").value = exchWebServicesCalPrefs.getCharPref("ecFolderpath");
+
+			for (var i=0; i < this._document.getElementById("exchWebService_folderbase").itemCount; i++) {
+				if (this._document.getElementById("exchWebService_folderbase").getItemAtIndex(i).value == exchWebServicesCalPrefs.getCharPref("ecFolderbase")) {
+					this._document.getElementById("exchWebService_folderbase").selectedIndex = i;
+				}
+			}
+			this._document.getElementById("exchWebService_mailbox").value = exchWebServicesCalPrefs.getCharPref("ecMailbox");
+			if (this._document.getElementById("exchWebService_mailbox").value == "") {
+				this.exchWebServicesChangeFolderbaseMenuItemAvailability(true);
+				this._document.getElementById("menuitem.label.ecfolderbase.publicfoldersroot").disabled = false;
+			}
+
+
+
+			this.exchWebServicesgServer = exchWebServicesCalPrefs.getCharPref("ecServer");
+			this.exchWebServicesgUser = exchWebServicesCalPrefs.getCharPref("ecUser");
+			this.exchWebServicesgDomain = exchWebServicesCalPrefs.getCharPref("ecDomain");
+
+			this.exchWebServicesgFolderBase = exchWebServicesCalPrefs.getCharPref("ecFolderbase");
+			this.exchWebServicesgFolderPath = exchWebServicesCalPrefs.getCharPref("ecFolderpath");
+			this.exchWebServicesgMailbox = exchWebServicesCalPrefs.getCharPref("ecMailbox");
+			try {
+				this.exchWebServicesgFolderID = exchWebServicesCalPrefs.getCharPref("ecFolderID");
+			} catch(err) { this.exchWebServicesgFolderID = ""; }
+			try {
+				this.exchWebServicesgChangeKey = exchWebServicesCalPrefs.getCharPref("ecChangeKey");
+			} catch(err) { this.exchWebServicesgChangeKey = ""; }
+			try {
+				this.exchWebServicesgFolderIdOfShare = exchWebServicesCalPrefs.getCharPref("ecFolderIDOfShare");
+				this._document.getElementById("exchWebService_folderidofshare").value = this.exchWebServicesgFolderIdOfShare;
+			} catch(err) { this.exchWebServicesgFolderIdOfShare = ""; }
+		}
+
+		this.gexchWebServicesDetailsChecked = true;
+		this.gexchWebServices2ndDetailsChecked = true;
+
+		this.exchWebServicesCheckRequired();
+	},
+
+	exchWebServicesSaveExchangeSettingsByCalId: function _exchWebServicesSaveExchangeSettingsByCalId(aCalId)
+	{
+		var exchWebServicesCalPrefs = Cc["@mozilla.org/preferences-service;1"]
+		            .getService(Ci.nsIPrefService)
+			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+aCalId+".");
+
+		if (exchWebServicesCalPrefs) {
+			exchWebServicesCalPrefs.setCharPref("ecServer", this.exchWebServicesgServer);
+			exchWebServicesCalPrefs.setCharPref("ecUser", this.exchWebServicesgUser);
+			exchWebServicesCalPrefs.setCharPref("ecDomain", this.exchWebServicesgDomain);
+			exchWebServicesCalPrefs.setCharPref("ecFolderpath", this.exchWebServicesgFolderPath);
+			exchWebServicesCalPrefs.setCharPref("ecFolderbase", this.exchWebServicesgFolderBase);
+			exchWebServicesCalPrefs.setCharPref("ecMailbox", this.exchWebServicesgMailbox);
+		}
+
+		if ((this.exchWebServicesgFolderPath == "/") && (this.exchWebServicesgFolderIdOfShare == "")) {
+			this.exchWebServicesgFolderID = "";
+			this.exchWebServicesgChangeKey = "";
+		}
+		exchWebServicesCalPrefs.setCharPref("ecFolderID", this.exchWebServicesgFolderID);
+		exchWebServicesCalPrefs.setCharPref("ecChangeKey", this.exchWebServicesgChangeKey);
+
+		exchWebServicesCalPrefs.setCharPref("ecFolderIDOfShare", this.exchWebServicesgFolderIdOfShare);
+
+	},
+
+	exchWebServicesDoFolderBrowse: function _exchWebServicesDoFolderBrowse()
+	{
+		var input = { answer: "",
+				parentFolder: {user: this.exchWebServicesGetUsername(), 
+						mailbox: this.exchWebServicesgMailbox,
+						folderBase: this.exchWebServicesgFolderBase,
+						serverUrl: this.exchWebServicesgServer,
+						folderID: null,
+						changeKey: null} 
+				};
+
+		this._window.openDialog("chrome://exchangecalendar/content/browseFolder.xul",
+				"browseFolder",
+				"chrome,titlebar,toolbar,centerscreen,dialog,modal=yes,resizable=no",
+				input); 
+
+		if (input.answer == "select") {
+			this._document.getElementById("exchWebService_folderpath").value = input.fullPath;
+			this.exchWebServicesgFolderPath = input.fullPath;
+
+			this.gexchWebServices2ndDetailsChecked = true;
+
+			if (input.fullPath == "/") {
+				this.exchWebServicesgFolderID = "";
+				this.exchWebServicesgChangeKey = "";
+			}
+			else {
+				this.exchWebServicesgFolderID = input.selectedFolder.folderID;
+				this.exchWebServicesgChangeKey = input.selectedFolder.changeKey;
+			}
+			this.exchWebServicesCheckRequired();
+		}
+	},
+
+	exchWebServicesLoadExchangeSettingsByContactUUID: function _exchWebServicesLoadExchangeSettingsByContactUUID(aUUID)
+	{
+		var exchWebServicesCalPrefs = Cc["@mozilla.org/preferences-service;1"]
+		            .getService(Ci.nsIPrefService)
 			    .getBranch("extensions.exchangecontacts@extensions.1st-setup.nl.account."+aUUID+".");
-	}
 
-	if ((exchWebServicesCalPrefs) && (!isNewDirectory)) {
-		exchWebServicesCalPrefs.setCharPref("description", document.getElementById("exchWebService_contact_description").value);
-		exchWebServicesCalPrefs.setCharPref("server", exchWebServicesgServer);
-		exchWebServicesCalPrefs.setCharPref("user", exchWebServicesgUser);
-		exchWebServicesCalPrefs.setCharPref("domain", exchWebServicesgDomain);
-		exchWebServicesCalPrefs.setCharPref("folderpath", exchWebServicesgFolderPath);
-	exchWebService.commonFunctions.LOG("exchWebServicesSaveExchangeSettingsByContactUUID: folderbase:"+exchWebServicesgFolderBase);
-		exchWebServicesCalPrefs.setCharPref("folderbase", exchWebServicesgFolderBase);
-		exchWebServicesCalPrefs.setCharPref("mailbox", exchWebServicesgMailbox);
-	}
+		if (exchWebServicesCalPrefs) {
 
-	if (exchWebServicesgFolderPath == "/") {
-		exchWebServicesgFolderID = "";
-		exchWebServicesgChangeKey = "";
-	}
+			this._document.getElementById("exchWebService_contact_description").value = exchWebServicesCalPrefs.getCharPref("description");
+			this._document.getElementById("exchWebService_mailbox").value = exchWebServicesCalPrefs.getCharPref("mailbox");
+		        if (this._document.getElementById("exchWebService_mailbox").value == "") {
+		                this.exchWebServicesChangeFolderbaseMenuItemAvailability(true);
+		                this._document.getElementById("menuitem.label.ecfolderbase.publicfoldersroot").disabled = false;
+		        }
 
-	if (!isNewDirectory) {
-		exchWebServicesCalPrefs.setCharPref("folderid", exchWebServicesgFolderID);
-		exchWebServicesCalPrefs.setCharPref("changekey", exchWebServicesgChangeKey);
-        	exchWebServicesCalPrefs.setCharPref("folderIDOfShare", exchWebServicesgFolderIdOfShare);
-	}
+			this._document.getElementById("exchWebService_server").value = exchWebServicesCalPrefs.getCharPref("server");
+			this._document.getElementById("exchWebService_windowsuser").value = exchWebServicesCalPrefs.getCharPref("user");
+		        if (this._document.getElementById("exchWebService_windowsuser").value.indexOf("@") > -1) {
+		                //this._document.getElementById("exchWebService_windowsdomain").setAttribute("required", false);
+		                this._document.getElementById("exchWebService_windowsdomain").disabled = true;
+		        }
+			this._document.getElementById("exchWebService_windowsdomain").value = exchWebServicesCalPrefs.getCharPref("domain");
 
-	return {
-			description: document.getElementById("exchWebService_contact_description").value,
-			mailbox: exchWebServicesgMailbox,
-			user: exchWebServicesgUser,
-			domain: exchWebServicesgDomain,
-			serverUrl: exchWebServicesgServer,
-			folderBase: exchWebServicesgFolderBase,
-			folderPath: exchWebServicesgFolderPath,
-			folderID: exchWebServicesgFolderID,
-			changeKey: exchWebServicesgChangeKey,
-			folderIDOfShare: exchWebServicesgFolderIdOfShare 
-		};
+			this._document.getElementById("exchWebService_folderpath").value = exchWebServicesCalPrefs.getCharPref("folderpath");
+
+			for (var i=0; i < this._document.getElementById("exchWebService_folderbase").itemCount; i++) {
+				if (this._document.getElementById("exchWebService_folderbase").getItemAtIndex(i).value == exchWebServicesCalPrefs.getCharPref("folderbase")) {
+					this._document.getElementById("exchWebService_folderbase").selectedIndex = i;
+					break;
+				}
+			}
+
+			this.exchWebServicesgServer = exchWebServicesCalPrefs.getCharPref("server");
+			this.exchWebServicesgUser = exchWebServicesCalPrefs.getCharPref("user");
+			this.exchWebServicesgDomain = exchWebServicesCalPrefs.getCharPref("domain");
+
+			this.exchWebServicesgFolderBase = exchWebServicesCalPrefs.getCharPref("folderbase");
+			this.exchWebServicesgFolderPath = exchWebServicesCalPrefs.getCharPref("folderpath");
+			this.exchWebServicesgMailbox = exchWebServicesCalPrefs.getCharPref("mailbox");
+			try {
+				this.exchWebServicesgFolderID = exchWebServicesCalPrefs.getCharPref("folderid");
+			} catch(err) { this.exchWebServicesgFolderID = ""; }
+			try {
+				this.exchWebServicesgChangeKey = exchWebServicesCalPrefs.getCharPref("changekey");
+			} catch(err) { this.exchWebServicesgChangeKey = ""; }
+		        try {
+		                this.exchWebServicesgFolderIdOfShare = exchWebServicesCalPrefs.getCharPref("folderIDOfShare");
+		                this._document.getElementById("exchWebService_folderidofshare").value = this.exchWebServicesgFolderIdOfShare;
+		        } catch(err) { this.exchWebServicesgFolderIdOfShare = ""; }
+		}
+
+		this.gexchWebServicesDetailsChecked = true;
+		this.gexchWebServices2ndDetailsChecked = true;
+
+		this.exchWebServicesCheckRequired();
+	},
+
+	exchWebServicesSaveExchangeSettingsByContactUUID: function _exchWebServicesSaveExchangeSettingsByContactUUID(isNewDirectory, aUUID)
+	{
+
+		if (!isNewDirectory) {
+			var exchWebServicesCalPrefs = Cc["@mozilla.org/preferences-service;1"]
+			            .getService(Ci.nsIPrefService)
+				    .getBranch("extensions.exchangecontacts@extensions.1st-setup.nl.account."+aUUID+".");
+		}
+
+		if ((exchWebServicesCalPrefs) && (!isNewDirectory)) {
+			exchWebServicesCalPrefs.setCharPref("description", this._document.getElementById("exchWebService_contact_description").value);
+			exchWebServicesCalPrefs.setCharPref("server", this.exchWebServicesgServer);
+			exchWebServicesCalPrefs.setCharPref("user", this.exchWebServicesgUser);
+			exchWebServicesCalPrefs.setCharPref("domain", this.exchWebServicesgDomain);
+			exchWebServicesCalPrefs.setCharPref("folderpath", this.exchWebServicesgFolderPath);
+		this.globalFunctions.LOG("exchWebServicesSaveExchangeSettingsByContactUUID: folderbase:"+this.exchWebServicesgFolderBase);
+			exchWebServicesCalPrefs.setCharPref("folderbase", this.exchWebServicesgFolderBase);
+			exchWebServicesCalPrefs.setCharPref("mailbox", this.exchWebServicesgMailbox);
+		}
+
+		if (this.exchWebServicesgFolderPath == "/") {
+			this.exchWebServicesgFolderID = "";
+			this.exchWebServicesgChangeKey = "";
+		}
+
+		if (!isNewDirectory) {
+			exchWebServicesCalPrefs.setCharPref("folderid", this.exchWebServicesgFolderID);
+			exchWebServicesCalPrefs.setCharPref("changekey", this.exchWebServicesgChangeKey);
+			exchWebServicesCalPrefs.setCharPref("folderIDOfShare", this.exchWebServicesgFolderIdOfShare);
+		}
+
+		return {
+				description: this._document.getElementById("exchWebService_contact_description").value,
+				mailbox: this.exchWebServicesgMailbox,
+				user: this.exchWebServicesgUser,
+				domain: this.exchWebServicesgDomain,
+				serverUrl: this.exchWebServicesgServer,
+				folderBase: this.exchWebServicesgFolderBase,
+				folderPath: this.exchWebServicesgFolderPath,
+				folderID: this.exchWebServicesgFolderID,
+				changeKey: this.exchWebServicesgChangeKey,
+				folderIDOfShare: this.exchWebServicesgFolderIdOfShare 
+			};
+	},
 }
+var tmpSettingsOverlay = new exchSettingsOverlay(document, window);

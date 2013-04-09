@@ -47,7 +47,7 @@
     <script type="application/javascript" src="chrome://exchangecalendar/content/exchangeSettingsOverlay.js"/> 
 
 	<vbox id="exchWebService-exchange-settings">
-		<checkbox label="&ecautodiscover;" id="exchWebService_autodiscover" oncommand="exchWebServicesAutodiscoverCheckbox(this);"/>
+		<checkbox label="&ecautodiscover;" id="exchWebService_autodiscover" oncommand="tmpSettingsOverlay.exchWebServicesAutodiscoverCheckbox(this);"/>
         	<grid flex="1">
         	    <columns>
         	        <column/>
@@ -58,7 +58,7 @@
 	                    <label value="Server URL:" control="ecserver"/>
 			    <vbox>
 	                    	<textbox id="exchWebService_server"
-	                          	required="true" oninput="exchWebServicesDoServerChanged(this);" 
+	                          	required="true" oninput="tmpSettingsOverlay.exchWebServicesDoServerChanged(this);" 
 					placeholder="https://ews.example.com/ews/exchange.asmx"/>
 			    </vbox>
 	                </row>
@@ -66,7 +66,7 @@
 	                    <label value="&ecmailbox.label;" control="ecmailbox"/>
 				<hbox>
 		                    	<textbox id="exchWebService_mailbox"
-		                             required="true" oninput="exchWebServicesDoMailboxChanged(this);" 
+		                             required="true" oninput="tmpSettingsOverlay.exchWebServicesDoMailboxChanged(this);" 
 						placeholder="yourname@example.com"/>
 					<label id="exchWebService_displayname" value="" flex="1"/>
 				</hbox>
@@ -74,38 +74,38 @@
 	                <row align="center">
 	                    <label value="&ecwindowsuser.label;" control="ecwindowsuser"/>
 	                    	<textbox id="exchWebService_windowsuser"
-	                             required="true" oninput="exchWebServicesDoUserChanged(this);"/>
+	                             required="true" oninput="tmpSettingsOverlay.exchWebServicesDoUserChanged(this);"/>
 	                </row>
 	                <row align="center">
 	                    <label value="&ecwindowsdomain.label;" control="ecwindowsdomain"/>
 	                    	<textbox id="exchWebService_windowsdomain"
-	                             required="false" oninput="exchWebServicesDoDomainChanged(this);"/>
+	                             required="false" oninput="tmpSettingsOverlay.exchWebServicesDoDomainChanged(this);"/>
 	                </row>
 
 	                <row align="center">
 	                    <label value="&ecfolderidofshare.label;" control="ecfolderidofshare"/>
 	                    	<textbox id="exchWebService_folderidofshare"
-	                             required="false" oninput="exchWebServicesDoFolderIdOfShareChanged(this);"/>
+	                             required="false" oninput="tmpSettingsOverlay.exchWebServicesDoFolderIdOfShareChanged(this);"/>
 	                </row>
 
 			<row id="exchWebService_autodiscovercheckrow" hidden="true">
 	                    	<label value=""/>
-				<button id="exchWebService_autodiscovercheckbutton" label="&button.label.autodiscovercheck;" oncommand="exchWebServicesDoAutodiscoverCheck();"/>
+				<button id="exchWebService_autodiscovercheckbutton" label="&button.label.autodiscovercheck;" oncommand="tmpSettingsOverlay.exchWebServicesDoAutodiscoverCheck();"/>
 			</row>
 			<row id="exchWebService_serverandmailboxcheckrow" hidden="true">
 	                    	<label value=""/>
-				<button id="exchWebService_serverandmailboxcheckbutton" label="&button.label.serverandmailboxcheck;" oncommand="exchWebServicesDoCheckServerAndMailbox();"/>
+				<button id="exchWebService_serverandmailboxcheckbutton" label="&button.label.serverandmailboxcheck;" oncommand="tmpSettingsOverlay.exchWebServicesDoCheckServerAndMailbox();"/>
 			</row>
 			<row id="exchWebService_servercheckrow" hidden="true">
 	                    	<label value=""/>
-				<button id="exchWebService_servercheckbutton" label="&button.label.servercheck;" oncommand="exchWebServicesDoCheckServer();"/>
+				<button id="exchWebService_servercheckbutton" label="&button.label.servercheck;" oncommand="tmpSettingsOverlay.exchWebServicesDoCheckServer();"/>
 			</row>
 			<row hidden="true">
 				<textbox id="exchWebService_detailschecked" required="true"/>
 			</row>
 	                <row id="exchWebService_folderbaserow" align="center" hidden="true">
 	                    <label value="&ecfolderbase.label;" control="ecfolderbase"/>
-				<menulist label="(Make a choice)" id="exchWebService_folderbase" value="1" oncommand="exchWebServicesDoFolderBaseChanged(this);">
+				<menulist label="(Make a choice)" id="exchWebService_folderbase" value="1" oncommand="tmpSettingsOverlay.exchWebServicesDoFolderBaseChanged(this);">
 					<menupopup id="menupopup.ecfolderbase">
 						<menuitem id="menuitem.label.ecfolderbase.calendar" label="&menuitem.label.ecfolderbase.calendar;" value="calendar"/>
 						<menuitem id="menuitem.label.ecfolderbase.tasks" label="&menuitem.label.ecfolderbase.tasks;" value ="tasks"/>
@@ -143,7 +143,7 @@
 	                    <label value="&ecfolderpath.label;" control="ecfolderpath"/>
 				<hbox align="center">
 		                    <label  id="exchWebService_folderpath" value="/"/>
-					<button hidden="false" id="exchWebService_folderbrowsebutton" label="&button.label.folderbrowse;" oncommand="exchWebServicesDoFolderBrowse();"/>
+					<button hidden="false" id="exchWebService_folderbrowsebutton" label="&button.label.folderbrowse;" oncommand="tmpSettingsOverlay.exchWebServicesDoFolderBrowse();"/>
 				</hbox>
 	                </row>
 			<row id="exchWebServices-UserAvailability" align="center" hidden="true">

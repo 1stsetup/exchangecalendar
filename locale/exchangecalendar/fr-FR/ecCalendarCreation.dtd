@@ -1,4 +1,3 @@
 <!ENTITY exchange1.description "Paramètres Windows Active Directory / Exchange">
-
-
+<!ENTITY exchange.cache.label "Use offline cache">
 

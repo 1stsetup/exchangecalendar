@@ -798,7 +798,7 @@ catch(err){
 	getAlarms: function _getAlarms(count)
 	{
 
-		dump("getAlarms 1: title:"+this.title+"\n");
+		//dump("getAlarms 1: title:"+this.title+"\n");
 		if (!this._alarm) {
 			switch (this._className) {
 			case "mivExchangeTodo":
@@ -855,7 +855,7 @@ catch(err){
 	//void addAlarm(in calIAlarm aAlarm);
 	addAlarm: function _addAlarm(aAlarm)
 	{
-		dump("addAlarm: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"\n");
+		//dump("addAlarm: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"\n");
 		this.getAlarms({}); // Preload
 
 		if (this._newAlarm) {
@@ -875,7 +875,7 @@ catch(err){
 	//void deleteAlarm(in calIAlarm aAlarm);
 	deleteAlarm: function _deleteAlarm(aAlarm)
 	{
-		dump("deleteAlarm: title:"+this.title+"\n");
+		//dump("deleteAlarm: title:"+this.title+"\n");
 		this._changesAlarm.push({ action: "remove", alarm: this._newAlarm});
 		this._newAlarm = null;
 		this._calEvent.deleteAlarm(aAlarm);
@@ -887,7 +887,7 @@ catch(err){
 	//void clearAlarms();
 	clearAlarms: function _clearAlarms()
 	{
-		dump("clearAlarms: title:"+this.title+"\n");
+		//dump("clearAlarms: title:"+this.title+"\n");
 		var oldAlarms = this.getAlarms({});
 		for each(var alarm in oldAlarms) {
 			this._changesAlarm.push({ action: "remove", alarm: alarm});
@@ -1256,7 +1256,7 @@ catch(err){
 			break;
 		case "STATUS": 
 			//this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
-			dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
+			//dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
 			if (this.className == "mivExchangeEvent") {
 				if (value != this.getProperty(name)) {
 					switch (value) {
@@ -2781,7 +2781,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 					var alarm = alarms[0];
 
 					if ((!this._alarm) || (this._alarm.offset != alarm.offset) || (this.className == "mivExchangeTodo")) {
-dump(" We have alarms."+alarms[0].alarmDate+", alarm:"+alarm+", alarm.offset:"+alarm.offset+", X-MOZ-SNOOZE-TIME:"+this.getProperty("X-MOZ-SNOOZE-TIME")+"\n");
+//dump(" We have alarms."+alarms[0].alarmDate+", alarm:"+alarm+", alarm.offset:"+alarm.offset+", X-MOZ-SNOOZE-TIME:"+this.getProperty("X-MOZ-SNOOZE-TIME")+"\n");
 						// Exchange alarm is always an offset to the start.
 						// A Todo always has an alarm.related of ALARM_RELATED_ABSOLUTE
 						// So referenceDate is set there.

@@ -50,18 +50,24 @@
 
     <script type="application/javascript" src="chrome://exchangecalendar/content/ecCalendarCreation.js"/>
 
-    <radiogroup id="calendar-format" onselect="exchWebService.calendarCreation.doRadioExchangeCalendar(this);">
-        <radio value="exchangecalendar" label="Microsoft Exchange 2007/2010" id="exchWebService-radioexchangecalendar" />
+
+    <radiogroup id="calendar-format" onselect="tmpCalendarCreation.doRadioExchangeCalendar(this);">
+	<vbox>
+	        <radio value="exchangecalendar" label="Microsoft Exchange 2007/2010" id="exchWebService-radioexchangecalendar" />
+		<hbox id="exchange-cache-row" hidden="true">
+			<checkbox id="exchange-cache" label="&exchange.cache.label;"/>
+		</hbox>
+	</vbox>
     </radiogroup>
 
-<wizard id="calendar-wizard" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
+<wizard id="calendar-wizard" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
    <wizardpage pageid="exchWebService_exchange1"
                next="finishPage"
                label="&wizard.label;"
                description="&exchange1.description;"
-               onpageshow="exchWebService.calendarCreation.initExchange1();"
-               onpageadvanced="exchWebService.calendarCreation.saveSettings();">
+               onpageshow="tmpCalendarCreation.initExchange1();"
+               onpageadvanced="tmpCalendarCreation.saveSettings();">
 
 	<vbox id="exchWebService-exchange-settings">
 	</vbox>
