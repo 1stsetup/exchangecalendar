@@ -110,7 +110,7 @@ exchOfflineCacheSettings.prototype = {
 	{	
 		var calId = this._window.arguments[0].calendar.id;
 		var aCalendar = this._window.arguments[0].calendar;
-		exchWebServicesSaveExchangeSettingsByCalId(calId);
+		tmpSettingsOverlay.exchWebServicesSaveExchangeSettingsByCalId(calId);
 
 		var exchWebServicesCalPrefs = Cc["@mozilla.org/preferences-service;1"]
 						.getService(Ci.nsIPrefService)
@@ -130,7 +130,6 @@ exchOfflineCacheSettings.prototype = {
 		if (this.oldUseOfflineCache != this._document.getElementById("exchWebService-offlineCacheproperties-cacheState").checked) {
 			aCalendar.setProperty("exchWebService.useOfflineCache", this._document.getElementById("exchWebService-offlineCacheproperties-cacheState").checked)
 		}
-
 	},
 	
 	getDBConn : function _aDBConn(aCalendar)

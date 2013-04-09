@@ -330,7 +330,7 @@ exchExchangeSettings.prototype = {
 
 		var observerService = Cc["@mozilla.org/observer-service;1"]  
 			                  .getService(Ci.nsIObserverService);
-dump("\nonCalReset\n");  
+
 		observerService.notifyObservers(this, "onCalReset", calId);  
 
 		Cc["@mozilla.org/preferences-service;1"]
