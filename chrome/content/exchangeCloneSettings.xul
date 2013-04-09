@@ -39,8 +39,8 @@
   buttons="accept,cancel"
   buttonlabelaccept="&label.acceptbutton;"
   buttonlabelcancel="&label.cancelbutton;"
-  ondialogaccept="return exchWebService.exchangeCloneSettings.onSave();"
-  onload="exchWebService.exchangeCloneSettings.onLoad();">
+  ondialogaccept="return tmpExchangeCloneSettings.onSave();"
+  onload="tmpExchangeCloneSettings.onLoad();">
 
 	<script type="application/javascript" src="chrome://exchangecalendar/content/exchangeCloneSettings.js"/>
 

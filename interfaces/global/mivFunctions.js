@@ -769,6 +769,40 @@ mivFunctions.prototype = {
 		}
 	},
 
+	copyCalendarSettings: function _copyCalendarSettings(aFromId, aToId)
+	{
+		var fromCalPrefs = Cc["@mozilla.org/preferences-service;1"]
+		            .getService(Ci.nsIPrefService)
+			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+aFromId+".");
+
+		if (aToId == undefined) {
+			var toId = this.getUUID();
+		}
+		else {
+			var toId = aToId;
+		}
+
+		var toCalPrefs = Cc["@mozilla.org/preferences-service;1"]
+		            .getService(Ci.nsIPrefService)
+			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+toId+".");
+
+		
+		this.copyPreferences(fromCalPrefs, toCalPrefs);
+		toCalPrefs.deleteBranch("folderProperties");
+
+		fromCalPrefs = Cc["@mozilla.org/preferences-service;1"]
+		            .getService(Ci.nsIPrefService)
+			    .getBranch("calendar.registry."+aFromId+".");
+
+		toCalPrefs = Cc["@mozilla.org/preferences-service;1"]
+		            .getService(Ci.nsIPrefService)
+			    .getBranch("calendar.registry."+toId+".");
+
+		this.copyPreferences(fromCalPrefs, toCalPrefs);
+
+		return toId;
+	},
+
 	addCalendarById: function _addCalendarById(aId)
 	{
 		var ioService = Cc["@mozilla.org/network/io-service;1"]  

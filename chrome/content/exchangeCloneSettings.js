@@ -24,18 +24,21 @@ var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils;
 
-Cu.import("resource://exchangecalendar/ecFunctions.js");
+function exchExchangeCloneSettings(aDocument, aWindow)
+{
+	this._document = aDocument;
+	this._window = aWindow;
 
-//Cu.import("resource://calendar/modules/calUtils.jsm");
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+}
 
-if (! exchWebService) var exchWebService = {};
-
-exchWebService.exchangeCloneSettings = {
+exchExchangeCloneSettings.prototype = {
 
 	checkRequired: function _checkRequired()
 	{
 	    let canAdvance = true;
-	    let vbox = document.getElementById('exchWebService-exchange-settings');
+	    let vbox = this._document.getElementById('exchWebService-exchange-settings');
 	    if (vbox) {
 		let eList = vbox.getElementsByAttribute('required', 'true');
 		for (let i = 0; i < eList.length && canAdvance; ++i) {
@@ -43,10 +46,10 @@ exchWebService.exchangeCloneSettings = {
 		}
 
 		if (canAdvance) {
-			document.getElementById("exchWebService_CloneSettings_dialog").buttons = "accept,cancel";
+			this._document.getElementById("exchWebService_CloneSettings_dialog").buttons = "accept,cancel";
 		}
 		else {
-			document.getElementById("exchWebService_CloneSettings_dialog").buttons = "cancel";
+			this._document.getElementById("exchWebService_CloneSettings_dialog").buttons = "cancel";
 		}
 	    }
 
@@ -54,33 +57,33 @@ exchWebService.exchangeCloneSettings = {
 
 	onLoad: function _onLoad()
 	{
-		var calId = window.arguments[0].calendar.id;
-		document.getElementById("exchWebService_clone_description").value = window.arguments[0].calendar.name+" (copy)";
-		exchWebServicesLoadExchangeSettingsByCalId(calId);
+		var calId = this._window.arguments[0].calendar.id;
+		this._document.getElementById("exchWebService_clone_description").value = this._window.arguments[0].calendar.name+" (copy)";
+		tmpSettingsOverlay.exchWebServicesLoadExchangeSettingsByCalId(calId);
 	},
 
 	onSave: function _onSave()
 	{
-		var oldCalId = window.arguments[0].calendar.id;
+		var oldCalId = this._window.arguments[0].calendar.id;
 
 		// Clone the Calendar settings to a new cal id.
-		var newCalId = exchWebService.commonFunctions.copyCalendarSettings(oldCalId);
+		var newCalId = this.globalFunctions.copyCalendarSettings(oldCalId);
 
 		// Save settings in dialog to new cal id.
-		exchWebServicesSaveExchangeSettingsByCalId(newCalId);
+		tmpSettingsOverlay.exchWebServicesSaveExchangeSettingsByCalId(newCalId);
 
 		// Save the description/name for the calendar and create a new unique uri.
 		var toCalPrefs = Cc["@mozilla.org/preferences-service;1"]
 		            .getService(Ci.nsIPrefService)
 			    .getBranch("calendar.registry."+newCalId+".");
 
-		toCalPrefs.setCharPref("name", document.getElementById("exchWebService_clone_description").value);
+		toCalPrefs.setCharPref("name", this._document.getElementById("exchWebService_clone_description").value);
 		toCalPrefs.setCharPref("uri", "https://auto/"+newCalId);
 
 		// Store the new cal id for the calling process of this dialog.
-		window.arguments[0].newCalId = newCalId;
+		this._window.arguments[0].newCalId = newCalId;
 
-		window.arguments[0].answer = "saved";
+		this._window.arguments[0].answer = "saved";
 
 		Cc["@mozilla.org/preferences-service;1"]
 		                    .getService(Ci.nsIPrefService).savePrefFile(null);
@@ -88,3 +91,6 @@ exchWebService.exchangeCloneSettings = {
 	},
 
 }
+
+var tmpExchangeCloneSettings = new exchExchangeCloneSettings(document, window);
+

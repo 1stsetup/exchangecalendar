@@ -83,5 +83,6 @@ interface mivFunctions : nsISupports
 
   AUTF8String splitOnCharacter(in AUTF8String aString, in uint64_t aStartPos, in jsval aSplitCharacter);
 
+  AUTF8String copyCalendarSettings(in AUTF8String aFromId, [optional] in AUTF8String aToId);
   void addCalendarById(in AUTF8String aId);
 };

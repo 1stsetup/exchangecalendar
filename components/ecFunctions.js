@@ -63,7 +63,7 @@ exchWebService.commonFunctions = {
 	  };
 	},
 
-	copyCalendarSettings: function _copyCalendarSettings(aFromId, aToId)
+/*	copyCalendarSettings: function _copyCalendarSettings(aFromId, aToId)
 	{
 		var fromCalPrefs = Cc["@mozilla.org/preferences-service;1"]
 		            .getService(Ci.nsIPrefService)
@@ -96,7 +96,7 @@ exchWebService.commonFunctions = {
 
 		return toId;
 	},
-
+*/
 /*	addCalendarById: function _addCalendarById(aId)
 	{
 		var ioService = Cc["@mozilla.org/network/io-service;1"]  
@@ -143,5 +143,6 @@ exchWebService.commonFunctions.copyPreferences			= mivFunctions.copyPreferences;
 exchWebService.commonFunctions.xmlToJxon			= mivFunctions.xmlToJxon;
 exchWebService.commonFunctions.splitOnCharacter			= mivFunctions.splitOnCharacter;
 exchWebService.commonFunctions.addCalendarById			= mivFunctions.addCalendarById;
+exchWebService.commonFunctions.copyCalendarSettings 		= mivFunctions.copyCalendarSettings;
 
 
