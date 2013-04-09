@@ -39,8 +39,8 @@
   buttons="accept,cancel"
   buttonlabelaccept="&label.acceptbutton;"
   buttonlabelcancel="&label.cancelbutton;"
-  ondialogaccept="return exchWebService.exchangeContactSettings.onSave();"
-  onload="exchWebService.exchangeContactSettings.onLoad();">
+  ondialogaccept="return tmpExchangeContactSettings.onSave();"
+  onload="tmpExchangeContactSettings.onLoad();">
 
 	<script type="application/javascript" src="chrome://exchangecalendar/content/exchangeContactSettings.js"/>
 

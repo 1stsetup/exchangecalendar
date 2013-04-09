@@ -180,7 +180,7 @@ exchSettingsOverlay.prototype = {
 
 		// We determine which to use on the dialog id which is active for the current this._document.
 		if (this._document.getElementById("exchWebService_ContactSettings_dialog")) {   // Contact settings dialog.
-			exchWebService.exchangeContactSettings.checkRequired();
+			tmpExchangeContactSettings.checkRequired();
 		}
 		else {
 			if (this._document.getElementById("exchWebService_ExchangeSettings_dialog")) { // EWS Settings dialog.
