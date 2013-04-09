@@ -38,8 +38,6 @@ var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils;
 
-//Cu.import("resource://exchangecalendar/ecFunctions.js");
-
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm"); 
 Cu.import("resource://gre/modules/FileUtils.jsm");
@@ -47,8 +45,6 @@ Cu.import("resource://gre/modules/FileUtils.jsm");
 Cu.import("resource://calendar/modules/calUtils.jsm");
 Cu.import("resource://calendar/modules/calProviderUtils.jsm");
 Cu.import("resource://calendar/modules/calStorageHelpers.jsm");
-
-//if (! exchWebService) var exchWebService = {};
 
 function exchOfflineCacheSettings(aDocument, aWindow)
 {
@@ -61,7 +57,6 @@ function exchOfflineCacheSettings(aDocument, aWindow)
 
 exchOfflineCacheSettings.prototype = {
 
-//exchWebService.offlineCacheSettings = {	
 	onLoad: function _onLoad(event) 
 	{
 		var calId = this._window.arguments[0].calendar.id;
@@ -247,7 +242,6 @@ exchOfflineCacheSettings.prototype = {
 	},
 
 }
-//this._document.addEventListener("load", exchWebService.offlineCacheSettings.onLoad, true);
 
 var tmpOfflineCacheSettings = new exchOfflineCacheSettings(document, window);
 window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpOfflineCacheSettings.onLoad(); }, true);

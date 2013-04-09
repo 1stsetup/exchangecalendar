@@ -184,7 +184,7 @@ exchSettingsOverlay.prototype = {
 		}
 		else {
 			if (this._document.getElementById("exchWebService_ExchangeSettings_dialog")) { // EWS Settings dialog.
-				exchWebService.exchangeSettings.checkRequired();
+				tmpExchangeSettings.checkRequired();
 			}
 			else {
 				if (this._document.getElementById("exchWebService_CloneSettings_dialog")) { // Clone Settings dialog.

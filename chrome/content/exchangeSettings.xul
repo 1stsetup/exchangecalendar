@@ -48,8 +48,8 @@
 <dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 	id="exchWebService_ExchangeSettings_dialog" title="Select" buttons="accept,cancel"
 	buttonlabelaccept="&label.acceptbutton;" buttonlabelcancel="&label.cancelbutton;"
-	ondialogaccept="tmpOfflineCacheSettings.onSave();return exchWebService.exchangeSettings.onSave();"
-	onload="exchWebService.exchangeSettings.onLoad();">
+	ondialogaccept="tmpOfflineCacheSettings.onSave();return tmpExchangeSettings.onSave();"
+	onload="tmpExchangeSettings.onLoad();">
 
 	<script type="application/javascript"
 		src="chrome://exchangecalendar/content/exchangeSettings.js" />
@@ -58,9 +58,9 @@
 
 	<commandset>
 		<command id="exchWebService_cmd_poll_inbox"
-			oncommand="exchWebService.exchangeSettings.doPollInboxChanged(this);" />
+			oncommand="tmpExchangeSettings.doPollInboxChanged(this);" />
 		<command id="exchWebService_cmd_autorespond"
-			oncommand="exchWebService.exchangeSettings.doAutoRespondChanged(this);" />
+			oncommand="tmpExchangeSettings.doAutoRespondChanged(this);" />
 		<command id="exchWebService_cmd_offlineCache"
 			oncommand="tmpOfflineCacheSettings.doCheckOfflineCacheChanged(this);" />
 	</commandset>
@@ -71,7 +71,7 @@
 	</hbox>
 
 	<tabbox flex="1">
-		<tabs onselect="exchWebService.exchangeSettings.doTabChanged(this);">
+		<tabs onselect="tmpExchangeSettings.doTabChanged(this);">
 			<tab label="&ecsettings.tab.adsettings;" selected="true" /> 
 			<tab label="&ecsettings.tab.meetingrequestsettings;" />
 			<tab label="&ecsettings.tab.calendarfolderproperties;" />
@@ -227,7 +227,7 @@
 						</grid>
 
 						<tree id="exchWebServicesPermissionsTree" flex="1" seltype="single"
-							onselect="exchWebService.exchangeSettings.doOnSelectUserId(this);"
+							onselect="tmpExchangeSettings.doOnSelectUserId(this);"
 							sortResource="UserId" sortDirection="natural" rows="5">
 							<treecols>
 								<treecol id="exchWebService_permissonTree_userId" label="&treecol.label.userid;"
