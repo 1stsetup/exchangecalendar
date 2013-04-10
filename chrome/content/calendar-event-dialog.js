@@ -49,9 +49,24 @@ exchEventDialog.prototype = {
 
 	onAcceptCallback: function _onAcceptCallback(aItem, aCalendar, aOriginalItem, aIsClosing)
 	{
-//		if (aItem.className == "mivExchangeTodo") {
+		if ((cal.isEvent(aItem)) && (aCalendar.type == "exchangecalendar")) {
+			if (!aItem.className) {
+				var newItem = Cc["@1st-setup.nl/exchange/calendarevent;1"]
+						.createInstance(Ci.mivExchangeEvent);
+				newItem.cloneToCalEvent(aItem);
+				aItem = newItem;
+			}
+		}
+
 		if ((!cal.isEvent(aItem)) && (aCalendar.type == "exchangecalendar")) {
 			// Save extra exchange fields to item.
+			if (!aItem.className) {
+				var newItem = Cc["@1st-setup.nl/exchange/calendartodo;1"]
+						.createInstance(Ci.mivExchangeTodo);
+				newItem.cloneToCalEvent(aItem);
+				aItem = newItem;
+			}
+
 			aItem.totalWork = this._document.getElementById("exchWebService-totalWork-count").value;
 			aItem.actualWork = this._document.getElementById("exchWebService-actualWork-count").value;
 			aItem.mileage = this._document.getElementById("exchWebService-mileage-count").value;
@@ -70,84 +85,121 @@ exchEventDialog.prototype = {
 
 		if (this._initialized) return;
 
+		this._oldCallback = this._window.onAcceptCallback;
+		var self = this;
+		this._window.onAcceptCallback = function(aItem, aCalendar, aOriginalItem, aIsClosing) { self.onAcceptCallback(aItem, aCalendar, aOriginalItem, aIsClosing); };
+
 		if (this._document.getElementById("todo-entrydate")) {
 			this._initialized = true;
 
-			this._oldCallback = this._window.onAcceptCallback;
-			var self = this;
-			this._window.onAcceptCallback = function(aItem, aCalendar, aOriginalItem, aIsClosing) { self.onAcceptCallback(aItem, aCalendar, aOriginalItem, aIsClosing); };
-
 			var args = this._window.arguments[0];
 			var item = args.calendarEvent;
-			if ((!cal.isEvent(item)) && (item.calendar.type == "exchangecalendar")) {
+			this.updateScreen(item, item.calendar);
+		}
+	},
 
-				var ownerLabel = this._document.getElementById("exchWebService-owner-label");
-				if (ownerLabel) {
-					ownerLabel.value = item.owner;
-				}
+	updateScreen: function _updateScreen(aItem, aCalendar)
+	{
+		var item = aItem;
 
-				try {
-					this._document.getElementById("exchWebService-details-row1").removeAttribute("collapsed");
-					this._document.getElementById("exchWebService-details-row2").removeAttribute("collapsed");
-					this._document.getElementById("exchWebService-details-row3").removeAttribute("collapsed");
-				}
-				catch (ex) {}
+		if ((!cal.isEvent(item)) && (aCalendar.type == "exchangecalendar")) {
 
-				this._document.getElementById("exchWebService-owner-hbox").hidden = false;
-				this._document.getElementById("exchWebService-details-separator").hidden = false;
-
-				this._document.getElementById("exchWebService-totalWork-count").value = item.totalWork;
-				this._document.getElementById("exchWebService-actualWork-count").value = item.actualWork;
-				this._document.getElementById("exchWebService-mileage-count").value = item.mileage;
-				this._document.getElementById("exchWebService-billingInformation-count").value = item.billingInformation;
-				this._document.getElementById("exchWebService-companies-count").value = item.companies;
-
-				// Clear reminder select list for todo
-				this._document.getElementById("reminder-none-separator").hidden = true;
-				this._document.getElementById("reminder-0minutes-menuitem").hidden = true;
-				this._document.getElementById("reminder-5minutes-menuitem").hidden = true;
-				this._document.getElementById("reminder-15minutes-menuitem").hidden = true;
-				this._document.getElementById("reminder-30minutes-menuitem").hidden = true;
-				this._document.getElementById("reminder-minutes-separator").hidden = true;
-				this._document.getElementById("reminder-1hour-menuitem").hidden = true;
-				this._document.getElementById("reminder-2hours-menuitem").hidden = true;
-				this._document.getElementById("reminder-12hours-menuitem").hidden = true;
-				this._document.getElementById("reminder-hours-separator").hidden = true;
-				this._document.getElementById("reminder-1day-menuitem").hidden = true;
-				this._document.getElementById("reminder-2days-menuitem").hidden = true;
-				this._document.getElementById("reminder-1week-menuitem").hidden = true;
-				
-				var tmpDatePicker = this._document.createElement("datepicker");
-				tmpDatePicker.setAttribute("type","popup");
-				tmpDatePicker.setAttribute("id","todo-entrydate");
-				tmpDatePicker.setAttribute("value",this._document.getElementById("todo-entrydate").value);
-				tmpDatePicker.setAttribute("onchange","dateTimeControls2State(true);");
-				tmpDatePicker.addEventListener("change", function() { self.updateTime(); }, false);
-				if (!this._document.getElementById("todo-has-entrydate").checked) {
-					tmpDatePicker.setAttribute("disabled","true");
-				}
-				this._document.getElementById("event-grid-startdate-picker-box").replaceChild(tmpDatePicker, this._document.getElementById("todo-entrydate"));
-
-				var tmpDatePicker = this._document.createElement("datepicker");
-				tmpDatePicker.setAttribute("type","popup");
-				tmpDatePicker.setAttribute("id","todo-duedate");
-				tmpDatePicker.setAttribute("value",this._document.getElementById("todo-duedate").value);
-				tmpDatePicker.setAttribute("onchange","dateTimeControls2State(false);");
-				tmpDatePicker.addEventListener("change", function() { self.updateTime(); }, false);
-				if (!this._document.getElementById("todo-has-duedate").checked) {
-					tmpDatePicker.setAttribute("disabled","true");
-				}
-				this._document.getElementById("event-grid-enddate-picker-box").replaceChild(tmpDatePicker, this._document.getElementById("todo-duedate"));
-
-				this._document.getElementById("timezone-starttime").hidden = true;
-				this._document.getElementById("timezone-endtime").hidden = true;
-
-				if (this._document.getElementById("item-repeat")) {
-					this._document.getElementById("item-repeat").addEventListener("command", function() { self.updateRepeat(); }, false);
-				}
-				this.updateTime();
-				this.updateRepeat();
+			var ownerLabel = this._document.getElementById("exchWebService-owner-label");
+			if (ownerLabel) {
+				ownerLabel.value = item.owner;
 			}
+
+			try {
+				this._document.getElementById("exchWebService-details-row1").removeAttribute("collapsed");
+				this._document.getElementById("exchWebService-details-row2").removeAttribute("collapsed");
+				this._document.getElementById("exchWebService-details-row3").removeAttribute("collapsed");
+			}
+			catch (ex) {}
+
+			this._document.getElementById("exchWebService-owner-hbox").hidden = false;
+			this._document.getElementById("exchWebService-details-separator").hidden = false;
+
+			this._document.getElementById("exchWebService-totalWork-count").value = item.totalWork;
+			this._document.getElementById("exchWebService-actualWork-count").value = item.actualWork;
+			this._document.getElementById("exchWebService-mileage-count").value = item.mileage;
+			this._document.getElementById("exchWebService-billingInformation-count").value = item.billingInformation;
+			this._document.getElementById("exchWebService-companies-count").value = item.companies;
+
+			// Clear reminder select list for todo
+			this._document.getElementById("reminder-none-separator").hidden = true;
+			this._document.getElementById("reminder-0minutes-menuitem").hidden = true;
+			this._document.getElementById("reminder-5minutes-menuitem").hidden = true;
+			this._document.getElementById("reminder-15minutes-menuitem").hidden = true;
+			this._document.getElementById("reminder-30minutes-menuitem").hidden = true;
+			this._document.getElementById("reminder-minutes-separator").hidden = true;
+			this._document.getElementById("reminder-1hour-menuitem").hidden = true;
+			this._document.getElementById("reminder-2hours-menuitem").hidden = true;
+			this._document.getElementById("reminder-12hours-menuitem").hidden = true;
+			this._document.getElementById("reminder-hours-separator").hidden = true;
+			this._document.getElementById("reminder-1day-menuitem").hidden = true;
+			this._document.getElementById("reminder-2days-menuitem").hidden = true;
+			this._document.getElementById("reminder-1week-menuitem").hidden = true;
+			
+			var tmpDatePicker = this._document.createElement("datepicker");
+			tmpDatePicker.setAttribute("type","popup");
+			tmpDatePicker.setAttribute("id","todo-entrydate");
+			tmpDatePicker.setAttribute("value",this._document.getElementById("todo-entrydate").value);
+			tmpDatePicker.setAttribute("onchange","dateTimeControls2State(true);");
+			tmpDatePicker.addEventListener("change", function() { self.updateTime(); }, false);
+			if (!this._document.getElementById("todo-has-entrydate").checked) {
+				tmpDatePicker.setAttribute("disabled","true");
+			}
+			this._document.getElementById("event-grid-startdate-picker-box").replaceChild(tmpDatePicker, this._document.getElementById("todo-entrydate"));
+
+			var tmpDatePicker = this._document.createElement("datepicker");
+			tmpDatePicker.setAttribute("type","popup");
+			tmpDatePicker.setAttribute("id","todo-duedate");
+			tmpDatePicker.setAttribute("value",this._document.getElementById("todo-duedate").value);
+			tmpDatePicker.setAttribute("onchange","dateTimeControls2State(false);");
+			tmpDatePicker.addEventListener("change", function() { self.updateTime(); }, false);
+			if (!this._document.getElementById("todo-has-duedate").checked) {
+				tmpDatePicker.setAttribute("disabled","true");
+			}
+			this._document.getElementById("event-grid-enddate-picker-box").replaceChild(tmpDatePicker, this._document.getElementById("todo-duedate"));
+
+			this._document.getElementById("timezone-starttime").hidden = true;
+			this._document.getElementById("timezone-endtime").hidden = true;
+
+			if (this._document.getElementById("item-repeat")) {
+				this._document.getElementById("item-repeat").addEventListener("command", function() { self.updateRepeat(); }, false);
+			}
+			this.updateTime();
+			this.updateRepeat();
+		}
+		else {
+			try {
+				this._document.getElementById("exchWebService-details-row1").setAttribute("collapsed", "true");
+				this._document.getElementById("exchWebService-details-row2").setAttribute("collapsed", "true");
+				this._document.getElementById("exchWebService-details-row3").setAttribute("collapsed", "true");
+			}
+			catch (ex) {}
+
+			this._document.getElementById("exchWebService-owner-hbox").hidden = true;
+			this._document.getElementById("exchWebService-details-separator").hidden = true;
+
+			// Clear reminder select list for todo
+			this._document.getElementById("reminder-none-separator").hidden = false;
+			this._document.getElementById("reminder-0minutes-menuitem").hidden = false;
+			this._document.getElementById("reminder-5minutes-menuitem").hidden = false;
+			this._document.getElementById("reminder-15minutes-menuitem").hidden = false;
+			this._document.getElementById("reminder-30minutes-menuitem").hidden = false;
+			this._document.getElementById("reminder-minutes-separator").hidden = false;
+			this._document.getElementById("reminder-1hour-menuitem").hidden = false;
+			this._document.getElementById("reminder-2hours-menuitem").hidden = false;
+			this._document.getElementById("reminder-12hours-menuitem").hidden = false;
+			this._document.getElementById("reminder-hours-separator").hidden = false;
+			this._document.getElementById("reminder-1day-menuitem").hidden = false;
+			this._document.getElementById("reminder-2days-menuitem").hidden = false;
+			this._document.getElementById("reminder-1week-menuitem").hidden = false;
+
+			this._document.getElementById("timezone-starttime").hidden = false;
+			this._document.getElementById("timezone-endtime").hidden = false;
+
 		}
 	},
 
@@ -179,7 +231,15 @@ exchEventDialog.prototype = {
 			repeatDetails[0].setAttribute("tooltiptext", tmpArray.join("\n"));
 			repeatDetails[1].setAttribute("tooltiptext", tmpArray.join("\n"));
 		}
-	}
+	},
+
+	selectedCalendarChanged: function _selectedCalendarChanged(aMenuList)
+	{
+dump("selectedCalendarChanged\n");
+		updateCalendar();
+
+		this.updateScreen(this._window.calendarItem, getCurrentCalendar());
+	},
 
 
 }

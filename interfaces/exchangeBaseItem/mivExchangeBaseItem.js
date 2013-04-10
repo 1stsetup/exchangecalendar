@@ -397,6 +397,7 @@ try {
 		}
 		result.exchangeData = this._exchangeData;
 		result.cloneToCalEvent(this._calEvent);
+		if (this._newId !== undefined) result.id = this._newId;
 		result.calendar = this._calEvent.calendar;
 
 		if (this._newStartDate !== undefined) result.startDate = this.startDate.clone();
@@ -639,6 +640,10 @@ catch(err){
 	{
 		this.logInfo("set id: title:"+this.title);
 		// Should never be done by any external app.
+		if (!this._id) {
+			this._newId = aValue;
+			this._calEvent.id = aValue;
+		}
 	},
 
 	// event title
@@ -1389,7 +1394,7 @@ catch(err){
 				}
 			}
 			else {
-				this._changedProperties.push({ action: "remove", name: name, value: value});
+				this._changedProperties.push({ action: "remove", name: name, value: null});
 			}
 
 //		default:

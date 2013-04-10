@@ -796,6 +796,7 @@ calExchangeCalendar.prototype = {
 		// if aItem.id == null then it is a newly created item in Lightning.
 		// if aItem.id == "040000008200E00074C5B7101A82E008000000005D721F845633CD0100000000000000001000000006CC9AC20EA39441B863D6E454306174" it is from iTIP
 		// if aItem.id == "31d9835f-1c29-4d18-ab39-7587c56e3982" paste in lightning after a copy in lightning.
+		// if aItem.id == "AAMkAGFkNzVhOGVlLTYxMDktNGU0MC05YWZjLWIzMWY1YmNmOTAzNQBGAAAAAAD9bSPYK6piTIbhfZ5n6SOXBwAfSIGbKdCWQbNg+oqR8EJMAAAA9OKyAAAfSIGbKdCWQbNg+oqR8EJMAAB8S1QtAAA=" copy back and forth between exchange to other type and exchange.
 
 	        if (this.OnlyShowAvailability) {
 			this.readOnly = true;
@@ -824,8 +825,9 @@ calExchangeCalendar.prototype = {
 			return this.modifyItem(newItem, this.itemCache[newItem.id]);
 		}
 
-		if ((aItem.id) && (aItem.id.indexOf("-") > 2)) {
+		if ((aItem.id) && ((aItem.id.indexOf("-") > 2) || (aItem.id.length == 152))) {
 			// This is added from a copy/paste procedure.
+			if (this.debug) this.logInfo("addItem Copy/pasted item.");
 			aItem.id = null;
 			aItem.deleteProperty("X-UID");
 

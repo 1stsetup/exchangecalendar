@@ -374,9 +374,11 @@ mivExchangeTodo.prototype = {
 	{
 		if (!this._companies) {
 			this._companies = new Array();
-			var tmpStr = this._exchangeData.XPath("/t:Companies/t:String");
-			for each(var string in tmpStr) {
-				this._companies.push(string.value);
+			if (this._exchangeData) {
+				var tmpStr = this._exchangeData.XPath("/t:Companies/t:String");
+				for each(var string in tmpStr) {
+					this._companies.push(string.value);
+				}
 			}
 		}
 
