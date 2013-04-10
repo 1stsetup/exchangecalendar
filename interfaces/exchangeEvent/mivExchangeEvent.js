@@ -274,7 +274,7 @@ mivExchangeEvent.prototype = {
 				this.addSetItemField(updates, "Start", exchStart);
 
 				if (!this.calendar.isVersion2007) {
-					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:StartTimeZone Id="'+this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl)+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:StartTimeZone Id="'+this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl, this._newStartDate)+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 
 					this.addSetItemField(updates, "StartTimeZone", tmpTimeZone, null, true);
 				}
@@ -301,7 +301,7 @@ mivExchangeEvent.prototype = {
 				this.addSetItemField(updates, "End", exchEnd);
 
 				if (!this.calendar.isVersion2007) {
-					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:EndTimeZone Id="'+this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newEndDate.timezone, this.calendar.serverUrl)+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:EndTimeZone Id="'+this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newEndDate.timezone, this.calendar.serverUrl, this._newEndDate)+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 
 					this.addSetItemField(updates, "EndTimeZone", tmpTimeZone, null, true);
 				}

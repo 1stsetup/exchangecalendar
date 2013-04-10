@@ -415,7 +415,7 @@ try {
 		if (this._newStatus) result.status = this.status;
 		if (this._newAlarm !== undefined) {
 			if (this._newAlarm) {
-				result.addAlarm(this_.newAlarm);
+				result.addAlarm(this._newAlarm);
 			}
 			else {
 				result.clearAlarms();
@@ -810,7 +810,7 @@ catch(err){
 			return true;
 		}
 
-		if ( (aAlarm1.alarmDate.compare(aAlarm2.alarmDate) == 0) &&
+		if ( (((aAlarm1.alarmDate) && (aAlarm2.alarmDate) && (aAlarm1.alarmDate.compare(aAlarm2.alarmDate) == 0)) || ((!aAlarm1.alarmDate) && (!aAlarm2.alarmDate))) &&
 		     (aAlarm1.related == aAlarm2.related) &&
 		     (aAlarm1.offset == aAlarm2.offset) ) {
 			result = true;
@@ -836,10 +836,11 @@ catch(err){
 			case "mivExchangeTodo":
 				if ((this.reminderIsSet) && (this.calendarItemType != "RecurringMaster")) {
 					this.logInfo("Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType);
+					//dump("Creating alarm in getAlarms: title:"+this.title+", this.reminderDueBy:"+this.reminderDueBy+"\n");
 					var alarm = cal.createAlarm();
 					alarm.action = "DISPLAY";
 					alarm.repeat = 0;
-					alarm.alarmDate = this.reminderDueBy.clone();
+					alarm.alarmDate = this.reminderDueBy.clone().getInTimezone(this.globalFunctions.ecDefaultTimeZone());
 
 					alarm.related = Ci.calIAlarm.ALARM_RELATED_ABSOLUTE;
 
@@ -892,10 +893,11 @@ catch(err){
 
 		// As exchange can only handle one alarm. We make sure there is only one.
 
-		//dump("addAlarm: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"\n");
+		//dump("addAlarm 1: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"\n");
 		this.getAlarms({}); // Preload
 
-		if ((this._alarm) && (!this.alarmsAreEqual(this._alarm, aAlarm))) {
+		if (((this._alarm) && (!this.alarmsAreEqual(this._alarm, aAlarm))) || (!this._alarm)) {
+			//dump("addAlarm 2: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"\n");
 			this._calEvent.clearAlarms();
 			this._newAlarm = aAlarm.clone();
 		}
@@ -962,8 +964,6 @@ catch(err){
 
 	set alarmLastAck(aValue)
 	{
-dump(" alarmLastAck: title:"+this.title+"\n");
-
 		if ((aValue) && (aValue.compare(this.alarmLastAck) != 0)) {
 
 			//this.logInfo("set alarmLastAck: User snoozed alarm. Title:"+this.title+", aValue:"+aValue.toString()+", alarmTime:"+this.getAlarmTime(), -1);
@@ -1324,7 +1324,6 @@ dump(" alarmLastAck: title:"+this.title+"\n");
 			break;
 		case "X-MOZ-SNOOZE-TIME":
 				if (value != this._xMozSnoozetime) {
-dump("  setProperty X-MOZ-SNOOZE-TIME: title:"+this.title+"\n");
 					this._newXMozSnoozeTime = value;
 				}
 				else {
@@ -2036,6 +2035,7 @@ dump("  setProperty X-MOZ-SNOOZE-TIME: title:"+this.title+"\n");
 				}
 
 				if (this.className == "mivExchangeTodo") {
+					//dump("reminderSignalTime: title:"+this.title+", this.reminderSignalTime:"+this._reminderSignalTime+"\n");
 					this._calEvent.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
 					//this.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
 					this._xMozSnoozeTime = this._reminderSignalTime.icalString;
@@ -2888,7 +2888,6 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 							break;
 						}
 
-//						this.addSetItemField(updates, "ReminderDueBy", cal.toRFC3339(this.startDate.getInTimezone(cal.UTC())));
 						this.addSetItemField(updates, "ReminderDueBy", cal.toRFC3339(referenceDate));
 					
 						if ((offset) && (offset.inSeconds != 0)) {
@@ -2909,8 +2908,6 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		else {
 			if (this.calendarItemType == "RecurringMaster") {
 				// Check if we are passed last occurrence or exception
-//this.logInfo("before 1: this._reminderSignalTime:"+this._reminderSignalTime+", this.reminderDueBy:"+this.reminderDueBy);
-//this.logInfo("before 2: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime+", this._newAlarmLastAck:"+this._newAlarmLastAck);
 				if (!this._newXMozSnoozeTime) {
 					var nextOccurrence;
 					if (this.recurrenceInfo) {
@@ -2947,9 +2944,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 		// Alarm snooze
 		if (this._newXMozSnoozeTime) {
-//		if (this._newXMozSnoozeTime) && (this._xMozSnoozeTime != this._newXMozSnoozeTime) {
 			if (this._newAlarmLastAck) {
-//				if (((this.getAlarmTime()) && (this._newAlarmLastAck.compare(this.getAlarmTime()) > 0)) || (this.calendarItemType == "RecurringMaster")) {
 					if (this._newXMozSnoozeTime) {
 						//this.logInfo("checkAlarmChange: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime);
 						var newSnoozeTime = cal.createDateTime(this._newXMozSnoozeTime);
