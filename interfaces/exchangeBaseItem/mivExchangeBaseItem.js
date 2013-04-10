@@ -844,6 +844,9 @@ catch(err){
 				break;
 			}
 		}
+
+		this.reminderSignalTime;
+
 		return this._calEvent.getAlarms(count);
 	},
 
@@ -1104,6 +1107,11 @@ catch(err){
 	{
 		//this.logInfo("get property 1: title:"+this.title+", name:"+name);
 		switch (name) {
+		case "X-MOZ-SNOOZE-TIME":
+dump(" X-MOZ-SNOOZE_TIME\n");
+				this.reminderSignalTime;
+				//this._newXMozSnoozeTime = value;
+			break;
 		case "PERCENT-COMPLETE":
 			this._calEvent.setProperty(name, this.percentComplete);
 			break;
@@ -1957,6 +1965,7 @@ catch(err){
 						this._xMozSnoozeTime = this._reminderSignalTime.icalString;
 						break;
 					case "Single":
+dump("Setting snooze to:"+this._reminderSignalTime.icalString+" for title:"+this.title+"\n");
 						this.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
 						this._xMozSnoozeTime = this._reminderSignalTime.icalString;
 						break;
