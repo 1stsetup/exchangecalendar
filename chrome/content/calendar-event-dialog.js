@@ -66,7 +66,7 @@ exchEventDialog.prototype = {
 
 	onLoad: function _onLoad()
 	{
-		onLoad();
+		//onLoad();
 
 		if (this._initialized) return;
 
