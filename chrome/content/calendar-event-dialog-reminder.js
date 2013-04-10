@@ -57,6 +57,11 @@ exchChangeCalendarPropertiesReminder.prototype = {
 			this._document.getElementById("reminder-absolute-radio").hidden = true;
 		}
 
+		if ((cal.isEvent(this._argument.item)) && (this._argument.item.calendar.type == "exchangecalendar")) {
+			this._document.getElementById("reminder-relation-origin").hidden = true;
+			this._document.getElementById("exchWebService-reminder-relation-origin").hidden = false;
+		}
+
 		if (this._argument.item.calendar.type == "exchangecalendar") {
 			this._document.getElementById("reminder-actions-caption").hidden = true;
 			this._document.getElementById("reminder-actions-menulist").hidden = true;
@@ -100,14 +105,34 @@ exchChangeCalendarPropertiesReminder.prototype = {
 			setupMaxReminders();
 		}
 		else {
-			onNewReminder();
+			if ((this._document.getElementById("reminder-listbox").itemCount == 0) || (this._argument.item.calendar.type != "exchangecalendar")) {
+				onNewReminder();
+			}
 		}
 
 		if (this._argument.item.calendar.type == "exchangecalendar") {
+			disableElement("reminder-relation-origin");
 			disableElement("reminder-new-button");
 		}
 	},
 
+	onReminderUnitChange: function _onReminderUnitChange(event)
+	{
+		updateReminder(event);
+		if (this._argument.item.calendar.type == "exchangecalendar") {
+			disableElement("reminder-relation-origin");
+			disableElement("reminder-new-button");
+		}
+	},
+
+	onReminderLengthChange: function _onReminderLengthChange(event)
+	{
+		updateReminder(event);
+		if (this._argument.item.calendar.type == "exchangecalendar") {
+			disableElement("reminder-relation-origin");
+			disableElement("reminder-new-button");
+		}
+	},
 }
 
 var tmpChangeCalendarPropertiesReminder = new exchChangeCalendarPropertiesReminder(document, window.arguments[0]);
