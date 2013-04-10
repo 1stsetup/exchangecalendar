@@ -372,6 +372,7 @@ function calExchangeCalendar() {
 
 	this.folderProperties = null;
 	this._readOnly = true;
+	this.folderIsNotAvailable = true;
 
 	this.exporting = false;
 	this.OnlyShowAvailability = false;
@@ -2162,7 +2163,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 
 		if (wantInvitations) if (this.debug) this.logInfo("Invitations are requested by calendar.");
 
-		if ((!this.supportsEvents) && (!this.supportsTasks)) {
+		if ((!this.supportsEvents) && (!this.supportsTasks) && (!this.OnlyShowAvailability)) {
 			// Something requested we cannot fullfill.
 			if (this.debug) this.logInfo("This folder currently is not able yet to support events or tasks.");
 			this.notifyOperationComplete(aListener,
@@ -2172,7 +2173,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			return;
 		}
 
-		var eventsRequestedAndPossible = ((wantEvents) && (this.supportsEvents));
+		var eventsRequestedAndPossible = (((wantEvents) && (this.supportsEvents)) || (this.OnlyShowAvailability));
 		var tasksRequestedAndPossible = ((wantTodos) && (this.supportsTasks));
 		if ((!eventsRequestedAndPossible) && (!tasksRequestedAndPossible)) {
 			if (this.debug) this.logInfo("This folder is not able to support requested items.");
@@ -2243,7 +2244,9 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		if (aRangeStart)  { if (this.debug) this.logInfo("getItems 5a: aRangeStart:"+aRangeStart.toString()); }
 		if (aRangeEnd) { if (this.debug) this.logInfo("getItems 5b: aRangeEnd:"+aRangeEnd.toString()); }
 
-		this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
+		//if (!this.OnlyShowAvailability) {
+			this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
+		//}
 
  		if (this.OnlyShowAvailability) {
 			if ((startChanged) || (endChanged)) {
@@ -3500,7 +3503,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	getUserAvailabilityRequestOK: function _getUserAvailabilityRequestOK(erGetUserAvailabilityRequest, aEvents)
 	{
 		this.notConnected = false;
-		//if (this.debug) this.logInfo("getUserAvailabilityRequestOK");
+		if (this.debug) this.logInfo("getUserAvailabilityRequestOK: aEvents.length:"+aEvents.length+", this.folderIsNotAvailable:"+this.folderIsNotAvailable);
 		this.saveCredentials(erGetUserAvailabilityRequest.argument);
 
 		var items = new Array();
@@ -3508,14 +3511,18 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			this.updateCalendar(erGetUserAvailabilityRequest, aEvents, true);
 		}
 		else {
+dump("1\n");
 			for (var index in aEvents) {
 				var item = this.doAvailability(erGetUserAvailabilityRequest.argument.calId, aEvents[index]);
 				items.push(item);
 			}
+dump("2\n");
 		
 			if (erGetUserAvailabilityRequest.listener) {
+dump("3\n");
 				erGetUserAvailabilityRequest.listener.onResult(null, items);
 			}
+dump("4\n");
 		}
 	},
 	
@@ -7039,6 +7046,9 @@ return;*/
 				//if (this.debug) this.logInfo("Restore folderProperties from prefs.js:"+tmpFolderProperties);
 				var tmpXML = this.globalFunctions.xmlToJxon(tmpFolderProperties);
 				this.folderProperties = tmpXML;
+
+				this.folderIsNotAvailable = true;
+
 				this.setFolderProperties(tmpXML, tmpFolderClass);
 			}
 		}
@@ -7175,6 +7185,8 @@ return;*/
 		if (this.debug) this.logInfo(" >>>>>>>>>>>>>>MIV>:"+aFolderClass.toString());
 		var rm = aFolderProperties.XPath("/s:Envelope/s:Body/m:GetFolderResponse/m:ResponseMessages/m:GetFolderResponseMessage/m:Folders/*/t:EffectiveRights[t:Read='true']");
 
+		this.folderIsNotAvailable = false;
+
 		if (rm.length == 0) {
 			if (this.debug) this.logInfo("getFolderOk: but EffectiveRights.Read == false. Only getting Free/Busy information.");
 			if (!this.OnlyShowAvailability) {
@@ -7206,6 +7218,8 @@ return;*/
 
 		this.prefs.setCharPref("lastServerVersion", this.exchangeStatistics.getServerVersion(this.serverUrl));
 
+		this.folderIsNotAvailable = true;
+
 		this.setFolderProperties(this.folderProperties, aFolderClass);
 
 		if (this.newCalendar) {
@@ -7233,6 +7247,7 @@ return;*/
 
 			if (!this.OnlyShowAvailability) {
 				this.OnlyShowAvailability = true;
+				this.folderIsNotAvailable = true;
 				this.getOnlyFreeBusyInformation(this.lastValidRangeStart, this.lastValidRangeEnd);
 				this.startCalendarPoller();
 			}		
