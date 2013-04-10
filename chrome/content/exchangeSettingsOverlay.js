@@ -458,7 +458,7 @@ exchSettingsOverlay.prototype = {
 			break;
 		case -208:  // folderNotFound. 
 			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorServerAndMailboxCheckFolderNotFound", [aMsg, aCode], "exchangecalendar"));
-			exchWebServicesCheckServerAndMailboxOK();
+			this.exchWebServicesCheckServerAndMailboxOK();
 			this._document.getElementById("exchWebService_folderbaserow").hidden = true;
 			this._document.getElementById("exchWebService_folderpathrow").hidden = true;
 			this._document.getElementById("exchWebServices-UserAvailability").hidden = false;
