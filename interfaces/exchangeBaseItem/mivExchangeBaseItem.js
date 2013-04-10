@@ -413,14 +413,23 @@ try {
 		if (this._newPriority) result.priority = this.priority;
 		if (this._newPrivacy) result.privacy = this.privacy;
 		if (this._newStatus) result.status = this.status;
-		if (this._changesAlarm) {
+		if (this._newAlarm !== undefined) {
+			if (this._newAlarm) {
+				result.addAlarm(this_.newAlarm);
+			}
+			else {
+				result.clearAlarms();
+			}
+		}
+
+/*		if (this._changesAlarm) {
 			result.clearAlarms();
 			var alarms = this._calEvent.getAlarms({});
 			for each(var alarm in alarms) {
 				result.addAlarm(alarm);
 			}
 		}
-
+*/
 		result.recurrenceInfo;
 		if (this._newRecurrenceInfo !== undefined) result.recurrenceInfo = this._newRecurrenceInfo;
 
@@ -788,6 +797,28 @@ catch(err){
 	// alarms
 	//
 
+	alarmsAreEqual: function _alarmsAreEqual(aAlarm1, aAlarm2)
+	{
+		var result = false;
+
+		if ( ((!aAlarm1) && (aAlarm2)) ||
+		     ((!aAlarm2) && (aAlarm1)) ) {
+			return false;
+		}
+
+		if ((!aAlarm1) && (!aAlarm2)) {
+			return true;
+		}
+
+		if ( (aAlarm1.alarmDate.compare(aAlarm2.alarmDate) == 0) &&
+		     (aAlarm1.related == aAlarm2.related) &&
+		     (aAlarm1.offset == aAlarm2.offset) ) {
+			result = true;
+		}
+
+		return result;
+	},
+
 	/**
 	* Get all alarms assigned to this item
 	*
@@ -799,7 +830,8 @@ catch(err){
 	{
 
 		//dump("getAlarms 1: title:"+this.title+"\n");
-		if (!this._alarm) {
+		if (this._alarm === undefined) {
+			this._alarm = null;
 			switch (this._className) {
 			case "mivExchangeTodo":
 				if ((this.reminderIsSet) && (this.calendarItemType != "RecurringMaster")) {
@@ -845,8 +877,6 @@ catch(err){
 			}
 		}
 
-		this.reminderSignalTime;
-
 		return this._calEvent.getAlarms(count);
 	},
 
@@ -858,15 +888,17 @@ catch(err){
 	//void addAlarm(in calIAlarm aAlarm);
 	addAlarm: function _addAlarm(aAlarm)
 	{
+		if (!aAlarm) return;
+
+		// As exchange can only handle one alarm. We make sure there is only one.
+
 		//dump("addAlarm: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"\n");
 		this.getAlarms({}); // Preload
 
-		if (this._newAlarm) {
-			this._calEvent.deleteAlarm(this._newAlarm);
-			this._changesAlarm.push({ action: "remove", alarm: this._newAlarm});
+		if ((this._alarm) && (!this.alarmsAreEqual(this._alarm, aAlarm))) {
+			this._calEvent.clearAlarms();
+			this._newAlarm = aAlarm.clone();
 		}
-		this._newAlarm = aAlarm.clone();
-		this._changesAlarm.push({ action: "add", alarm: this._newAlarm});
 		this._calEvent.addAlarm(aAlarm);
 	},
 
@@ -879,9 +911,8 @@ catch(err){
 	deleteAlarm: function _deleteAlarm(aAlarm)
 	{
 		//dump("deleteAlarm: title:"+this.title+"\n");
-		this._changesAlarm.push({ action: "remove", alarm: this._newAlarm});
 		this._newAlarm = null;
-		this._calEvent.deleteAlarm(aAlarm);
+		this._calEvent.clearAlarms();
 	},
 
 	/**
@@ -891,10 +922,6 @@ catch(err){
 	clearAlarms: function _clearAlarms()
 	{
 		//dump("clearAlarms: title:"+this.title+"\n");
-		var oldAlarms = this.getAlarms({});
-		for each(var alarm in oldAlarms) {
-			this._changesAlarm.push({ action: "remove", alarm: alarm});
-		}
 		this._newAlarm = null;
 		this._calEvent.clearAlarms();
 	},
@@ -935,6 +962,8 @@ catch(err){
 
 	set alarmLastAck(aValue)
 	{
+dump(" alarmLastAck: title:"+this.title+"\n");
+
 		if ((aValue) && (aValue.compare(this.alarmLastAck) != 0)) {
 
 			//this.logInfo("set alarmLastAck: User snoozed alarm. Title:"+this.title+", aValue:"+aValue.toString()+", alarmTime:"+this.getAlarmTime(), -1);
@@ -1108,9 +1137,7 @@ catch(err){
 		//this.logInfo("get property 1: title:"+this.title+", name:"+name);
 		switch (name) {
 		case "X-MOZ-SNOOZE-TIME":
-dump(" X-MOZ-SNOOZE_TIME\n");
 				this.reminderSignalTime;
-				//this._newXMozSnoozeTime = value;
 			break;
 		case "PERCENT-COMPLETE":
 			this._calEvent.setProperty(name, this.percentComplete);
@@ -1296,12 +1323,23 @@ dump(" X-MOZ-SNOOZE_TIME\n");
 			}
 			break;
 		case "X-MOZ-SNOOZE-TIME":
-				this._newXMozSnoozeTime = value;
+				if (value != this._xMozSnoozetime) {
+dump("  setProperty X-MOZ-SNOOZE-TIME: title:"+this.title+"\n");
+					this._newXMozSnoozeTime = value;
+				}
+				else {
+					this._newXMozSnoozeTime = undefined;
+				}
 			break;
 		default:
 			if (name.indexOf("X-MOZ-SNOOZE-TIME-") > -1) {
 				//this.logInfo("setProperty: "+name+" is set to value:"+value);
-				this._newXMozSnoozeTime = value;
+				if (value != this._xMozSnoozetime) {
+					this._newXMozSnoozeTime = value;
+				}
+				else {
+					this._newXMozSnoozeTime = undefined;
+				}
 			}
 			else {
 				this._changedProperties.push({ action: "set", name: name, value: value});
@@ -1332,8 +1370,31 @@ dump(" X-MOZ-SNOOZE_TIME\n");
 		case "X-MOZ-SEND-INVITATIONS": 
 			this._newIsInvitation = null;
 			break;
+
+		case "X-MOZ-SNOOZE-TIME":
+				if (this._xMozSnoozetime) {
+					this._newXMozSnoozeTime = null;
+				}
+				else {
+					this._newXMozSnoozeTime = undefined;
+				}
+			break;
 		default:
-			this._changedProperties.push({ action: "remove", name: name});
+			if (name.indexOf("X-MOZ-SNOOZE-TIME-") > -1) {
+				//this.logInfo("setProperty: "+name+" is set to value:"+value);
+				if (this._xMozSnoozetime) {
+					this._newXMozSnoozeTime = null;
+				}
+				else {
+					this._newXMozSnoozeTime = undefined;
+				}
+			}
+			else {
+				this._changedProperties.push({ action: "remove", name: name, value: value});
+			}
+
+//		default:
+//			this._changedProperties.push({ action: "remove", name: name});
 		}
 
 		this._calEvent.deleteProperty(name);
@@ -1965,8 +2026,8 @@ dump(" X-MOZ-SNOOZE_TIME\n");
 						this._xMozSnoozeTime = this._reminderSignalTime.icalString;
 						break;
 					case "Single":
-dump("Setting snooze to:"+this._reminderSignalTime.icalString+" for title:"+this.title+"\n");
-						this.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
+						this._calEvent.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
+						//this.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
 						this._xMozSnoozeTime = this._reminderSignalTime.icalString;
 						break;
 					default:
@@ -1975,7 +2036,8 @@ dump("Setting snooze to:"+this._reminderSignalTime.icalString+" for title:"+this
 				}
 
 				if (this.className == "mivExchangeTodo") {
-					this.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
+					this._calEvent.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
+					//this.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
 					this._xMozSnoozeTime = this._reminderSignalTime.icalString;
 				}
 			}
@@ -2884,7 +2946,8 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		}
 
 		// Alarm snooze
-		if (this._xMozSnoozeTime != this._newXMozSnoozeTime) {
+		if (this._newXMozSnoozeTime) {
+//		if (this._newXMozSnoozeTime) && (this._xMozSnoozeTime != this._newXMozSnoozeTime) {
 			if (this._newAlarmLastAck) {
 //				if (((this.getAlarmTime()) && (this._newAlarmLastAck.compare(this.getAlarmTime()) > 0)) || (this.calendarItemType == "RecurringMaster")) {
 					if (this._newXMozSnoozeTime) {
