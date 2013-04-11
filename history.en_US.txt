@@ -2,6 +2,12 @@ Version 3.2.0-Beta6:
 - Improved copying between exchange calendars and non exchange calendars.
 - Fixed snooze/dismiss reminder problems for events and tasks.
 - Improved UI scripts used in XUL.
+- Fixes Bug 264 - Schema failure when dismissing a reminder
+- Fixes Bug 261 - Number of jobs in Status Bar increasing
+- Fixes Bug 255 - Complete state of tasks not working in today pane
+- Fixes Bug 254 - NewEventInterfaces lists calendars twice
+- Fixes Bug 253 - Import Calendar into Exchange Calendar / copy calendar items from one to another
+- Fixes Bug 252 - Internal server error on reminder dismissal
 
 Version 3.2.0-Beta5:
 - Fixed working with attachments lists in the different views/dialogs/panes
