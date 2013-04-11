@@ -4653,7 +4653,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			}
 	
 			if (newAlarmTime) {
-				e.addChildTag("ReminderDueBy", "nsTypes", cal.toRFC3339(newAlarmTime));
+				e.addChildTag("ReminderDueBy", "nsTypes", cal.toRFC3339(newAlarmTime.getInTimezone(cal.UTC())));
 			}
 
 			e.addChildTag("ReminderIsSet", "nsTypes", "true");
@@ -4705,7 +4705,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 		var companiesTag = e.addChildTag("Companies", "nsTypes", null);
 
-		var companies = this.getCompanies({});
+		var companies = aItem.getCompanies({});
 		var first = true;
 		for each(var company in companies) {
 			companiesTag.addChildTag("String", "nsTypes", company);
@@ -4775,10 +4775,6 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 		else {
 			e.addChildTag("Status", "nsTypes", statuses[aItem.status]);
-		}
-
-		if (aItem.totalWork) {
-			e.addChildTag("TotalWork", "nsTypes", aItem.totalWork);
 		}
 
 		if (aItem.totalWork) {

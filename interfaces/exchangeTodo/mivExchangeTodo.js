@@ -556,6 +556,7 @@ mivExchangeTodo.prototype = {
 			var companiesXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
 						.createInstance(Ci.mivIxml2jxon);
 			var companies = this.getCompanies({});
+			//var companies = this.companies;
 			var first = true;
 			for each(var company in companies) {
 				if (first) {

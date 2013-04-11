@@ -1,3 +1,8 @@
+Version 3.2.0-Beta6:
+- Improved copying between exchange calendars and non exchange calendars.
+- Fixed snooze/dismiss reminder problems for events and tasks.
+- Improved UI scripts used in XUL.
+
 Version 3.2.0-Beta5:
 - Fixed working with attachments lists in the different views/dialogs/panes
 - Customized settings reminders on events and tasks according to what is possible in Exchange.
