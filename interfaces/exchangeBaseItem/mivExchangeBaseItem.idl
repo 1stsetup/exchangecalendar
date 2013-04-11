@@ -94,6 +94,4 @@ interface mivExchangeBaseItem : calIItemBase
 
 	readonly attribute AUTF8String className;
 
-	void resetId();
-
 };

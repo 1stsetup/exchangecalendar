@@ -638,18 +638,11 @@ catch(err){
 
 	set id(aValue) 
 	{
-		this.logInfo("set id: title:"+this.title);
-		// Should never be done by any external app.
-/*		if (!this._id) {
+		//this.logInfo("set id: title:"+this.title);
+		if (aValue != this.id) {
 			this._newId = aValue;
 			this._calEvent.id = aValue;
 		}
-*/	},
-
-	resetId: function _resetId()
-	{
-		this._id = null;
-		this._calEvent.id = null;
 	},
 
 	// event title
@@ -1227,10 +1220,10 @@ catch(err){
 			}
 			break;
 		case "X-MOZ-SEND-INVITATIONS": 
-			if ((this.responseObjects) && ((this.responseObjects.AcceptItem) ||
+			if ( ((this.responseObjects) && ((this.responseObjects.AcceptItem) ||
 			    (this.responseObjects.TentativelyAcceptItem) ||
-			    (this.responseObjects.DeclineItem) ||
-			    (this.type == "MeetingRequest"))) {
+			    (this.responseObjects.DeclineItem)) ) ||
+			    (this.type == "MeetingRequest")) {
 				this._calEvent.setProperty(name, true);
 			}
 			else {
@@ -2202,9 +2195,9 @@ catch(err){
 	//readonly attribute boolean isInvitation;
 	get isInvitation()
 	{
-		if ((this.responseObjects.AcceptItem) ||
-		    (this.responseObjects.TentativelyAcceptItem) ||
-		    (this.responseObjects.DeclineItem) ||
+		if ( ( (this.responseObjects) && ((this.responseObjects.AcceptItem) ||
+		      (this.responseObjects.TentativelyAcceptItem) ||
+		      (this.responseObjects.DeclineItem)) ) ||
 		    (this.type == "MeetingRequest")) {
 			return true;
 		}

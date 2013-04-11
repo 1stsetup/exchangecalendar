@@ -791,7 +791,7 @@ calExchangeCalendar.prototype = {
         //                in calIOperationListener aListener);
 	addItem: function _addItem(aItem, aListener)
 	{
-		if (this.debug) this.logInfo("addItem id="+aItem.id);
+		if (this.debug) this.logInfo("addItem id="+aItem.id+", aItem.calendar:"+aItem.calendar);
 
 		// if aItem.id == null then it is a newly created item in Lightning.
 		// if aItem.id == "040000008200E00074C5B7101A82E008000000005D721F845633CD0100000000000000001000000006CC9AC20EA39441B863D6E454306174" it is from iTIP
@@ -835,14 +835,23 @@ calExchangeCalendar.prototype = {
 		// This will happen when someone pressed the accept,decline or tentative buttons
 		// in the itip status bar on the header of an email message.
 		if (this.itemCache[newItem.id]) {
-			return this.modifyItem(newItem, this.itemCache[newItem.id]);
+			if (newItem.calendar === null) {
+				// This is an import from an export and item still exists
+				newItem.calendar = this;
+			}
+			if (this.itemCache[newItem.id].isInvitation) {
+				return this.modifyItem(newItem, this.itemCache[newItem.id], aListener); // We do this when we receive an update for an invitation.
+			}
+			else {
+				this.deleteItem(this.itemCache[newItem.id], null);  // we do this on import of item which was exported earlier.
+			}
 		}
 
 		if ((newItem.id) && ((newItem.id.indexOf("-") > 2) || (newItem.id.length == 152))) {
 			// This is added from a copy/paste procedure.
-			if (this.debug) this.logInfo("addItem Copy/pasted item.");
-			//newItem.id = null;
-			newItem.resetId();
+			newItem.id = null;
+			if (this.debug) this.logInfo("addItem Copy/pasted item. item.id:"+newItem.id);
+			//newItem.resetId();
 			newItem.deleteProperty("X-UID");
 
 			// If I am invited. Remove myself.
@@ -889,10 +898,17 @@ calExchangeCalendar.prototype = {
 		if (isEvent(aItem)) {	
 			// michel123
 
-			var tmpItem = Cc["@1st-setup.nl/exchange/calendarevent;1"]
-					.createInstance(Ci.mivExchangeEvent);
-			tmpItem.addMailboxAlias(this.mailbox);
-			tmpItem.cloneToCalEvent(aItem);
+			if (aItem.exchangeData) {
+				var tmpItem = aItem.clone();
+				if (this.debug) this.logInfo("adoptItem 1 Copy/pasted item. item.id:"+tmpItem.id);
+			}
+			else {
+				var tmpItem = Cc["@1st-setup.nl/exchange/calendarevent;1"]
+						.createInstance(Ci.mivExchangeEvent);
+				tmpItem.addMailboxAlias(this.mailbox);
+				tmpItem.cloneToCalEvent(aItem);
+				if (this.debug) this.logInfo("adoptItem 2 Copy/pasted item. item.id:"+tmpItem.id);
+			}
 
 			if (tmpItem.id) {
 				// This is and item create through an iTIP response.
@@ -938,6 +954,7 @@ calExchangeCalendar.prototype = {
 					return;
 				}
 				else {
+					if (this.debug) this.logInfo("getMeetingRequestFromServer:"+tmpItem.title);
 					this.getMeetingRequestFromServer(tmpItem, tmpItem.id, Ci.calIOperationListener.ADD, aListener);
 					return;
 
@@ -1295,7 +1312,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		//}
 
 		if (isEvent(aNewItem)) {
-
+			if (this.debug) this.logInfo("ModifyItem: it is an event.");
 			var doSendMeetingRespons = false;
 			var meOld = this.getInvitedAttendee(aOldItem);
 			if (!meOld) {
@@ -2528,6 +2545,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	{
 		dump("End batch\n");
 	},
+
 // End calICalendar
 
 // Begin calISchedulingSupport
