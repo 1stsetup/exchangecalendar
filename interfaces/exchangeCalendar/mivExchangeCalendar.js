@@ -4677,6 +4677,22 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 
+		if (aItem.actualWork) {
+			e.addChildTag("ActualWork", "nsTypes", aItem.actualWork);
+		}
+
+		if (aItem.billingInformation) {
+			e.addChildTag("BillingInformation", "nsTypes", aItem.billingInformation);
+		}
+
+		var companiesTag = e.addChildTag("Companies", "nsTypes", null);
+
+		var companies = this.getCompanies({});
+		var first = true;
+		for each(var company in companies) {
+			companiesTag.addChildTag("String", "nsTypes", company);
+		}
+
 		if (aItem.completedDate) {
 
 			tmpStart = aItem.completedDate.clone();
@@ -4706,6 +4722,11 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 			e.addChildTag("DueDate", "nsTypes", cal.toRFC3339(aItem.dueDate));
 		}
+
+		if (aItem.mileage) {
+			e.addChildTag("Mileage", "nsTypes", aItem.mileage);
+		}
+
 		if (aItem.percentComplete) {
 			e.addChildTag("PercentComplete", "nsTypes", aItem.percentComplete);
 		}
@@ -4736,6 +4757,14 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 		else {
 			e.addChildTag("Status", "nsTypes", statuses[aItem.status]);
+		}
+
+		if (aItem.totalWork) {
+			e.addChildTag("TotalWork", "nsTypes", aItem.totalWork);
+		}
+
+		if (aItem.totalWork) {
+			e.addChildTag("TotalWork", "nsTypes", aItem.totalWork);
 		}
 
 		if (this.debug) this.logInfo("!!CHANGED:"+String(e));
