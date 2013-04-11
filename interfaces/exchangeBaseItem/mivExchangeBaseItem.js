@@ -626,7 +626,7 @@ catch(err){
 	//attribute AUTF8String id;
 	get id()
 	{
-		if (!this._id) {
+		if (this._id === undefined) {
 			this._id = this.getAttributeByTag("t:ItemId", "Id", null);
 			if (this._id) {
 				this._calEvent.id = this._id;
@@ -640,10 +640,16 @@ catch(err){
 	{
 		this.logInfo("set id: title:"+this.title);
 		// Should never be done by any external app.
-		if (!this._id) {
+/*		if (!this._id) {
 			this._newId = aValue;
 			this._calEvent.id = aValue;
 		}
+*/	},
+
+	resetId: function _resetId()
+	{
+		this._id = null;
+		this._calEvent.id = null;
 	},
 
 	// event title

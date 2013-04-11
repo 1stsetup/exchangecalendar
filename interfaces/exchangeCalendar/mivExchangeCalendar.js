@@ -814,9 +814,22 @@ calExchangeCalendar.prototype = {
 			return null;
 	        }
 
+	        var newItem = aItem;
+
+		// Make sure we have one of our own object types
+		if ((cal.isEvent(aItem)) && (!aItem.className)) {
+			var newItem = Cc["@1st-setup.nl/exchange/calendarevent;1"]
+					.createInstance(Ci.mivExchangeEvent);
+			newItem.cloneToCalEvent(aItem);
+		}
+
+		if ((!cal.isEvent(aItem)) && (!aItem.className)) {
+			var newItem = Cc["@1st-setup.nl/exchange/calendartodo;1"]
+					.createInstance(Ci.mivExchangeTodo);
+			newItem.cloneToCalEvent(aItem);
+		}
 
 	        //let newItem = aItem.clone();
-	        let newItem = aItem;
 	
 		// We check if we not allready have this item in Cache. If so we modify.
 		// This will happen when someone pressed the accept,decline or tentative buttons
@@ -825,20 +838,21 @@ calExchangeCalendar.prototype = {
 			return this.modifyItem(newItem, this.itemCache[newItem.id]);
 		}
 
-		if ((aItem.id) && ((aItem.id.indexOf("-") > 2) || (aItem.id.length == 152))) {
+		if ((newItem.id) && ((newItem.id.indexOf("-") > 2) || (newItem.id.length == 152))) {
 			// This is added from a copy/paste procedure.
 			if (this.debug) this.logInfo("addItem Copy/pasted item.");
-			aItem.id = null;
-			aItem.deleteProperty("X-UID");
+			//newItem.id = null;
+			newItem.resetId();
+			newItem.deleteProperty("X-UID");
 
 			// If I am invited. Remove myself.
-			var attendees = aItem.getAttendees({});
-			aItem.removeAllAttendees();
+			var attendees = newItem.getAttendees({});
+			newItem.removeAllAttendees();
 			for each (var attendee in attendees) {
 				if ((attendee.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) ||
 					(attendee.id.replace(/^exchangecalendar:/, '').toLowerCase() == this.mailbox.toLowerCase()) ) {
-					if (this.debug) this.logInfo("addItem: FOUND myself as an attendee and we are going to remove myself:"+aItem.title);
-					aItem.removeAttendee(attendee);
+					if (this.debug) this.logInfo("addItem: FOUND myself as an attendee and we are going to remove myself:"+newItem.title);
+					newItem.removeAttendee(attendee);
 				}
 			}
 		}
