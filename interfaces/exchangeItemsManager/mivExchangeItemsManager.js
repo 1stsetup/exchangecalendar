@@ -51,7 +51,7 @@ function mivExchangeItemsManager() {
 	this._accountManager = Cc["@1st-setup.nl/exchange/accountmanager;1"]
 				.getService(Ci.mivExchangeAccountManager)
 
-	this._loadBalancer = Cc[""@1st-setup.nl/exchange/loadbalancer;1"]
+	this._loadBalancer = Cc["@1st-setup.nl/exchange/loadbalancer;1"]
 				.getService(Ci.mivExchangeLoadBalancer)
 
 	this.uuid = this.globalFunctions.getUUID();
