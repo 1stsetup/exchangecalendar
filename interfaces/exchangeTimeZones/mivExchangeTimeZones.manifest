@@ -1,4 +1,4 @@
-content exchangeTimeZones/ .
+content exchangeTimeZones ./
 
 interfaces mivExchangeTimeZones.xpt
 component {16093d9f-a9ac-41ab-9995-0a3a7423b45c} mivExchangeTimeZones.js
