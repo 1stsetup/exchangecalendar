@@ -163,6 +163,7 @@ mivExchangeItemsManager.prototype = {
 		var tmpStr = this._name;
 		if (this._displayName) {
 			tmpStr = tmpStr + " ("+this._displayName+")";
+		}
 		return tmpStr;
 	},
 
