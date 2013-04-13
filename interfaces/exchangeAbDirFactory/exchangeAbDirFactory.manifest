@@ -1,0 +1,6 @@
+interfaces exchangeAbDirFactory.xpt
+
+component {e6f8074c-0236-4f51-b8e2-9c528727b4ee} exchangeAbDirFactory.js
+contract @mozilla.org/addressbook/directory-factory;1?name=exchWebService-contactRoot-directory {e6f8074c-0236-4f51-b8e2-9c528727b4ee}
+
+

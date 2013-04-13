@@ -1,0 +1,6 @@
+interfaces exchangeAbDistListDirectory.xpt
+
+component {9e260dc4-90d3-457b-8885-8dff0f69eea3} exchangeAbDistListDirectory.js
+contract @mozilla.org/addressbook/directory;1?type=exchWebService-distList-directory {9e260dc4-90d3-457b-8885-8dff0f69eea3}
+
+
