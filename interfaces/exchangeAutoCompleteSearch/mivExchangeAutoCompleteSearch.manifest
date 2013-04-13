@@ -1,0 +1,5 @@
+interfaces mivExchangeAutoCompleteSearch.xpt
+component {c073f5cf-15d7-47d4-b30e-9498fd728544} mivExchangeAutoCompleteSearch.js
+contract @mozilla.org/autocomplete/search;1?name=exchangeAutoCompleteSearch {c073f5cf-15d7-47d4-b30e-9498fd728544}
+
+

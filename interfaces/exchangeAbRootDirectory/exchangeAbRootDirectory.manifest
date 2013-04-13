@@ -1,0 +1,6 @@
+interfaces exchangeAbRootDirectory.xpt
+
+component {227664eb-cce6-4b7a-8d57-0bb0c6c9b362} exchangeAbRootDirectory.js
+contract @mozilla.org/addressbook/directory;1?type=exchWebService-contactRoot-directory {227664eb-cce6-4b7a-8d57-0bb0c6c9b362}
+
+

@@ -95,7 +95,7 @@ exchangeAbFolderDirectory.prototype = {
 
 	classID: components.ID("{5963e917-bc68-4b68-b704-65538c81a628}"),
 	contractID: "@mozilla.org/addressbook/directory;1?type=exchWebService-contactFolder-directory",
-	classDescription: "Exchange 2007/2010 Contacts",
+	classDescription: "Exchange 2007/2010 Contacts Folder directory",
 
 	activityManager : Cc["@mozilla.org/activity-manager;1"].getService(nsIAM),  
 

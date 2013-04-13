@@ -24,6 +24,7 @@ overlay chrome://communicator/content/pref/preferences.xul chrome://exchangecale
 overlay chrome://calendar/content/calendar-common-sets.xul chrome://exchangecalendar/content/calendar-common-sets.xul
 overlay chrome://calendar/content/calendar-event-dialog-attendees.xul chrome://exchangecalendar/content/calendar-event-dialog-attendees.xul
 overlay chrome://messenger/content/messenger.xul chrome://exchangecalendar/content/OutOfOfficeMenu.xul
+overlay chrome://messenger/content/messengercompose/messengercompose.xul chrome://exchangecalendar/content/addressingWidgetOverlay.xul
 
 locale exchangecalendar nl locale/exchangecalendar/nl/
 locale exchangecalendar en-US locale/exchangecalendar/en-US/
@@ -33,12 +34,6 @@ locale exchangecalendar ja-JP locale/exchangecalendar/ja-JP/
 locale exchangecalendar sv locale/exchangecalendar/sv/
 
 manifest interfaces/exchangeCalendar/mivExchangeCalendar.manifest
-
-component {227664eb-cce6-4b7a-8d57-0bb0c6c9b362} components/exchangeAbRootDirectory.js
-contract @mozilla.org/addressbook/directory;1?type=exchWebService-contactRoot-directory {227664eb-cce6-4b7a-8d57-0bb0c6c9b362}
-
-component {5963e917-bc68-4b68-b704-65538c81a628} components/exchangeAbFolderDirectory.js
-contract @mozilla.org/addressbook/directory;1?type=exchWebService-contactFolder-directory {5963e917-bc68-4b68-b704-65538c81a628}
 
 component {9e260dc4-90d3-457b-8885-8dff0f69eea3} components/exchangeAbDistListDirectory.js
 contract @mozilla.org/addressbook/directory;1?type=exchWebService-distList-directory {9e260dc4-90d3-457b-8885-8dff0f69eea3}
@@ -65,5 +60,10 @@ manifest interfaces/exchangeEvent/mivExchangeEvent.manifest
 manifest interfaces/exchangeTodo/mivExchangeTodo.manifest
 
 manifest interfaces/exchangeAbCard/mivExchangeAbCard.manifest
+manifest interfaces/exchangeAbRootDirectory/exchangeAbRootDirectory.manifest
+manifest interfaces/exchangeAbFolderDirectory/exchangeAbFolderDirectory.manifest
+
 manifest interfaces/exchangeRecurrenceInfo/mivExchangeRecurrenceInfo.manifest
+
+manifest interfaces/exchangeAutoCompleteSearch/mivExchangeAutoCompleteSearch.manifest
 

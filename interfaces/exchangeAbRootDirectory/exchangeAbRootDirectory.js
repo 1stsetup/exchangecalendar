@@ -85,7 +85,7 @@ exchangeAbRootDirectory.prototype = {
 
 	classID: components.ID("{227664eb-cce6-4b7a-8d57-0bb0c6c9b362}"),
 	contractID: "@mozilla.org/addressbook/directory;1?type=exchWebService-contactRoot-directory",
-	classDescription: "Exchange 2007/2010 Contacts",
+	classDescription: "Exchange 2007/2010 Contacts Root Directory",
 
 	// void getInterfaces(out PRUint32 count, [array, size_is(count), retval] out nsIIDPtr array);
 	QueryInterface: XPCOMUtils.generateQI([Ci.nsIAbDirectory,
@@ -598,7 +598,7 @@ exchangeAbRootDirectory.prototype = {
 	{
 		exchWebService.commonAbFunctions.logInfo("exchangeAbRootDirectory: useForAutocomplete\n");
 
-		return true;
+		return false;
 	},
 
   /** 
