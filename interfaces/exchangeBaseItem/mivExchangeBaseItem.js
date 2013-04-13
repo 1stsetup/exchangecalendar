@@ -2862,6 +2862,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 						// So referenceDate is set there.
 						if (this.className == "mivExchangeEvent") {
 							var referenceDate = this.startDate.getInTimezone(cal.UTC());
+							referenceDate.isDate = false;
 						}
 
 						switch (alarm.related) {
@@ -2880,18 +2881,18 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 							break;
 						case Ci.calIAlarm.ALARM_RELATED_START:
 							//this.logInfo("ALARM_RELATED_START this is easy exchange does the same.");
-							var newAlarmTime = this.startDate.clone();
+							//var newAlarmTime = this.startDate.clone();
 							var offset = alarm.offset.clone();
 							break;
 						case Ci.calIAlarm.ALARM_RELATED_END:
 							//this.logInfo("ALARM_RELATED_END we are going to calculate the offset from the start.");
 							var newAlarmTime = this.endDate.clone();
+							newAlarmTime.isDate = false;
 							newAlarmTime.addDuration(alarm.offset);
 
-							var offset = newAlarmTime.subtractDate(alarmEvent.startDate);
+							var offset = newAlarmTime.subtractDate(referenceDate);
 							break;
 						}
-
 						this.addSetItemField(updates, "ReminderDueBy", cal.toRFC3339(referenceDate));
 					
 						if ((offset) && (offset.inSeconds != 0)) {
