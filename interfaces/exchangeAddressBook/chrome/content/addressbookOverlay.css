@@ -29,7 +29,7 @@
 /* ::::: primary toolbar buttons ::::: */
 
 #button-addexchangeaccount {
-  list-style-image: url("chrome://exchangecalendar/content/button-addcontact.22x22.png");
+  list-style-image: url("chrome://exchangecontacts/content/button-addcontact.22x22.png");
   -moz-image-region: rect(0px 21px 21px 0px);
 }
 
@@ -47,7 +47,7 @@
 
 /*---*/
 #button-deleteexchangeaccount {
-  list-style-image: url("chrome://exchangecalendar/content/button-deletecontact.22x22.png");
+  list-style-image: url("chrome://exchangecontacts/content/button-deletecontact.22x22.png");
   -moz-image-region: rect(0px 21px 21px 0px);
 }
 

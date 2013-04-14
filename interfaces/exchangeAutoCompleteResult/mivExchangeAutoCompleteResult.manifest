@@ -1,0 +1,6 @@
+interfaces mivExchangeAutoCompleteResult.xpt
+
+component {64587912-6dc2-413c-93ad-f062e21feaeb} mivExchangeAutoCompleteResult.js
+contract @1st-setup.nl/exchange/autocompleteresult;1 {64587912-6dc2-413c-93ad-f062e21feaeb}
+
+

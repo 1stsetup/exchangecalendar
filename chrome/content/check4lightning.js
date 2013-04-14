@@ -31,6 +31,8 @@ var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils;
 
+Cu.import("resource:///modules/mailServices.js");
+
 function exchCheck4Lightning(aDocument, aWindow)
 {
 	this._document = aDocument;
@@ -160,6 +162,10 @@ exchCheck4Lightning.prototype = {
 
 	onLoad: function _onLoad(event) {
 
+		// We preload the exchange Address book
+		var rootDir = MailServices.ab.getDirectory("exchWebService-contactRoot-directory://");
+		var folders = rootDir.childNodes;
+
 		this.checkLightningIsInstalled();
 			
 		if ((this.globalFunctions.safeGetBoolPref(null, "extensions.1st-setup.others.checkForNewAddOnVersion", true, true)) && (!this.updateCheckDone)) {
@@ -229,4 +235,5 @@ exchCheck4Lightning.prototype = {
 
 var tmpCheck4Lightning = new exchCheck4Lightning(document, window);
 window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpCheck4Lightning.onLoad(); }, true);
+
 

@@ -327,7 +327,7 @@ exchangeAbDistListDirectory.prototype = {
 		if (this.isMailList) {
 			return "";
 		}
-		return "chrome://exchangecalendar/content/exchangeContactSettings.xul";
+		return "chrome://exchangecontacts/content/exchangeContactSettings.xul";
 	},
 
   /**

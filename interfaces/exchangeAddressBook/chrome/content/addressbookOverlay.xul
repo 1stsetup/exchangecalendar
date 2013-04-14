@@ -26,19 +26,19 @@
 -->
 
 <!DOCTYPE window [
-    <!ENTITY % dtd1 SYSTEM "chrome://exchangecalendar/locale/addressbookOverlay.dtd" > %dtd1;
+    <!ENTITY % dtd1 SYSTEM "chrome://exchangecontacts/locale/addressbookOverlay.dtd" > %dtd1;
 ]>
 
-<?xml-stylesheet href="chrome://exchangecalendar/content/addressbookOverlay.css" type="text/css"?> 
+<?xml-stylesheet href="chrome://exchangecontacts/content/addressbookOverlay.css" type="text/css"?> 
 
 <overlay id="addressbook-overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-    <script type="application/javascript" src="chrome://exchangecalendar/content/addressbookOverlay.js"/>
+    <script type="application/javascript" src="chrome://exchangecontacts/content/addressbookOverlay.js"/>
 
 	<commandset>
 		<command id="cmd_deleteexchange"
-			oncommand="exchWebService.addressbookOverlay.doDeleteExchangeAccount();"/>
+			oncommand="tmpAddressbookOverlay.doDeleteExchangeAccount();"/>
 	</commandset>
 
 	<menupopup id="menu_EditPopup">
@@ -62,8 +62,8 @@
 		<toolbar id="ab-bar2" defaultset="button-newcard,button-newlist,exchangecontacts-separator1,button-addexchangeaccount,button-deleteexchangeaccount,separator,button-editcard,button-newmessage,separator,button-abdelete,spring,search-container">  
 
 			<toolbarseparator id="exchangecontacts-separator1"/>
-			<toolbarbutton id="button-addexchangeaccount" label="&toolbar.button.label.addaccount;" tooltiptext="&toolbar.button.tooltip.addaccount;" removable="true" oncommand="exchWebService.addressbookOverlay.doAddExchangeAccount();"/>
-			<toolbarbutton id="button-deleteexchangeaccount" label="&toolbar.button.label.deleteaccount;" tooltiptext="&toolbar.button.tooltip.deleteaccount;" removable="true" oncommand="exchWebService.addressbookOverlay.doDeleteExchangeAccount();" hidden="true"/>
+			<toolbarbutton id="button-addexchangeaccount" label="&toolbar.button.label.addaccount;" tooltiptext="&toolbar.button.tooltip.addaccount;" removable="true" oncommand="tmpAddressbookOverlay.doAddExchangeAccount();"/>
+			<toolbarbutton id="button-deleteexchangeaccount" label="&toolbar.button.label.deleteaccount;" tooltiptext="&toolbar.button.tooltip.deleteaccount;" removable="true" oncommand="tmpAddressbookOverlay.doDeleteExchangeAccount();" hidden="true"/>
 		</toolbar>
 	</toolbox> 
 </overlay>

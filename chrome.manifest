@@ -35,9 +35,6 @@ locale exchangecalendar sv locale/exchangecalendar/sv/
 
 manifest interfaces/exchangeCalendar/mivExchangeCalendar.manifest
 
-overlay chrome://messenger/content/addressbook/addressbook.xul chrome://exchangecalendar/content/addressbookOverlay.xul
-
-
 manifest interfaces/exchangeAccountManager/mivExchangeAccountManager.manifest
 manifest interfaces/exchangeStatistics/mivExchangeStatistics.manifest
 manifest interfaces/exchangeTimeZones/mivExchangeTimeZones.manifest
@@ -53,13 +50,10 @@ manifest interfaces/exchangeBaseItem/mivExchangeBaseItem.manifest
 manifest interfaces/exchangeEvent/mivExchangeEvent.manifest
 manifest interfaces/exchangeTodo/mivExchangeTodo.manifest
 
-manifest interfaces/exchangeAbCard/mivExchangeAbCard.manifest
-manifest interfaces/exchangeAbDirFactory/exchangeAbDirFactory.manifest
-manifest interfaces/exchangeAbDistListDirectory/exchangeAbDistListDirectory.manifest
-manifest interfaces/exchangeAbFolderDirectory/exchangeAbFolderDirectory.manifest
-manifest interfaces/exchangeAbRootDirectory/exchangeAbRootDirectory.manifest
+manifest interfaces/exchangeAddressBook/exchangeAddressBook.manifest
 
 manifest interfaces/exchangeRecurrenceInfo/mivExchangeRecurrenceInfo.manifest
 
 manifest interfaces/exchangeAutoCompleteSearch/mivExchangeAutoCompleteSearch.manifest
+manifest interfaces/exchangeAutoCompleteResult/mivExchangeAutoCompleteResult.manifest
 

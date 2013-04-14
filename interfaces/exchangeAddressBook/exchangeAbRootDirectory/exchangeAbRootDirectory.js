@@ -598,7 +598,7 @@ exchangeAbRootDirectory.prototype = {
 	{
 		exchWebService.commonAbFunctions.logInfo("exchangeAbRootDirectory: useForAutocomplete\n");
 
-		return false;
+		return true;
 	},
 
   /** 

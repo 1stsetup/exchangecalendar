@@ -27,14 +27,21 @@ var components = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
+Cu.import("resource:///modules/mailServices.js");
+
 function mivExchangeAutoCompleteSearch() {
 
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
 
+	MailServices.ab.addAddressBookListener(this, Ci.nsIAbListener.itemAdded);
 }
 
 var mivExchangeAutoCompleteSearchGUID = "c073f5cf-15d7-47d4-b30e-9498fd728544";
 
 mivExchangeAutoCompleteSearch.prototype = {
+
+	_searches: {},
 
 	QueryInterface : XPCOMUtils.generateQI([Ci.mivExchangeAutoCompleteSearch,
 				Ci.nsIAutoCompleteSearch,
@@ -58,6 +65,10 @@ mivExchangeAutoCompleteSearch.prototype = {
 		return ifaces;
 	},
 
+	getHelperForLanguage: function _getHelperForLanguage(language) {
+		return null;
+	},
+
   /*
    * Search for a given string and notify a listener (either synchronously
    * or asynchronously) of the result
@@ -79,6 +90,46 @@ mivExchangeAutoCompleteSearch.prototype = {
 		dump("     searchParam:"+searchParam+"\n");
 		dump("  previousResult:"+previousResult+"\n");
 		dump("        listener:"+listener+"\n\n");
+
+		var uuid = this.globalFunctions.getUUID();
+		var query = "(or(PrimaryEmail,c,"+searchString+")(DisplayName,c,"+searchString+")(FirstName,c,"+searchString+")(LastName,c,"+searchString+"))";
+
+		this._searches[uuid] = {
+				"uuid": uuid,
+				"searchString": searchString,
+				"query": query,
+				"searchParam": searchParam,
+				"previousResult": previousResult,
+				"listener" : listener,
+				rootDir : MailServices.ab.getDirectory("exchWebService-contactRoot-directory://?"+query),
+				autoCompleteResult : Cc["@1st-setup.nl/exchange/autocompleteresult;1"].createInstance(Ci.mivExchangeAutoCompleteResult),
+				};
+		this._searches[uuid].autoCompleteResult.setSearchString(searchString);
+			
+	},
+
+	onItemAdded: function _onItemAdded(parentDir, item) {
+		var rightDir = parentDir.QueryInterface(Ci.nsIAbDirectory);
+		if (!rightDir) {
+			return;
+		}
+
+		if (item.QueryInterface(Ci.mivExchangeAbCard)) {
+			// Check to which search it belongs
+			for each(var search in this._searches) {
+				if (rightDir.URI.indexOf(search.query) > -1) {
+					this.newItem(search, item);
+				}
+			}
+		}
+	},
+
+	newItem: function _newItem(aSearchObject, aItem)
+	{
+		aSearchObject.autoCompleteResult.addResult(aItem);
+		if (aSearchObject.listener) {
+			aSearchObject.listener.onSearchResult(this, aSearchObject.autoCompleteResult);
+		}
 	},
 
   /*
@@ -88,7 +139,9 @@ mivExchangeAutoCompleteSearch.prototype = {
 	stopSearch: function _stopSearch()
 	{
 		dump("mivExchangeAutoCompleteSearch: stopSearch\n");
+		this._searches = {};
 	},
+
 
 };
 

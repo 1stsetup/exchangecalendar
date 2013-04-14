@@ -330,7 +330,7 @@ exchangeAbFolderDirectory.prototype = {
 	get propertiesChromeURI()
 	{
 		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: get propertiesChromeURI 1");
-		return "chrome://exchangecalendar/content/exchangeContactSettings.xul";
+		return "chrome://exchangecontacts/content/exchangeContactSettings.xul";
 	},
 
   /**
