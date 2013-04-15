@@ -3545,18 +3545,14 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			this.updateCalendar(erGetUserAvailabilityRequest, aEvents, true);
 		}
 		else {
-dump("1\n");
 			for (var index in aEvents) {
 				var item = this.doAvailability(erGetUserAvailabilityRequest.argument.calId, aEvents[index]);
 				items.push(item);
 			}
-dump("2\n");
 		
 			if (erGetUserAvailabilityRequest.listener) {
-dump("3\n");
 				erGetUserAvailabilityRequest.listener.onResult(null, items);
 			}
-dump("4\n");
 		}
 	},
 	
@@ -3569,7 +3565,6 @@ dump("4\n");
 		}
 
 		if (this.OnlyShowAvailability) {
-dump("getUserAvailabilityRequestError: name:"+this.name+", aCode:"+aCode+", aMsg:"+aMsg+"\n");
 			this.OnlyShowAvailability = false;
 		}
 		else {
