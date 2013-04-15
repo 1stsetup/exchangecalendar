@@ -115,7 +115,7 @@ exchWebService.forewardEvent2 = {
 				document.getElementById("calendar-event-summary-dialog").buttons = newArray.join(",");
 			}
 			else {
-				if ((item.calendar.type == "exchangecalendar") && (item.responseObjects.ForwardItem)) {
+				if ((item.calendar.type == "exchangecalendar") && (item.responseObjects) && (item.responseObjects.ForwardItem)) {
 					document.getElementById("calendar-event-summary-dialog").buttons += ",extra1";
 				}
 			}
