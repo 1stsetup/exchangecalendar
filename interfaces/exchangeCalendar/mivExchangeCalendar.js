@@ -2209,7 +2209,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		var eventsRequestedAndPossible = (((wantEvents) && (this.supportsEvents)) || (this.OnlyShowAvailability));
 		var tasksRequestedAndPossible = ((wantTodos) && (this.supportsTasks));
 		if ((!eventsRequestedAndPossible) && (!tasksRequestedAndPossible)) {
-			if (this.debug) this.logInfo("This folder is not able to support requested items.");
+			if (this.debug) this.logInfo("This folder is not able to support requested items. this.OnlyShowAvailability:"+this.OnlyShowAvailability);
 			this.notifyOperationComplete(aListener,
 				Cr.NS_OK,
 				Ci.calIOperationListener.GET,
@@ -2620,7 +2620,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	getFreeBusyIntervals: function(aCalId, aRangeStart, aRangeEnd,
 				       aBusyTypes, aListener)
 	{
-//		if (this.debug) this.logInfo("getFreeBusyIntervals: " + aCalId + ", aBusyTypes:"+aBusyTypes);
+		if (this.debug) this.logInfo("getFreeBusyIntervals: " + aCalId + ", aBusyTypes:"+aBusyTypes+", aRangeStart:"+aRangeStart+", aRangeEnd:"+aRangeEnd);
 
 		if (aCalId.indexOf("@") < 0 || aCalId.indexOf(".") < 0) {
             		// No valid email, screw it
@@ -3569,6 +3569,7 @@ dump("4\n");
 		}
 
 		if (this.OnlyShowAvailability) {
+dump("getUserAvailabilityRequestError: name:"+this.name+", aCode:"+aCode+", aMsg:"+aMsg+"\n");
 			this.OnlyShowAvailability = false;
 		}
 		else {
@@ -7315,7 +7316,7 @@ return;*/
 
 	getOnlyFreeBusyInformation: function _getOnlyFreeBusyInformation(aRangeStart, aRangeEnd)
 	{
-		if (this.debug) this.logInfo("getOnlyFreeBusyInformation");
+		if (this.debug) this.logInfo("getOnlyFreeBusyInformation: aRangeStart:"+aRangeStart+", aRangeEnd:"+aRangeEnd);
 		if ((!aRangeStart) || (!aRangeEnd)) {
 			return;
 		}
@@ -7325,6 +7326,26 @@ return;*/
 		tmpStartDate.isDate = false;
 		var tmpEndDate = aRangeEnd.clone();
 		tmpEndDate.isDate = false;
+
+		if (tmpStartDate.year == 1970) {
+			if (this.debug) this.logInfo("getOnlyFreeBusyInformation: aRangeStart is 1970. To big a range. Setting startrange to 40 days before endrange.");
+			var offset = cal.createDuration();
+			offset.days = -40;
+			offset.normalize();
+			tmpStartDate = tmpEndDate.clone();
+			tmpStartDate.addDuration(offset);
+		}
+		else {
+			var offset = tmpEndDate.subtractDate(tmpStartDate);
+			if (offset.days > 40) {
+				if (this.debug) this.logInfo("getOnlyFreeBusyInformation: aRangeStart is more than 40 days before endrange. Setting startrange to 40 days before endrange.");
+				var offset = cal.createDuration();
+				offset.days = -40;
+				offset.normalize();
+				tmpStartDate = tmpEndDate.clone();
+				tmpStartDate.addDuration(offset);
+			}
+		}
 
 		this.addToQueue( erGetUserAvailabilityRequest, 
 			{user: this.user, 
