@@ -2277,6 +2277,9 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		if (aRangeStart)  { if (this.debug) this.logInfo("getItems 5a: aRangeStart:"+aRangeStart.toString()); }
 		if (aRangeEnd) { if (this.debug) this.logInfo("getItems 5b: aRangeEnd:"+aRangeEnd.toString()); }
 
+		if (!this.lastValidRangeStart) this.lastValidRangeStart = aRangeStart.clone();
+		if (!this.lastValidRangeEnd) this.lastValidRangeEnd = aRangeEnd.clone();
+
 		//if (!this.OnlyShowAvailability) {
 			this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
 		//}
@@ -3565,6 +3568,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		}
 
 		if (this.OnlyShowAvailability) {
+			if (this.debug) this.logInfo("getUserAvailabilityRequestError: this.OnlyShowAvailability:"+this.OnlyShowAvailability);
 			this.OnlyShowAvailability = false;
 		}
 		else {
