@@ -748,7 +748,11 @@ calExchangeCalendar.prototype = {
 			if ((aValue) && (oldDisabledState != this._disabled)) {
 				this.resetCalendar();
 			}
-			break;
+			if ((!this._disabled) && (oldDisabledState != this._disabled)) {
+				this.doReset = true;
+				this.resetCalendar();
+			}
+			return;
 		case "exchWebService.useOfflineCache":
 
 			this.useOfflineCache = aValue;
@@ -772,14 +776,6 @@ calExchangeCalendar.prototype = {
 
 		this.__proto__.__proto__.setProperty.apply(this, arguments);
 
-		switch (aName) {
-		case "disabled" :
-			if ((!this._disabled) && (oldDisabledState != this._disabled)) {
-				this.doReset = true;
-				this.resetCalendar();
-			}
-			break;
-		}
 	},
 
 	//  void deleteProperty(in AUTF8String aName);
