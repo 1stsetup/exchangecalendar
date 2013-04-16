@@ -7311,10 +7311,39 @@ return;*/
 
 	getOnlyFreeBusyInformation: function _getOnlyFreeBusyInformation(aRangeStart, aRangeEnd)
 	{
-		if (this.debug) this.logInfo("getOnlyFreeBusyInformation: aRangeStart:"+aRangeStart+", aRangeEnd:"+aRangeEnd);
-		if ((!aRangeStart) || (!aRangeEnd)) {
-			return;
+		if ((!aRangeStart) && (!aRangeEnd)) {
+			if (this.debug) this.logInfo("getOnlyFreeBusyInformation: aRangeStart and aRangeEnd missing. Going to set start to 20 days before and end to 20 days after now.");
+			var offset = cal.createDuration();
+			offset.days = -20;
+			//offset.normalize();
+			aRangeStart = cal.now();
+			aRangeStart.addDuration(offset);
+			var offset = cal.createDuration();
+			offset.days = 20;
+			//offset.normalize();
+			aRangeEnd = cal.now();
+			aRangeEnd.addDuration(offset);
 		}
+
+		if ((aRangeStart) && (!aRangeEnd)) {
+			if (this.debug) this.logInfo("getOnlyFreeBusyInformation: aRangeEnd missing. Going to set end to 40 days after start.");
+			var offset = cal.createDuration();
+			offset.days = 40;
+			//offset.normalize();
+			aRangeEnd = aRangeStart.clone();
+			aRangeEnd.addDuration(offset);
+		}
+
+		if ((!aRangeStart) && (aRangeEnd)) {
+			if (this.debug) this.logInfo("getOnlyFreeBusyInformation: aRangeStart missing. Going to set start to 40 days before end.");
+			var offset = cal.createDuration();
+			offset.days = -40;
+			//offset.normalize();
+			aRangeStart = aRangeEnd.clone();
+			aRangeStart.addDuration(offset);
+		}
+
+		if (this.debug) this.logInfo("getOnlyFreeBusyInformation: aRangeStart:"+aRangeStart+", aRangeEnd:"+aRangeEnd);
 
 		var self = this;
 		var tmpStartDate = aRangeStart.clone();
