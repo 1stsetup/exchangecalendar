@@ -93,7 +93,7 @@ mivExchangeLoadBalancer.prototype = {
 
 	get sleepBetweenJobs()
 	{
-		return 25;  // Currently going for default zero because it works.
+		return 50;  // Currently going for default zero because it works.
 		//return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"sleepBetweenJobs", 2, true);
 	},
 
