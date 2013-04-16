@@ -93,7 +93,7 @@ mivExchangeLoadBalancer.prototype = {
 
 	get sleepBetweenJobs()
 	{
-		return 0;  // Currently going for default zero because it works.
+		return 25;  // Currently going for default zero because it works.
 		//return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"sleepBetweenJobs", 2, true);
 	},
 
@@ -163,6 +163,7 @@ mivExchangeLoadBalancer.prototype = {
 			this.serverQueue[server].runningJobs = new Array();
 			for (var runningJob in oldList) {
 				if (oldList[runningJob].exchangeRequest.isRunning) {
+					//this.logInfo("this.jobsRunning:"+this.jobsRunning);
 					this.serverQueue[server].runningJobs.push(oldList[runningJob]);
 				}
 				else {
@@ -243,6 +244,7 @@ mivExchangeLoadBalancer.prototype = {
 		try{
 			this.logInfo("onRequestOk job to queue for server '"+arg1.argument.serverUrl+"' for calendar '"+arg1.argument.job.calendar.id+"'. We now have:"+this.serverQueue[arg1.argument.serverUrl].jobs[arg1.argument.calendar.id].length+" jobs in queue and "+this.serverQueue[arg1.argument.serverUrl].runningJobs.length+" jobs running.");
 			arg1.argument.cbOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+			arg1.isRunning = false;
 		}
 		catch(err) { 
 			this.globalFunctions.LOG("onRequestOk Error:"+err + " ("+this.globalFunctions.STACK()+")", -1);
@@ -254,6 +256,7 @@ mivExchangeLoadBalancer.prototype = {
 		try{
 			this.logInfo("onRequestError job to queue for server '"+arg1.argument.serverUrl+"' for calendar '"+arg1.argument.job.calendar.id+"'. We now have:"+this.serverQueue[arg1.argument.serverUrl].jobs[arg1.argument.calendar.id].length+" jobs in queue and "+this.serverQueue[arg1.argument.serverUrl].runningJobs.length+" jobs running.");
 			arg1.argument.cbError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+			arg1.isRunning = false;
 		}
 		catch(err) { 
 			this.globalFunctions.LOG("onRequestError Error:"+err + " ("+this.globalFunctions.STACK()+")", -1);
