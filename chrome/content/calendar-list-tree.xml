@@ -85,52 +85,97 @@
           let calendar = this.getCalendar(aRow);
           let composite = this.compositeCalendar;
 
-          // Set up the composite calendar status
-          if (composite.getCalendarById(calendar.id)) {
-              aProps.AppendElement(cal.getAtomFromService("checked"));
-          } else {
-              aProps.AppendElement(cal.getAtomFromService("unchecked"));
-          }
-
-          // Set up the calendar id
-          aProps.AppendElement(cal.getAtomFromService("id-" + calendar.id));
-
-          // Get the calendar color
-          let color = (calendar.getProperty("color") || "").substr(1);
-
-          // Set up the calendar color (background)
-          let bgColorProp = "color-" + (color || "default");
-          aProps.AppendElement(cal.getAtomFromService(bgColorProp));
-
-          // Set a property to get the contrasting text color (foreground)
-          let fgColorProp = cal.getContrastingTextColor(color || "a8c2e1");
-          aProps.AppendElement(cal.getAtomFromService(fgColorProp));
-
-	  if (calendar.type == "exchangecalendar") {
-		  let exchangeCurrentStatus = calendar.getProperty("exchangeCurrentStatus");
-		  if ((!Components.isSuccessCode(exchangeCurrentStatus)) || (calendar.getProperty("disabled"))) {
-		      aProps.AppendElement(cal.getAtomFromService("exchangeCommError"));
-		  } else  {
-		      aProps.AppendElement(cal.getAtomFromService("exchangeCommOk"));
+	  if (aProps) {
+		  // Set up the composite calendar status
+		  if (composite.getCalendarById(calendar.id)) {
+		      aProps.AppendElement(cal.getAtomFromService("checked"));
+		  } else {
+		      aProps.AppendElement(cal.getAtomFromService("unchecked"));
 		  }
-	  }
 
-          let currentStatus = calendar.getProperty("currentStatus");
-	  if (!Components.isSuccessCode(currentStatus)) {
-              // 'readfailed' is supposed to "win" over 'readonly', meaning that
-              // if reading from a calendar fails there is no further need to also display
-              // information about 'readonly' status
-              aProps.AppendElement(cal.getAtomFromService("readfailed"));
-          } else if (calendar.readOnly) {
-              aProps.AppendElement(cal.getAtomFromService("readonly"));
-          }
+		  // Set up the calendar id
+		  aProps.AppendElement(cal.getAtomFromService("id-" + calendar.id));
 
-          // Set up the disabled state
-          if (!this.ignoreDisabledState && calendar.getProperty("disabled")) {
-              aProps.AppendElement(cal.getAtomFromService("disabled"));
-          } else {
-              aProps.AppendElement(cal.getAtomFromService("enabled"));
-          }
+		  // Get the calendar color
+		  let color = (calendar.getProperty("color") || "").substr(1);
+
+		  // Set up the calendar color (background)
+		  let bgColorProp = "color-" + (color || "default");
+		  aProps.AppendElement(cal.getAtomFromService(bgColorProp));
+
+		  // Set a property to get the contrasting text color (foreground)
+		  let fgColorProp = cal.getContrastingTextColor(color || "a8c2e1");
+		  aProps.AppendElement(cal.getAtomFromService(fgColorProp));
+
+		  if (calendar.type == "exchangecalendar") {
+			  let exchangeCurrentStatus = calendar.getProperty("exchangeCurrentStatus");
+			  if ((!Components.isSuccessCode(exchangeCurrentStatus)) || (calendar.getProperty("disabled"))) {
+			      aProps.AppendElement(cal.getAtomFromService("exchangeCommError"));
+			  } else  {
+			      aProps.AppendElement(cal.getAtomFromService("exchangeCommOk"));
+			  }
+		  }
+
+		  let currentStatus = calendar.getProperty("currentStatus");
+		  if (!Components.isSuccessCode(currentStatus)) {
+		      // 'readfailed' is supposed to "win" over 'readonly', meaning that
+		      // if reading from a calendar fails there is no further need to also display
+		      // information about 'readonly' status
+		      aProps.AppendElement(cal.getAtomFromService("readfailed"));
+		  } else if (calendar.readOnly) {
+		      aProps.AppendElement(cal.getAtomFromService("readonly"));
+		  }
+
+		  // Set up the disabled state
+		  if (!this.ignoreDisabledState && calendar.getProperty("disabled")) {
+		      aProps.AppendElement(cal.getAtomFromService("disabled"));
+		  } else {
+		      aProps.AppendElement(cal.getAtomFromService("enabled"));
+		  }
+		}
+		else {
+		  let properties = [];
+
+		  // Set up the composite calendar status
+		  properties.push(composite.getCalendarById(calendar.id) ? "checked" : "unchecked");
+
+		  // Set up the calendar id
+		  properties.push("id-" + calendar.id);
+
+		  // Get the calendar color
+		  let color = (calendar.getProperty("color") || "").substr(1);
+
+		  // Set up the calendar color (background)
+		  properties.push("color-" + (color || "default"));
+
+		  // Set a property to get the contrasting text color (foreground)
+		  properties.push(cal.getContrastingTextColor(color || "a8c2e1"));
+
+		  if (calendar.type == "exchangecalendar") {
+			  let exchangeCurrentStatus = calendar.getProperty("exchangeCurrentStatus");
+			  if ((!Components.isSuccessCode(exchangeCurrentStatus)) || (calendar.getProperty("disabled"))) {
+			      properties.push("exchangeCommError");
+			  } else  {
+			      properties.push("exchangeCommOk");
+			  }
+		  }
+
+		  let currentStatus = calendar.getProperty("currentStatus");
+		  if (!Components.isSuccessCode(currentStatus)) {
+		      // 'readfailed' is supposed to "win" over 'readonly', meaning that
+		      // if reading from a calendar fails there is no further need to also display
+		      // information about 'readonly' status
+		      properties.push("readfailed");
+		  } else if (calendar.readOnly) {
+		      properties.push("readonly");
+		  }
+
+		  // Set up the disabled state
+		  properties.push(!this.ignoreDisabledState && calendar.getProperty("disabled") ?
+		                  "disabled" : "enabled");
+
+		  return properties.join(" ");
+		}
         ]]></body>
       </method>
 
