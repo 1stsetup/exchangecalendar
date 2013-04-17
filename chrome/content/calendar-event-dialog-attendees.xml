@@ -33,7 +33,46 @@
 <bindings xmlns="http://www.mozilla.org/xbl"
           xmlns:xbl="http://www.mozilla.org/xbl"
           xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-	<binding id="attendees-list" extends="chrome://calendar/content/calendar-event-dialog-attendees.xml">
+	<binding id="attendees-list" extends="chrome://calendar/content/calendar-event-dialog-attendees.xml#attendees-list">
+
+    <content>
+      <xul:listbox anonid="listbox"
+                   seltype="multiple"
+                   class="listbox-noborder"
+                   rows="-1"
+                   flex="1">
+        <xul:listcols>
+          <xul:listcol/>
+          <xul:listcol/>
+          <xul:listcol flex="1"/>
+        </xul:listcols>
+        <xul:listitem anonid="item" class="addressingWidgetItem" allowevents="true">
+          <xul:listcell class="addressingWidgetCell" align="center" pack="center">
+            <xul:image id="attendeeCol1#1" anonid="rolestatus-icon"/>
+          </xul:listcell>
+          <xul:listcell class="addressingWidgetCell">
+              <xul:image id="attendeeCol2#1" anonid="usertype-icon" class="usertype-icon" onclick="this.parentNode.select();"/>
+          </xul:listcell>
+          <xul:listcell class="addressingWidgetCell">
+            <xul:textbox id="attendeeCol3#1"
+                         anonid="input"
+                         class="plain textbox-addressingWidget uri-element"
+                         type="autocomplete"
+                         flex="1"
+                         autocompletesearch="addrbook ldap exchangeAutoCompleteSearch"
+                         timeout="300"
+                         maxrows="4"
+                         completedefaultindex="true"
+                         forcecomplete="true"
+                         minresultsforpopup="1"
+                         onblur="if (this.localName == 'textbox') document.getBindingParent(this).onBlurInput(event);"
+                         ignoreblurwhilesearching="true"
+                         oninput="this.setAttribute('dirty', 'true');">
+            </xul:textbox>
+          </xul:listcell>
+        </xul:listitem>
+      </xul:listbox>
+    </content>
 		<implementation>
 			
 			<method name="onInitialize">

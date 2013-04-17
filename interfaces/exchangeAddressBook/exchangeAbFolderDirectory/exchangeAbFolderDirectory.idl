@@ -22,7 +22,7 @@
 #include "nsIAbDirectory.idl"
 
 [scriptable, uuid(5963e917-bc68-4b68-b704-65538c81a628)]
-interface exchangeAbRootDirectory : nsIAbDirectory
+interface exchangeAbFolderDirectory : nsIAbDirectory
 {
-
+	readonly attribute AUTF8String searchQuery;
 };

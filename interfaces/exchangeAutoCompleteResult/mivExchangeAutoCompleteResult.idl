@@ -27,4 +27,6 @@ interface mivExchangeAutoCompleteResult : nsIAutoCompleteResult
 {
 	void addResult(in mivExchangeAbCard aCard);
 	void setSearchString(in AString aString);
+	void setSearchResult(in unsigned short aValue);
+	void clearResults();
 };

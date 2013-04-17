@@ -42,6 +42,9 @@ var mivExchangeAutoCompleteSearchGUID = "c073f5cf-15d7-47d4-b30e-9498fd728544";
 mivExchangeAutoCompleteSearch.prototype = {
 
 	_searches: {},
+	_observer: null,
+	_galSearches: {},
+	_firstCall: true,
 
 	QueryInterface : XPCOMUtils.generateQI([Ci.mivExchangeAutoCompleteSearch,
 				Ci.nsIAutoCompleteSearch,
@@ -69,6 +72,44 @@ mivExchangeAutoCompleteSearch.prototype = {
 		return null;
 	},
 
+	observe: function(subject, topic, data) 
+	{  
+		// Do your stuff here.
+		var uuid;
+		for each(var search in this._searches) {
+			if (search.query == data) {
+				uuid = search.uuid;
+			}
+		}
+
+		if (!uuid) return;
+
+		switch (topic) {
+			case "onExchangeGALSearchStart":
+				if (!this._galSearches[uuid]) {
+					this._galSearches[uuid] = 0;
+				}
+				this._galSearches[uuid]++;
+				break;
+			case "onExchangeGALSearchEnd":
+				if (this._galSearches[uuid] > 0) {
+					this._galSearches[uuid]--;
+					if (this._galSearches[uuid] == 0) {
+						if (this._searches[uuid].listener) {
+							this._searches[uuid].autoCompleteResult.setSearchResult(this._searches[uuid].autoCompleteResult.matchCount > 0 ? this._searches[uuid].autoCompleteResult.RESULT_SUCCESS :
+													this._searches[uuid].autoCompleteResult.RESULT_NOMATCH);
+							this._searches[uuid].listener.onSearchResult(this, this._searches[uuid].autoCompleteResult);
+						}
+
+					}
+				}
+				else {
+					dump(" ???????? Going below zero (0)\n");
+				}
+				break;
+		} 
+	},  
+
   /*
    * Search for a given string and notify a listener (either synchronously
    * or asynchronously) of the result
@@ -85,12 +126,12 @@ mivExchangeAutoCompleteSearch.prototype = {
 
 	startSearch: function _startSearch(searchString, searchParam, previousResult, listener)
 	{
-		dump("mivExchangeAutoCompleteSearch: startSearch\n");
+/*		dump("mivExchangeAutoCompleteSearch: startSearch\n");
 		dump("    searchString:"+searchString+"\n");
 		dump("     searchParam:"+searchParam+"\n");
 		dump("  previousResult:"+previousResult+"\n");
 		dump("        listener:"+listener+"\n\n");
-
+*/
 		var uuid = this.globalFunctions.getUUID();
 		var query = "(or(PrimaryEmail,c,"+searchString+")(DisplayName,c,"+searchString+")(FirstName,c,"+searchString+")(LastName,c,"+searchString+"))";
 
@@ -101,10 +142,27 @@ mivExchangeAutoCompleteSearch.prototype = {
 				"searchParam": searchParam,
 				"previousResult": previousResult,
 				"listener" : listener,
-				rootDir : MailServices.ab.getDirectory("exchWebService-contactRoot-directory://?"+query),
-				autoCompleteResult : Cc["@1st-setup.nl/exchange/autocompleteresult;1"].createInstance(Ci.mivExchangeAutoCompleteResult),
 				};
+
+		if (previousResult) {
+			previousResult.clearResults();
+			this._searches[uuid]["autoCompleteResult"] = previousResult;
+		}
+		else {
+			this._searches[uuid]["autoCompleteResult"] = Cc["@1st-setup.nl/exchange/autocompleteresult;1"].createInstance(Ci.mivExchangeAutoCompleteResult);
+		}
+
+
+		if (this._firstCall) {
+			var observerService = Cc["@mozilla.org/observer-service;1"]  
+				                  .getService(Ci.nsIObserverService);  
+			observerService.addObserver(this, "onExchangeGALSearchStart", false);  
+			observerService.addObserver(this, "onExchangeGALSearchEnd", false);  
+			this._firstCall = false;
+		}
+
 		this._searches[uuid].autoCompleteResult.setSearchString(searchString);
+		this._searches[uuid]["rootDir"] = MailServices.ab.getDirectory("exchWebService-contactRoot-directory://?"+query);
 			
 	},
 
@@ -118,17 +176,9 @@ mivExchangeAutoCompleteSearch.prototype = {
 			// Check to which search it belongs
 			for each(var search in this._searches) {
 				if (rightDir.URI.indexOf(search.query) > -1) {
-					this.newItem(search, item);
+					search.autoCompleteResult.addResult(item);
 				}
 			}
-		}
-	},
-
-	newItem: function _newItem(aSearchObject, aItem)
-	{
-		aSearchObject.autoCompleteResult.addResult(aItem);
-		if (aSearchObject.listener) {
-			aSearchObject.listener.onSearchResult(this, aSearchObject.autoCompleteResult);
 		}
 	},
 
@@ -138,8 +188,21 @@ mivExchangeAutoCompleteSearch.prototype = {
   //void stopSearch();
 	stopSearch: function _stopSearch()
 	{
-		dump("mivExchangeAutoCompleteSearch: stopSearch\n");
+		//dump("mivExchangeAutoCompleteSearch: stopSearch\n");
+		for each(var search in this._searches) {
+			// Clearing the results because it appears the are being reused.
+			search.autoCompleteResult.clearResults();
+		}
+
 		this._searches = {};
+
+		if (!this._firstCall) {
+			var observerService = Cc["@mozilla.org/observer-service;1"]  
+					          .getService(Ci.nsIObserverService);  
+			observerService.removeObserver(this, "onExchangeGALSearchStart");  
+			observerService.removeObserver(this, "onExchangeGALSearchEnd");  
+		}
+		this._firstCall = true;
 	},
 
 

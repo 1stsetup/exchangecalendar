@@ -29,15 +29,16 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 function mivExchangeAutoCompleteResult() {
 
-dump("mivExchangeAutoCompleteResult init\n");
+//dump("mivExchangeAutoCompleteResult init\n");
+	this._cards = new Array();
 }
 
 var mivExchangeAutoCompleteResultGUID = "64587912-6dc2-413c-93ad-f062e21feaeb";
 
 mivExchangeAutoCompleteResult.prototype = {
 
-	_cards : [],
 	_searchString: "",
+	_searchResult: this.RESULT_NOMATCH_ONGOING,
 
 	QueryInterface : XPCOMUtils.generateQI([Ci.mivExchangeAutoCompleteResult,
 				Ci.nsIAutoCompleteResult,
@@ -88,7 +89,7 @@ mivExchangeAutoCompleteResult.prototype = {
   //readonly attribute AString searchString;
 	get searchString()
 	{
-dump("searchString:"+this._searchString+"\n");
+//dump("searchString:"+this._searchString+"\n");
 		return this._searchString;
 	},
 
@@ -103,13 +104,13 @@ dump("searchString:"+this._searchString+"\n");
   //readonly attribute unsigned short searchResult;
 	get searchResult()
 	{
-		if (this._cards.length == 0) {
-dump("searchResult:RESULT_NOMATCH_ONGOING\n");
-			return this.RESULT_NOMATCH_ONGOING;
-		}
+//dump("searchResult:"+this._searchResult+"\n");
+		return this._searchResult;
+	},
 
-dump("searchResult:RESULT_SUCCESS\n");
-		return this.RESULT_SUCCESS_ONGOING;
+	setSearchResult: function _setSearchResult(aValue)
+	{
+		this._searchResult = aValue;
 	},
 
   /**
@@ -118,7 +119,11 @@ dump("searchResult:RESULT_SUCCESS\n");
   //readonly attribute long defaultIndex;
 	get defaultIndex()
 	{
-dump("defaultIndex\n");
+//dump("defaultIndex\n");
+		if (this._cards.length == 0) {
+			return -1;
+		}
+
 		return 0;
 	},
 
@@ -128,7 +133,7 @@ dump("defaultIndex\n");
   //readonly attribute AString errorDescription;
 	get errorDescription()
 	{
-dump("errorDescription\n");
+//dump("errorDescription\n");
 		return null;
 	},
 
@@ -138,7 +143,7 @@ dump("errorDescription\n");
   //readonly attribute unsigned long matchCount;
 	get matchCount()
 	{
-dump("matchCount:"+this._cards.length+"\n");
+//dump("matchCount:"+this._cards.length+"\n");
 		return this._cards.length;
 	},
 
@@ -159,8 +164,11 @@ dump("matchCount:"+this._cards.length+"\n");
   //AString getValueAt(in long index);
 	getValueAt: function _getValueAt(aIndex)
 	{
-dump("getValueAt:"+this._cards[aIndex].primaryEmail+"\n");
-		return this._cards[aIndex].primaryEmail;
+dump("getValueAt["+aIndex+"]:"+this._cards[aIndex].primaryEmail+"\n");
+		if (this._cards[aIndex].isMailList) {
+			dump("  >> I am a mailingList\n");
+		}
+		return this._cards[aIndex].displayName + " <" + this._cards[aIndex].primaryEmail + ">";
 	},
 
   /**
@@ -221,9 +229,19 @@ dump("getValueAt:"+this._cards[aIndex].primaryEmail+"\n");
 			}
 		}
 		if (!cardExists) {
-dump("addResult:"+aCard.displayName+"\n");
-			this._cards.push(aCard);
+//dump("addResult:"+aCard.displayName+", primaryEmail:"+aCard.primaryEmail+", length:"+this._cards.length+"\n");
+			if ((aCard.primaryEmail != "") && (aCard.primaryEmail.indexOf("@") > -1)) {
+//			if (((aCard.primaryEmail != "") && (aCard.primaryEmail.indexOf("@") > -1)) || (aCard.isMailList)) {
+				this._cards.push(aCard);
+			}
 		}
+	},
+
+	clearResults: function _clearResults()
+	{
+		this._cards = new Array();
+		this._searchResult = this.RESULT_NOMATCH_ONGOING;
+		this._searchString = "";
 	},
 
 };

@@ -46,4 +46,34 @@ if(window.arguments[0].opener=="exchWebService-onForEve" || window.arguments[0].
 	}
 }
 
+/*
+function exchEventAttendeeDialog(aDocument, aWindow)
+{
+	this._document = aDocument;
+	this._window = aWindow;
 
+}
+
+exchEventAttendeeDialog.prototype = {
+
+	onLoad: function _onLoad()
+	{
+dump(" >> onload\n");
+		// Add the exchangeAutoComplete option.
+		if (this._document.getElementById("attendees-list")) {
+dump(" -- We have itemCount:"+this._document.getElementById("attendees-list").itemCount+"\n");
+			for (var i=0; i< this._document.getElementById("attendees-list").itemCount; i++) {
+				if (this._document.getElementById("attendeeCol3#"+i)) {
+dump(" -- .. attendeeCol3#"+i+", autocompletesearch:"+this._document.getElementById("attendeeCol3#"+i).getAttribute("autocompletesearch")+"\n");
+					var autocompletesearch = this._document.getElementById("attendeeCol3#"+i).getAttribute("autocompletesearch");
+					if (autocompletesearch.indexOf("exchangeAutoCompleteSearch") == -1) {
+						this._document.getElementById("attendeeCol3#"+i).setAttribute("autocompletesearch", autocompletesearch + " exchangeAutoCompleteSearch");
+					}
+				}
+			}
+		}
+	},
+}
+var tmpEventAttendeeDialog = new exchEventAttendeeDialog(document, window);
+window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpEventAttendeeDialog.onLoad(); }, true);
+*/

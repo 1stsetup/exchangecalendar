@@ -85,6 +85,10 @@ function exchangeAbDistListDirectory() {
 	this._isInitialized = false;
 
 	this.childNodeURI = "exchWebService-distList-directory://";
+
+	this.observerService = Cc["@mozilla.org/observer-service;1"]  
+	                          .getService(Ci.nsIObserverService); 
+
 }
 
 exchangeAbDistListDirectory.prototype = {
@@ -94,7 +98,8 @@ exchangeAbDistListDirectory.prototype = {
 	classDescription: "Exchange 2007/2010 Distribution List",
 
 	// void getInterfaces(out PRUint32 count, [array, size_is(count), retval] out nsIIDPtr array);
-	QueryInterface: XPCOMUtils.generateQI([Ci.nsIAbDirectory,
+	QueryInterface: XPCOMUtils.generateQI([Ci.exchangeAbDistListDirectory,
+						Ci.nsIAbDirectory,
 						Ci.nsIAbCollection,
 						Ci.nsIAbItem,
 						Ci.nsISupports]),
@@ -572,10 +577,15 @@ exchangeAbDistListDirectory.prototype = {
 
 					this.contacts = exchWebService.commonAbFunctions.filterCardsOnQuery(this._searchQuery, dir.childCards);
 					exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: Got children of '"+dirName+"'");
+
+					this.observerService.notifyObservers(this, "onExchangeGALSearchStart", this._searchQuery);
+
 					for each(var contact in this.contacts) {
 						exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: Adding sub child A '"+contact.displayName+"' to contacts. dirName:"+this.dirName);
 						MailServices.ab.notifyDirectoryItemAdded(this, contact);
 					}
+
+					this.observerService.notifyObservers(this, "onExchangeGALSearchEnd", this._searchQuery);
 
 					exchWebService.commonAbFunctions.logInfo("exchangeAbDistListDirectory: Going to get children of distList.");
 					// Get contact in childNodes (distLists)

@@ -89,6 +89,9 @@ function exchangeAbFolderDirectory() {
 	this._isInitialized = false;
 
 	this.childNodeURI = "exchWebService-distList-directory://";
+
+	this.observerService = Cc["@mozilla.org/observer-service;1"]  
+	                          .getService(Ci.nsIObserverService); 
 }
 
 exchangeAbFolderDirectory.prototype = {
@@ -100,7 +103,8 @@ exchangeAbFolderDirectory.prototype = {
 	activityManager : Cc["@mozilla.org/activity-manager;1"].getService(nsIAM),  
 
 	// void getInterfaces(out PRUint32 count, [array, size_is(count), retval] out nsIIDPtr array);
-	QueryInterface: XPCOMUtils.generateQI([Ci.nsIAbDirectory,
+	QueryInterface: XPCOMUtils.generateQI([Ci,exchangeAbFolderDirectory,
+						Ci.nsIAbDirectory,
 						Ci.nsIAbCollection,
 						Ci.nsIAbItem,
 						Ci.nsISupports]),
@@ -464,6 +468,11 @@ exchangeAbFolderDirectory.prototype = {
 		return false;
 	},
 
+	get searchQuery()
+	{
+		return this._searchQuery;
+	},
+
 	searchGAL: function _searchGAL(aQuery)
 	{
 		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory:searchGAL: Going to search Global Address List also for url:"+this.serverUrl);
@@ -497,6 +506,9 @@ exchangeAbFolderDirectory.prototype = {
 		// Launch the query for exchange
 
 		var self = this;
+
+		this.observerService.notifyObservers(this, "onExchangeGALSearchStart", this._searchQuery);
+
 		this.addToQueue( erResolveNames,
 					{user: this.user, 
 					 mailbox: this.mailbox,
@@ -601,6 +613,9 @@ try {
 				}
 			}
 		}
+
+		this.observerService.notifyObservers(this, "onExchangeGALSearchEnd", this._searchQuery);
+
 	},
 
 	resolveNamesError: function _resolveNamesError(erResolveNames, aCode, aMsg)
@@ -613,6 +628,9 @@ try {
 			exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Could not resolve name.");
 			//this.ecUpdateCard(erResolveNames.ids.mailbox);
 		}
+
+		this.observerService.notifyObservers(this, "onExchangeGALSearchEnd", this._searchQuery);
+
 	},
 
   /**
@@ -664,6 +682,8 @@ try {
 				var dir = MailServices.ab.getDirectory(dirName);
 				if (dir) {
 
+					this.observerService.notifyObservers(this, "onExchangeGALSearchStart", this._searchQuery);
+
 					if (this.useGAL) {
 						this.searchGAL(this._searchQuery);
 					}
@@ -672,6 +692,7 @@ try {
 
 					this.contacts = exchWebService.commonAbFunctions.filterCardsOnQuery(this._searchQuery, dir.childCards);
 					exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Got children of '"+dirName+"'");
+
 					for each(var contact in this.contacts) {
 						exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: Adding sub child A '"+contact.displayName+"' to contacts. dirName:"+this.dirName);
 						MailServices.ab.notifyDirectoryItemAdded(this, contact);
@@ -693,6 +714,9 @@ try {
 							this.contacts[contact.localId] = contact;
 						}
 					}
+
+					this.observerService.notifyObservers(this, "onExchangeGALSearchEnd", this._searchQuery);
+
 				}
 				else {
 					exchWebService.commonAbFunctions.logInfo("ERROR Folderdirectory '"+dirName+"' does not exist.");
@@ -1285,6 +1309,8 @@ try {
 	addDistList: function _addDistList(aDistList)
 	{
 		exchWebService.commonAbFunctions.logInfo("distListLoadOk: new distList:"+aDistList.name);
+
+		this.observerService.notifyObservers(this, "onExchangeGALSearchStart", this._searchQuery);
 
 		var self = this;
 		this.addToQueue( erResolveNames,

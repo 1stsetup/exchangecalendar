@@ -88,7 +88,8 @@ exchangeAbRootDirectory.prototype = {
 	classDescription: "Exchange 2007/2010 Contacts Root Directory",
 
 	// void getInterfaces(out PRUint32 count, [array, size_is(count), retval] out nsIIDPtr array);
-	QueryInterface: XPCOMUtils.generateQI([Ci.nsIAbDirectory,
+	QueryInterface: XPCOMUtils.generateQI([Ci.exchangeAbRootDirectory,
+						Ci.nsIAbDirectory,
 						Ci.nsIAbCollection,
 						Ci.nsIAbItem,
 						Ci.nsISupports]),
