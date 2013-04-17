@@ -360,8 +360,7 @@ catch(err){
 
 		if (this.tryNextURL()) return;
 
-		this.observerService.notifyObservers(this._notificationCallbacks, "onExchangeConnectionError", this.currentUrl);
-dump("onExchangeConnectionError: this.currentUrl:"+this.currentUrl+"\n");
+		this.observerService.notifyObservers(this._notificationCallbacks, "onExchangeConnectionError", this.currentUrl+"|"+this._notificationCallbacks.lastStatus+"|"+this._notificationCallbacks.lastStatusArg);
 
 		switch (this._notificationCallbacks.lastStatus) {
 		case 0x804b0003: 
@@ -634,7 +633,6 @@ dump("onExchangeConnectionError: this.currentUrl:"+this.currentUrl+"\n");
 		newXML = null;
 
 		this.observerService.notifyObservers(this._notificationCallbacks, "onExchangeConnectionOk", this.currentUrl);
-dump("onExchangeConnectionOk: this.currentUrl:"+this.currentUrl+"\n");
 
 	},
 

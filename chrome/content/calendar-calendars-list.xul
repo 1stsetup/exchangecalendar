@@ -54,6 +54,7 @@
     <command id="exchWebService_clone_settings_command" oncommand="tmpCalPopUpMenu.cloneSettings()"/>
   </commandset>
 
+  <popupset id="calendar-popupset">
     <menupopup id="list-calendars-context-menu"
 		onpopupshown="tmpCalPopUpMenu.checkForExchangeCalendar()">
       <menuitem id="exchWebService-list-calendars-context-convertFromOldAddOn"
@@ -69,6 +70,9 @@
                 label="&calendar.context.exchange.clone.settings.label;"
                 observes="exchWebService_clone_settings_command"/>
     </menupopup>
+    <tooltip id="calendar-list-tooltip"
+             onpopupshowing="return tmpCalPopUpMenu.tooltipShowing(event)"/>
+  </popupset>
 
   <calendar-list-tree id="calendar-list-tree-widget"
                       type="exchange"/>

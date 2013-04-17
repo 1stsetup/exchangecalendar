@@ -291,8 +291,9 @@ exchangeAbFolderDirectory.prototype = {
   //                              in boolean aCaseSensitive);
 	getCardFromProperty: function _cardForEmailAddress(aProperty, aValue, aCaseSensitive)
 	{
-		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: getCardFromProperty");
-		throw Cr.NS_ERROR_NOT_IMPLEMENTED;
+		exchWebService.commonAbFunctions.logInfo("exchangeAbFolderDirectory: getCardFromProperty: aProperty:"+aProperty+", aValue:"+aValue);
+		//throw Cr.NS_ERROR_NOT_IMPLEMENTED;
+		return null;
 	},
 
 

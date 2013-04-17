@@ -1,5 +1,5 @@
 calendar-list-tree > tree > treechildren::-moz-tree-image(exchange-status-treecol, exchangeCommError) {
-    list-style-image: url(chrome://exchangecalendar/skin/plug-disconnect.png);
+    list-style-image: url(chrome://exchangecalendar/skin/plug-disconnect-prohibition.png);
     -moz-image-region: rect(0px, 16px, 16px, 0px);
 }
 

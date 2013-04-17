@@ -385,8 +385,9 @@ function calExchangeCalendar() {
 	this.mIsOffline = Components.classes["@mozilla.org/network/io-service;1"]
                              .getService(Components.interfaces.nsIIOService).offline;
 	
-	this._exchangeCurrentStatus = Cr.NS_OK;
+	this._exchangeCurrentStatus = Cr.NS_OK; //Cr.NS_ERROR_FAILURE; //Cr.NS_OK;
 
+	this._connectionStateDescription = "";
 	//this.globalFunctions.LOG("Our offline status is:"+this.mIsOffline+".");
 
 }
@@ -738,11 +739,11 @@ calExchangeCalendar.prototype = {
 		if (this.debug) this.logInfo("setProperty. aName:"+aName+", aValue:"+aValue);
 		switch (aName) {
 		case "exchangeCurrentStatus":
-			dump("name1:"+this.name+", exchangeCurrentStatus:"+this._exchangeCurrentStatus+", newStatus:"+aValue+"\n");
+			//dump("name1:"+this.name+", exchangeCurrentStatus:"+this._exchangeCurrentStatus+", newStatus:"+aValue+"\n");
 			var oldStatus = this._exchangeCurrentStatus;
 			this._exchangeCurrentStatus = aValue;
 			if (aValue != oldStatus) {
-				dump("name2:"+this.name+", exchangeCurrentStatus:"+aValue+"\n");
+				//dump("name2:"+this.name+", exchangeCurrentStatus:"+aValue+"\n");
 				this.observers.notify("onPropertyChanged", [this.superCalendar, "exchangeCurrentStatus", aValue, oldStatus]);
 			}
 			return;
@@ -8462,14 +8463,53 @@ return;*/
 		}
 	},
 
-	connectionIsNotOk: function _connectionIsNotOk()
+	connectionIsNotOk: function _connectionIsNotOk(aUrl, aStatus)
 	{
+		switch (aStatus) {
+		case "2152398851": 
+			this._connectionStateDescription = "Error resolving hostname '"+aUrl+"'. Did you type the right hostname. (STATUS_RESOLVING)";
+			break;
+		case "2152398852":
+			this._connectionStateDescription = "Error during connection to hostname '"+aUrl+"'. (STATUS_CONNECTED_TO)";
+			break;
+		case "2152398853":
+			this._connectionStateDescription = "Error during sending data to hostname '"+aUrl+"'. (STATUS_SENDING_TO)";
+			break;
+		case "2152398854": 
+			this._connectionStateDescription = "Error during receiving of data from hostname '"+aUrl+"'. (STATUS_RECEIVING_FROM)";
+			break;
+		case "2152398855":
+			this._connectionStateDescription = "Error during connecting to hostname '"+aUrl+"'. Is the host down?. (STATUS_CONNECTING_TO)";
+			break;
+		case "2152398858":
+			this._connectionStateDescription = "Error during waiting for data of hostname '"+aUrl+"'. (STATUS_WAITING_FOR)";
+			break;
+		case "2152398859": 
+			this._connectionStateDescription = "Error resolving hostname '"+aUrl+"'. Did you type the right hostname. (STATUS_RESOLVED)";
+			break;
+		default:
+			this._connectionStateDescription = "Unknown error during communication with hostname '"+aUrl+"'. ("+aStatus+")";
+		}
 		this.setProperty("exchangeCurrentStatus", Cr.NS_ERROR_FAILURE);
 	},
 
 	connectionIsOk: function _connectionIsOk()
 	{
+		this._connectionStateDescription = "";
 		this.setProperty("exchangeCurrentStatus", Cr.NS_OK);
+	},
+
+	get connectionStateDescription()
+	{
+		if (this._disabled) {
+			this._connectionStateDescription = "Disabled";
+		}
+		else {
+			if (this.isOffline) {
+				this._connectionStateDescription = "Thunderbird is in Offline mode";
+			}
+		}
+		return this._connectionStateDescription;
 	},
 
 };
@@ -8525,8 +8565,9 @@ ecObserver.prototype = {
 				}
 				break;
 			case "onExchangeConnectionError":
-				if (data == this.calendar.serverUrl) {
-					this.calendar.connectionIsNotOk();
+				var parts = data.split("|");
+				if (this.calendar.serverUrl == parts[0]) {
+					this.calendar.connectionIsNotOk(parts[2], parts[1]);
 				}
 				break;
 			case "onExchangeConnectionOk":

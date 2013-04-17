@@ -216,6 +216,37 @@ exchCalPopUpMenu.prototype = {
 	{
 		//this._document.getElementById("calendar-list-tree-widget").setAttribute("type", "exchange");
 	},
+
+	tooltipShowing: function _tooltipShowing(aEvent)
+	{
+		let tree = document.getElementById("calendar-list-tree-widget");
+		let calendar = tree.getCalendarFromEvent(aEvent);
+		let tooltipText = false;
+		if ((calendar) && (calendar.type == "exchangecalendar")) {
+			let exchangeCurrentStatus = calendar.getProperty("exchangeCurrentStatus");
+			if ((!Components.isSuccessCode(exchangeCurrentStatus)) || (calendar.getProperty("disabled"))) {
+				if (calendar.readOnly) {
+					tooltipText = this.globalFunctions.getString("calExchangeCalendar", "tooltipCalendarDisconnectedReadOnly", [calendar.name, calendar.connectionStateDescription], "exchangecalendar");
+				}
+				else {
+					tooltipText = this.globalFunctions.getString("calExchangeCalendar", "tooltipCalendarDisconnected", [calendar.name, calendar.connectionStateDescription], "exchangecalendar");
+				}
+			} else {
+				if (calendar.readOnly) {
+					tooltipText = this.globalFunctions.getString("calExchangeCalendar", "tooltipCalendarConnectedReadOnly", [calendar.name], "exchangecalendar");
+				}
+				else {
+					tooltipText = this.globalFunctions.getString("calExchangeCalendar", "tooltipCalendarConnected", [calendar.name], "exchangecalendar");
+				}
+			}
+			setElementValue("calendar-list-tooltip", tooltipText, "label");
+		}
+		if (tooltipText) {
+			return (tooltipText != false);
+		}
+		return calendarListTooltipShowing(aEvent);
+	},
+
 }
 
 var tmpCalPopUpMenu = new exchCalPopUpMenu(document, window);

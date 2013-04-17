@@ -52,7 +52,7 @@ interface mivFunctions : nsISupports
 
   jsval getStringBundle(in AUTF8String bundleURL);
 
-  AUTF8String getString(in AUTF8String aBundleName, in AUTF8String aStringName, in jsval aParams, in AUTF8String aComponent);
+  AUTF8String getString(in AUTF8String aBundleName, in AUTF8String aStringName, in jsval aParams, [optional]  in AUTF8String aComponent);
 
   AUTF8String getUUID();
 
