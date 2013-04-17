@@ -98,6 +98,9 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 	this.exchangeBadCertListener2 = Cc["@1st-setup.nl/exchange/badcertlistener2;1"]
 			.getService(Ci.mivExchangeBadCertListener2);
 
+	this.observerService = Cc["@mozilla.org/observer-service;1"]  
+	                          .getService(Ci.nsIObserverService); 
+
 }
 
 ExchangeRequest.prototype = {
@@ -356,6 +359,9 @@ catch(err){
 		if (this.isHTTPRedirect(evt)) return;
 
 		if (this.tryNextURL()) return;
+
+		this.observerService.notifyObservers(this._notificationCallbacks, "onExchangeConnectionError", this.currentUrl);
+dump("onExchangeConnectionError: this.currentUrl:"+this.currentUrl+"\n");
 
 		switch (this._notificationCallbacks.lastStatus) {
 		case 0x804b0003: 
@@ -626,6 +632,9 @@ catch(err){
 
 		resp = null;
 		newXML = null;
+
+		this.observerService.notifyObservers(this._notificationCallbacks, "onExchangeConnectionOk", this.currentUrl);
+dump("onExchangeConnectionOk: this.currentUrl:"+this.currentUrl+"\n");
 
 	},
 

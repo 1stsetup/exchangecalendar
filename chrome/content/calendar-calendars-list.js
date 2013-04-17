@@ -212,7 +212,11 @@ exchCalPopUpMenu.prototype = {
 		}
 	},
 
+	onLoad: function _onLoad()
+	{
+		//this._document.getElementById("calendar-list-tree-widget").setAttribute("type", "exchange");
+	},
 }
 
 var tmpCalPopUpMenu = new exchCalPopUpMenu(document, window);
-
+window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpCalPopUpMenu.onLoad(); }, true);

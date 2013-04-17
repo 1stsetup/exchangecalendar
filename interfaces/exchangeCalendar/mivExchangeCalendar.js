@@ -384,6 +384,8 @@ function calExchangeCalendar() {
 
 	this.mIsOffline = Components.classes["@mozilla.org/network/io-service;1"]
                              .getService(Components.interfaces.nsIIOService).offline;
+	
+	this._exchangeCurrentStatus = Cr.NS_OK;
 
 	//this.globalFunctions.LOG("Our offline status is:"+this.mIsOffline+".");
 
@@ -717,21 +719,15 @@ calExchangeCalendar.prototype = {
             	case "capabilities.autoschedule.supported":
 			if (this.debug) this.logInfo("capabilities.autoschedule.supported");
                 	return true;
-/*		case "currentStatus":
-			if (this.notConnected) {
-				return Cr.NS_ERROR_FAILURE;
-			}
-			else {
-				return Cr.NS_OK;
-			}
-			break;*/
+		case "exchangeCurrentStatus":
+			return this._exchangeCurrentStatus;
 	        }
 		// itip.disableRevisionChecks
 
 		// capabilities.events.supported
 		// capabilities.tasks.supported
 
-		//this.globalFunctions.LOG("1 getProperty("+aName+")");
+		//dump("1 getProperty("+aName+")="+this.__proto__.__proto__.getProperty.apply(this, arguments)+"\n");
 	        return this.__proto__.__proto__.getProperty.apply(this, arguments);
 	},
 
@@ -741,6 +737,15 @@ calExchangeCalendar.prototype = {
 
 		if (this.debug) this.logInfo("setProperty. aName:"+aName+", aValue:"+aValue);
 		switch (aName) {
+		case "exchangeCurrentStatus":
+			dump("name1:"+this.name+", exchangeCurrentStatus:"+this._exchangeCurrentStatus+", newStatus:"+aValue+"\n");
+			var oldStatus = this._exchangeCurrentStatus;
+			this._exchangeCurrentStatus = aValue;
+			if (aValue != oldStatus) {
+				dump("name2:"+this.name+", exchangeCurrentStatus:"+aValue+"\n");
+				this.observers.notify("onPropertyChanged", [this.superCalendar, "exchangeCurrentStatus", aValue, oldStatus]);
+			}
+			return;
 		case "disabled" :
 			var oldDisabledState = this._disabled;
 			this._disabled = aValue;
@@ -8457,6 +8462,16 @@ return;*/
 		}
 	},
 
+	connectionIsNotOk: function _connectionIsNotOk()
+	{
+		this.setProperty("exchangeCurrentStatus", Cr.NS_ERROR_FAILURE);
+	},
+
+	connectionIsOk: function _connectionIsOk()
+	{
+		this.setProperty("exchangeCurrentStatus", Cr.NS_OK);
+	},
+
 };
 
 function ecObserver(inCalendar)  
@@ -8509,6 +8524,17 @@ ecObserver.prototype = {
 					this.calendar.resetCalendar();
 				}
 				break;
+			case "onExchangeConnectionError":
+				if (data == this.calendar.serverUrl) {
+					this.calendar.connectionIsNotOk();
+				}
+				break;
+			case "onExchangeConnectionOk":
+				// See if it is for us
+				if (data == this.calendar.serverUrl) {
+					this.calendar.connectionIsOk();
+				}
+				break;
 			case "quit-application":
 				this.unregister();
 				break;
@@ -8528,6 +8554,8 @@ ecObserver.prototype = {
 		var observerService = Cc["@mozilla.org/observer-service;1"]  
 		                          .getService(Ci.nsIObserverService);  
 		observerService.addObserver(this, "onCalReset", false);  
+		observerService.addObserver(this, "onExchangeConnectionError", false);  
+		observerService.addObserver(this, "onExchangeConnectionOk", false);  
 		observerService.addObserver(this, "quit-application", false); 
 		observerService.addObserver(this, "network:offline-status-changed", false);
 
@@ -8545,6 +8573,8 @@ ecObserver.prototype = {
 		var observerService = Cc["@mozilla.org/observer-service;1"]  
 		                            .getService(Ci.nsIObserverService);  
 		observerService.removeObserver(this, "onCalReset");  
+		observerService.removeObserver(this, "onExchangeConnectionError");  
+		observerService.removeObserver(this, "onExchangeConnectionOk");  
 		observerService.removeObserver(this, "quit-application");  
 		observerService.removeObserver(this, "network:offline-status-changed");
 
