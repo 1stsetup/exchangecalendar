@@ -194,6 +194,17 @@ exchAddressbookOverlay.prototype = {
 		}
 	},
 
+	photoDisplayHandler: function _photoDisplayHandler(aCard, aImg)
+	{
+		if ((aCard) && (aCard.getProperty("PhotoData"))) {
+			aImg.setAttribute("src", "data:image/jpeg;base64,"+aCard.getProperty("PhotoData"));
+			return true;
+		}
+		else {
+			return false;
+		}
+	},
+
 	onLoad: function _onLoad()
 	{
 		var self = this;
@@ -209,6 +220,7 @@ exchAddressbookOverlay.prototype = {
 
 		this._document.getElementById("dirTreeContext").addEventListener("popupshown", this.popupshown, true);
 
+		registerPhotoDisplayHandler("exchangeContactPhoto", self.photoDisplayHandler);
 	},
 
 	unLoad: function _unLoad()

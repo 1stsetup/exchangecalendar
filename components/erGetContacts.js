@@ -70,6 +70,12 @@ erGetContactsRequest.prototype = {
 		itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");		
 		itemShape.addChildTag("BodyType", "nsTypes", "Text");
 
+		var additionalProperties = itemShape.addChildTag("AdditionalProperties", "nsTypes", null);
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "contacts:HasPicture");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "contacts:HasAttachments");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "contacts:Attachments");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "contacts:Photo");
+
 		var extendedFieldURI = itemShape.addChildTag("AdditionalProperties", "nsTypes", null).addChildTag("ExtendedFieldURI", "nsTypes", null);
 		extendedFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
 		extendedFieldURI.setAttribute("PropertyId", MAPI_PidTagBody);

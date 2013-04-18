@@ -37,5 +37,7 @@ interface mivExchangeAbCard : nsIAbCard
 	readonly attribute AUTF8String mailboxType;
 
 	void convertExchangeContactToCard(in jsval aParent, in jsval aExchangeContact,[optional] in AUTF8String aMailboxType);  
-	void convertExchangeDistListToCard(in jsval aParent, in jsval aExchangeContact, in AUTF8String aURI);  
+	void convertExchangeDistListToCard(in jsval aParent, in jsval aExchangeContact, in AUTF8String aURI); 
+	attribute wstring photo; 
+	readonly attribute boolean hasPhoto;
 };

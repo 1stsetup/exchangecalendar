@@ -36,6 +36,8 @@ function mivExchangeAbCard() {
 				.getService(Ci.mivFunctions);
 
 	this._readOnly = false;
+
+	this._photo = null;
 }
 
 var PREF_MAINPART = 'extensions.1st-setup.exchangecalendar.abcard.';
@@ -352,6 +354,8 @@ mivExchangeAbCard.prototype = {
 
 		this.logInfo("convertExchangeContactToCard: aExchangeContact.tagName:"+aExchangeContact.tagName);
 
+		this._photo = null;
+
 		var contacts = new Array();
 		var mailbox = new Array();
 		if (aExchangeContact.tagName == "Resolution") {
@@ -398,6 +402,9 @@ mivExchangeAbCard.prototype = {
 			this.setProperty("WebPage1", "");
 
 			this.setProperty("Notes", "");*/
+
+			this.deleteProperty("PhotoType");
+			this.deleteProperty("PhotoData");
 
 			this._routingType = aExchangeContact.getTagValue("t:RoutingType");
 			this._mailboxType = aExchangeContact.getTagValue("t:MailboxType");
@@ -513,8 +520,34 @@ mivExchangeAbCard.prototype = {
 				this.setProperty("BirthMonth", birthDay.substr(5,2));
 				this.setProperty("BirthDay", birthDay.substr(8,2));
 			}
+
+			this._photo = aExchangeContact.getTagValue("t:Photo", null)
+			if (this._photo) {
+				this.setProperty("PhotoType", "exchangeContactPhoto");
+				this.setProperty("PhotoData", this._photo);
+				//dump("!!! We have a photo: "+primaryEmail+"\n");
+			}
+			else {
+				this.deleteProperty("PhotoType");
+				this.deleteProperty("PhotoData");
+				//dump("no photo: "+primaryEmail+"\n");
+			}
 		}
 	},  
+
+	get photo()
+	{
+		return this._photo;
+	},
+
+	set photo(aValue)
+	{
+	},
+
+	get hasPhoto()
+	{
+		return (this._photo !== null);
+	},
 
 	// Internal methods.
 

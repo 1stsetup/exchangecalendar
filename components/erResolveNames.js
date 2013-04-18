@@ -78,6 +78,7 @@ erResolveNames.prototype = {
 		else {
 			req.setAttribute("SearchScope", "ContactsActiveDirectory");
 		}
+		req.setAttribute("ContactDataShape", "AllProperties");
 
 //		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
 //		req.addChildTagObject(parentFolder);
