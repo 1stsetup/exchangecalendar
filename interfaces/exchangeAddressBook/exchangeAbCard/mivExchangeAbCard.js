@@ -350,9 +350,31 @@ mivExchangeAbCard.prototype = {
 	{
 		//this.logInfo("convertExchangeContactToCard: "+aExchangeContact.toString());
 
+		this.logInfo("convertExchangeContactToCard: aExchangeContact.tagName:"+aExchangeContact.tagName);
+
+		var contacts = new Array();
+		var mailbox = new Array();
+		if (aExchangeContact.tagName == "Resolution") {
+			var contacts = aExchangeContact.getTags("t:Contact");
+			var mailbox = aExchangeContact.getTags("t:Mailbox");
+			if ((contacts.length == 0) && (mailbox.length == 0)) {
+				this.logInfo("convertExchangeContactToCard: No valid contact information available in:"+aExchangeContact.toString());
+				return;
+			}
+
+			if (contacts.length > 0) {
+				aExchangeContact = contacts[0];
+			}
+			else {
+				aExchangeContact = mailbox[0];
+			}
+				
+		}
+
 		this.isMailList = false;
 		this.directoryId = aParent.uuid;
 		if (aExchangeContact.tagName == "Mailbox") {
+			this.logInfo("convertExchangeContactToCard: Processing as Mailbox only.");
 			this._type = Ci.mivExchangeAbCard.CARD_TYPE_MAILBOX;
 			this.localId = aExchangeContact.getTagValue("t:RoutingType","SMTP")+":"+aExchangeContact.getTagValue("t:EmailAddress","");
 			this.setProperty("DisplayName", aExchangeContact.getTagValue("t:Name", ""));
@@ -400,24 +422,39 @@ mivExchangeAbCard.prototype = {
 			this.setProperty("LastName", aExchangeContact.getTagValue("t:Surname", ""));
 
 			// We need to check which email address is primary. For exchange it will start with 'SMTP:' (in capital)
-			var primaryEmail = aExchangeContact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress1"]', "");
-			var secondEmail = aExchangeContact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress2"]', "");
-			if (primaryEmail.indexOf("SMTP:") > -1) {
-				primaryEmail = primaryEmail.substr(primaryEmail.indexOf("SMTP:")+5);
-				if (secondEmail.indexOf("smtp:") > -1) {
-					secondEmail = secondEmail.substr(secondEmail.indexOf("smtp:")+5);
+			if (mailbox.length > 0) {
+				this.logInfo("convertExchangeContactToCard: Processing as Contact and Mailbox.");
+				var primaryEmail = mailbox[0].getTagValue('t:EmailAddress', "");
+				var secondEmail = aExchangeContact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress1"]', "");
+				if ((secondEmail.indexOf("SMTP:") == 0) || (secondEmail.indexOf("smtp:") == 0)) {
+					secondEmail = secondEmail.substr(5);
 				}
+				this._routingType = mailbox[0].getTagValue("t:RoutingType");
+				this._mailboxType = mailbox[0].getTagValue("t:MailboxType");
 			}
 			else {
-				if (secondEmail.indexOf("SMTP:") > -1) {
-					var tmpPrimary = primaryEmail;
-					primaryEmail = secondEmail.substr(secondEmail.indexOf("SMTP:")+5);
-					secondEmail = tmpPrimary;
+				this.logInfo("convertExchangeContactToCard: Processing as Contact only.");
+				var primaryEmail = aExchangeContact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress1"]', "");
+				var secondEmail = aExchangeContact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress2"]', "");
+				if (primaryEmail.indexOf("SMTP:") > -1) {
+					primaryEmail = primaryEmail.substr(primaryEmail.indexOf("SMTP:")+5);
 					if (secondEmail.indexOf("smtp:") > -1) {
 						secondEmail = secondEmail.substr(secondEmail.indexOf("smtp:")+5);
 					}
 				}
+				else {
+					if (secondEmail.indexOf("SMTP:") > -1) {
+						var tmpPrimary = primaryEmail;
+						primaryEmail = secondEmail.substr(secondEmail.indexOf("SMTP:")+5);
+						secondEmail = tmpPrimary;
+						if (secondEmail.indexOf("smtp:") > -1) {
+							secondEmail = secondEmail.substr(secondEmail.indexOf("smtp:")+5);
+						}
+					}
+				}
 			}
+
+			this.logInfo("convertExchangeContactToCard: primaryEmail:"+primaryEmail+", secondEmail:"+secondEmail);
 
 			if (!this.localId) {
 				this.localId = aExchangeContact.getTagValue("t:ContactSource", "")+":"+primaryEmail;
