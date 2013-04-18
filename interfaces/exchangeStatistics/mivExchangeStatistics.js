@@ -75,12 +75,12 @@ mivExchangeStatistics.prototype = {
 
 	setServerVersion: function _setServerVersion(aURL, aVersion)
 	{
-		if (aVersion == "Exchange2010_SP2") {
-			this.serverVersions[aURL] = "Exchange2010_SP1";
-		}
-		else {
+//		if (aVersion == "Exchange2010_SP2") {
+//			this.serverVersions[aURL] = "Exchange2010_SP1";
+//		}
+//		else {
 			this.serverVersions[aURL] = aVersion;
-		}
+//		}
 	},
 
 	getServerVersion: function _getServerVersion(aURL)

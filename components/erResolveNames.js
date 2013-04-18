@@ -82,7 +82,8 @@ erResolveNames.prototype = {
 		this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
 				.getService(Ci.mivExchangeStatistics);
 
-		if (this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("2007") == -1) {
+		if ((this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("2007") == -1) &&
+		    (this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("2010_SP1") == -1)){
 			req.setAttribute("ContactDataShape", "AllProperties");
 		}
 
