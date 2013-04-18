@@ -27,6 +27,8 @@ var components = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
+Cu.import("resource:///modules/mailServices.js");
+
 function mivExchangeAutoCompleteResult() {
 
 //dump("mivExchangeAutoCompleteResult init\n");
@@ -164,9 +166,25 @@ mivExchangeAutoCompleteResult.prototype = {
   //AString getValueAt(in long index);
 	getValueAt: function _getValueAt(aIndex)
 	{
-dump("getValueAt["+aIndex+"]:"+this._cards[aIndex].primaryEmail+"\n");
-		if (this._cards[aIndex].isMailList) {
-			dump("  >> I am a mailingList\n");
+//dump("getValueAt["+aIndex+"]:"+this._cards[aIndex].primaryEmail+"\n");
+		if ((this._cards[aIndex].isMailList) && (this._cards[aIndex].primaryEmail.indexOf("@") == -1)) {
+			//dump("  >> I am a mailingList:"+this._cards[aIndex].mailListURI+"\n");
+			var dir = MailServices.ab.getDirectory(this._cards[aIndex].mailListURI);
+			if (dir) {
+				var emailList = "";
+				var childNodes = dir.childCards;
+				while (childNodes.hasMoreElements()) {
+					if (emailList != "") {
+						emailList = emailList + ",";
+					}
+					var tmpCard = childNodes.getNext().QueryInterface(Ci.mivExchangeAbCard);
+//dump(" || "+tmpCard+"\n");
+					emailList = emailList + tmpCard.displayName + " <" + tmpCard.primaryEmail + ">" ;
+				}
+			//dump("  ++ addr:"+emailList+"\n");
+				return emailList;
+			}
+			//dump("  -- mailListURI:"+this._cards[aIndex].mailListURI+"\n");
 		}
 		return this._cards[aIndex].displayName + " <" + this._cards[aIndex].primaryEmail + ">";
 	},
@@ -186,7 +204,10 @@ dump("getValueAt["+aIndex+"]:"+this._cards[aIndex].primaryEmail+"\n");
   //AString getCommentAt(in long index);
 	getCommentAt: function _getCommentAt(aIndex)
 	{
-		return "comment";
+		if ((this._cards[aIndex].isMailList) && (this._cards[aIndex].primaryEmail.indexOf("@") == -1)) {
+			return this._cards[aIndex].displayName;
+		}
+		return "Exchange Contact";
 	},
 
   /**
@@ -230,8 +251,8 @@ dump("getValueAt["+aIndex+"]:"+this._cards[aIndex].primaryEmail+"\n");
 		}
 		if (!cardExists) {
 //dump("addResult:"+aCard.displayName+", primaryEmail:"+aCard.primaryEmail+", length:"+this._cards.length+"\n");
-			if ((aCard.primaryEmail != "") && (aCard.primaryEmail.indexOf("@") > -1)) {
-//			if (((aCard.primaryEmail != "") && (aCard.primaryEmail.indexOf("@") > -1)) || (aCard.isMailList)) {
+//			if ((aCard.primaryEmail != "") && (aCard.primaryEmail.indexOf("@") > -1)) {
+			if (((aCard.primaryEmail != "")  && (aCard.primaryEmail.indexOf("@") > -1)) || (aCard.isMailList)) {
 				this._cards.push(aCard);
 			}
 		}

@@ -142,6 +142,11 @@ mivExchangeAbCard.prototype = {
 	//  void setProperty(in AUTF8String name, in nsIVariant value);
 	setProperty: function _setProperty(name, value)
 	{
+		if (name == "PrimaryEmail") {
+			if ((value.indexOf("SMTP:") > -1) || (value.indexOf("smtp:") > -1)) {
+				value = value.substr(5);
+			}
+		}
 		this._abCard.setProperty(name, value);
 	},
 
@@ -216,7 +221,12 @@ mivExchangeAbCard.prototype = {
 
 	set primaryEmail(aValue)
 	{
-		this._abCard.primaryEmail = aValue;
+		if ((aValue.indexOf("SMTP:") > -1) || (aValue.indexOf("smtp:") > -1)) {
+			this._abCard.primaryEmail = aValue.substr(5);
+		}
+		else {
+			this._abCard.primaryEmail = aValue;
+		}
 	},
 
 	//  boolean hasEmailAddress(in AUTF8String aEmailAddress);
@@ -336,7 +346,11 @@ mivExchangeAbCard.prototype = {
 			this.localId = aExchangeContact.getAttributeByTag("t:ItemId", "Id", null);
 			if (!this.localId) {
 				this.localId = aExchangeContact.getTagValue("t:RoutingType","SMTP")+":"+aExchangeContact.getTagValue("t:EmailAddress","");
-				this.setProperty("PrimaryEmail", aExchangeContact.getTagValue("t:EmailAddress", ""));
+				var tmpAddress = aExchangeContact.getTagValue("t:EmailAddress", "");
+				if ((tmpAddress.indexOf("SMTP:") > -1) | (tmpAddress.indexOf("smtp:") > -1)) {
+					tmpAddress = tmpAddress.substr(5);
+				}
+				this.setProperty("PrimaryEmail", tmpAddress);
 			}
 			this.setProperty("DisplayName", decodeURIComponent(aExchangeContact.getTagValue("t:Name", "")));
 		}
@@ -382,7 +396,11 @@ mivExchangeAbCard.prototype = {
 			this._type = Ci.mivExchangeAbCard.CARD_TYPE_MAILBOX;
 			this.localId = aExchangeContact.getTagValue("t:RoutingType","SMTP")+":"+aExchangeContact.getTagValue("t:EmailAddress","");
 			this.setProperty("DisplayName", aExchangeContact.getTagValue("t:Name", ""));
-			this.setProperty("PrimaryEmail", aExchangeContact.getTagValue("t:EmailAddress", ""));
+			var tmpAddress = aExchangeContact.getTagValue("t:EmailAddress", "");
+			if ((tmpAddress.indexOf("SMTP:") > -1) | (tmpAddress.indexOf("smtp:") > -1)) {
+				tmpAddress = tmpAddress.substr(5);
+			}
+			this.setProperty("PrimaryEmail", tmpAddress);
 
 /*			this.setProperty("FirstName", "");
 			this.setProperty("LastName", "");
@@ -432,6 +450,9 @@ mivExchangeAbCard.prototype = {
 			if (mailbox.length > 0) {
 				this.logInfo("convertExchangeContactToCard: Processing as Contact and Mailbox.");
 				var primaryEmail = mailbox[0].getTagValue('t:EmailAddress', "");
+				if ((primaryEmail.indexOf("SMTP:") == 0) || (primaryEmail.indexOf("smtp:") == 0)) {
+					primaryEmail = primaryEmail.substr(5);
+				}
 				var secondEmail = aExchangeContact.getTagValueByXPath('/t:EmailAddresses/t:Entry[@Key="EmailAddress1"]', "");
 				if ((secondEmail.indexOf("SMTP:") == 0) || (secondEmail.indexOf("smtp:") == 0)) {
 					secondEmail = secondEmail.substr(5);
