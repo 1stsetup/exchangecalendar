@@ -1,3 +1,8 @@
+Version 3.2.0-Beta8:
+- Introduced an icon which shows connection status to the exchange server.
+- Introduced autocompletion. It works but could use some refinement.
+- Improved CPU load when the add-on has problems connecting to the exchange server .
+
 Version 3.2.0-Beta6:
 - Improved copying between exchange calendars and non exchange calendars.
 - Fixed snooze/dismiss reminder problems for events and tasks.
