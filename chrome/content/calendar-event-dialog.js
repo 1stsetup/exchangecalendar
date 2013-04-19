@@ -55,7 +55,11 @@ exchEventDialog.prototype = {
 				newItem = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 						.createInstance(Ci.mivExchangeEvent);
 				newItem.cloneToCalEvent(newItem);
-				//aItem = newItem;
+
+dump("kweepeer\n");				//aItem = newItem;
+for (var name in newItem){
+	dump(" ~~ "+name+":"+newItem[name]+"\n");
+}
 			}
 		}
 
@@ -71,6 +75,10 @@ dump("Peer\n");
 			}
 
 dump("pruim: newItem:"+newItem+", originalItem:"+aOriginalItem+"\n");
+dump("pruim2: newItem.totalWork:"+newItem.totalWork+"\n");
+for (var name in newItem.QueryInterface(Ci.mivExchangeTodo)){
+	dump(" ~~ "+name+":"+newItem[name]+"\n");
+}
 			newItem.totalWork = this._document.getElementById("exchWebService-totalWork-count").value;
 			newItem.actualWork = this._document.getElementById("exchWebService-actualWork-count").value;
 			newItem.mileage = this._document.getElementById("exchWebService-mileage-count").value;
@@ -98,6 +106,7 @@ dump("pruim: newItem:"+newItem+", originalItem:"+aOriginalItem+"\n");
 
 			var args = this._window.arguments[0];
 			var item = args.calendarEvent;
+dump("Unload: item:"+args.calendarEvent+"\n");
 			this.updateScreen(item, item.calendar);
 		}
 	},
@@ -124,12 +133,12 @@ dump("pruim: newItem:"+newItem+", originalItem:"+aOriginalItem+"\n");
 			this._document.getElementById("exchWebService-details-separator").hidden = false;
 
 dump("banaan: item:"+item+"\n");
-			this._document.getElementById("exchWebService-totalWork-count").value = item.totalWork;
+/*			this._document.getElementById("exchWebService-totalWork-count").value = item.totalWork;
 			this._document.getElementById("exchWebService-actualWork-count").value = item.actualWork;
 			this._document.getElementById("exchWebService-mileage-count").value = item.mileage;
 			this._document.getElementById("exchWebService-billingInformation-count").value = item.billingInformation;
 			this._document.getElementById("exchWebService-companies-count").value = item.companies;
-
+*/
 			// Clear reminder select list for todo
 			this._document.getElementById("reminder-none-separator").hidden = true;
 			this._document.getElementById("reminder-0minutes-menuitem").hidden = true;

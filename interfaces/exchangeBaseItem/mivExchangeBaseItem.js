@@ -3266,21 +3266,5 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 }
 
-function NSGetFactory(cid) {
 
-	try {
-		if (!NSGetFactory.mivExchangeBaseItem) {
-			// Load main script from lightning that we need.
-			NSGetFactory.mivExchangeBaseItem = XPCOMUtils.generateNSGetFactory([mivExchangeBaseItem]);
-			
-	}
-
-	} catch(e) {
-		Components.utils.reportError(e);
-		dump(e);
-		throw e;
-	}
-
-	return NSGetFactory.mivExchangeBaseItem(cid);
-} 
 

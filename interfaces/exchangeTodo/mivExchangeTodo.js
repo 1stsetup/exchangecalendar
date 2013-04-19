@@ -52,10 +52,6 @@ mivExchangeTodo.prototype = {
 	__proto__ : mivExchangeBaseItem.prototype,
 
 	QueryInterface : XPCOMUtils.generateQI([Ci.mivExchangeTodo,
-				Ci.mivExchangeBaseItem,
-				Ci.calIInternalShallowCopy,
-				Ci.calITodo,
-				Ci.calIItemBase,
 				Ci.nsIClassInfo,
 				Ci.nsISupports]),
 
@@ -71,13 +67,17 @@ mivExchangeTodo.prototype = {
 
 	getInterfaces : function _getInterfaces(count) 
 	{
+/*		var ifaces = [Ci.mivExchangeTodo,
+				Ci.mivExchangeBaseItem,
+				Ci.calITodo,
+				Ci.calIItemBase,
+				Ci.nsIClassInfo,
+				Ci.nsISupports];
+*/
 		var ifaces = [Ci.mivExchangeTodo,
-			Ci.mivExchangeBaseItem,
-			Ci.calIInternalShallowCopy,
-			Ci.calITodo,
-			Ci.calIItemBase,
-			Ci.nsIClassInfo,
-			Ci.nsISupports];
+				Ci.nsIClassInfo,
+				Ci.nsISupports];
+
 		count.value = ifaces.length;
 		return ifaces;
 	},
@@ -737,4 +737,4 @@ function NSGetFactory(cid) {
 
 	return NSGetFactory.mivExchangeTodo(cid);
 } 
-
+dump(" -- mivEchangeTodo\n");
