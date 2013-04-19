@@ -1,3 +1,9 @@
+Version 3.2.0-Beta9:
+- Fixes Bug 162 - Changing recurring meeting to Wednesdays, moved it to Thursday Now also for Exchange 2007 servers.
+- Introduced loading/showing image when one is available for a contact (addressbook). Only works starting from Exchange server 2010_SP2
+- Fixes a bug where creation of new tasks and Event was not possible since Beta8.
+- Finalized autocompletion. Depending on the connetion speed with the exchange server it can take some time to fill the autocomplete list.
+
 Version 3.2.0-Beta8:
 - Introduced an icon which shows connection status to the exchange server.
 - Introduced autocompletion. It works but could use some refinement.

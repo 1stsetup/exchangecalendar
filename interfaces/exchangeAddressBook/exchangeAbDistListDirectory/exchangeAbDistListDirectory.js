@@ -84,6 +84,8 @@ function exchangeAbDistListDirectory() {
 
 	this._isInitialized = false;
 
+	this._listNickName = null;
+
 	this.childNodeURI = "exchWebService-distList-directory://";
 
 	this.observerService = Cc["@mozilla.org/observer-service;1"]  

@@ -61,7 +61,7 @@ function exchangeAbRootDirectory() {
 		//  void onItemAdded(in nsISupports parentDir, in nsISupports item);
 		onItemAdded: function adBookListener_onItemAdded(aParentDir, aItem)
 		{
-			if ((aParentDir.uuid != this.uuid) && (aParentDir.isQuery)) {
+			if ((aParentDir.uuid != self.uuid) && (aParentDir.isQuery)) {
 				var card = aItem.QueryInterface(Ci.mivExchangeAbCard);
 			exchWebService.commonAbFunctions.logInfo("exchangeAbRootDirectory: onItemAdded: Card:"+card.displayName);
 	try {
