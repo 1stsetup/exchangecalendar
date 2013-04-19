@@ -49,33 +49,37 @@ exchEventDialog.prototype = {
 
 	onAcceptCallback: function _onAcceptCallback(aItem, aCalendar, aOriginalItem, aIsClosing)
 	{
-		if ((cal.isEvent(aItem)) && (aCalendar.type == "exchangecalendar")) {
-			if (!aItem.className) {
-				var newItem = Cc["@1st-setup.nl/exchange/calendarevent;1"]
+		var newItem = aItem.clone();
+		if ((cal.isEvent(newItem)) && (aCalendar.type == "exchangecalendar")) {
+			if (!newItem.className) {
+				newItem = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 						.createInstance(Ci.mivExchangeEvent);
-				newItem.cloneToCalEvent(aItem);
-				aItem = newItem;
+				newItem.cloneToCalEvent(newItem);
+				//aItem = newItem;
 			}
 		}
 
-		if ((!cal.isEvent(aItem)) && (aCalendar.type == "exchangecalendar")) {
+		if ((!cal.isEvent(newItem)) && (aCalendar.type == "exchangecalendar")) {
 			// Save extra exchange fields to item.
-			if (!aItem.className) {
-				var newItem = Cc["@1st-setup.nl/exchange/calendartodo;1"]
+dump("Appel: newItem:"+newItem+", originalItem:"+aOriginalItem+"\n");
+			if (!newItem.className) {
+dump("Peer\n");
+				newItem = Cc["@1st-setup.nl/exchange/calendartodo;1"]
 						.createInstance(Ci.mivExchangeTodo);
-				newItem.cloneToCalEvent(aItem);
-				aItem = newItem;
+				newItem.cloneToCalEvent(newItem);
+				//aItem = newItem;
 			}
 
-			aItem.totalWork = this._document.getElementById("exchWebService-totalWork-count").value;
-			aItem.actualWork = this._document.getElementById("exchWebService-actualWork-count").value;
-			aItem.mileage = this._document.getElementById("exchWebService-mileage-count").value;
-			aItem.billingInformation = this._document.getElementById("exchWebService-billingInformation-count").value;
-			aItem.companies = this._document.getElementById("exchWebService-companies-count").value;
+dump("pruim: newItem:"+newItem+", originalItem:"+aOriginalItem+"\n");
+			newItem.totalWork = this._document.getElementById("exchWebService-totalWork-count").value;
+			newItem.actualWork = this._document.getElementById("exchWebService-actualWork-count").value;
+			newItem.mileage = this._document.getElementById("exchWebService-mileage-count").value;
+			newItem.billingInformation = this._document.getElementById("exchWebService-billingInformation-count").value;
+			newItem.companies = this._document.getElementById("exchWebService-companies-count").value;
 		}
 
 		if (this._oldCallback) {
-			this._oldCallback(aItem, aCalendar, aOriginalItem, aIsClosing);
+			this._oldCallback(newItem, aCalendar, aOriginalItem, aIsClosing);
 		}
 	},
 
@@ -119,6 +123,7 @@ exchEventDialog.prototype = {
 			this._document.getElementById("exchWebService-owner-hbox").hidden = false;
 			this._document.getElementById("exchWebService-details-separator").hidden = false;
 
+dump("banaan: item:"+item+"\n");
 			this._document.getElementById("exchWebService-totalWork-count").value = item.totalWork;
 			this._document.getElementById("exchWebService-actualWork-count").value = item.actualWork;
 			this._document.getElementById("exchWebService-mileage-count").value = item.mileage;
