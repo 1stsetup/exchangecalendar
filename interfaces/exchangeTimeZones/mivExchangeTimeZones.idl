@@ -32,6 +32,7 @@ interface mivExchangeTimeZones : nsISupports
   void addURL(in AUTF8String aURL, in AUTF8String aUser, in jsval aCalendar);
   AUTF8String getExchangeTimeZoneIdByCalTimeZone(in calITimezone aCalTimeZone, in AUTF8String aURL, in calIDateTime aIndexDate);
 
+  calITimezone getCalTimeZoneByExchangeMeetingTimeZone(in AUTF8String aTimeZoneName);
   calITimezone getCalTimeZoneByExchangeTimeZone(in mivIxml2jxon aExchangeTimeZone, in AUTF8String aURL, in calIDateTime aIndexDate);
 
 };

@@ -2248,6 +2248,15 @@ catch(err){
 		return this._timeZone;
 	},
 
+	//readonly attribute AUTF8String MeetingTimeZone;
+	get meetingTimeZone()
+	{
+		if (!this._meetingTimeZone) {
+			this._meetingTimeZone = this.getAttributeByTag("t:MeetingTimeZone", "TimeZoneName", null);
+		}
+		return this._meetingTimeZone;
+	},
+
 	//readonly attribute AUTF8String startTimeZoneName;
 	get startTimeZoneName()
 	{

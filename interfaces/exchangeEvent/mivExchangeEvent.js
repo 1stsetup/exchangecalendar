@@ -97,7 +97,19 @@ mivExchangeEvent.prototype = {
 			if (this._startDate) {
 				if (this.isAllDayEvent) this._startDate.isDate = true;
 
-				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._startDate);
+				if (this.startTimeZoneId) {
+					var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._startDate);
+				}
+				else {
+					if (this.meetingTimeZone) {
+						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone);
+					}
+					else {
+						if (this.timeZone) {
+							var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone);
+						}
+					}
+				}
 				if (timezone) {
 					this._startDate = this._startDate.getInTimezone(timezone);
 				}
@@ -123,7 +135,19 @@ mivExchangeEvent.prototype = {
 			this._endDate = this.tryToSetDateValue(this.getTagValue("t:End", null), this._calEvent.endDate);
 			if (this._endDate) {
 				if (this.isAllDayEvent) this._endDate.isDate = true;
-				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:EndTimeZone"), "", this._endDate);
+				if (this.endTimeZoneId) {
+					var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:EndTimeZone"), "", this._endDate);
+				}
+				else {
+					if (this.meetingTimeZone) {
+						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone);
+					}
+					else {
+						if (this.timeZone) {
+							var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone);
+						}
+					}
+				}
 				if (timezone) {
 					this._endDate = this._endDate.getInTimezone(timezone);
 				}

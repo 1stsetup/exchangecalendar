@@ -211,6 +211,30 @@ mivExchangeTimeZones.prototype = {
 		return this._tzCache[timeZoneId];
 	},
 
+	getCalTimeZoneByExchangeMeetingTimeZone: function _getCalTimeZoneByExchangeMeetingTimeZone(aMeetingTimeZone)
+	{
+		var name;
+		if (!aTimeZoneName) {
+			return null;
+		}
+		if (aTimeZoneName.indexOf(") ") > -1) {
+			name = aTimeZoneName.substr(aTimeZoneName.indexOf(") "+2)).toLowerCase();
+		}
+		else {
+			return null;
+		}
+		var timezones = this.timezoneService.timezoneIds;
+		var tmpResult = null;
+		while (timezones.hasMore()) {
+			var tmpZoneId = timezones.getNext().toLowerCase();
+			if (tmpZoneId.indexOf(name) > -1) {
+				return this.timezoneService.getTimezone(tmpZoneId);
+			}
+		}
+
+		return null;
+	},
+
 	getCalTimeZoneByExchangeTimeZone: function _getCalTimeZoneByExchangeTimeZone(aExchangeTimeZone, aURL, aIndexDate)
 	{
 		var exchangeTimeZone = this.getTimeZone(aExchangeTimeZone, aIndexDate);
