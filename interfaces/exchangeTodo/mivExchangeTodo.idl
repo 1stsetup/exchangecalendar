@@ -21,6 +21,8 @@
 
 #include "mivExchangeBaseItem.idl"
 
+interface mivIxml2jxon;
+
 [scriptable, uuid(95dac4fd-58c7-44f9-80ad-1448558fc460)]
 interface mivExchangeTodo : mivExchangeBaseItem
 {
@@ -29,8 +31,6 @@ interface mivExchangeTodo : mivExchangeBaseItem
 	const long CAL_TODO_STATUS_NEEDSACTION = 4;
 	const long CAL_TODO_STATUS_COMPLETED = 5;
 	const long CAL_TODO_STATUS_INPROCESS = 6;
-
-	const long CAL_MIV_STATUS_INPROCESS = 99;
 
 	// as per the rather broken RFC2445,
 

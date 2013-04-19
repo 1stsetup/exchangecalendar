@@ -53,5 +53,4 @@ interface mivExchangeEvent : mivExchangeBaseItem
 
 // calIEvent end.
 
-
 };

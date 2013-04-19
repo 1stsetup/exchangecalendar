@@ -398,7 +398,8 @@ try {
 		result.exchangeData = this._exchangeData;
 		result.cloneToCalEvent(this._calEvent);
 		if (this._newId !== undefined) result.id = this._newId;
-		result.calendar = this._calEvent.calendar;
+//		result.calendar = this._calEvent.calendar;
+		result.calendar = this.calendar;
 
 		if (this._newStartDate !== undefined) result.startDate = this.startDate.clone();
 		if (this._newEndDate !== undefined) result.endDate = this.endDate.clone();
@@ -1952,13 +1953,7 @@ catch(err){
 	cloneToCalEvent: function cloneToCalEvent(aCalEvent)
 	{
 		//this.logInfo("cloneToCalEvent: start: this.calendarItemType:"+this.calendarItemType);
-//		if (this.calendarItemType == "RecurringMaster") {
-//			this._calEvent = aCalEvent.cloneShallow();
-//		}
-//		else {
 			this._calEvent = aCalEvent.clone();
-//		}
-		//this.logInfo("cloneToCalEvent: title:"+this.title+",\nthis._calEvent.hashId:"+this._calEvent.hashId+"\naCalEvent.hashId:"+aCalEvent.hashId);
 	},
 
 	//readonly attribute AUTF8String subject;
@@ -3266,5 +3261,22 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 }
 
+function NSGetFactory(cid) {
+
+	try {
+		if (!NSGetFactory.mivExchangeBaseItem) {
+			// Load main script from lightning that we need.
+			NSGetFactory.mivExchangeBaseItem = XPCOMUtils.generateNSGetFactory([mivExchangeBaseItem]);
+			
+	}
+
+	} catch(e) {
+		Components.utils.reportError(e);
+		dump(e);
+		throw e;
+	}
+
+	return NSGetFactory.mivExchangeBaseItem(cid);
+} 
 
 

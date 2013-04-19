@@ -52,6 +52,10 @@ mivExchangeTodo.prototype = {
 	__proto__ : mivExchangeBaseItem.prototype,
 
 	QueryInterface : XPCOMUtils.generateQI([Ci.mivExchangeTodo,
+				Ci.mivExchangeBaseItem,
+				Ci.calIInternalShallowCopy,
+				Ci.calITodo,
+				Ci.calIItemBase,
 				Ci.nsIClassInfo,
 				Ci.nsISupports]),
 
@@ -67,14 +71,11 @@ mivExchangeTodo.prototype = {
 
 	getInterfaces : function _getInterfaces(count) 
 	{
-/*		var ifaces = [Ci.mivExchangeTodo,
+		var ifaces = [Ci.mivExchangeTodo,
 				Ci.mivExchangeBaseItem,
+				Ci.calIInternalShallowCopy,
 				Ci.calITodo,
 				Ci.calIItemBase,
-				Ci.nsIClassInfo,
-				Ci.nsISupports];
-*/
-		var ifaces = [Ci.mivExchangeTodo,
 				Ci.nsIClassInfo,
 				Ci.nsISupports];
 
@@ -295,7 +296,7 @@ mivExchangeTodo.prototype = {
 	{
 		//this.logInfo("get mileage 1: title:"+this.title);
 		if (!this._mileage) {
-			this._mileage = this.getTagValue("t:Mileage", "0");
+			this._mileage = this.getTagValue("t:Mileage", "");
 		}
 		return this._mileage;
 	},
@@ -314,7 +315,7 @@ mivExchangeTodo.prototype = {
 	{
 		//this.logInfo("get billingInformation 1: title:"+this.title);
 		if (!this._billingInformation) {
-			this._billingInformation = this.getTagValue("t:BillingInformation", "0");
+			this._billingInformation = this.getTagValue("t:BillingInformation", "");
 		}
 		return this._billingInformation;
 	},
@@ -737,4 +738,4 @@ function NSGetFactory(cid) {
 
 	return NSGetFactory.mivExchangeTodo(cid);
 } 
-dump(" -- mivEchangeTodo\n");
+

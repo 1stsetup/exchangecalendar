@@ -459,7 +459,6 @@ mivExchangeEvent.prototype = {
 		return updates;
 	},
 
-
 };
 
 function NSGetFactory(cid) {

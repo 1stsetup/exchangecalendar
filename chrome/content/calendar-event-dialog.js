@@ -49,45 +49,33 @@ exchEventDialog.prototype = {
 
 	onAcceptCallback: function _onAcceptCallback(aItem, aCalendar, aOriginalItem, aIsClosing)
 	{
-		var newItem = aItem.clone();
-		if ((cal.isEvent(newItem)) && (aCalendar.type == "exchangecalendar")) {
-			if (!newItem.className) {
-				newItem = Cc["@1st-setup.nl/exchange/calendarevent;1"]
+		if ((cal.isEvent(aItem)) && (aCalendar.type == "exchangecalendar")) {
+			if (!aItem.className) {
+				var newItem = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 						.createInstance(Ci.mivExchangeEvent);
-				newItem.cloneToCalEvent(newItem);
-
-dump("kweepeer\n");				//aItem = newItem;
-for (var name in newItem){
-	dump(" ~~ "+name+":"+newItem[name]+"\n");
-}
+				newItem.cloneToCalEvent(aItem);
+				aItem = newItem;
 			}
 		}
 
-		if ((!cal.isEvent(newItem)) && (aCalendar.type == "exchangecalendar")) {
+		if ((!cal.isEvent(aItem)) && (aCalendar.type == "exchangecalendar")) {
 			// Save extra exchange fields to item.
-dump("Appel: newItem:"+newItem+", originalItem:"+aOriginalItem+"\n");
-			if (!newItem.className) {
-dump("Peer\n");
-				newItem = Cc["@1st-setup.nl/exchange/calendartodo;1"]
+			if (!aItem.className) {
+				var newItem = Cc["@1st-setup.nl/exchange/calendartodo;1"]
 						.createInstance(Ci.mivExchangeTodo);
-				newItem.cloneToCalEvent(newItem);
-				//aItem = newItem;
+				newItem.cloneToCalEvent(aItem);
+				aItem = newItem;
 			}
 
-dump("pruim: newItem:"+newItem+", originalItem:"+aOriginalItem+"\n");
-dump("pruim2: newItem.totalWork:"+newItem.totalWork+"\n");
-for (var name in newItem.QueryInterface(Ci.mivExchangeTodo)){
-	dump(" ~~ "+name+":"+newItem[name]+"\n");
-}
-			newItem.totalWork = this._document.getElementById("exchWebService-totalWork-count").value;
-			newItem.actualWork = this._document.getElementById("exchWebService-actualWork-count").value;
-			newItem.mileage = this._document.getElementById("exchWebService-mileage-count").value;
-			newItem.billingInformation = this._document.getElementById("exchWebService-billingInformation-count").value;
-			newItem.companies = this._document.getElementById("exchWebService-companies-count").value;
+			aItem.totalWork = this._document.getElementById("exchWebService-totalWork-count").value;
+			aItem.actualWork = this._document.getElementById("exchWebService-actualWork-count").value;
+			aItem.mileage = this._document.getElementById("exchWebService-mileage-count").value;
+			aItem.billingInformation = this._document.getElementById("exchWebService-billingInformation-count").value;
+			aItem.companies = this._document.getElementById("exchWebService-companies-count").value;
 		}
 
 		if (this._oldCallback) {
-			this._oldCallback(newItem, aCalendar, aOriginalItem, aIsClosing);
+			this._oldCallback(aItem, aCalendar, aOriginalItem, aIsClosing);
 		}
 	},
 
@@ -106,7 +94,6 @@ for (var name in newItem.QueryInterface(Ci.mivExchangeTodo)){
 
 			var args = this._window.arguments[0];
 			var item = args.calendarEvent;
-dump("Unload: item:"+args.calendarEvent+"\n");
 			this.updateScreen(item, item.calendar);
 		}
 	},
@@ -132,13 +119,14 @@ dump("Unload: item:"+args.calendarEvent+"\n");
 			this._document.getElementById("exchWebService-owner-hbox").hidden = false;
 			this._document.getElementById("exchWebService-details-separator").hidden = false;
 
-dump("banaan: item:"+item+"\n");
-/*			this._document.getElementById("exchWebService-totalWork-count").value = item.totalWork;
-			this._document.getElementById("exchWebService-actualWork-count").value = item.actualWork;
-			this._document.getElementById("exchWebService-mileage-count").value = item.mileage;
-			this._document.getElementById("exchWebService-billingInformation-count").value = item.billingInformation;
-			this._document.getElementById("exchWebService-companies-count").value = item.companies;
-*/
+			if (item.className) {
+				this._document.getElementById("exchWebService-totalWork-count").value = item.totalWork;
+				this._document.getElementById("exchWebService-actualWork-count").value = item.actualWork;
+				this._document.getElementById("exchWebService-mileage-count").value = item.mileage;
+				this._document.getElementById("exchWebService-billingInformation-count").value = item.billingInformation;
+				this._document.getElementById("exchWebService-companies-count").value = item.companies;
+			}
+
 			// Clear reminder select list for todo
 			this._document.getElementById("reminder-none-separator").hidden = true;
 			this._document.getElementById("reminder-0minutes-menuitem").hidden = true;
@@ -249,7 +237,6 @@ dump("banaan: item:"+item+"\n");
 
 	selectedCalendarChanged: function _selectedCalendarChanged(aMenuList)
 	{
-dump("selectedCalendarChanged\n");
 		updateCalendar();
 
 		this.updateScreen(this._window.calendarItem, getCurrentCalendar());

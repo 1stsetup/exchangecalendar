@@ -22,7 +22,7 @@
 #include "nsIAutoCompleteSearch.idl"
 
 [scriptable, uuid(c073f5cf-15d7-47d4-b30e-9498fd728544)]
-interface mivExchangeTodo : nsIAutoCompleteSearch
+interface mivExchangeAutoCompleteSearch : nsIAutoCompleteSearch
 {
 
 };
