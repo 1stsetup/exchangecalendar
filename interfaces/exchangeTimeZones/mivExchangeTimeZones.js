@@ -214,21 +214,28 @@ mivExchangeTimeZones.prototype = {
 	getCalTimeZoneByExchangeMeetingTimeZone: function _getCalTimeZoneByExchangeMeetingTimeZone(aMeetingTimeZone)
 	{
 		var name;
-		if (!aTimeZoneName) {
+		if (!aMeetingTimeZone) {
 			return null;
 		}
-		if (aTimeZoneName.indexOf(") ") > -1) {
-			name = aTimeZoneName.substr(aTimeZoneName.indexOf(") "+2)).toLowerCase();
+		if (aMeetingTimeZone.indexOf(") ") > -1) {
+			name = aMeetingTimeZone.substr(aMeetingTimeZone.indexOf(") ")+2).toLowerCase();
 		}
 		else {
 			return null;
 		}
+
+		// The name could contain multiple names comma separated.
+		name = name.replace(/, /g,",");
+		var names = name.split(",");
+
 		var timezones = this.timezoneService.timezoneIds;
 		var tmpResult = null;
 		while (timezones.hasMore()) {
 			var tmpZoneId = timezones.getNext().toLowerCase();
-			if (tmpZoneId.indexOf(name) > -1) {
-				return this.timezoneService.getTimezone(tmpZoneId);
+			for each(var cname in names) {
+				if (tmpZoneId.indexOf(cname) > -1) {
+					return this.timezoneService.getTimezone(tmpZoneId);
+				}
 			}
 		}
 
