@@ -1105,6 +1105,8 @@ exchangeAbDistListDirectory.prototype = {
 		var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
 			.createInstance(Ci.mivExchangeAbCard);
 		newCard.convertExchangeContactToCard(this, contact);
+		newCard.setProperty("exchangeUser", this.user);
+		newCard.setProperty("exchangeServerUrl", this.serverUrl);
 		this.updateList(newCard);
 	},
 
@@ -1271,6 +1273,8 @@ exchangeAbDistListDirectory.prototype = {
 					var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
 						.createInstance(Ci.mivExchangeAbCard);
 					newCard.convertExchangeContactToCard(this, mailbox, calMailbox.mailboxType);
+					newCard.setProperty("exchangeUser", this.user);
+					newCard.setProperty("exchangeServerUrl", this.serverUrl);
 					this.updateList(newCard);
 
 					break;
@@ -1405,6 +1409,8 @@ try {
 					var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
 						.createInstance(Ci.mivExchangeAbCard);
 					newCard.convertExchangeContactToCard(this, contact[0], calMailbox.mailboxType);
+					newCard.setProperty("exchangeUser", this.user);
+					newCard.setProperty("exchangeServerUrl", this.serverUrl);
 					this.updateList(newCard);
 
 					break;

@@ -2,6 +2,7 @@ content exchangecontacts chrome/content/
 
 overlay chrome://messenger/content/messenger.xul               chrome://exchangecontacts/content/exchangeContactsInit.xul
 overlay chrome://messenger/content/addressbook/addressbook.xul chrome://exchangecontacts/content/addressbookOverlay.xul
+overlay chrome://messenger/content/addressbook/abCardOverlay.xul chrome://exchangecontacts/content/abCardOverlay.xul
 
 manifest exchangeAbCard/mivExchangeAbCard.manifest
 manifest exchangeAbDirFactory/exchangeAbDirFactory.manifest

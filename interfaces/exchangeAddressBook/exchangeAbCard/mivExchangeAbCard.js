@@ -542,16 +542,26 @@ mivExchangeAbCard.prototype = {
 				this.setProperty("BirthDay", birthDay.substr(8,2));
 			}
 
+				//dump("!!! Checking if we have a photo element: "+primaryEmail+"\n");
 			this._photo = aExchangeContact.getTagValue("t:Photo", null)
 			if (this._photo) {
-				this.setProperty("PhotoType", "exchangeContactPhoto");
+				this.setProperty("PhotoType", "exchangeContactPhotoInline");
 				this.setProperty("PhotoData", this._photo);
-				//dump("!!! We have a photo: "+primaryEmail+"\n");
+				//dump("!!! We have a photo element: "+primaryEmail+"\n");
 			}
 			else {
-				this.deleteProperty("PhotoType");
-				this.deleteProperty("PhotoData");
+				// See if we have an IsContactPhoto attachment element.
+				var attachments = aExchangeContact.XPath('/t:Attachments/t:FileAttachment[/t:IsContactPhoto="true"]');
+				if (attachments.length > 0) {
+					this.setProperty("PhotoType", "exchangeContactPhotoExternal");
+					this.setProperty("PhotoData", attachments[0].getAttributeByTag("t:AttachmentId", "Id", null));
+				//dump("!!! We have a photo attachment: "+primaryEmail+"\n");
+				}
+				else {
+					this.deleteProperty("PhotoType");
+					this.deleteProperty("PhotoData");
 				//dump("no photo: "+primaryEmail+"\n");
+				}
 			}
 		}
 	},  

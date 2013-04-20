@@ -20,7 +20,11 @@
  *
  *
  * ***** BEGIN LICENSE BLOCK *****/
+var Cc = Components.classes;
+var Ci = Components.interfaces;
 var Cu = Components.utils;
+var Cr = Components.results;
+var components = Components;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
@@ -84,6 +88,14 @@ erSyncContactsFolderRequest.prototype = {
 		var additionalProperties = itemShape.addChildTag("AdditionalProperties", "nsTypes", null);
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Subject");
 //		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "folder:DisplayName"); // Not allowed for this request
+
+		this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
+				.getService(Ci.mivExchangeStatistics);
+
+		if ((this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("2007") == -1) &&
+		    (this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("2010_SP1") == -1)){
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "contacts:Photo");
+		}
 
 		var extendedFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
 		extendedFieldURI.setAttribute("DistinguishedPropertySetId", "Common");

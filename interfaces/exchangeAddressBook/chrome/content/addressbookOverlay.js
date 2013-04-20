@@ -33,6 +33,7 @@ Cu.import("resource:///modules/mailServices.js");
 
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 Cu.import("resource://exchangecalendar/exchangeAbFunctions.js");
+Cu.import("resource://exchangecalendar/erGetAttachments.js");
 
 function exchAddressbookOverlay(aDocument, aWindow)
 {
@@ -194,10 +195,24 @@ exchAddressbookOverlay.prototype = {
 		}
 	},
 
-	photoDisplayHandler: function _photoDisplayHandler(aCard, aImg)
+	photoDisplayHandlerInline: function _photoDisplayHandler(aCard, aImg)
 	{
+		//dump("exchAddressbookOverlay.photoDisplayHandlerInline: aImg:"+aImg.id+"\n");
 		if ((aCard) && (aCard.getProperty("PhotoData"))) {
 			aImg.setAttribute("src", "data:image/jpeg;base64,"+aCard.getProperty("PhotoData"));
+			return true;
+		}
+		else {
+			return false;
+		}
+	},
+
+
+	photoDisplayHandlerExternal: function _photoDisplayHandlerExternal(aCard, aImg)
+	{
+		if ((aCard) && (aCard.getProperty("PhotoData"))) {
+			this.downloadAttachment(aImg, aCard);
+			aImg.setAttribute("src", "chrome://exchangecontacts/content/loading-from-server.png");
 			return true;
 		}
 		else {
@@ -220,7 +235,9 @@ exchAddressbookOverlay.prototype = {
 
 		this._document.getElementById("dirTreeContext").addEventListener("popupshown", this.popupshown, true);
 
-		registerPhotoDisplayHandler("exchangeContactPhoto", self.photoDisplayHandler);
+		registerPhotoDisplayHandler("exchangeContactPhotoInline", function(aCard, aImg){ return self.photoDisplayHandlerInline(aCard, aImg);});
+		registerPhotoDisplayHandler("exchangeContactPhotoExternal", function(aCard, aImg){ return self.photoDisplayHandlerExternal(aCard, aImg);});
+		this.globalFunctions.LOG("exchAddressbookOverlay.onLoad");
 	},
 
 	unLoad: function _unLoad()
@@ -232,6 +249,39 @@ exchAddressbookOverlay.prototype = {
 
 		this._document.getElementById("dirTreeContext").removeEventListener("popupshown", this.popupshown, false);
 	},
+
+	downloadAttachment: function _downloadAttachment(aImg, aCard)
+	{
+		this.globalFunctions.LOG("exchAddressbookOverlay.downloadAttachment");
+		if (!aImg) { return; }
+
+		var self = this;
+
+		var tmpObject = new erGetAttachmentsRequest(
+			{user: aCard.getProperty("exchangeUser"), 
+			 serverUrl:  aCard.getProperty("exchangeServerUrl") ,
+			 img: aImg,
+			 attachmentIds: [aCard.getProperty("PhotoData")]}, 
+			function(aExchangeRequest, aAttachments){ self.onDownloadAttachmentOk(aExchangeRequest, aAttachments);}, 
+			function(aExchangeRequest, aCode, aMsg){ self.onDownloadAttachmentError(aExchangeRequest, aCode, aMsg);});
+
+	},
+
+	onDownloadAttachmentOk: function _onDownloadAttachmentOk(aExchangeRequest, aAttachments)
+	{
+		this.globalFunctions.LOG("exchAddressbookOverlay.onDownloadAttachmentOk:"+aAttachments.length);
+
+		if (aAttachments.length > 0) {
+			aExchangeRequest.argument.img.setAttribute("src", "data:image/jpeg;base64,"+aAttachments[0].content);
+		}
+	},
+
+	onDownloadAttachmentError: function _onDownloadAttachmentError(aExchangeRequest, aCode, aMsg)
+	{
+		this.globalFunctions.LOG("exchAddressbookOverlay.onDownloadAttachmentError: aCode:"+aCode+", aMsg:"+aMsg);
+		aExchangeRequest.argument.img.setAttribute("src", "chrome://exchangecontacts/content/error-loading-from-server.png");
+	},
+
 }
 
 var tmpAddressbookOverlay = new exchAddressbookOverlay(document, window);
