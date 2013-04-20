@@ -20,7 +20,11 @@
  *
  *
  * ***** BEGIN LICENSE BLOCK *****/
+var Cc = Components.classes;
+var Ci = Components.interfaces;
 var Cu = Components.utils;
+var Cr = Components.results;
+var components = Components;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
@@ -72,11 +76,18 @@ erGetContactsRequest.prototype = {
 
 		var additionalProperties = itemShape.addChildTag("AdditionalProperties", "nsTypes", null);
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "contacts:HasPicture");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "contacts:HasAttachments");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "contacts:Attachments");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "contacts:Photo");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:HasAttachments");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Attachments");
 
-		var extendedFieldURI = itemShape.addChildTag("AdditionalProperties", "nsTypes", null).addChildTag("ExtendedFieldURI", "nsTypes", null);
+		this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
+				.getService(Ci.mivExchangeStatistics);
+
+		if ((this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("2007") == -1) &&
+		    (this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("2010_SP1") == -1)){
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "contacts:Photo");
+		}
+
+		var extendedFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
 		extendedFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
 		extendedFieldURI.setAttribute("PropertyId", MAPI_PidTagBody);
 		extendedFieldURI.setAttribute("PropertyType", "String");

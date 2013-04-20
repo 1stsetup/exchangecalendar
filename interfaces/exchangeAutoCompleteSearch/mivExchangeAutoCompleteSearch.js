@@ -163,7 +163,14 @@ mivExchangeAutoCompleteSearch.prototype = {
 
 		this._searches[uuid].autoCompleteResult.setSearchString(searchString);
 		this._searches[uuid]["rootDir"] = MailServices.ab.getDirectory("exchWebService-contactRoot-directory://?"+query);
-			
+
+/*		if (this._searches[uuid]["rootDir"]) {
+			var childCards = this._searches[uuid]["rootDir"].childCards;
+			while (childCards.hasMoreElements()) {
+				this._searches[uuid].autoCompleteResult.addResult(childCards.getNext());
+			}
+		}
+*/			
 	},
 
 	onItemAdded: function _onItemAdded(parentDir, item) {
@@ -176,6 +183,7 @@ mivExchangeAutoCompleteSearch.prototype = {
 			// Check to which search it belongs
 			for each(var search in this._searches) {
 				if (rightDir.URI.indexOf(search.query) > -1) {
+dump(" 1.@@@ displayName:"+item.displayName+", localId:"+item.localId+"\n");
 					search.autoCompleteResult.addResult(item);
 				}
 			}

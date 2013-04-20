@@ -245,6 +245,8 @@ mivExchangeAutoCompleteResult.prototype = {
 		var cardExists = false;
 		for each(var card in this._cards) {
 			if (card.localId == aCard.localId) {
+dump(" 2 @@@ displayName:"+aCard.displayName+", localId:"+aCard.localId+"\n");
+
 				cardExists = true;
 				break;
 			}
@@ -252,7 +254,9 @@ mivExchangeAutoCompleteResult.prototype = {
 		if (!cardExists) {
 //dump("addResult:"+aCard.displayName+", primaryEmail:"+aCard.primaryEmail+", length:"+this._cards.length+"\n");
 //			if ((aCard.primaryEmail != "") && (aCard.primaryEmail.indexOf("@") > -1)) {
+dump(" 3 @@@ displayName:"+aCard.displayName+", primaryEmail:"+aCard.primaryEmail+"\n");
 			if (((aCard.primaryEmail != "")  && (aCard.primaryEmail.indexOf("@") > -1)) || (aCard.isMailList)) {
+dump(" 4 @@@ displayName:"+aCard.displayName+", localId:"+aCard.localId+"\n");
 				this._cards.push(aCard);
 			}
 		}
