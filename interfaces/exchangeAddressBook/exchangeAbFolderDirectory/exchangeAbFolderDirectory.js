@@ -92,6 +92,10 @@ function exchangeAbFolderDirectory() {
 
 	this.observerService = Cc["@mozilla.org/observer-service;1"]  
 	                          .getService(Ci.nsIObserverService); 
+
+	if (Cc["@mozilla.org/activity-manager;1"]) {
+		this.activityManager = Cc["@mozilla.org/activity-manager;1"].getService(nsIAM);  
+	}
 }
 
 exchangeAbFolderDirectory.prototype = {
@@ -100,7 +104,6 @@ exchangeAbFolderDirectory.prototype = {
 	contractID: "@mozilla.org/addressbook/directory;1?type=exchWebService-contactFolder-directory",
 	classDescription: "Exchange 2007/2010 Contacts Folder directory",
 
-	activityManager : Cc["@mozilla.org/activity-manager;1"].getService(nsIAM),  
 
 	// void getInterfaces(out PRUint32 count, [array, size_is(count), retval] out nsIIDPtr array);
 	QueryInterface: XPCOMUtils.generateQI([Ci,exchangeAbFolderDirectory,
@@ -1489,6 +1492,8 @@ try {
 
 	addActivity: function _addActivity(aTitle, aText, aStartDate, aEndDate)
 	{
+		if (!this.activityManager) return;
+
 		let event = Cc["@mozilla.org/activity-event;1"].createInstance(nsIAE);  
   
 		event.init(aTitle,  
