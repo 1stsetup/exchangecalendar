@@ -20,10 +20,29 @@ var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils;
 
-// Add the exchangeAutoComplete option.
-if (document.getElementById("addressCol2#1")) {
-	var autocompletesearch = document.getElementById("addressCol2#1").getAttribute("autocompletesearch");
-	if (autocompletesearch.indexOf("exchangeAutoCompleteSearch") == -1) {
-		document.getElementById("addressCol2#1").setAttribute("autocompletesearch", autocompletesearch + " exchangeAutoCompleteSearch");
-	}
+function exchAddressingWidgetOverlay(aDocument, aWindow)
+{
+	this._document = aDocument;
+	this._window = aWindow;
+
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
 }
+
+exchAddressingWidgetOverlay.prototype = {
+	onLoad: function _onLoad()
+	{
+		// Add the exchangeAutoComplete option.
+		if (this._document.getElementById("addressCol2#1")) {
+			var autocompletesearch = this._document.getElementById("addressCol2#1").getAttribute("autocompletesearch");
+			if (autocompletesearch.indexOf("exchangeAutoCompleteSearch") == -1) {
+				this._document.getElementById("addressCol2#1").setAttribute("autocompletesearch", autocompletesearch + " exchangeAutoCompleteSearch");
+			}
+		}
+	},
+}
+
+
+var tmpAddressingWidgetOverlay = new exchAddressingWidgetOverlay(document, window);
+window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpAddressingWidgetOverlay.onLoad(); }, true);
+
