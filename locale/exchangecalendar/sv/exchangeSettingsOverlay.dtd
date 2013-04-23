@@ -22,17 +22,17 @@
 <!ENTITY menuitem.label.ecfolderbase.junkemail "Skräppost">
 <!ENTITY menuitem.label.ecfolderbase.searchfolders "Sökmappar">
 <!ENTITY menuitem.label.ecfolderbase.version2010 "-- Nedanstående gäller endast Exchange2010 --">
-<!ENTITY menuitem.label.ecfolderbase.recoverableitemsroot "Dumpster root">
-<!ENTITY menuitem.label.ecfolderbase.recoverableitemsdeletions "Dumpster deletions">
-<!ENTITY menuitem.label.ecfolderbase.recoverableitemsversion "Dumpster versions">
-<!ENTITY menuitem.label.ecfolderbase.recoverableitemspurges "Dumpster purges">
-<!ENTITY menuitem.label.ecfolderbase.archiveroot "Root archive">
-<!ENTITY menuitem.label.ecfolderbase.archivemsgfolderroot "Root archive message">
-<!ENTITY menuitem.label.ecfolderbase.archivedeleteditems "Archive deleted items">
-<!ENTITY menuitem.label.ecfolderbase.archiverecoverableitemsroot "Archive recoverable items root">
-<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsdeletions "Archive recoverable items deletions">
-<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsversions "Archive recoverable items versions">
-<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemspurges "Archive recoverable items purges">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsroot "Avfallscontainerns rot">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsdeletions "Avfallscontainer, borttaget">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsversion "Avfallscontainer, versioner">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemspurges "Avfallscontainer, utrensat">
+<!ENTITY menuitem.label.ecfolderbase.archiveroot "Arkivrot">
+<!ENTITY menuitem.label.ecfolderbase.archivemsgfolderroot "Arkiv, meddelanden">
+<!ENTITY menuitem.label.ecfolderbase.archivedeleteditems "Arkiv, borttaget">
+<!ENTITY menuitem.label.ecfolderbase.archiverecoverableitemsroot "Arkiv, återvinningsbart">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsdeletions "Arkiv, återvinningsbart, borttaget">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsversions "Arkiv, återvinningsbart, versioner">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemspurges "Arkiv, återvinningsbart, utrensat">
 
 <!ENTITY button.label.autodiscovercheck "Utforska automatiskt">
 <!ENTITY button.label.serverandmailboxcheck "Kontrollera server och E-postlåda">
