@@ -29,14 +29,14 @@
 
 <!ENTITY exchangeWebService.preferences.tab.others "Övrigt">
 <!ENTITY exchangeWebService.preference.others.prefs.label "Kommunikationsinställningar:">
-<!ENTITY exchangeWebService.preference.others.prefs.retryCount.label "Maximalt antal försök att kommunicera med exchange:">
+<!ENTITY exchangeWebService.preference.others.prefs.retryCount.label "Maximalt antal försök att kommunicera med Exchange:">
 
-<!ENTITY exchangeWebService.preference.updateFunction.label "Addon update function:">
-<!ENTITY exchangeWebService.preference.checkForUpdates.label "Automatically check for a new addon version online when starting Thunderbird.">
-<!ENTITY exchangeWebService.preference.warnForUpdates.label "Show warning when a new version is available. So you can easily install it.">
+<!ENTITY exchangeWebService.preference.updateFunction.label "Uppdateringsfunktion för tillägg:">
+<!ENTITY exchangeWebService.preference.checkForUpdates.label "Kontrollera automatiskt om en ny version av tillägget finns tillgänglig när Thunderbird startar.">
+<!ENTITY exchangeWebService.preference.warnForUpdates.label "Visa ett varningsmeddelande när en ny version finns tillgänglig.">
 
-<!ENTITY exchangeWebService.preference.loadbalancer.debug.caption "Loadbalancer:">
-<!ENTITY exchangeWebService.preference.loadbalancer.prefs.label "Loadbalancer:">
-<!ENTITY exchangeWebService.preference.loadbalancer.prefs.maxJobs.label "Maximum number of simultanious request to exchange server:">
-<!ENTITY exchangeWebService.preference.loadbalancer.prefs.sleepBetweenJobs.label "Minimum time, to wait, between request to exchange server:">
+<!ENTITY exchangeWebService.preference.loadbalancer.debug.caption "Lastbalansering:">
+<!ENTITY exchangeWebService.preference.loadbalancer.prefs.label "Lastbalansering:">
+<!ENTITY exchangeWebService.preference.loadbalancer.prefs.maxJobs.label "Maximalt antal samtidiga förfrågningar mot Exchange-server:">
+<!ENTITY exchangeWebService.preference.loadbalancer.prefs.sleepBetweenJobs.label "Minsta väntetid mellan förfrågningar mot Exchange-server:">
 
