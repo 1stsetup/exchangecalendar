@@ -164,7 +164,7 @@ erGetItemsRequest.prototype = {
 			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:MeetingWorkspaceUrl");
 			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:UID");
 			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:RecurrenceId");
-			if (this.argument.ServerVersion.indexOf("Exchange2010") == 0) {
+			if ((this.argument.ServerVersion.indexOf("Exchange2010") > -1) || (this.argument.ServerVersion.indexOf("Exchange2013") > -1 )) {
 				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:StartTimeZone");
 				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:EndTimeZone");
 			}

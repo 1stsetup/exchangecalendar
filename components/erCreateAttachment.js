@@ -121,7 +121,7 @@ erCreateAttachmentRequest.prototype = {
 
 			var attachment = exchWebService.commonFunctions.xmlToJxon('<nsTypes:FileAttachment xmlns:nsTypes="'+nsTypesStr+'"/>');
 			attachment.addChildTag("Name", "nsTypes", this.createAttachments[index].uri.QueryInterface(Ci.nsIFileURL).file.leafName);
-			if (this.argument.ServerVersion.indexOf("Exchange2010") == 0) {
+			if ((this.argument.ServerVersion.indexOf("Exchange2010") > -1) || (this.argument.ServerVersion.indexOf("Exchange2013") > -1)) {
 				attachment.addChildTag("Size", "nsTypes", fileData.size);
 			}
 			attachment.addChildTag("Content", "nsTypes", fileData.content);

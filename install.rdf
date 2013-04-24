@@ -5,7 +5,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>exchangecalendar@extensions.1st-setup.nl</em:id>
-    <em:version>3.2.0-Beta9-bug162</em:version>
+    <em:version>3.2.0-Beta10</em:version>
 
     <em:targetApplication>
       <Description>
@@ -25,8 +25,9 @@
       </Description>
     </em:targetApplication>
 
-    <em:name>Exchange 2007/2010 Calendar and Tasks Provider</em:name>
+    <em:name>Exchange 2007/2010/2013 Calendar, Tasks, Contacts and GAL Provider</em:name>
     <em:description>Allows you to sync Calendar and Tasks with your Microsoft Exchange 2007/2010 EWS server from within lightning.
+You can also search your contacts folder and the Exchange Global Address List (Read-Only).
 
 You can view, delete, create and update calendar and task/todo items. And manage "Out of Office" settings.
 
