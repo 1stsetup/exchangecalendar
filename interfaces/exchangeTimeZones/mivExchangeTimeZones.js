@@ -101,7 +101,6 @@ mivExchangeTimeZones.prototype = {
 		this.logInfo("addURL: aURL:"+aURL+", version:"+version, 1);
 
 		if (!this._timeZones[version]) {
-
 			var self = this;
 			this.loadBalancer.addToQueue({ calendar: aCalendar,
 					 ecRequest:erGetTimeZonesRequest,

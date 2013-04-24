@@ -59,10 +59,10 @@ function erGetTimeZonesRequest(aArgument, aCbOk, aCbError, aListener)
 	this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
 			.getService(Ci.mivExchangeStatistics);
 
-	if (this.exchangeStatistics.getServerVersion(aArgument.serverUrl).indexOf("2010") == -1) {
+/*	if (this.exchangeStatistics.getServerVersion(aArgument.serverUrl).indexOf("2010") == -1) {
 		return;
 	}
-
+*/
 	this.mCbOk = aCbOk;
 	this.mCbError = aCbError;
 
@@ -95,13 +95,13 @@ erGetTimeZonesRequest.prototype = {
 		req.setAttribute("ReturnFullTimeZoneData", "true");
 
 		this.parent.xml2jxon = true;
-		//dump("erGetTimeZonesRequest.onSendOk:"+String(req)+"\n");
+		//dump("erGetTimeZonesRequest.execute:"+req.toString()+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erGetTimeZonesRequest.onSendOk:"+String(aResp));
+		exchWebService.commonFunctions.LOG("erGetTimeZonesRequest.onSendOk:"+String(aResp));
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
 		if (rm.length > 0) {

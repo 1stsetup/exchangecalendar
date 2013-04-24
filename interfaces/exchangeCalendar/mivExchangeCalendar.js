@@ -7118,10 +7118,12 @@ return;*/
 			}
 		}
 
-		var prefServerVersion = this.globalFunctions.safeGetCharPref(this.prefs,"lastServerVersion", null);
-		if (prefServerVersion) {
-			if (this.debug) this.logInfo("Restored prefServerVersion from prefs.js:"+prefServerVersion);
-			this.exchangeStatistics.getServerVersion(this.serverUrl, prefServerVersion);
+		if (!this.prefServerVersion) {
+			this.prefServerVersion = this.globalFunctions.safeGetCharPref(this.prefs,"lastServerVersion", null);
+		}
+		if (this.prefServerVersion) {
+			if (this.debug) this.logInfo("Restored prefServerVersion from prefs.js:"+this.prefServerVersion);
+			this.exchangeStatistics.setServerVersion(this.serverUrl, this.prefServerVersion);
 		}
 
 		if (this.isOffline) return;
@@ -7398,6 +7400,14 @@ return;*/
 
 	getTimeZones: function _getTimeZones()
 	{
+		if (!this.prefServerVersion) {
+			this.prefServerVersion = this.globalFunctions.safeGetCharPref(this.prefs,"lastServerVersion", null);
+		}
+		if (this.prefServerVersion) {
+			if (this.debug) this.logInfo("Restored prefServerVersion from prefs.js:"+this.prefServerVersion);
+			this.exchangeStatistics.setServerVersion(this.serverUrl, this.prefServerVersion);
+		}
+
 		this.timeZones.addURL(this.serverUrl, this.user, this);
 	},
 
