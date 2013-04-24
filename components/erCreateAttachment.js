@@ -37,6 +37,8 @@
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils;
+var Cr = Components.results;
+var components = Components;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
@@ -116,12 +118,15 @@ erCreateAttachmentRequest.prototype = {
 
 		var attachments = req.addChildTag("Attachments", "nsMessages", null);
 
+		this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
+				.getService(Ci.mivExchangeStatistics);
+
 		for (var index in this.createAttachments) {
 			var fileData = this.readFile(this.createAttachments[index].uri.QueryInterface(Ci.nsIFileURL).file);
 
 			var attachment = exchWebService.commonFunctions.xmlToJxon('<nsTypes:FileAttachment xmlns:nsTypes="'+nsTypesStr+'"/>');
 			attachment.addChildTag("Name", "nsTypes", this.createAttachments[index].uri.QueryInterface(Ci.nsIFileURL).file.leafName);
-			if ((this.argument.ServerVersion.indexOf("Exchange2010") > -1) || (this.argument.ServerVersion.indexOf("Exchange2013") > -1)) {
+			if ((this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2010") > -1) || (this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2013") > -1)) {
 				attachment.addChildTag("Size", "nsTypes", fileData.size);
 			}
 			attachment.addChildTag("Content", "nsTypes", fileData.content);

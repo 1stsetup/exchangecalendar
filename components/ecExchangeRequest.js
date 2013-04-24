@@ -840,6 +840,7 @@ catch(err){
 		else {
 			msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", version);
 		}
+		
 		msg.addChildTag("Body", "nsSoap", null).addChildTagObject(aReq);
 
 		var tmpStr = xml_tag + msg.toString();

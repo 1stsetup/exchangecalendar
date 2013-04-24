@@ -1103,7 +1103,7 @@ try {
 
 	addToQueue: function _addToQueue(aRequest, aArgument, aCbOk, aCbError, aListener)
 	{
-		if (!aArgument["ServerVersion"]) aArgument["ServerVersion"] = this.exchangeStatistics.getServerVersion(this.serverUrl);
+		//if (!aArgument["ServerVersion"]) aArgument["ServerVersion"] = this.exchangeStatistics.getServerVersion(this.serverUrl);
 
 		this.loadBalancer.addToQueue({ calendar: this,
 				 ecRequest:aRequest,

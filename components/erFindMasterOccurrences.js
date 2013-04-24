@@ -36,7 +36,11 @@
  *
  * ***** BEGIN LICENSE BLOCK *****/
 
+var Cc = Components.classes;
+var Ci = Components.interfaces;
 var Cu = Components.utils;
+var Cr = Components.results;
+var components = Components;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
@@ -172,7 +176,10 @@ erFindMasterOccurrencesRequest.prototype = {
 			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:UID");
 			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:RecurrenceId");
 			
-			if ((this.argument.ServerVersion.indexOf("Exchange2010") > -1) || (this.argument.ServerVersion.indexOf("Exchange2013") > -1)) {
+			this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
+					.getService(Ci.mivExchangeStatistics);
+
+			if ((this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2010") > -1) || (this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2013") > -1)) {
 				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:StartTimeZone");
 				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:EndTimeZone");
 				
