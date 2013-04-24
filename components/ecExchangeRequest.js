@@ -43,6 +43,8 @@ var components = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
+Cu.import("resource://calendar/modules/calUtils.jsm");
+
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 
 var EXPORTED_SYMBOLS = ["ExchangeRequest", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponseStr1", "nsAutodiscoverResponseStr2", "nsAutodiscover2010Str", "nsWSAStr", "nsXSIStr", "xml_tag"];
@@ -100,6 +102,12 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.observerService = Cc["@mozilla.org/observer-service;1"]  
 	                          .getService(Ci.nsIObserverService); 
+
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+
+	this.timeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
+				.getService(Ci.mivExchangeTimeZones);
 
 }
 
@@ -833,14 +841,23 @@ catch(err){
 		var msg = exchWebService.commonFunctions.xmlToJxon('<nsSoap:Envelope xmlns:nsSoap="'+nsSoapStr+'" xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
 		var version = this.exchangeStatistics.getServerVersion(this.mArgument.serverUrl);
+		
+		var header = msg.addChildTag("Header", "nsSoap", null);
 
 		if (this.mArgument.ServerVersion) {
-			msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", this.mArgument.ServerVersion);
+			header.addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", this.mArgument.ServerVersion);
 		}
 		else {
-			msg.addChildTag("Header", "nsSoap", null).addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", version);
+			header.addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", version);
 		}
 		
+		var exchTimeZone = this.timeZones.getExchangeTimeZoneByCalTimeZone(this.globalFunctions.ecDefaultTimeZone(), this.mArgument.serverUrl, cal.now());
+
+		if (exchTimeZone) {
+				exchTimeZone.timeZone.tagName = "TimeZoneDefinition";
+				header.addChildTag("TimeZoneContext", "nsTypes", null).addChildTagObject(exchTimeZone.timeZone);
+		}
+
 		msg.addChildTag("Body", "nsSoap", null).addChildTagObject(aReq);
 
 		var tmpStr = xml_tag + msg.toString();

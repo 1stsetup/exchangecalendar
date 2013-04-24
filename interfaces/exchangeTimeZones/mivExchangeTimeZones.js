@@ -116,9 +116,8 @@ mivExchangeTimeZones.prototype = {
 
 	},
 
-	getExchangeTimeZoneIdByCalTimeZone: function _getExchangeTimeZoneIdByCalTimeZone(aCalTimeZone, aURL, aIndexDate)
+	getExchangeTimeZoneByCalTimeZone: function _getExchangeTimeZoneByCalTimeZone(aCalTimeZone, aURL, aIndexDate)
 	{
-
 		var version = this.exchangeStatistics.getServerVersion(aURL);
 
 		this.logInfo("getExchangeTimeZoneIdByCalTimeZone:"+aCalTimeZone.tzid+", aURL:"+aURL+", version:"+version, 1);
@@ -163,7 +162,7 @@ mivExchangeTimeZones.prototype = {
 					if (tmpScore > finalScore) {
 						//dump("   We also have name matching elements.\n");
 						finalScore = tmpScore;
-						weHaveAMatch = exchangeTimeZone.id;
+						weHaveAMatch = exchangeTimeZone;
 					}
 				}
 			}
@@ -172,6 +171,26 @@ mivExchangeTimeZones.prototype = {
 			return weHaveAMatch;
 		}
 
+		return null;
+	},
+	
+	getExchangeTimeZoneIdByCalTimeZone: function _getExchangeTimeZoneIdByCalTimeZone(aCalTimeZone, aURL, aIndexDate)
+	{
+
+		var exchangeTimeZone = this.getExchangeTimeZoneByCalTimeZone(aCalTimeZone, aURL, aIndexDate);
+		if (exchangeTimeZone) {
+			return exchangeTimeZone.id;
+		}
+		return "UTC";
+	},
+
+	getExchangeTimeZoneNameByCalTimeZone: function _getExchangeTimeZoneNameByCalTimeZone(aCalTimeZone, aURL, aIndexDate)
+	{
+
+		var exchangeTimeZone = this.getExchangeTimeZoneByCalTimeZone(aCalTimeZone, aURL, aIndexDate);
+		if (exchangeTimeZone) {
+			return exchangeTimeZone.name;
+		}
 		return "UTC";
 	},
 

@@ -22,6 +22,8 @@
 #include "nsISupports.idl"
 #include "calITimezone.idl"
 #include "calIDateTime.idl"
+#include "mivExchangeTimeZone.idl"
+
 
 interface mivIxml2jxon;
 
@@ -30,7 +32,9 @@ interface mivExchangeTimeZones : nsISupports
 {
 
   void addURL(in AUTF8String aURL, in AUTF8String aUser, in jsval aCalendar);
+  mivExchangeTimeZone getExchangeTimeZoneByCalTimeZone(in calITimezone aCalTimeZone, in AUTF8String aURL, in calIDateTime aIndexDate);
   AUTF8String getExchangeTimeZoneIdByCalTimeZone(in calITimezone aCalTimeZone, in AUTF8String aURL, in calIDateTime aIndexDate);
+  AUTF8String getExchangeTimeZoneNameByCalTimeZone(in calITimezone aCalTimeZone, in AUTF8String aURL, in calIDateTime aIndexDate);
 
   calITimezone getCalTimeZoneByExchangeMeetingTimeZone(in AUTF8String aTimeZoneName);
   calITimezone getCalTimeZoneByExchangeTimeZone(in mivIxml2jxon aExchangeTimeZone, in AUTF8String aURL, in calIDateTime aIndexDate);

@@ -329,17 +329,26 @@ mivExchangeEvent.prototype = {
 
 					// We make a non-UTC datetime value for this.globalFunctions.
 					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
-					var exchStart = cal.toRFC3339(tmpStart).substr(0, 19)+"Z"; //cal.toRFC3339(tmpStart).length-6);
+//					var exchStart = cal.toRFC3339(tmpStart).substr(0, 19)+"Z"; //cal.toRFC3339(tmpStart).length-6);
+					var exchStart = cal.toRFC3339(tmpStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
 				}
 				else {
 					// We set in bias advanced to UCT datetime values for this.globalFunctions.
-					var exchStart = cal.toRFC3339(tmpStart);
+//					var exchStart = cal.toRFC3339(tmpStart.getInTimezone(cal.UTC()));
+					var exchStart = cal.toRFC3339(tmpStart).substr(0, 19);
 				}
 				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "Start", exchStart);
 
 				if (!this.calendar.isVersion2007) {
-					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:StartTimeZone Id="'+this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl, this._newStartDate)+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var exchTimeZone = this.timeZones.getExchangeTimeZoneByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl, this._newStartDate);
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:StartTimeZone Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var periods = exchTimeZone.timeZone.getTag("t:Periods");
+					var transitionsGroups = exchTimeZone.timeZone.getTag("t:TransitionsGroups");
+					var transitions = exchTimeZone.timeZone.getTag("t:Transitions");
+					tmpTimeZone.addChildTagObject(periods);
+					tmpTimeZone.addChildTagObject(transitionsGroups);
+					tmpTimeZone.addChildTagObject(transitions);
 
 					this.addSetItemField(updates, "StartTimeZone", tmpTimeZone, null, true);
 				}
@@ -356,17 +365,26 @@ mivExchangeEvent.prototype = {
 
 					// We make a non-UTC datetime value for this.globalFunctions.
 					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
-					var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19)+"Z"; //cal.toRFC3339(tmpEnd).length-6);
+//					var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19)+"Z"; //cal.toRFC3339(tmpEnd).length-6);
+					var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19); //cal.toRFC3339(tmpEnd).length-6);
 				}
 				else {
 					// We set in bias advanced to UCT datetime values for this.globalFunctions.
-					var exchEnd = cal.toRFC3339(tmpEnd);
+//					var exchEnd = cal.toRFC3339(tmpEnd.getInTimezone(cal.UTC()));
+					var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19);
 				}
 				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "End", exchEnd);
 
 				if (!this.calendar.isVersion2007) {
-					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:EndTimeZone Id="'+this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newEndDate.timezone, this.calendar.serverUrl, this._newEndDate)+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var exchTimeZone = this.timeZones.getExchangeTimeZoneByCalTimeZone(this._newEndDate.timezone, this.calendar.serverUrl, this._newEndDate);
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:EndTimeZone Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var periods = exchTimeZone.timeZone.getTag("t:Periods");
+					var transitionsGroups = exchTimeZone.timeZone.getTag("t:TransitionsGroups");
+					var transitions = exchTimeZone.timeZone.getTag("t:Transitions");
+					tmpTimeZone.addChildTagObject(periods);
+					tmpTimeZone.addChildTagObject(transitionsGroups);
+					tmpTimeZone.addChildTagObject(transitions);
 
 					this.addSetItemField(updates, "EndTimeZone", tmpTimeZone, null, true);
 				}

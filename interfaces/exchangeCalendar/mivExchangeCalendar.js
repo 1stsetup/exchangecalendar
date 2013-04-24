@@ -3844,8 +3844,8 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		if (isEvent(aItem)) {
-//			var startDateStr = cal.toRFC3339(startDate.getInTimezone(this.globalFunctions.ecUTC()));
-			var startDateStr = cal.toRFC3339(originalDate.getInTimezone(this.globalFunctions.ecUTC()));
+			var startDateStr = cal.toRFC3339(startDate.getInTimezone(this.globalFunctions.ecUTC()));
+//			var startDateStr = cal.toRFC3339(originalDate.getInTimezone(this.globalFunctions.ecUTC()));
 		}
 		else {
 			// We make a non-UTC datetime value for this.globalFunctions.
@@ -4255,8 +4255,8 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 		else {
 			// We set in bias advanced to UCT datetime values for this.globalFunctions.
-			var exchStart = cal.toRFC3339(tmpStart);
-			var exchEnd = cal.toRFC3339(tmpEnd);
+			var exchStart = cal.toRFC3339(tmpStart.getInTimezone(cal.UTC()));
+			var exchEnd = cal.toRFC3339(tmpEnd.getInTimezone(cal.UTC()));
 		}
 
 		var masterAlarmOn = true;
