@@ -277,6 +277,47 @@ mivExchangeEvent.prototype = {
 				this.addSetItemField(updates, "Importance", this._newPriority);
 			}
 
+			// Recurrence rule. Michel
+			var recurrenceInfoChanged;
+			if (this._recurrenceInfo) {
+				// We had recurrenceInfo. Lets see if it changed.
+				this.logInfo("We had recurrenceInfo. Lets see if it changed.");
+				if (this._newRecurrenceInfo !== undefined) {
+					// It was changed or removed
+					if (this._newRecurrenceInfo === null) {
+						// It was removed
+						this.logInfo("We had recurrenceInfo. And it is removed.");
+						recurrenceInfoChanged = false;
+						this._nonPersonalDataChanged = true;
+						this.addDeleteItemField(updates, "Recurrence");
+					}
+					else {
+						// See if something changed
+						this.logInfo("We had recurrenceInfo. And it was changed.");
+						recurrenceInfoChanged = true;
+					}
+				}
+			}
+			else {
+				// We did not have recurrence info. Check if we have now
+				this.logInfo("We did not have recurrenceInfo. See if it was added.");
+				if (this._newRecurrenceInfo) {
+					this.logInfo("We did not have recurrenceInfo. But we do have now.");
+					recurrenceInfoChanged = true;
+				}
+			}
+
+			if (recurrenceInfoChanged) {
+				var recurrenceXML = this.makeRecurrenceRule();
+				this._nonPersonalDataChanged = true;
+				this.addSetItemField(updates, "Recurrence", recurrenceXML, null, true);
+
+				// Next is to trigger sending the start and end dates when we have a changed reccurrence.
+				if (!this._newStartDate) this._newStartDate = this.startDate.clone();
+				if (!this._newEndDate) this._newEndDate = this.endDate.clone();
+
+			}
+
 
 			if (this._newStartDate) {
 				var tmpStart = this._newStartDate.clone();
@@ -437,43 +478,6 @@ mivExchangeEvent.prototype = {
 				}
 			}
 
-
-			// Recurrence rule. Michel
-			var recurrenceInfoChanged;
-			if (this._recurrenceInfo) {
-				// We had recurrenceInfo. Lets see if it changed.
-				this.logInfo("We had recurrenceInfo. Lets see if it changed.");
-				if (this._newRecurrenceInfo !== undefined) {
-					// It was changed or removed
-					if (this._newRecurrenceInfo === null) {
-						// It was removed
-						this.logInfo("We had recurrenceInfo. And it is removed.");
-						recurrenceInfoChanged = false;
-						this._nonPersonalDataChanged = true;
-						this.addDeleteItemField(updates, "Recurrence");
-					}
-					else {
-						// See if something changed
-						this.logInfo("We had recurrenceInfo. And it was changed.");
-						recurrenceInfoChanged = true;
-					}
-				}
-			}
-			else {
-				// We did not have recurrence info. Check if we have now
-				this.logInfo("We did not have recurrenceInfo. See if it was added.");
-				if (this._newRecurrenceInfo) {
-					this.logInfo("We did not have recurrenceInfo. But we do have now.");
-					recurrenceInfoChanged = true;
-				}
-			}
-			if (recurrenceInfoChanged) {
-				
-				var recurrenceXML = this.makeRecurrenceRule();
-				this._nonPersonalDataChanged = true;
-				this.addSetItemField(updates, "Recurrence", recurrenceXML, null, true);
-			}
-			
 
 			// Alarms and snoozes
 			this.checkAlarmChange(updates);

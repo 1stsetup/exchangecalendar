@@ -11,3 +11,15 @@
   height:16px;
   width:16px;
 }
+
+label.serverline-bold
+{
+	font-weight:bold;
+}
+
+exchangeProgressGrid { 
+  -moz-binding: url(chrome://exchangecalendar/content/progress_panel.xml#exchangeProgressGrid);
+}
+
+
+

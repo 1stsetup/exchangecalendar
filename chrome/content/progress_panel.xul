@@ -44,14 +44,8 @@
 		<tooltip id="exchWebServicesprogresstip" orient="vertical">
 			<vbox id="exchWebServiceProgressvbox">
 			</vbox>
-			<grid flex="1" id="exchWebServices.progress.grid">
-				<columns>
-					<column />
-					<column flex="1" />
-				</columns>
-				<rows id="exchWebServices.progress.rows">
-				</rows>
-			</grid>
+			<vbox id="exchWebServiceProgressvbox2">
+			</vbox>
 		</tooltip>  
 	</popupset>
 

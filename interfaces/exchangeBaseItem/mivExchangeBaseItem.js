@@ -2710,21 +2710,26 @@ try{
 		}
 
 		var startDate;
+		var originalDate;
 		if (cal.isEvent(this)) {
-			startDate = this.startDate;
+dump(" GoGo 2\n");
+			startDate = this.startDate.clone();
+			originalDate = this.startDate.clone();
 		}
 		else {
 			if (this.entryDate) {
 				startDate = this.entryDate.clone();
 				startDate.isDate = false;
+				originalDate = this.entryDate.clone();
 			}
 		}
 
 		if (startDate) {
-			var startDate = startDate.clone();
+			startDate = startDate.clone();
 		}
 		else {
-			var startDate = cal.now();
+			startDate = cal.now();
+			originalDate = cal.now();
 		}
 		startDate.isDate = true;
 	
@@ -2775,7 +2780,8 @@ try{
 		}
 
 		if (cal.isEvent(this)) {
-			var startDateStr = cal.toRFC3339(startDate.getInTimezone(this.globalFunctions.ecUTC()));
+			var startDateStr = cal.toRFC3339(startDate.getInTimezone(this.globalFunctions.ecUTC()))+"Z";
+			//var startDateStr = cal.toRFC3339(originalDate.getInTimezone(this.globalFunctions.ecUTC()));
 		}
 		else {
 			// We make a non-UTC datetime value for this.globalFunctions.

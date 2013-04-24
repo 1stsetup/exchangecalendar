@@ -3776,13 +3776,16 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		var startDate;
+		var originalDate;
 		if (isEvent(aItem)) {
-			startDate = aItem.startDate;
+			startDate = aItem.startDate.clone();
+			originalDate = aItem.startDate.clone();
 		}
 		else {
 			if (aItem.entryDate) {
 				startDate = aItem.entryDate.clone();
 				startDate.isDate = false;
+				originalDate = aItem.entryDate.clone();
 			}
 		}
 
@@ -3841,7 +3844,8 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		if (isEvent(aItem)) {
-			var startDateStr = cal.toRFC3339(startDate.getInTimezone(this.globalFunctions.ecUTC()));
+//			var startDateStr = cal.toRFC3339(startDate.getInTimezone(this.globalFunctions.ecUTC()));
+			var startDateStr = cal.toRFC3339(originalDate.getInTimezone(this.globalFunctions.ecUTC()));
 		}
 		else {
 			// We make a non-UTC datetime value for this.globalFunctions.

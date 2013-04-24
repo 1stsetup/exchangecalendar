@@ -71,64 +71,35 @@ exchProgressPanel.prototype = {
 			var waiting = 0;
 
 			// Update the tooltip
-			var rows = document.getElementById("exchWebServices.progress.rows");
-			if (rows) {
-				var counter = 1;
-				var row;
+			var mainVBox = this._document.getElementById("exchWebServiceProgressvbox2");
+			if (mainVBox) {
+				var grid;
 				var rowCount = 0;
 				for (var server in jobList) {
-					if (!document.getElementById("exchWebServiceProgress.progress.row"+rowCount)) {
-						row = document.createElement("row");
-						row.setAttribute("id","exchWebServiceProgress.progress.row"+rowCount);
-						rows.appendChild(row);
+					if (!this._document.getElementById("exchWebServiceProgress.progress.grid"+rowCount)) {
+dump("  hiro voordat grid wordt gemaakt\n");
+						grid = this._document.createElement("exchangeProgressGrid");
+dump("  grid:"+grid+"\n");
+dump("!! serverCount:"+grid.serverCount+"\n");
+						grid.setAttribute("id","exchWebServiceProgress.progress.grid"+rowCount);
+						grid.setAttribute("serverUrl",server);
+						mainVBox.appendChild(grid);
 					}
 					else {
-						row = document.getElementById("exchWebServiceProgress.progress.row"+rowCount);
+						grid = this._document.getElementById("exchWebServiceProgress.progress.grid"+rowCount);
 					}
 
-					var lineCount = 0;
-					var calLine;
-					if (!document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount)) {
-						var serverLine = document.createElement("label");
-						serverLine.setAttribute("id","exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount);
-						serverLine.setAttribute("value",server+":"+jobList[server].runningJobs.length);
-						row.appendChild(serverLine);
-
-						calLine = document.createElement("vbox");
-						calLine.setAttribute("id","exchWebServiceProgress.progress.row"+rowCount+".calcol.line"+lineCount);
-						row.appendChild(calLine);
-					}
-					else {
-						document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount).setAttribute("value",server+":"+jobList[server].runningJobs.length);
-						document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount).hidden = false;
-
-						calLine = document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".calcol.line"+lineCount);
-					}
 					running = running + jobList[server].runningJobs.length;
-
-
-					lineCount++;
+//					grid.beforeUpdate();
 					for (var calendarid in jobList[server].jobs) {
 
 						var calendarName =  jobList[server].calendarNames[calendarid];
 
-						if (!document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount)) {
-							var line=document.createElement("label");
-							line.setAttribute("id","exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount);
-							line.setAttribute("value",calendarName+":"+jobList[server].jobs[calendarid].length);
-							calLine.appendChild(line);
-						}
-						else {
-							document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount).setAttribute("value", calendarName+":"+jobList[server].jobs[calendarid].length);
-							document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount).hidden = false;
-						}
+//						grid.addCalendar(jobList[server].calendarNames[calendarid], jobList[server].jobs[calendarid].length);
+
 						waiting = waiting +jobList[server].jobs[calendarid].length; 
-						lineCount++;							
 					}
-					while (document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount)) {
-						document.getElementById("exchWebServiceProgress.progress.row"+rowCount+".servercol.line"+lineCount).hidden = true;
-						lineCount++;
-					}
+//					grid.afterUpdate();
 
 					rowCount++;
 				}
@@ -136,14 +107,14 @@ exchProgressPanel.prototype = {
 			}
 
 			if ((waiting == 0) && (running == 0)) {
-				document.getElementById("exchWebService-progress-panel").hidden = true;
+				this._document.getElementById("exchWebService-progress-panel").hidden = true;
 				this.timer.cancel();
 				this.timerRunning = false;
 			}
 			else {
-				if (document.getElementById("exchWebService-progress-panel").hidden) {
+				if (this._document.getElementById("exchWebService-progress-panel").hidden) {
 					if ((waiting > 1) || (running > 0)) {
-						document.getElementById("exchWebService-progress-panel").hidden = false;
+						this._document.getElementById("exchWebService-progress-panel").hidden = false;
 						if (!this.timerRunning) {
 							this.timerRunning = true;
 							this.timer.initWithCallback(this, 200, this.timer.TYPE_REPEATING_SLACK);
@@ -155,7 +126,7 @@ exchProgressPanel.prototype = {
 					tmpStr = tmpStr + "s";
 				}
 				tmpStr = tmpStr + ")";
-				document.getElementById("exchWebService-progress-label").value = tmpStr;
+				this._document.getElementById("exchWebService-progress-label").value = tmpStr;
 			}
 
 
@@ -163,8 +134,8 @@ exchProgressPanel.prototype = {
 			if (this.imageCounter > 4) {
 				this.imageCounter = 1;
 			}
-			if (document) {
-				document.getElementById("exchWebService-progress-image").style.listStyleImage = "url('"+this.imageList["image"+this.imageCounter]+"')";
+			if (this._document) {
+				this._document.getElementById("exchWebService-progress-image").style.listStyleImage = "url('"+this.imageList["image"+this.imageCounter]+"')";
 			}
 		}
 	},
@@ -213,7 +184,7 @@ exchProgressPanel.prototype = {
 
 		// Add an unload function to the window so we don't leak any listeners
 		var self = this;
-		window.addEventListener("unload", function(){ window.removeEventListener("unload",arguments.callee,false); self.destroy();}, false);
+		this._window.addEventListener("unload", function(){ self._window.removeEventListener("unload",arguments.callee,false); self.destroy();}, false);
 
 	},
 
