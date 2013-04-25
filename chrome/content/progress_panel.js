@@ -71,16 +71,13 @@ exchProgressPanel.prototype = {
 			var waiting = 0;
 
 			// Update the tooltip
-			var mainVBox = this._document.getElementById("exchWebServiceProgressvbox2");
+			var mainVBox = this._document.getElementById("exchWebServiceProgressvbox");
 			if (mainVBox) {
 				var grid;
 				var rowCount = 0;
 				for (var server in jobList) {
 					if (!this._document.getElementById("exchWebServiceProgress.progress.grid"+rowCount)) {
-dump("  hiro voordat grid wordt gemaakt\n");
 						grid = this._document.createElement("exchangeProgressGrid");
-dump("  grid:"+grid+"\n");
-dump("!! serverCount:"+grid.serverCount+"\n");
 						grid.setAttribute("id","exchWebServiceProgress.progress.grid"+rowCount);
 						grid.setAttribute("serverUrl",server);
 						mainVBox.appendChild(grid);
@@ -90,16 +87,23 @@ dump("!! serverCount:"+grid.serverCount+"\n");
 					}
 
 					running = running + jobList[server].runningJobs.length;
-//					grid.beforeUpdate();
+					if (grid.beforeUpdate) {
+						grid.serverCount = jobList[server].runningJobs.length;
+						grid.beforeUpdate();
+					}
 					for (var calendarid in jobList[server].jobs) {
 
 						var calendarName =  jobList[server].calendarNames[calendarid];
 
-//						grid.addCalendar(jobList[server].calendarNames[calendarid], jobList[server].jobs[calendarid].length);
+						if (grid.addCalendar) {
+							grid.addCalendar(jobList[server].calendarNames[calendarid], jobList[server].jobs[calendarid].length);
+						}
 
 						waiting = waiting +jobList[server].jobs[calendarid].length; 
 					}
-//					grid.afterUpdate();
+					if (grid.afterUpdate) {
+						grid.afterUpdate();
+					}
 
 					rowCount++;
 				}
@@ -195,4 +199,14 @@ dump("!! serverCount:"+grid.serverCount+"\n");
 
 var myExchProgressPanel = new exchProgressPanel(document, window);
 window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); myExchProgressPanel.onLoad(); }, true);
+
+/**
+ * Creates the given element in the XUL namespace.
+ *
+ * @param el    The local name of the element to create.
+ * @return      The XUL element requested.
+ */
+function createXULElement(el) {
+    return document.createElementNS("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul", el);
+}
 

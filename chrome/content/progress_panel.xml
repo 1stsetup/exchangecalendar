@@ -35,7 +35,7 @@
     <content>
 	<xul:grid>
 		<xul:columns>
-			<xul:column/>
+			<xul:column flex="1" align="right"/>
 			<xul:column />
 		</xul:columns>
 		<xul:rows anonid="exchWebServices.progress.rows">
@@ -48,10 +48,10 @@
     </content>
 
     <implementation>
-	<constructor>
+	<constructor><![CDATA[
 		this._calendars = {};
 		this._serverCount = 0;
-	</constructor>
+	]]></constructor>
 
 	<property name="serverCount">
 		<getter><![CDATA[
@@ -59,7 +59,7 @@
 		]]></getter>
 		<setter><![CDATA[
 			this._serverCount = val;
-			this.getAnonymousElementByAttribute(this, "anonid", "serverCount").setAttribute("value", this._serverCount);
+			document.getAnonymousElementByAttribute(this, "anonid", "serverCount").setAttribute("value", this._serverCount);
 		]]></setter>
 	</property>
 
@@ -68,24 +68,26 @@
 		<parameter name="aCount" />
 		<body><![CDATA[
 			// See if we have this calendar
-			if (!this._calendars[aCalendar]) {
-				this._calendars[aCalendar] = {};
+			if (this._calendars[aCalendar]) {
 				this._calendars[aCalendar].count.setAttribute("value", aCount);
 				this._calendars[aCalendar].changed = true;
-				this._calendars[aCalendar].hidden = false;
+				this._calendars[aCalendar].row.hidden = false;
 
 				this._serverCount += aCount - this._calendars[aCalendar].countValue;
 				this._calendars[aCalendar].countValue = aCount;
 			}
 			else {
-				this._calendars[aCalendar].row = document.createElement("row");
-				this.getAnonymousElementByAttribute(this, "anonid", "exchWebServices.server.progress.row").appendChild(this._calendars[aCalendar].row);
+				this._calendars[aCalendar] = {};
+				this._calendars[aCalendar].row = createXULElement("row");
+				document.getAnonymousElementByAttribute(this, "anonid", "exchWebServices.progress.rows").appendChild(this._calendars[aCalendar].row);
 
-				this._calendars[aCalendar].label = document.createElement("label");
+				this._calendars[aCalendar].label = createXULElement("label");
 				this._calendars[aCalendar].label.setAttribute("value", aCalendar);
+				//this._calendars[aCalendar].label.setAttribute("align", "right");
+				this._calendars[aCalendar].label.setAttribute("flex", "1");
 				this._calendars[aCalendar].row.appendChild(this._calendars[aCalendar].label);
 
-				this._calendars[aCalendar].count = document.createElement("label");
+				this._calendars[aCalendar].count = createXULElement("label");
 				this._calendars[aCalendar].count.setAttribute("value", aCount);
 				this._calendars[aCalendar].countValue = aCount;
 				this._calendars[aCalendar].row.appendChild(this._calendars[aCalendar].count);
@@ -108,7 +110,7 @@
 	<method name="afterUpdate">
 		<body><![CDATA[
 			for each(var calendar in this._calendars) {
-				if (calendar.changed !== false) {
+				if (calendar.changed === false) {
 					calendar.row.hidden = true;
 				}
 			}
@@ -118,5 +120,6 @@
     </implementation>
 
   </binding>
+
 
 </bindings>

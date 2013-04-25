@@ -31,7 +31,6 @@
  * ***** BEGIN LICENSE BLOCK *****/
 -->
 
-<!--<!DOCTYPE overlay SYSTEM "chrome://exchangecalendar/locale/progress_panel.dtd"> -->
 
 <?xml-stylesheet href="chrome://exchangecalendar/content/progress_panel.css" type="text/css"?>
 
@@ -43,8 +42,6 @@
 	<popupset>
 		<tooltip id="exchWebServicesprogresstip" orient="vertical">
 			<vbox id="exchWebServiceProgressvbox">
-			</vbox>
-			<vbox id="exchWebServiceProgressvbox2">
 			</vbox>
 		</tooltip>  
 	</popupset>
