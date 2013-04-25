@@ -742,6 +742,39 @@ catch(err){
 				switch (xmlReq.status) {
 				case 500: errMsg = "Internal server error"; 
 
+						// First check if we have a version mismatch. This sometimes happens.
+						if ((xmlReq.responseText.indexOf("ErrorIncorrectSchemaVersion") > -1) &&
+							(xmlReq.responseText.indexOf("RequestServerVersion") > -1) ) {
+							if (this.debug) this.logInfo(" ErrorIncorrectSchemaVersion -> RequestServerVersion wrong:"+this.version+".", 2);
+							// We are going to retry with a different serverversion.
+							var tryAgain = false;
+							switch(this.version) {
+							case "Exchange2007_SP1":
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010");
+								tryAgain = true;
+								break;
+							case "Exchange2010":
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010_SP1");
+								tryAgain = true;
+								break;
+							case "Exchange2010_SP1":
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010_SP2");
+								tryAgain = true;
+								break;
+							case "Exchange2010_SP2":
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2013");
+								tryAgain = true;
+								break;
+							default:
+								tryAgain = false;
+							}
+							if (tryAgain) {
+								if (this.debug) this.logInfo("Going to retry with higher server version", 2);
+								this.sendRequest(this.makeSoapMessage(this.originalReq), this.currentUrl);
+								return true;
+							}
+						}
+
 						// This might be generated because of a password not yet supplied in open function during a request so we try again
 						//if ((this.prePassword == "") && 
 						if	((!exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl]) || (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount < 3)) {
@@ -838,9 +871,11 @@ catch(err){
 
 	makeSoapMessage: function erMakeSoapMessage(aReq)
 	{
+		this.originalReq = aReq;
+
 		var msg = exchWebService.commonFunctions.xmlToJxon('<nsSoap:Envelope xmlns:nsSoap="'+nsSoapStr+'" xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		var version = this.exchangeStatistics.getServerVersion(this.mArgument.serverUrl);
+		this.version = this.exchangeStatistics.getServerVersion(this.mArgument.serverUrl);
 		
 		var header = msg.addChildTag("Header", "nsSoap", null);
 
@@ -848,7 +883,7 @@ catch(err){
 			header.addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", this.mArgument.ServerVersion);
 		}
 		else {
-			header.addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", version);
+			header.addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", this.version);
 		}
 		
 		var exchTimeZone = this.timeZones.getExchangeTimeZoneByCalTimeZone(this.globalFunctions.ecDefaultTimeZone(), this.mArgument.serverUrl, cal.now());
