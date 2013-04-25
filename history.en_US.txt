@@ -2,9 +2,9 @@ Version 3.2.0-Beta10:
 - Fixed problem where the add-on would not show events and task against an Exchange2013 server.
 - Changed the title of the add-on to "Exchange 2007/2010/2013 Calendar, Tasks, Contacts and GAL Provider"
 - Started work on improving the progress tooltip info.
+- Fixes bug 162 Changing recurring meeting to Wednesdays, moved it to Thursday
 
 Version 3.2.0-Beta9:
-- Fixes Bug 162 - Changing recurring meeting to Wednesdays, moved it to Thursday Now also for Exchange 2007 servers.
 - Introduced loading/showing image when one is available for a contact (addressbook). Only works starting from Exchange server 2010_SP2
 - Fixes a bug where creation of new tasks and Event was not possible since Beta8.
 - Finalized autocompletion. Depending on the connetion speed with the exchange server it can take some time to fill the autocomplete list.
@@ -44,7 +44,6 @@ Version 3.2.0-Beta4:
 
 Version 3.2.0-Beta3:
 - Fixes Bug 150 - Dismissing reminders asks to send update for meeting
-- Fixes bug 162 - Changing recurring meeting to Wednesdays, moved it to Thursday 
 - Fixes Bug 180 - NTLM and Kerberos fail
 - Fixes bug 229 - Creating a custom repeating event - creates event on following day
 - Fixes bug 238 - "All day Event" created for day prior to selected date 
