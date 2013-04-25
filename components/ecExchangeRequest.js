@@ -854,8 +854,11 @@ catch(err){
 		var exchTimeZone = this.timeZones.getExchangeTimeZoneByCalTimeZone(this.globalFunctions.ecDefaultTimeZone(), this.mArgument.serverUrl, cal.now());
 
 		if (exchTimeZone) {
-				exchTimeZone.timeZone.tagName = "TimeZoneDefinition";
-				header.addChildTag("TimeZoneContext", "nsTypes", null).addChildTagObject(exchTimeZone.timeZone);
+				//exchTimeZone.timeZone.tagName = "TimeZoneDefinition";
+				//header.addChildTag("TimeZoneContext", "nsTypes", null).addChildTagObject(exchTimeZone.timeZone);
+
+				var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:TimeZoneDefinition Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+				header.addChildTag("TimeZoneContext", "nsTypes", null).addChildTagObject(tmpTimeZone);
 		}
 
 		msg.addChildTag("Body", "nsSoap", null).addChildTagObject(aReq);
