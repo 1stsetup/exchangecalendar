@@ -1,3 +1,6 @@
+Version 3.2.0-Beta11:
+- Bug 267 - Problem with upgrade from 3.1.2-bug175-3 to 3.2.0-Beta10
+
 Version 3.2.0-Beta10:
 - Fixed problem where the add-on would not show events and task against an Exchange2013 server.
 - Changed the title of the add-on to "Exchange 2007/2010/2013 Calendar, Tasks, Contacts and GAL Provider"

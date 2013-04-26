@@ -892,7 +892,12 @@ catch(err){
 				//exchTimeZone.timeZone.tagName = "TimeZoneDefinition";
 				//header.addChildTag("TimeZoneContext", "nsTypes", null).addChildTagObject(exchTimeZone.timeZone);
 
-				var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:TimeZoneDefinition Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+				if (this.version.indexOf("2007") > -1) {
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:TimeZoneDefinition Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+				}
+				else {
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:TimeZoneDefinition Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+				}
 				header.addChildTag("TimeZoneContext", "nsTypes", null).addChildTagObject(tmpTimeZone);
 		}
 
