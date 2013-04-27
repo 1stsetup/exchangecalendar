@@ -47,6 +47,6 @@
 <!ENTITY button.label.folderpathcheck "Vérifier">
 <!ENTITY button.label.folderbrowse "Parcourir">
 
-<!ENTITY exchWebServices.UserAvailability.label "Seul le status de disponibilité de l'utilsateur du calendrier de cette BAL sera visible avec la bonne permission d'accès.">
+<!ENTITY exchWebServices.UserAvailability.label "Seul le status de disponibilité de l'utilsateur du calendrier de cette BAL sera visible.">
 
 

@@ -47,7 +47,7 @@
 <!ENTITY button.label.folderpathcheck "Controleer">
 <!ENTITY button.label.folderbrowse "Bladeren">
 
-<!ENTITY exchWebServices.UserAvailability.label "Alleen gebruikersaanwezigheidsstatus van de mailbox agenda zal zichtbaar zijn als u de rechten heeft.">
+<!ENTITY exchWebServices.UserAvailability.label "Alleen gebruikersaanwezigheidsstatus van de mailbox agenda zal zichtbaar zijn.">
 
 
 

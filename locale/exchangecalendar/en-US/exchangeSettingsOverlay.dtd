@@ -47,5 +47,5 @@
 <!ENTITY button.label.folderpathcheck "Check">
 <!ENTITY button.label.folderbrowse "Browse">
 
-<!ENTITY exchWebServices.UserAvailability.label "Only user availability status for the mailbox's calendar will be visible when you have the permissions.">
+<!ENTITY exchWebServices.UserAvailability.label "Only user availability status for the mailbox's calendar will be visible.">
 

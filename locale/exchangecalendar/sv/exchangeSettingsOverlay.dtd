@@ -47,4 +47,4 @@
 <!ENTITY button.label.folderpathcheck "Kontrollera">
 <!ENTITY button.label.folderbrowse "Bläddra">
 
-<!ENTITY exchWebServices.UserAvailability.label "Användarens tillgänglighetsstatus för E-postlådans kalender visas endast om du har rättigheter att se den.">
+<!ENTITY exchWebServices.UserAvailability.label "Användarens tillgänglighetsstatus för E-postlådans kalender visas.">
