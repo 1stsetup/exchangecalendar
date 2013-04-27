@@ -142,13 +142,13 @@
 	                <row id="exchWebService_folderpathrow" align="center" hidden="true">
 	                    <label value="&ecfolderpath.label;" control="ecfolderpath"/>
 				<hbox align="center">
-		                    <label  id="exchWebService_folderpath" value="/"/>
+		                    <label  id="exchWebService_folderpath" value="/" flex="1"/>
 					<button hidden="false" id="exchWebService_folderbrowsebutton" label="&button.label.folderbrowse;" oncommand="tmpSettingsOverlay.exchWebServicesDoFolderBrowse();"/>
 				</hbox>
 	                </row>
 			<row id="exchWebServices-UserAvailability" align="center" hidden="true">
 	                    <label value=""/>
-	                    <label id="exchWebServices-UserAvailability-label" value="&exchWebServices.UserAvailability.label;"/>
+	                    <label id="exchWebServices-UserAvailability-label" flex="1">&exchWebServices.UserAvailability.label;</label>
 			</row>
 			<row id="exchWebServices-SharedFolderID" align="center" hidden="true">
 	                    <label value="&exchWebServices.SharedFolderID.label;"/>

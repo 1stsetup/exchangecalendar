@@ -46,6 +46,9 @@ Cu.import("resource://exchangecalendar/erPrimarySMTPCheck.js");
 Cu.import("resource://exchangecalendar/erConvertID.js");
 Cu.import("resource://exchangecalendar/erFindFolder.js");
 Cu.import("resource://exchangecalendar/erGetFolder.js");
+Cu.import("resource://exchangecalendar/erGetUserAvailability.js");
+
+Cu.import("resource://calendar/modules/calUtils.jsm");
 
 function exchSettingsOverlay(aDocument, aWindow)
 {
@@ -324,6 +327,9 @@ exchSettingsOverlay.prototype = {
 
 		var folderIdOfShare = this.exchWebServicesgFolderIdOfShare;
 
+		var myAuthPrompt2 = Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
+		myAuthPrompt2.removeUserCanceled(this.exchWebServicesgServer);
+
 		try {
 			this._window.setCursor("wait");
 			var self = this;
@@ -337,6 +343,7 @@ exchSettingsOverlay.prototype = {
 					function(aExchangeRequest, aCode, aMsg) { self.exchWebServicesConvertIDError(aExchangeRequest, aCode, aMsg);});
 			}
 			else {
+		this.globalFunctions.LOG("exchWebServicesConvertIDOK: user:"+this.exchWebServicesGetUsername()+", mailbox:"+this.exchWebServicesgMailbox);
 				var tmpObject = new erPrimarySMTPCheckRequest(
 					{user: this.exchWebServicesGetUsername(), 
 					 mailbox: this.exchWebServicesgMailbox,
@@ -447,7 +454,7 @@ exchSettingsOverlay.prototype = {
 
 	exchWebServicesCheckServerAndMailboxError: function _exchWebServicesCheckServerAndMailboxError(aExchangeRequest, aCode, aMsg)
 	{
-		this.globalFunctions.LOG("exchWebServicesCheckServerAndMailboxError");
+		this.globalFunctions.LOG("exchWebServicesCheckServerAndMailboxError: aCode:"+ aCode+", aMsg:"+aMsg);
 		this.gexchWebServicesDetailsChecked = false;
 		switch (aCode) {
 		case -20:
@@ -456,16 +463,62 @@ exchSettingsOverlay.prototype = {
 		case -6:
 			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorServerCheckURLInvalid", [this.exchWebServicesgServer], "exchangecalendar"));
 			break;
+		case -7: 
 		case -208:  // folderNotFound. 
-			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorServerAndMailboxCheckFolderNotFound", [aMsg, aCode], "exchangecalendar"));
-			this.exchWebServicesCheckServerAndMailboxOK();
-			this._document.getElementById("exchWebService_folderbaserow").hidden = true;
-			this._document.getElementById("exchWebService_folderpathrow").hidden = true;
-			this._document.getElementById("exchWebServices-UserAvailability").hidden = false;
+			this.checkUserAvailability();
 			return;
+		case -212:
+			aMsg = aMsg + "("+this.exchWebServicesgMailbox+")";
 		default:
 			alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorServerAndMailboxCheck", [aMsg, aCode], "exchangecalendar"));
 		}
+		this._document.getElementById("exchWebService_serverandmailboxcheckbutton").disabled = false;
+		this.exchWebServicesCheckRequired();
+		this._window.setCursor("auto");
+	},
+
+	// Check if we can get useravailability
+	checkUserAvailability: function _checkUserAvailability()
+	{
+		this.globalFunctions.LOG("checkUserAvailability");
+		var self = this;
+
+		var start = cal.now();
+		var offset = cal.createDuration();
+		offset.hours = 1;
+		var end = start.clone();
+		end.addDuration(offset);
+
+		var tmpObject = new erGetUserAvailabilityRequest(
+			{user: this.exchWebServicesGetUsername(), 
+			 mailbox: this.exchWebServicesgMailbox,
+			 serverUrl: this.exchWebServicesgServer,
+			 folderBase: "calendar", 
+			 email: this.exchWebServicesgMailbox,
+			 attendeeType: 'Required',
+			 start: cal.toRFC3339(start),
+			 end: cal.toRFC3339(end) },
+			function(erGetUserAvailabilityRequest, aEvents) { self.checkUserAvailabilityOk(erGetUserAvailabilityRequest, aEvents);}, 
+			function(erGetUserAvailabilityRequest, aCode, aMsg) { self.checkUserAvailabilityError(erGetUserAvailabilityRequest, aCode, aMsg);});
+
+	},
+
+	checkUserAvailabilityOk: function _checkUserAvailabilityOk(erGetUserAvailabilityRequest, aEvents)
+	{
+		this.globalFunctions.LOG("checkUserAvailabilityOk");
+		this.exchWebServicesCheckServerAndMailboxOK();
+		this._document.getElementById("exchWebService_folderbaserow").hidden = true;
+		this._document.getElementById("exchWebService_folderpathrow").hidden = true;
+		this._document.getElementById("exchWebServices-UserAvailability").hidden = false;
+	},
+
+	checkUserAvailabilityError: function _checkUserAvailabilityError(erGetUserAvailabilityRequest, aCode, aMsg)
+	{
+		this.globalFunctions.LOG("checkUserAvailabilityError");
+		this.gexchWebServicesDetailsChecked = false;
+
+		alert(this.globalFunctions.getString("calExchangeCalendar", "ecErrorServerAndMailboxCheck", [aMsg, aCode], "exchangecalendar"));
+
 		this._document.getElementById("exchWebService_serverandmailboxcheckbutton").disabled = false;
 		this.exchWebServicesCheckRequired();
 		this._window.setCursor("auto");
@@ -606,9 +659,14 @@ exchSettingsOverlay.prototype = {
 			this.exchWebServicesgServer = selectedEWSUrl.value;
 			this._document.getElementById("exchWebService_server").value = selectedEWSUrl.value; 
 
-			this.gexchWebServicesDetailsChecked = true;
+			//this.gexchWebServicesDetailsChecked = true;
 			this._document.getElementById("exchWebService_autodiscovercheckbutton").disabled = false;
 			this._document.getElementById("exchWebService_autodiscover").checked = false;
+
+			this._document.getElementById("exchWebService_serverandmailboxcheckbutton").disabled = true;
+			this.exchWebServicesDoCheckServerAndMailbox();
+			return;
+
 		}
 		else {
 			this._document.getElementById("exchWebService_autodiscovercheckbutton").disabled = false;
