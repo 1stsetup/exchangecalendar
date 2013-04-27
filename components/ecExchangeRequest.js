@@ -47,7 +47,7 @@ Cu.import("resource://calendar/modules/calUtils.jsm");
 
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 
-var EXPORTED_SYMBOLS = ["ExchangeRequest", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponseStr1", "nsAutodiscoverResponseStr2", "nsAutodiscover2010Str", "nsWSAStr", "nsXSIStr", "xml_tag"];
+var EXPORTED_SYMBOLS = ["ExchangeRequest", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponseStr1", "nsAutodiscoverResponseStr2", "nsAutodiscover2010Str", "nsErrors", "nsWSAStr", "nsXSIStr", "xml_tag"];
 
 var xml_tag = '<?xml version="1.0" encoding="utf-8"?>\n';
 
@@ -59,6 +59,7 @@ const nsAutodiscoverResponseStr2 = "http://schemas.microsoft.com/exchange/autodi
 const nsAutodiscover2010Str = "http://schemas.microsoft.com/exchange/2010/Autodiscover";
 const nsWSAStr = "http://www.w3.org/2005/08/addressing";
 const nsXSIStr = "http://www.w3.org/2001/XMLSchema-instance";
+const nsErrors = "http://schemas.microsoft.com/exchange/services/2006/errors";
 
 var gExchangeRequestVersion = "0.1";
 
@@ -145,6 +146,7 @@ ExchangeRequest.prototype = {
 	ER_ERROR_ITEM_UPDATE_UNKNOWN: -211,  // Unknown error during item ipdate.
 	ER_ERROR_SPECIFIED_SMTP_NOTFOUND: -212, // Specified SMTP address does not exist.
 	ER_ERROR_CONVERTID: -214, // Specified SMTP address does not exist.
+	ER_ERROR_NOACCESSTOFREEBUSY: -215, // Specified user has no access to free/busy information of specified mailbox.
 
 	ERR_PASSWORD_ERROR: -300, // To many password errors.
 
@@ -607,6 +609,8 @@ catch(err){
 			newXML.addNameSpace("t", nsTypesStr);
 			newXML.addNameSpace("a1", nsAutodiscoverResponseStr1);
 			newXML.addNameSpace("a2", nsAutodiscoverResponseStr2);
+			//newXML.addNameSpace("a3", nsAutodiscover2010Str);
+			//newXML.addNameSpace("e", nsErrors);
 			newXML.processXMLString(xml, 0, null);
 		}
 		catch(exc) { if (this.debug) this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 

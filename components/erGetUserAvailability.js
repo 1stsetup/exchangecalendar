@@ -126,8 +126,16 @@ erGetUserAvailabilityRequest.prototype = {
 
 
 		if (rm.length == 0) {
-			exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: Respons does not contain expected field");
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
+			var rm = aResp.XPath("/s:Envelope/s:Body/m:GetUserAvailabilityResponse/m:FreeBusyResponseArray/m:FreeBusyResponse/m:ResponseMessage[@ResponseClass='Error']");
+			if (rm.length == 0) {
+				exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: Respons does not contain expected field");
+				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
+			}
+			else {
+				var messageText = rm[0].getTagValue("m:MessageText", "");
+				exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: "+messageText);
+				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_NOACCESSTOFREEBUSY, messageText);
+			}
 			return;
 		}
 		rm = null;
