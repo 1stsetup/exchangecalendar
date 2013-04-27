@@ -41,14 +41,17 @@ var mivExchangeMsgProtocolInfoGUID = "ea4d2e73-b0bc-4b70-9f7d-95dbcb648930";
 
 mivExchangeMsgProtocolInfo.prototype = {
 
+	__proto__ : mivExchangeBaseItem.prototype,
+
 	QueryInterface : XPCOMUtils.generateQI([Ci.mivExchangeMsgProtocolInfo,
 				Ci.nsIMsgProtocolInfo,
 				Ci.nsIClassInfo,
 				Ci.nsISupports]),
 
 	_className : "mivExchangeMsgProtocolInfo",
+	_mainTag : "CalendarItem",
 
-	classDescription : "Exchange EWS Msg Protocol Info",
+	classDescription : "Exchange EWS Msg Protocol Info,
 
 	classID : components.ID("{"+mivExchangeMsgProtocolInfoGUID+"}"),
 	contractID : "@mozilla.org/messenger/protocol/info;1?type=exchangeWebServiceMail",

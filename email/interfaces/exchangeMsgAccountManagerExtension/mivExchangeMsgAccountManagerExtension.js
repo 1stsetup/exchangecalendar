@@ -41,17 +41,14 @@ var mivExchangeMsgAccountManagerExtensionGUID = "9b353ed2-b8c9-42aa-8aad-e2ee853
 
 mivExchangeMsgAccountManagerExtension.prototype = {
 
-	__proto__ : mivExchangeBaseItem.prototype,
-
 	QueryInterface : XPCOMUtils.generateQI([Ci.mivExchangeMsgAccountManagerExtension,
-				Ci.nsIMsgProtocolInfo,
+				Ci.nsIMsgAccountManagerExtension,
 				Ci.nsIClassInfo,
 				Ci.nsISupports]),
 
 	_className : "mivExchangeMsgAccountManagerExtension",
-	_mainTag : "CalendarItem",
 
-	classDescription : "Exchange EWS Msg Account Manager Extension,
+	classDescription : "Exchange EWS Msg Account Manager Extension",
 
 	classID : components.ID("{"+mivExchangeMsgAccountManagerExtensionGUID+"}"),
 	contractID : "@mozilla.org/accountmanager/extension;1?name=exchangeWebServiceMail",
@@ -61,7 +58,7 @@ mivExchangeMsgAccountManagerExtension.prototype = {
 	getInterfaces : function _getInterfaces(count) 
 	{
 		var ifaces = [Ci.mivExchangeMsgAccountManagerExtension,
-				Ci.nsIMsgProtocolInfo,
+				Ci.nsIMsgAccountManagerExtension,
 				Ci.nsIClassInfo,
 				Ci.nsISupports];
 		count.value = ifaces.length;
