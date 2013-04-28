@@ -413,6 +413,10 @@ mivExchangeEvent.prototype = {
 				}
 			}
 
+			if (((this._newStartDate) || (this._newEndDate)) && (this.calendar.isVersion2007)) {
+				this.addSetItemField(updates, "MeetingTimeZone", null, { TimeZoneName: this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl, this._newStartDate)});
+			}
+
 			if (this._newLegacyFreeBusyStatus) {
 				this.addSetItemField(updates, "LegacyFreeBusyStatus", this._newLegacyFreeBusyStatus);
 			}

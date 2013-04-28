@@ -229,7 +229,7 @@ mivExchangeTimeZones.prototype = {
 		return this._tzCache[timeZoneId];
 	},
 
-	getCalTimeZoneByExchangeMeetingTimeZone: function _getCalTimeZoneByExchangeMeetingTimeZone(aMeetingTimeZone)
+	getCalTimeZoneByExchangeMeetingTimeZone: function _getCalTimeZoneByExchangeMeetingTimeZone(aMeetingTimeZone, is2007)
 	{
 		var name;
 		if (!aMeetingTimeZone) {
@@ -239,7 +239,24 @@ mivExchangeTimeZones.prototype = {
 			name = aMeetingTimeZone.substr(aMeetingTimeZone.indexOf(") ")+2).toLowerCase();
 		}
 		else {
-			return null;
+			// We need to get the timezone name for this id.
+			var tname = null;
+			for each(var timeZoneDefinition in this._timeZones["Exchange2007_SP1"]) {
+				var exchTimeZone = this.getTimeZone(timeZoneDefinition, null);
+				if (exchTimeZone.id == aMeetingTimeZone) {
+					tname = exchTimeZone.name;
+					break;
+				}
+			}
+			if (!tname) {
+				return null;
+			}
+			if (tname.indexOf(") ") > -1) {
+				name = tname.substr(tname.indexOf(") ")+2).toLowerCase();
+			}
+			else {
+				return null;
+			}
 		}
 
 		// The name could contain multiple names comma separated.
@@ -249,9 +266,9 @@ mivExchangeTimeZones.prototype = {
 		var timezones = this.timezoneService.timezoneIds;
 		var tmpResult = null;
 		while (timezones.hasMore()) {
-			var tmpZoneId = timezones.getNext().toLowerCase();
+			var tmpZoneId = timezones.getNext();
 			for each(var cname in names) {
-				if (tmpZoneId.indexOf(cname) > -1) {
+				if (tmpZoneId.toLowerCase().indexOf(cname) > -1) {
 					return this.timezoneService.getTimezone(tmpZoneId);
 				}
 			}

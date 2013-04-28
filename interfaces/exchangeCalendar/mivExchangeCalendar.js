@@ -6319,6 +6319,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		}
 		
 		var uid = item.uid;
+dump("UID:"+uid+"\n");
 
 		if (this.itemCache[item.id]) {
 			if (this.itemCache[item.id].changeKey == item.changeKey) {
