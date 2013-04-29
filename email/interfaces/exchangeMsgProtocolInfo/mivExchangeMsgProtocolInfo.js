@@ -29,10 +29,6 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 function mivExchangeMsgProtocolInfo() {
 
-	this.initialize();
-
-	this.initExchangeBaseItem();
-
 	//this.logInfo("mivExchangeMsgProtocolInfo: init");
 
 }

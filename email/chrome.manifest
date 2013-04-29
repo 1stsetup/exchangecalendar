@@ -5,4 +5,5 @@ resource exchangemail interfaces/
 
 manifest interfaces/exchangeMsgProtocolInfo/mivExchangeMsgProtocolInfo.manifest
 manifest interfaces/exchangeMsgAccountManagerExtension/mivExchangeMsgAccountManagerExtension.manifest
+manifest interfaces/exchangeMsgIncomingServer/mivExchangeMsgIncomingServer.manifest
 

@@ -19,10 +19,10 @@
  *
  * ***** BEGIN LICENSE BLOCK *****/
 
-#include "nsIMsgProtocolInfo.idl"
+#include "nsIMsgIncomingServer.idl"
 
-[scriptable, uuid(ea4d2e73-b0bc-4b70-9f7d-95dbcb648930)]
-interface mivExchangeMsgProtocolInfo : nsIMsgProtocolInfo
+[scriptable, uuid(79d87edc-020e-48d4-8c04-b894edab4bd2)]
+interface mivExchangeMsgIncomingServer : nsIMsgIncomingServer
 {
 
 };

@@ -29,10 +29,6 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 function mivExchangeMsgAccountManagerExtension() {
 
-	this.initialize();
-
-	this.initExchangeBaseItem();
-
 	//this.logInfo("mivExchangeMsgAccountManagerExtension: init");
 
 }
