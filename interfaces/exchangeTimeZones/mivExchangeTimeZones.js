@@ -143,6 +143,7 @@ mivExchangeTimeZones.prototype = {
 				//if (this.debug) this.logInfo("timeZoneDefinition.@Name="+timeZoneDefinition.@Name);
 
 				// First we match on values.
+//dump("timeZoneDefinition:"+timeZoneDefinition+"\n");
 				var exchangeTimeZone = this.getTimeZone(timeZoneDefinition, aIndexDate);
 				//dump(" Going to match exchange:"+exchangeTimeZone.id+", cal:"+calTimeZone.id+"\n");
 				if (exchangeTimeZone.equal(calTimeZone)) {
@@ -229,7 +230,7 @@ mivExchangeTimeZones.prototype = {
 		return this._tzCache[timeZoneId];
 	},
 
-	getCalTimeZoneByExchangeMeetingTimeZone: function _getCalTimeZoneByExchangeMeetingTimeZone(aMeetingTimeZone, is2007)
+	getCalTimeZoneByExchangeMeetingTimeZone: function _getCalTimeZoneByExchangeMeetingTimeZone(aMeetingTimeZone, aIndexDate)
 	{
 		var name;
 		if (!aMeetingTimeZone) {
@@ -240,19 +241,8 @@ mivExchangeTimeZones.prototype = {
 		}
 		else {
 			// We need to get the timezone name for this id.
-			var tname = null;
-			for each(var timeZoneDefinition in this._timeZones["Exchange2007_SP1"]) {
-				var exchTimeZone = this.getTimeZone(timeZoneDefinition, null);
-				if (exchTimeZone.id == aMeetingTimeZone) {
-					tname = exchTimeZone.name;
-					break;
-				}
-			}
-			if (!tname) {
-				return null;
-			}
-			if (tname.indexOf(") ") > -1) {
-				name = tname.substr(tname.indexOf(") ")+2).toLowerCase();
+			if (this._timeZones["Exchange2007_SP1"][aMeetingTimeZone]) {
+				return this.getCalTimeZoneByExchangeTimeZone(this._timeZones["Exchange2007_SP1"][aMeetingTimeZone], "", aIndexDate);
 			}
 			else {
 				return null;

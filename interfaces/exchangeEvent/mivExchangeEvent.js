@@ -102,11 +102,11 @@ mivExchangeEvent.prototype = {
 				}
 				else {
 					if (this.meetingTimeZone) {
-						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone);
+						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone, this._startDate);
 					}
 					else {
 						if (this.timeZone) {
-							var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone);
+							var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone, this._startDate);
 						}
 					}
 				}
@@ -140,11 +140,11 @@ mivExchangeEvent.prototype = {
 				}
 				else {
 					if (this.meetingTimeZone) {
-						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone);
+						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone, this._endDate);
 					}
 					else {
 						if (this.timeZone) {
-							var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone);
+							var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone, this._endDate);
 						}
 					}
 				}
