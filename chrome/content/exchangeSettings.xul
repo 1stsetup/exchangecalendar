@@ -86,7 +86,7 @@
 						<textbox id="exchWebService-poll-calendar-interval"
 							increment="10" min="10" type="number" value="10" />
 					</hbox>
-					<vbox id="exchWebService-exchange-settings">
+					<vbox id="exchWebService-exchange-settings" flex="1">
 					</vbox>
 				</vbox>
 			</tabpanel>
