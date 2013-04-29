@@ -746,7 +746,39 @@ catch(err){
 				switch (xmlReq.status) {
 				case 500: errMsg = "Internal server error"; 
 
-						// First check if we have a version mismatch. This sometimes happens.
+						// First check if we have a version mismatch and we need a lower version. This sometimes happens.
+						if (xmlReq.responseText.indexOf("ErrorInvalidServerVersion") > -1) {
+							if (this.debug) this.logInfo(" ErrorInvalidServerVersion -> RequestServerVersion wrong:"+this.version+".", 2);
+							// We are going to retry with a different serverversion.
+							var tryAgain = false;
+							switch(this.version) {
+							case "Exchange2010":
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2007_SP1");
+								tryAgain = true;
+								break;
+							case "Exchange2010_SP1":
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010");
+								tryAgain = true;
+								break;
+							case "Exchange2010_SP2":
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010_SP1");
+								tryAgain = true;
+								break;
+							case "Exchange2013":
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010_SP2");
+								tryAgain = true;
+								break;
+							default:
+								tryAgain = false;
+							}
+							if (tryAgain) {
+								if (this.debug) this.logInfo("Going to retry with lower server version", 2);
+								this.sendRequest(this.makeSoapMessage(this.originalReq), this.currentUrl);
+								return true;
+							}
+						}
+
+						// First check if we have a version mismatch and we need a higher version. This sometimes happens.
 						if ((xmlReq.responseText.indexOf("ErrorIncorrectSchemaVersion") > -1) &&
 							(xmlReq.responseText.indexOf("RequestServerVersion") > -1) ) {
 							if (this.debug) this.logInfo(" ErrorIncorrectSchemaVersion -> RequestServerVersion wrong:"+this.version+".", 2);
