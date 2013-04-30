@@ -680,7 +680,8 @@ exchSettingsOverlay.prototype = {
 	{
 		this.globalFunctions.LOG("ecAutodiscoveryError. aCode:"+aCode+", aMsg:"+aMsg);
 
-		if (this.exchAutoDiscovery2010 == true) {
+		if ((this.exchAutoDiscovery2010 == true) && (aCode != -20)) {
+			this.globalFunctions.LOG("exchWebServicesAutodiscoveryError: Going to try old POX autodiscovery as SOAP autodiscovery did not succeed.");
 			this.exchAutoDiscovery2010 = false; // AutoDiscovery for Exchange2010 and higher failed. Next try old POX Autodiscovery.
 
 			try {
