@@ -47,5 +47,5 @@
 <!ENTITY button.label.folderpathcheck "Prüfen">
 <!ENTITY button.label.folderbrowse "Auswählen">
 
-<!ENTITY exchWebServices.UserAvailability.label "Die Benutzerverfügbarkeitstatus des Postfachkalenders ist nur sichtbar, wenn Sie entsprechende Berechtigungen besitzen.">
+<!ENTITY exchWebServices.UserAvailability.label "Die Benutzerverfügbarkeitstatus des Postfachkalenders ist nur sichtbar, wenn Sie entsprechende Berechtigungen besitzen. Hauptkalender kann nun trotzdem hinzugefügt werden.">
 
