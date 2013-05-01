@@ -7541,7 +7541,7 @@ return;*/
 				dbVersion = this.globalFunctions.safeGetIntPref(this.prefs, "dbVersion", 0);
 			}
 
-			if (dbVersion < latestDBVersion) {
+//			if (dbVersion < latestDBVersion) {
 				if (!this.offlineCacheDB.tableExists("items")) {
 					if (this.debug) this.logInfo("Table 'items' does not yet exist. We are going to create it.");
 					try {
@@ -7656,6 +7656,7 @@ return;*/
 
 				if (this.debug) this.logInfo("Created/opened offlineCache database.");
 				// Fix the database corruption bug from version 2.0.0-2.0.3 (fixed in version 2.0.4) 26-05-2012
+			if (dbVersion < latestDBVersion) {
 				if (this.debug) this.logInfo("Running fix for database corruption bug from version 2.0.0-2.0.3 (fixed in version 2.0.4)");
 				var masters = this.executeQueryWithResults("SELECT uid FROM items WHERE type='M'",["uid"]);
 				if ((masters) && (masters.length > 0)) {
