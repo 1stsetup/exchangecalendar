@@ -941,10 +941,13 @@ catch(err){
 				//header.addChildTag("TimeZoneContext", "nsTypes", null).addChildTagObject(exchTimeZone.timeZone);
 
 				if (this.version.indexOf("2007") > -1) {
-					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:TimeZoneDefinition Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:TimeZoneDefinition xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					tmpTimeZone.setAttribute("Id",exchTimeZone.id); 
 				}
 				else {
-					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:TimeZoneDefinition Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:TimeZoneDefinition xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					tmpTimeZone.setAttribute("Name",exchTimeZone.name); 
+					tmpTimeZone.setAttribute("Id",exchTimeZone.id); 
 				}
 				header.addChildTag("TimeZoneContext", "nsTypes", null).addChildTagObject(tmpTimeZone);
 		}

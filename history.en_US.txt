@@ -1,3 +1,6 @@
+Version 3.2.0-Beta16:
+- Fixed Bug 273 - Tmezone in US or Canada triggers XML error and results in HTTP 400 Bad Request.
+
 Version 3.2.0-Beta14:
 - Received new German translation from Björn Töpper.
 - Fixed some small outstanding bugs which will get mentioned when I release the final version.
