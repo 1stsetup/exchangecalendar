@@ -89,16 +89,21 @@ installListener.prototype = {
 		//dump("installListener: onInstallEnded\n");
 		this.stopListener(aInstall);
 
-/*		if (this._updater.needsReboot) {
+		if (this._updater.needsReboot) {
 			dump("installListener: needsReboot\n");
-			this.prompts.alert(null, "Addon updated", "1. Addon has been updated to version: "+aAddon.version+".\n\nThunderbird will be restarted to activate new version."); 
+			var result = this.prompts.confirm(null, "Restart Thunderbird", "To activate the new version of the Exchange Calendar add-on you need to restart Thunderbird.\n\nDo you want to restart Thunderbird?");
+//			this.prompts.alert(null, "Addon updated", "1. Addon has been updated to version: "+aAddon.version+".\n\nThunderbird will be restarted to activate new version."); 
+			if (result) {
+				var appStartup = Cc["@mozilla.org/toolkit/app-startup;1"].getService(Ci.nsIAppStartup);
+				appStartup.quit(0x12);
+			}
 		}
 		else {
 			dump("installListener: Does not need a Reboot\n");
-		}*/
-		this.prompts.alert(null, "Addon updated", "Addon has been updated to version: "+aAddon.version+".\n\nThunderbird will be restarted to activate new version."); 
-		var appStartup = Cc["@mozilla.org/toolkit/app-startup;1"].getService(Ci.nsIAppStartup);
-		appStartup.quit(0x12);
+		}
+//		this.prompts.alert(null, "Addon updated", "Addon has been updated to version: "+aAddon.version+".\n\nThunderbird will be restarted to activate new version."); 
+//		var appStartup = Cc["@mozilla.org/toolkit/app-startup;1"].getService(Ci.nsIAppStartup);
+//		appStartup.quit(0x12);
 	},
 
 	onInstallCancelled: function _onInstallCancelled(aInstall)
@@ -312,7 +317,8 @@ mivUpdater.prototype = {
 	{
 		this._needsReboot = aNeedsReboot;
 		//dump("installNewVersion: needsReboot:"+this.needsReboot+"\n");
-		AddonManager.getInstallForURL(aDetails.updateDetails.updateURL, this.installCallBack, "application/x-xpinstall", null, null, null, aDetails.updateDetails.newVersion, null);
+		var self = this;
+		AddonManager.getInstallForURL(aDetails.updateDetails.updateURL, function(aInstall) { self.installCallBack(aInstall);}, "application/x-xpinstall", null, null, null, aDetails.updateDetails.newVersion, null);
 	},
 
 	installCallBack: function _installCallBack(aInstall)
