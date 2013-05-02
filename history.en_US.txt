@@ -1,3 +1,6 @@
+Version 3.2.0-Beta20:
+- Fixed Bug 276 - Duplicate entries, wrong hours and sometimes missing entries when viewving other calendars
+
 Version 3.2.0-Beta16:
 - Fixed Bug 273 - Tmezone in US or Canada triggers XML error and results in HTTP 400 Bad Request.
 
