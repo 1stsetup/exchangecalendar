@@ -1,0 +1,5 @@
+interfaces mivExchangeProtocolHandler.xpt
+component {62eab4a0-d5b1-4ce8-9910-2ed3661d0ff9} mivExchangeProtocolHandler.js
+contract @mozilla.org/messenger/protocol;1?type=exchangeWebServiceMail {62eab4a0-d5b1-4ce8-9910-2ed3661d0ff9}
+
+

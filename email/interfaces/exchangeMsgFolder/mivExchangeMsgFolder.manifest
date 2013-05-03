@@ -1,0 +1,5 @@
+interfaces mivExchangeMsgFolder.xpt
+component {364ed353-d3ad-41d2-9df3-2fab209d9ac1} mivExchangeMsgFolder.js
+contract @1st-setup.nl/exchange/msgfolder;1 {364ed353-d3ad-41d2-9df3-2fab209d9ac1}
+
+

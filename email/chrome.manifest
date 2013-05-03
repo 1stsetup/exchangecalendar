@@ -6,7 +6,9 @@ resource exchangemail interfaces/
 overlay chrome://messenger/content/AccountWizard.xul chrome://exchangemail/content/accountWizard.xul
 overlay chrome://messenger/content/AccountWizard.xul chrome://exchangemail/content/accountWizardPages.xul
 
+manifest interfaces/exchangeProtocolHandler/mivExchangeProtocolHandler.manifest
 manifest interfaces/exchangeMsgProtocolInfo/mivExchangeMsgProtocolInfo.manifest
 manifest interfaces/exchangeMsgAccountManagerExtension/mivExchangeMsgAccountManagerExtension.manifest
 manifest interfaces/exchangeMsgIncomingServer/mivExchangeMsgIncomingServer.manifest
+manifest interfaces/exchangeMsgFolder/mivExchangeMsgFolder.manifest
 

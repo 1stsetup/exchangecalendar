@@ -51,6 +51,11 @@ mivExchangeMsgProtocolInfo.prototype = {
 	flags : Ci.nsIClassInfo.THREADSAFE,
 	implementationLanguage : Ci.nsIProgrammingLanguage.JAVASCRIPT,
 
+	// nsISupports getHelperForLanguage(in PRUint32 language);
+	getHelperForLanguage: function _getHelperForLanguage(language) {
+		return null;
+	},
+
 	getInterfaces : function _getInterfaces(count) 
 	{
 		var ifaces = [Ci.mivExchangeMsgProtocolInfo,
@@ -68,6 +73,7 @@ mivExchangeMsgProtocolInfo.prototype = {
 //    attribute nsIFile defaultLocalPath;
 	get defaultLocalPath()
 	{
+dump("msgProtocolInfo: get defaultLocalPath\n");
 		var file = Cc["@mozilla.org/file/directory_service;1"].
 				getService(Ci.nsIProperties).
 				get("ProfD", Ci.nsIFile);
@@ -80,6 +86,7 @@ mivExchangeMsgProtocolInfo.prototype = {
 
 	set defaultLocalPath(aValue)
 	{
+dump("msgProtocolInfo: set defaultLocalPath\n");
 		return Cr.NS_ERROR_NOT_IMPLEMENTED;
 	},
     /**
@@ -89,6 +96,7 @@ mivExchangeMsgProtocolInfo.prototype = {
 //    readonly attribute nsIIDPtr serverIID;
 	get serverIID()
 	{
+dump("msgProtocolInfo: get serverIID\n");
 		return Cr.NS_ERROR_NOT_IMPLEMENTED;
 	},
 
@@ -99,6 +107,7 @@ mivExchangeMsgProtocolInfo.prototype = {
 //    readonly attribute boolean requiresUsername;
 	get requiresUsername()
 	{
+dump("msgProtocolInfo: get requiresUsername\n");
 		return true;
 	},
 
@@ -110,6 +119,7 @@ mivExchangeMsgProtocolInfo.prototype = {
 //    readonly attribute boolean preflightPrettyNameWithEmailAddress;
 	get preflightPrettyNameWithEmailAddress()
 	{
+dump("msgProtocolInfo: get preflightPrettyNameWithEmailAddress\n");
 		return Cr.NS_ERROR_NOT_IMPLEMENTED;
 	},
 
@@ -120,6 +130,7 @@ mivExchangeMsgProtocolInfo.prototype = {
 //    readonly attribute boolean canDelete;
 	get canDelete()
 	{
+dump("msgProtocolInfo: get canDelete\n");
 		return true;
 	},
 
@@ -129,6 +140,7 @@ mivExchangeMsgProtocolInfo.prototype = {
 //    readonly attribute boolean canLoginAtStartUp;
 	get canLoginAtStartUp()
 	{
+dump("msgProtocolInfo: get canLoginAtStartUp\n");
 		return true;
 	},
 
@@ -139,6 +151,7 @@ mivExchangeMsgProtocolInfo.prototype = {
 //    readonly attribute boolean canDuplicate;
 	get canDuplicate()
 	{
+dump("msgProtocolInfo: get canDuplicate\n");
 		return true;
 	},
 
@@ -151,6 +164,7 @@ mivExchangeMsgProtocolInfo.prototype = {
 //    long getDefaultServerPort(in boolean isSecure);
 	getDefaultServerPort: function _getDefaultServerPort(isSecure)
 	{
+dump("msgProtocolInfo: getDefaultServerPort\n");
 		return 443;
 	},
 
@@ -164,6 +178,7 @@ mivExchangeMsgProtocolInfo.prototype = {
 //    readonly attribute boolean canGetMessages;
 	get canGetMessages()
 	{
+dump("msgProtocolInfo: get canGetMessages\n");
 		return true;
 	},
 
@@ -174,6 +189,7 @@ mivExchangeMsgProtocolInfo.prototype = {
 //    readonly attribute boolean canGetIncomingMessages;
 	get canGetIncomingMessages()
 	{
+dump("msgProtocolInfo: get canGetIncomingMessages\n");
 		return true;
 	},
 
@@ -183,6 +199,7 @@ mivExchangeMsgProtocolInfo.prototype = {
 //    readonly attribute boolean defaultDoBiff;
 	get defaultDoBiff()
 	{
+dump("msgProtocolInfo: get defaultDoBiff\n");
 		return true;
 	},
 
@@ -192,6 +209,7 @@ mivExchangeMsgProtocolInfo.prototype = {
 //    readonly attribute boolean showComposeMsgLink;
 	get showComposeMsgLink()
 	{
+dump("msgProtocolInfo: get showComposeMsgLink\n");
 		return true;
 	},
 

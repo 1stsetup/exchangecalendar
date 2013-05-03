@@ -31,6 +31,8 @@ function mivExchangeMsgIncomingServer() {
 
 	//this.logInfo("mivExchangeMsgIncomingServer: init");
 
+	this._port = 443;
+
 }
 
 var mivExchangeMsgIncomingServerGUID = "79d87edc-020e-48d4-8c04-b894edab4bd2";
@@ -51,6 +53,11 @@ mivExchangeMsgIncomingServer.prototype = {
 	flags : Ci.nsIClassInfo.THREADSAFE,
 	implementationLanguage : Ci.nsIProgrammingLanguage.JAVASCRIPT,
 
+	// nsISupports getHelperForLanguage(in PRUint32 language);
+	getHelperForLanguage: function _getHelperForLanguage(language) {
+		return null;
+	},
+
 	getInterfaces : function _getInterfaces(count) 
 	{
 		var ifaces = [Ci.mivExchangeMsgIncomingServer,
@@ -67,12 +74,14 @@ mivExchangeMsgIncomingServer.prototype = {
 //  attribute ACString key;
 	get key()
 	{
-		dump("get key\n");
+		dump("mivExchangeMsgIncomingServer: get key\n");
+		return this._key;
 	},
 
 	set key(aValue)
 	{
-		dump("set key aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set key aValue:"+aValue+"\n");
+		this._key = aValue;
 	},
 
   /**
@@ -82,12 +91,12 @@ mivExchangeMsgIncomingServer.prototype = {
 //  attribute AString prettyName;
 	get prettyName()
 	{
-		dump("get prettyName\n");
+		dump("mivExchangeMsgIncomingServer: get prettyName\n");
 	},
 
 	set prettyName(aValue)
 	{
-		dump("set prettyName aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set prettyName aValue:"+aValue+"\n");
 	},
 
   /**
@@ -97,7 +106,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  readonly attribute AString constructedPrettyName;
 	get constructedPrettyName()
 	{
-		dump("get constructedPrettyName\n");
+		dump("mivExchangeMsgIncomingServer: get constructedPrettyName\n");
 	},
 
   /**
@@ -106,12 +115,14 @@ mivExchangeMsgIncomingServer.prototype = {
 //  attribute ACString hostName;
 	get hostName()
 	{
-		dump("get hostName\n");
+		dump("mivExchangeMsgIncomingServer: get hostName\n");
+		return this._hostname;
 	},
 
 	set hostName(aValue)
 	{
-		dump("set hostName aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set hostName aValue:"+aValue+"\n");
+		this._hostname = aValue;
 	},
   
   /**
@@ -125,19 +136,21 @@ mivExchangeMsgIncomingServer.prototype = {
 
 	set realHostName(aValue)
 	{
-		dump("set realHostName aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set realHostName aValue:"+aValue+"\n");
 	},
   
   /* port of the server */
 //  attribute long port;
 	get port()
 	{
-		dump("get port\n");
+		dump("mivExchangeMsgIncomingServer: get port\n");
+		return this._port;
 	},
 
 	set port(aValue)
 	{
-		dump("set port aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set port aValue:"+aValue+"\n");
+		this._port = aValue;
 	},
 
   /**
@@ -146,12 +159,14 @@ mivExchangeMsgIncomingServer.prototype = {
 //  attribute ACString username;
 	get username()
 	{
-		dump("get username\n");
+		dump("mivExchangeMsgIncomingServer: get username\n");
+		return this._username;
 	},
 
 	set username(aValue)
 	{
-		dump("set username aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set username aValue:"+aValue+"\n");
+		this._username = aValue;
 	},
 
   /**
@@ -160,12 +175,12 @@ mivExchangeMsgIncomingServer.prototype = {
 //  attribute ACString realUsername;
 	get realUsername()
 	{
-		dump("get realUsername\n");
+		dump("mivExchangeMsgIncomingServer: get realUsername\n");
 	},
 
 	set realUsername(aValue)
 	{
-		dump("set realUsername aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set realUsername aValue:"+aValue+"\n");
 	},
 
   /**
@@ -175,7 +190,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  attribute ACString type;
 	get type()
 	{
-		dump("get type\n");
+		dump("mivExchangeMsgIncomingServer: get type\n");
 	},
 
 	set type(aValue)
@@ -186,7 +201,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  readonly attribute AString accountManagerChrome;
 	get accountManagerChrome()
 	{
-		dump("get accountManagerChrome\n");
+		dump("mivExchangeMsgIncomingServer: get accountManagerChrome\n");
 	},
 
   /**
@@ -197,7 +212,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  readonly attribute ACString localStoreType;
 	get localStoreType()
 	{
-		dump("get localStoreType\n");
+		dump("mivExchangeMsgIncomingServer: get localStoreType\n");
 	},
 
   // Perform specific tasks (reset flags, remove files, etc) for account user/server name changes.
@@ -205,19 +220,19 @@ mivExchangeMsgIncomingServer.prototype = {
 //                               in bool hostnameChanged);
 	onUserOrHostNameChanged: function _onUserOrHostNameChanged(oldName, newName, hostnameChanged)
 	{
-		dump("function onUserOrHostNameChanged\n");
+		dump("mivExchangeMsgIncomingServer: function onUserOrHostNameChanged\n");
 	},
 
   /* cleartext version of the password */
 //  attribute ACString password;
 	get password()
 	{
-		dump("get password\n");
+		dump("mivExchangeMsgIncomingServer: get password\n");
 	},
 
 	set password(aValue)
 	{
-		dump("set password aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set password aValue:"+aValue+"\n");
 	},
 
   /**
@@ -240,64 +255,64 @@ mivExchangeMsgIncomingServer.prototype = {
 //                             in nsIMsgWindow aMsgWindow);
 	getPasswordWithUI: function _getPasswordWithUI(aPromptString, aPromptTitle, aMsgWindow)
 	{
-		dump("function getPasswordWithUI\n");
+		dump("mivExchangeMsgIncomingServer: function getPasswordWithUI\n");
 	},
 
   /* forget the password in memory and in single signon database */
 //  void forgetPassword();
 	forgetPassword: function _forgetPassword()
 	{
-		dump("function forgetPassword\n");
+		dump("mivExchangeMsgIncomingServer: function forgetPassword\n");
 	},
 
   /* forget the password in memory which is cached for the session */
 //  void forgetSessionPassword();
 	forgetSessionPassword: function _forgetSessionPassword()
 	{
-		dump("function forgetSessionPassword\n");
+		dump("mivExchangeMsgIncomingServer: function forgetSessionPassword\n");
 	},
 
   /* should we download whole messages when biff goes off? */
 //  attribute boolean downloadOnBiff;
 	get downloadOnBiff()
 	{
-		dump("get downloadOnBiff\n");
+		dump("mivExchangeMsgIncomingServer: get downloadOnBiff\n");
 	},
 
 	set downloadOnBiff(aValue)
 	{
-		dump("set downloadOnBiff aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set downloadOnBiff aValue:"+aValue+"\n");
 	},
 
   /* should we biff the server? */
 //  attribute boolean doBiff;
 	get doBiff()
 	{
-		dump("get doBiff\n");
+		dump("mivExchangeMsgIncomingServer: get doBiff\n");
 	},
 
 	set doBiff(aValue)
 	{
-		dump("set doBiff aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set doBiff aValue:"+aValue+"\n");
 	},
 
   /* how often to biff */
 //  attribute long biffMinutes;
 	get biffMinutes()
 	{
-		dump("get biffMinutes\n");
+		dump("mivExchangeMsgIncomingServer: get biffMinutes\n");
 	},
 
 	set biffMinutes(aValue)
 	{
-		dump("set biffMinutes aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set biffMinutes aValue:"+aValue+"\n");
 	},
 
   /* current biff state */
 //  attribute unsigned long biffState;
 	get biffState()
 	{
-		dump("get biffState\n");
+		dump("mivExchangeMsgIncomingServer: get biffState\n");
 	},
 
 	set biffState(aValue)
@@ -309,50 +324,50 @@ mivExchangeMsgIncomingServer.prototype = {
 //  attribute boolean performingBiff; 
 	get performingBiff()
 	{
-		dump("get performingBiff\n");
+		dump("mivExchangeMsgIncomingServer: get performingBiff\n");
 	},
 
 	set performingBiff(aValue)
 	{
-		dump("set performingBiff aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set performingBiff aValue:"+aValue+"\n");
 	},
 
   /* the on-disk path to message storage for this server */
 //  attribute nsIFile localPath;
 	get localPath()
 	{
-		dump("get localPath\n");
+		dump("mivExchangeMsgIncomingServer: get localPath\n");
 	},
 
 	set localPath(aValue)
 	{
-		dump("set localPath aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set localPath aValue:"+aValue+"\n");
 	},
 
   /// message store to use for the folders under this server.
 //  readonly attribute nsIMsgPluggableStore msgStore;
 	get msgStore()
 	{
-		dump("get msgStore\n");
+		dump("mivExchangeMsgIncomingServer: get msgStore\n");
 	},
 
   /* the RDF URI for the root mail folder */
 //  readonly attribute ACString serverURI;
 	get serverURI()
 	{
-		dump("get serverURI\n");
+		dump("mivExchangeMsgIncomingServer: get serverURI\n");
 	},
 
   /* the root folder for this server, even if server is deferred */
 //  attribute nsIMsgFolder rootFolder;
 	get rootFolder()
 	{
-		dump("get rootFolder\n");
+		dump("mivExchangeMsgIncomingServer: get rootFolder\n");
 	},
 
 	set rootFolder(aValue)
 	{
-		dump("set rootFolder aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set rootFolder aValue:"+aValue+"\n");
 	},
 
   /* root folder for this account 
@@ -360,7 +375,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  readonly attribute nsIMsgFolder rootMsgFolder;
 	get rootMsgFolder()
 	{
-		dump("get rootMsgFolder\n");
+		dump("mivExchangeMsgIncomingServer: get rootMsgFolder\n");
 	},
 
   /* are we already getting new Messages on the current server..
@@ -369,12 +384,12 @@ mivExchangeMsgIncomingServer.prototype = {
 //  attribute boolean serverBusy;
 	get serverBusy()
 	{
-		dump("get serverBusy\n");
+		dump("mivExchangeMsgIncomingServer: get serverBusy\n");
 	},
 
 	set serverBusy(aValue)
 	{
-		dump("set serverBusy aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set serverBusy aValue:"+aValue+"\n");
 	},
 
   /**
@@ -383,7 +398,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  readonly attribute boolean isSecure;
 	get isSecure()
 	{
-		dump("get isSecure\n");
+		dump("mivExchangeMsgIncomingServer: get isSecure\n");
 	},
 
   /**
@@ -395,12 +410,12 @@ mivExchangeMsgIncomingServer.prototype = {
 //  attribute nsMsgAuthMethodValue authMethod;
 	get authMethod()
 	{
-		dump("get authMethod\n");
+		dump("mivExchangeMsgIncomingServer: get authMethod\n");
 	},
 
 	set authMethod(aValue)
 	{
-		dump("set authMethod aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set authMethod aValue:"+aValue+"\n");
 	},
 
   /**
@@ -412,24 +427,24 @@ mivExchangeMsgIncomingServer.prototype = {
 //  attribute nsMsgSocketTypeValue socketType;
 	get socketType()
 	{
-		dump("get socketType\n");
+		dump("mivExchangeMsgIncomingServer: get socketType\n");
 	},
 
 	set socketType(aValue)
 	{
-		dump("set socketType aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set socketType aValue:"+aValue+"\n");
 	},
 
   /* empty trash on exit */
 //  attribute boolean emptyTrashOnExit;
 	get emptyTrashOnExit()
 	{
-		dump("get emptyTrashOnExit\n");
+		dump("mivExchangeMsgIncomingServer: get emptyTrashOnExit\n");
 	},
 
 	set emptyTrashOnExit(aValue)
 	{
-		dump("set emptyTrashOnExit aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set emptyTrashOnExit aValue:"+aValue+"\n");
 	},
 
   /**
@@ -448,7 +463,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  nsIMsgFilterList getFilterList(in nsIMsgWindow aMsgWindow);
 	getFilterList: function _getFilterList(aMsgWindow)
 	{
-		dump("function getFilterList\n");
+		dump("mivExchangeMsgIncomingServer: function getFilterList\n");
 	},
 
   /**
@@ -463,7 +478,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  void setFilterList(in nsIMsgFilterList aFilterList);
 	setFilterList: function _setFilterList(aFilterList)
 	{
-		dump("function setFilterList\n");
+		dump("mivExchangeMsgIncomingServer: function setFilterList\n");
 	},
 
   /**
@@ -479,7 +494,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  nsIMsgFilterList getEditableFilterList(in nsIMsgWindow aMsgWindow);
 	getEditableFilterList: function _getEditableFilterList(aMsgWindow)
 	{
-		dump("function getEditableFilterList\n");
+		dump("mivExchangeMsgIncomingServer: function getEditableFilterList\n");
 	},
 
   /**
@@ -493,14 +508,14 @@ mivExchangeMsgIncomingServer.prototype = {
 //  void setEditableFilterList(in nsIMsgFilterList aFilterList);
 	setEditableFilterList: function _setEditableFilterList(aFilterList)
 	{
-		dump("function setEditableFilterList\n");
+		dump("mivExchangeMsgIncomingServer: function setEditableFilterList\n");
 	},
 
   /* we use this to set the default local path.  we use this when migrating prefs */
 //  void setDefaultLocalPath(in nsIFile aDefaultLocalPath);
 	setDefaultLocalPath: function _setDefaultLocalPath(aDefaultLocalPath)
 	{
-		dump("function setDefaultLocalPath\n");
+		dump("mivExchangeMsgIncomingServer: function setDefaultLocalPath\n");
 	},
 
   /**
@@ -513,14 +528,14 @@ mivExchangeMsgIncomingServer.prototype = {
 //  nsIURI verifyLogon(in nsIUrlListener aUrlListener, in nsIMsgWindow aMsgWindow);
 	verifyLogon: function _verifyLogon(aUrlListener, aMsgWindow)
 	{
-		dump("function verifyLogon\n");
+		dump("mivExchangeMsgIncomingServer: function verifyLogon\n");
 	},
 
   /* do a biff */
 //  void performBiff(in nsIMsgWindow aMsgWindow);
 	performBiff: function _performBiff(aMsgWindow)
 	{
-		dump("function performBiff\n");
+		dump("mivExchangeMsgIncomingServer: function performBiff\n");
 	},
   
   /* get new messages */
@@ -528,42 +543,42 @@ mivExchangeMsgIncomingServer.prototype = {
 //                      in nsIUrlListener aUrlListener);
 	getNewMessages: function _getNewMessages(aFolder, aMsgWindow, aUrlListener)
 	{
-		dump("function getNewMessages\n");
+		dump("mivExchangeMsgIncomingServer: function getNewMessages\n");
 	},
 
   /* this checks if a server needs a password to do biff */
 //  readonly attribute boolean serverRequiresPasswordForBiff;
 	get serverRequiresPasswordForBiff()
 	{
-		dump("get serverRequiresPasswordForBiff\n");
+		dump("mivExchangeMsgIncomingServer: get serverRequiresPasswordForBiff\n");
 	},
 
   /* this gets called when the server is expanded in the folder pane */
 //  void performExpand(in nsIMsgWindow aMsgWindow);
 	performExpand: function _performExpand(aMsgWindow)
 	{
-		dump("function performExpand\n");
+		dump("mivExchangeMsgIncomingServer: function performExpand\n");
 	},
 
   /* Write out all known folder data to panacea.dat */
 //  void writeToFolderCache(in nsIMsgFolderCache folderCache);
 	writeToFolderCache: function _writeToFolderCache(folderCache)
 	{
-		dump("function writeToFolderCache\n");
+		dump("mivExchangeMsgIncomingServer: function writeToFolderCache\n");
 	},
 
   /* close any server connections */
 //  void closeCachedConnections();
 	closeCachedConnections: function _closeCachedConnections()
 	{
-		dump("function closeCachedConnections\n");
+		dump("mivExchangeMsgIncomingServer: function closeCachedConnections\n");
 	},
  
   /* ... */
 //  void shutdown();
 	shutdown: function _shutdown()
 	{
-		dump("function shutdown\n");
+		dump("mivExchangeMsgIncomingServer: function shutdown\n");
 	},
 
   /**
@@ -586,49 +601,49 @@ mivExchangeMsgIncomingServer.prototype = {
 //  boolean getBoolValue(in string attr);
 	getBoolValue: function _getBoolValue(attr)
 	{
-		dump("function getBoolValue\n");
+		dump("mivExchangeMsgIncomingServer: function getBoolValue\n");
 	},
 
 //  void setBoolValue(in string attr, in boolean value);
 	setBoolValue: function _setBoolValue(attr, value)
 	{
-		dump("function setBoolValue\n");
+		dump("mivExchangeMsgIncomingServer: function setBoolValue\n");
 	},
 
 //  ACString getCharValue(in string attr);
 	getCharValue: function _getCharValue(attr)
 	{
-		dump("function getCharValue\n");
+		dump("mivExchangeMsgIncomingServer: function getCharValue\n");
 	},
 
 //  void setCharValue(in string attr, in ACString value);
 	setCharValue: function _setCharValue(attr, value)
 	{
-		dump("function setCharValue\n");
+		dump("mivExchangeMsgIncomingServer: function setCharValue\n");
 	},
 
 //  AString getUnicharValue(in string attr);
 	getUnicharValue: function _getUnicharValue(attr)
 	{
-		dump("function getUnicharValue\n");
+		dump("mivExchangeMsgIncomingServer: function getUnicharValue\n");
 	},
 
 //  void setUnicharValue(in string attr, in AString value);
 	setUnicharValue: function _setUnicharValue(attr, value)
 	{
-		dump("function setUnicharValue\n");
+		dump("mivExchangeMsgIncomingServer: function setUnicharValue\n");
 	},
   
 //  long getIntValue(in string attr);
 	getIntValue: function _getIntValue(attr)
 	{
-		dump("function getIntValue\n");
+		dump("mivExchangeMsgIncomingServer: function getIntValue\n");
 	},
 
 //  void setIntValue(in string attr, in long value);
 	setIntValue: function _setIntValue(attr, value)
 	{
-		dump("function setIntValue\n");
+		dump("mivExchangeMsgIncomingServer: function setIntValue\n");
 	},
 
   /** @} */
@@ -660,13 +675,13 @@ mivExchangeMsgIncomingServer.prototype = {
 //  nsIFile getFileValue(in string relpref, in string abspref);
 	getFileValue: function _getFileValue(relpref, abspref)
 	{
-		dump("function getFileValue\n");
+		dump("mivExchangeMsgIncomingServer: function getFileValue\n");
 	},
 
 //  void setFileValue(in string relpref, in string abspref, in nsIFile aValue);
 	setFileValue: function _setFileValue(relpref, abspref, aValue)
 	{
-		dump("function setFileValue\n");
+		dump("mivExchangeMsgIncomingServer: function setFileValue\n");
 	},
 
   /** @} */
@@ -678,7 +693,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  void clearAllValues();
 	clearAllValues: function _clearAllValues()
 	{
-		dump("function clearAllValues\n");
+		dump("mivExchangeMsgIncomingServer: function clearAllValues\n");
 	},
 
   /** 
@@ -688,56 +703,56 @@ mivExchangeMsgIncomingServer.prototype = {
 //  void removeFiles();
 	removeFiles: function _removeFiles()
 	{
-		dump("function removeFiles\n");
+		dump("mivExchangeMsgIncomingServer: function removeFiles\n");
 	},
   
 //  attribute boolean valid;
 	get valid()
 	{
-		dump("get valid\n");
+		dump("mivExchangeMsgIncomingServer: get valid\n");
 	},
 
 	set valid(aValue)
 	{
-		dump("set valid aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set valid aValue:"+aValue+"\n");
 	},
   
 //  AString toString();
 	toString: function _toString()
 	{
-		dump("function toString\n");
+		dump("mivExchangeMsgIncomingServer: function toString\n");
 	},
 
 //  void displayOfflineMsg(in nsIMsgWindow aWindow);
 	displayOfflineMsg: function _displayOfflineMsg(aWindow)
 	{
-		dump("function displayOfflineMsg\n");
+		dump("mivExchangeMsgIncomingServer: function displayOfflineMsg\n");
 	},
 
   /* used for comparing nsIMsgIncomingServers */
 //  boolean equals(in nsIMsgIncomingServer server);
 	equals: function _equals(server)
 	{
-		dump("function equals\n");
+		dump("mivExchangeMsgIncomingServer: function equals\n");
 	},
 
   /* Get Messages at startup */
 //  readonly attribute boolean downloadMessagesAtStartup; 
 	get downloadMessagesAtStartup()
 	{
-		dump("get downloadMessagesAtStartup\n");
+		dump("mivExchangeMsgIncomingServer: get downloadMessagesAtStartup\n");
 	},
 
   /* check to this if the server supports filters */
 //  attribute boolean canHaveFilters;
 	get canHaveFilters()
 	{
-		dump("get canHaveFilters\n");
+		dump("mivExchangeMsgIncomingServer: get canHaveFilters\n");
 	},
 
 	set canHaveFilters(aValue)
 	{
-		dump("set canHaveFilters aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set canHaveFilters aValue:"+aValue+"\n");
 	},
 
   /**
@@ -747,98 +762,98 @@ mivExchangeMsgIncomingServer.prototype = {
 //  attribute boolean canDelete;
 	get canDelete()
 	{
-		dump("get canDelete\n");
+		dump("mivExchangeMsgIncomingServer: get canDelete\n");
 	},
 
 	set canDelete(aValue)
 	{
-		dump("set canDelete aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set canDelete aValue:"+aValue+"\n");
 	},
 
 //  attribute boolean loginAtStartUp;
 	get loginAtStartUp()
 	{
-		dump("get loginAtStartUp\n");
+		dump("mivExchangeMsgIncomingServer: get loginAtStartUp\n");
 	},
 
 	set loginAtStartUp(aValue)
 	{
-		dump("set loginAtStartUp aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set loginAtStartUp aValue:"+aValue+"\n");
 	},
 
 //  attribute boolean limitOfflineMessageSize;
 	get limitOfflineMessageSize()
 	{
-		dump("get limitOfflineMessageSize\n");
+		dump("mivExchangeMsgIncomingServer: get limitOfflineMessageSize\n");
 	},
 
 	set limitOfflineMessageSize(aValue)
 	{
-		dump("set limitOfflineMessageSize aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set limitOfflineMessageSize aValue:"+aValue+"\n");
 	},
 //  attribute long maxMessageSize;
 	get maxMessageSize()
 	{
-		dump("get maxMessageSize\n");
+		dump("mivExchangeMsgIncomingServer: get maxMessageSize\n");
 	},
 
 	set maxMessageSize(aValue)
 	{
-		dump("set maxMessageSize aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set maxMessageSize aValue:"+aValue+"\n");
 	},
 
 //  attribute nsIMsgRetentionSettings retentionSettings;
 	get retentionSettings()
 	{
-		dump("get retentionSettings\n");
+		dump("mivExchangeMsgIncomingServer: get retentionSettings\n");
 	},
 
 	set retentionSettings(aValue)
 	{
-		dump("set retentionSettings aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set retentionSettings aValue:"+aValue+"\n");
 	},
 
   /* check if this server can be a default server */
 //  readonly attribute boolean canBeDefaultServer;
 	get canBeDefaultServer()
 	{
-		dump("get canBeDefaultServer\n");
+		dump("mivExchangeMsgIncomingServer: get canBeDefaultServer\n");
 	},
 
   /* check if this server allows search operations */
 //  readonly attribute boolean canSearchMessages;
 	get canSearchMessages()
 	{
-		dump("get canSearchMessages\n");
+		dump("mivExchangeMsgIncomingServer: get canSearchMessages\n");
 	},
 
   /* check if this server allows canEmptyTrashOnExit operations */
 //  readonly attribute boolean canEmptyTrashOnExit;
 	get canEmptyTrashOnExit()
 	{
-		dump("get canEmptyTrashOnExit\n");
+		dump("mivExchangeMsgIncomingServer: get canEmptyTrashOnExit\n");
 	},
 
   /* display startup page once per account per session */
 //  attribute boolean displayStartupPage;
 	get displayStartupPage()
 	{
-		dump("get displayStartupPage\n");
+		dump("mivExchangeMsgIncomingServer: get displayStartupPage\n");
 	},
 
 	set displayStartupPage(aValue)
 	{
-		dump("set displayStartupPage aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set displayStartupPage aValue:"+aValue+"\n");
 	},
 //  attribute nsIMsgDownloadSettings downloadSettings;
 	get downloadSettings()
 	{
-		dump("get downloadSettings\n");
+		dump("mivExchangeMsgIncomingServer: get downloadSettings\n");
 	},
 
 	set downloadSettings(aValue)
 	{
-		dump("set downloadSettings aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set downloadSettings aValue:"+aValue+"\n");
 	},
 
   /*
@@ -860,26 +875,26 @@ mivExchangeMsgIncomingServer.prototype = {
 //  attribute long offlineSupportLevel;
 	get offlineSupportLevel()
 	{
-		dump("get offlineSupportLevel\n");
+		dump("mivExchangeMsgIncomingServer: get offlineSupportLevel\n");
 	},
 
 	set offlineSupportLevel(aValue)
 	{
-		dump("set offlineSupportLevel aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set offlineSupportLevel aValue:"+aValue+"\n");
 	},
 
   /* create pretty name for migrated accounts */
 //  AString generatePrettyNameForMigration(); 
 	generatePrettyNameForMigration: function _generatePrettyNameForMigration()
 	{
-		dump("function generatePrettyNameForMigration\n");
+		dump("mivExchangeMsgIncomingServer: function generatePrettyNameForMigration\n");
 	},
 
   /* does this server have disk space settings? */
 //  readonly attribute boolean supportsDiskSpace;
 	get supportsDiskSpace()
 	{
-		dump("get supportsDiskSpace\n");
+		dump("mivExchangeMsgIncomingServer: get supportsDiskSpace\n");
 	},
 
   /**
@@ -891,12 +906,12 @@ mivExchangeMsgIncomingServer.prototype = {
 //  attribute boolean hidden;
 	get hidden()
 	{
-		dump("get hidden\n");
+		dump("mivExchangeMsgIncomingServer: get hidden\n");
 	},
 
 	set hidden(aValue)
 	{
-		dump("set hidden aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set hidden aValue:"+aValue+"\n");
 	},
 
   /**
@@ -913,64 +928,64 @@ mivExchangeMsgIncomingServer.prototype = {
 //  attribute boolean defaultCopiesAndFoldersPrefsToServer;
 	get defaultCopiesAndFoldersPrefsToServer()
 	{
-		dump("get defaultCopiesAndFoldersPrefsToServer\n");
+		dump("mivExchangeMsgIncomingServer: get defaultCopiesAndFoldersPrefsToServer\n");
 	},
 
 	set defaultCopiesAndFoldersPrefsToServer(aValue)
 	{
-		dump("set defaultCopiesAndFoldersPrefsToServer aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set defaultCopiesAndFoldersPrefsToServer aValue:"+aValue+"\n");
 	},
 
   /* can this server allows sub folder creation */
 //  attribute boolean canCreateFoldersOnServer;
 	get canCreateFoldersOnServer()
 	{
-		dump("get canCreateFoldersOnServer\n");
+		dump("mivExchangeMsgIncomingServer: get canCreateFoldersOnServer\n");
 	},
 
 	set canCreateFoldersOnServer(aValue)
 	{
-		dump("set canCreateFoldersOnServer aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set canCreateFoldersOnServer aValue:"+aValue+"\n");
 	},
 
   /* can this server allows message filing ? */
 //  attribute boolean canFileMessagesOnServer;
 	get canFileMessagesOnServer()
 	{
-		dump("get canFileMessagesOnServer\n");
+		dump("mivExchangeMsgIncomingServer: get canFileMessagesOnServer\n");
 	},
 
 	set canFileMessagesOnServer(aValue)
 	{
-		dump("set canFileMessagesOnServer aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set canFileMessagesOnServer aValue:"+aValue+"\n");
 	},
 
   /* can this server allow compacting folders ? */
 //  readonly attribute boolean canCompactFoldersOnServer;
 	get canCompactFoldersOnServer()
 	{
-		dump("get canCompactFoldersOnServer\n");
+		dump("mivExchangeMsgIncomingServer: get canCompactFoldersOnServer\n");
 	},
 
   /* can this server allow undo delete ? */
 //  readonly attribute boolean canUndoDeleteOnServer;
 	get canUndoDeleteOnServer()
 	{
-		dump("get canUndoDeleteOnServer\n");
+		dump("mivExchangeMsgIncomingServer: get canUndoDeleteOnServer\n");
 	},
 
   /* used for setting up the filter UI */
 //  readonly attribute nsMsgSearchScopeValue filterScope;
 	get filterScope()
 	{
-		dump("get filterScope\n");
+		dump("mivExchangeMsgIncomingServer: get filterScope\n");
 	},
 
   /* used for setting up the search UI */
 //  readonly attribute nsMsgSearchScopeValue searchScope;
 	get searchScope()
 	{
-		dump("get searchScope\n");
+		dump("mivExchangeMsgIncomingServer: get searchScope\n");
 	},
 
   /** 
@@ -982,7 +997,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  readonly attribute boolean passwordPromptRequired;
 	get passwordPromptRequired()
 	{
-		dump("get passwordPromptRequired\n");
+		dump("mivExchangeMsgIncomingServer: get passwordPromptRequired\n");
 	},
 
   /**
@@ -999,7 +1014,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  void configureTemporaryFilters(in nsIMsgFilterList filterList);
 	configureTemporaryFilters: function _configureTemporaryFilters(filterList)
 	{
-		dump("function configureTemporaryFilters\n");
+		dump("mivExchangeMsgIncomingServer: function configureTemporaryFilters\n");
 	},
 
   /**
@@ -1010,7 +1025,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  void clearTemporaryReturnReceiptsFilter();
 	clearTemporaryReturnReceiptsFilter: function _clearTemporaryReturnReceiptsFilter()
 	{
-		dump("function clearTemporaryReturnReceiptsFilter\n");
+		dump("mivExchangeMsgIncomingServer: function clearTemporaryReturnReceiptsFilter\n");
 	},
 
   /**
@@ -1019,25 +1034,25 @@ mivExchangeMsgIncomingServer.prototype = {
 //  readonly attribute nsISpamSettings spamSettings;
 	get spamSettings()
 	{
-		dump("get spamSettings\n");
+		dump("mivExchangeMsgIncomingServer: get spamSettings\n");
 	},
 
 //  readonly attribute nsIMsgFilterPlugin spamFilterPlugin;
 	get spamFilterPlugin()
 	{
-		dump("get spamFilterPlugin\n");
+		dump("mivExchangeMsgIncomingServer: get spamFilterPlugin\n");
 	},
 
 //  nsIMsgFolder getMsgFolderFromURI(in nsIMsgFolder aFolderResource, in ACString aURI);
 	getMsgFolderFromURI: function _getMsgFolderFromURI(aFolderResource, aURI)
 	{
-		dump("function getMsgFolderFromURI\n");
+		dump("mivExchangeMsgIncomingServer: function getMsgFolderFromURI\n");
 	},
 
 //  readonly attribute boolean isDeferredTo;
 	get isDeferredTo()
 	{
-		dump("get isDeferredTo\n");
+		dump("mivExchangeMsgIncomingServer: get isDeferredTo\n");
 	},
 
 //  const long keepDups = 0;
@@ -1048,19 +1063,19 @@ mivExchangeMsgIncomingServer.prototype = {
 //  attribute long incomingDuplicateAction;
 	get incomingDuplicateAction()
 	{
-		dump("get incomingDuplicateAction\n");
+		dump("mivExchangeMsgIncomingServer: get incomingDuplicateAction\n");
 	},
 
 	set incomingDuplicateAction(aValue)
 	{
-		dump("set incomingDuplicateAction aValue:"+aValue+"\n");
+		dump("mivExchangeMsgIncomingServer: set incomingDuplicateAction aValue:"+aValue+"\n");
 	},
 
   // check if new hdr is a duplicate of a recently arrived header
 //  boolean isNewHdrDuplicate(in nsIMsgDBHdr aNewHdr);
 	isNewHdrDuplicate: function _isNewHdrDuplicate(aNewHdr)
 	{
-		dump("function isNewHdrDuplicate\n");
+		dump("mivExchangeMsgIncomingServer: function isNewHdrDuplicate\n");
 	},
 
   /**
@@ -1073,7 +1088,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  void setForcePropertyEmpty(in string propertyName, in boolean aForcePropertyEmpty);
 	setForcePropertyEmpty: function _setForcePropertyEmpty(propertyName, aForcePropertyEmpty)
 	{
-		dump("function setForcePropertyEmpty\n");
+		dump("mivExchangeMsgIncomingServer: function setForcePropertyEmpty\n");
 	},
 
   /**
@@ -1087,7 +1102,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  boolean getForcePropertyEmpty(in string propertyName);
 	getForcePropertyEmpty: function _getForcePropertyEmpty(propertyName)
 	{
-		dump("function getForcePropertyEmpty\n");
+		dump("mivExchangeMsgIncomingServer: function getForcePropertyEmpty\n");
 	},
 
   /**
@@ -1103,7 +1118,7 @@ mivExchangeMsgIncomingServer.prototype = {
 //  readonly attribute long sortOrder;
 	get sortOrder()
 	{
-		dump("get sortOrder\n");
+		dump("mivExchangeMsgIncomingServer: get sortOrder\n");
 		return 100000000;
 	},
 

@@ -51,6 +51,11 @@ mivExchangeMsgAccountManagerExtension.prototype = {
 	flags : Ci.nsIClassInfo.THREADSAFE,
 	implementationLanguage : Ci.nsIProgrammingLanguage.JAVASCRIPT,
 
+	// nsISupports getHelperForLanguage(in PRUint32 language);
+	getHelperForLanguage: function _getHelperForLanguage(language) {
+		return null;
+	},
+
 	getInterfaces : function _getInterfaces(count) 
 	{
 		var ifaces = [Ci.mivExchangeMsgAccountManagerExtension,
