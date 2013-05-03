@@ -1,11 +1,11 @@
-<!ENTITY label.acceptbutton "Save">
-<!ENTITY label.cancelbutton "Cancel">
+﻿<!ENTITY label.acceptbutton "Speichern">
+<!ENTITY label.cancelbutton "Abbrechen">
 
 <!ENTITY ecsettings.tab.adsettings "Exchange/Windows AD">
-<!ENTITY ecsettings.tab.meetingrequestsettings "Vergader verzoeken">
+<!ENTITY ecsettings.tab.meetingrequestsettings "Besprechungsanfrage">
 
-<!ENTITY label.ecExchangeSettings.title "Name in list:">
-<!ENTITY exchangeWebService.preference.contacts.pollinterval "Refresh interval in seconds:">
+<!ENTITY label.ecExchangeSettings.title "Name in Liste:">
+<!ENTITY exchangeWebService.preference.contacts.pollinterval "Aktualisierungsintervall in Sekunden:">
 
-<!ENTITY exchWebService.add.globaladdresslist.label "Add global address list to search results.">
+<!ENTITY exchWebService.add.globaladdresslist.label "Hinzufügen der globalen Adressliste zu den Suchergebnissen.">
 

@@ -188,7 +188,8 @@ exchCheck4Lightning.prototype = {
 					this.globalFunctions.LOG(" ++ URL:"+aResult.updateDetails.updateURL);
 					var self = this;
 					if (this.globalFunctions.safeGetBoolPref(null, "extensions.1st-setup.others.warnAboutNewAddOnVersion", true, true)) {
-						this.lightningAlertTimer2.initWithCallback(function(aResult){ self.lightningAlertCallback2(aResult);}, 15000, this.lightningAlertTimer2.TYPE_ONE_SHOT);
+//						this.lightningAlertTimer2.initWithCallback(function(aResult){ self.lightningAlertCallback2(aResult);}, 15000, this.lightningAlertTimer2.TYPE_ONE_SHOT);
+						this.lightningAlertTimer2.initWithCallback(function(){ self.lightningAlertCallback2(aResult);}, 15000, this.lightningAlertTimer2.TYPE_ONE_SHOT);
 					}
 				}
 	},

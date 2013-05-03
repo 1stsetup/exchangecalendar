@@ -119,6 +119,9 @@ mivExchangeTimeZones.prototype = {
 	getExchangeTimeZoneByCalTimeZone: function _getExchangeTimeZoneByCalTimeZone(aCalTimeZone, aURL, aIndexDate)
 	{
 		var version = this.exchangeStatistics.getServerVersion(aURL);
+		if (!this._timeZones[version]) {
+			version = "Exchange2007_SP1";
+		}
 
 		this.logInfo("getExchangeTimeZoneIdByCalTimeZone:"+aCalTimeZone.tzid+", aURL:"+aURL+", version:"+version, 1);
 

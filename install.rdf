@@ -5,7 +5,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>exchangecalendar@extensions.1st-setup.nl</em:id>
-    <em:version>3.2.0-Beta13</em:version>
+    <em:version>3.2.0-Beta20</em:version>
 
     <em:targetApplication>
       <Description>
@@ -36,8 +36,11 @@ Dutch, French, English, German, Swedish and Japanese localizations.
 Some of the icons and images used are from the Fugue Icons Collection made by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)</em:description>
     <em:creator>Michel Verbraak (info@1st-setup.nl)</em:creator>
     <em:developer>Michel Verbraak</em:developer>
+    <em:translator>Michel Verbraak (nl)</em:translator>
+    <em:translator>Michel Verbraak (en-US)</em:translator>
     <em:translator>Dominique Fillon (fr-FR)</em:translator>
     <em:translator>Christian A. Meyer (de)</em:translator>
+    <em:translator>Björn Töpper (de)</em:translator>
     <em:translator>Hiroshi Miura (ja-JP)</em:translator>
     <em:homepageURL>http://www.1st-setup.nl/wordpress/?page_id=133</em:homepageURL>
     <em:iconURL>chrome://exchangecalendar/content/lightningexchangecalendar.png</em:iconURL>

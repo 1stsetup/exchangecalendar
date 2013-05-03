@@ -1,7 +1,7 @@
-<!ENTITY exchWebService.owner.label "Owner:">
-<!ENTITY exchWebService.totalWork.label "Total work:">
-<!ENTITY exchWebService.actualWork.label "Actual work:">
-<!ENTITY exchWebService.mileage.label "Mileage:">
-<!ENTITY exchWebService.billingInformation.label "Billing information:">
-<!ENTITY exchWebService.companies.label "Company:">
+﻿<!ENTITY exchWebService.owner.label "Besitzer:">
+<!ENTITY exchWebService.totalWork.label "Gesamtaufwand:">
+<!ENTITY exchWebService.actualWork.label "Ist-Aufwand:">
+<!ENTITY exchWebService.mileage.label "Reisekilometer:">
+<!ENTITY exchWebService.billingInformation.label "Abrechnungsinfo:">
+<!ENTITY exchWebService.companies.label "Firma:">
 
