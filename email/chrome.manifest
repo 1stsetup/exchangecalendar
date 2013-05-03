@@ -3,6 +3,8 @@ skin exchangemail fugue chrome/skins/fugue/
 resource exchangemail components/
 resource exchangemail interfaces/
 
+overlay chrome://messenger/content/AccountWizard.xul chrome://exchangemail/content/accountWizard.xul
+
 manifest interfaces/exchangeMsgProtocolInfo/mivExchangeMsgProtocolInfo.manifest
 manifest interfaces/exchangeMsgAccountManagerExtension/mivExchangeMsgAccountManagerExtension.manifest
 manifest interfaces/exchangeMsgIncomingServer/mivExchangeMsgIncomingServer.manifest
