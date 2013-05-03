@@ -3508,8 +3508,18 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			"NoData"	: x.UNKNOWN
 		};
 
-		var start = this.tryToSetDateValue(aCi.getTagValue("t:StartTime"));
-		var end   = this.tryToSetDateValue(aCi.getTagValue("t:EndTime"));
+		var start = null;
+		if (aCi.getTagValue("t:StartTime", null)) {
+			start = cal.fromRFC3339(aCi.getTagValue("t:StartTime", null), this.globalFunctions.ecDefaultTimeZone());
+		}
+
+		var end = null;
+		if (aCi.getTagValue("t:EndTime", null)) {
+			end = cal.fromRFC3339(aCi.getTagValue("t:EndTime", null), this.globalFunctions.ecDefaultTimeZone());
+		}
+
+//		var start = this.tryToSetDateValue(aCi.getTagValue("t:StartTime"));
+//		var end   = this.tryToSetDateValue(aCi.getTagValue("t:EndTime"));
 		var type  = types[aCi.getTagValue("t:BusyType")];
 		return new cal.FreeBusyInterval(aCalId, type,
 					       	  start, end);
@@ -6687,7 +6697,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 	convertExchangeUserAvailabilityToCalAppointment: function _convertExchangeUserAvailabilityToCalAppointment(aCalendarEvent)
 	{
-		if (aCalendarEvent.getTagValue("t:BusyType") == "Free") {
+//		if (aCalendarEvent.getTagValue("t:BusyType") == "Free") {
 /*			var startDate = this.tryToSetDateValue(aCalendarEvent.getTagValue("t:StartTime"), null);
 			var endDate = this.tryToSetDateValue(aCalendarEvent.getTagValue("t:EndTime"), null);
 
@@ -6700,8 +6710,8 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 				}
 			}*/
 			
-			return null;
-		}
+//			return null;
+//		}
 
 		var item = createEvent();
 //		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
@@ -6711,6 +6721,13 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		item.id = this.md5(aCalendarEvent.toString());
 		if (this.itemCache[item.id]) {
 			return null;
+		}
+
+		if (aCalendarEvent.getTagValue("t:BusyType") == "Free") {
+			item.setProperty("TRANSP", "TRANSPARENT");
+		}
+		else {
+			item.setProperty("TRANSP", "OPAQUE");
 		}
 
 		item.title = this.tryToSetValue(aCalendarEvent.getTagValue("t:BusyType"), "");
@@ -6729,17 +6746,36 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 //		item.setProperty("DESCRIPTION", aCalendarItem.getTagValue("t:Body"));
 
-		item.startDate = this.tryToSetDateValue(aCalendarEvent.getTagValue("t:StartTime"), null);
+		item.startDate = null;
+		if (aCalendarEvent.getTagValue("t:StartTime", null)) {
+			item.startDate = cal.fromRFC3339(aCalendarEvent.getTagValue("t:StartTime", null), this.globalFunctions.ecDefaultTimeZone());
+		}
+
+//		item.startDate = this.tryToSetDateValue(aCalendarEvent.getTagValue("t:StartTime"), null);
 		if (! item.startDate) {
 			if (this.debug) this.logInfo("We have an empty startdate. Skipping this item.");
 			return null;
 		}
 
-		item.endDate = this.tryToSetDateValue(aCalendarEvent.getTagValue("t:EndTime"), null);
+		item.endDate = null;
+		if (aCalendarEvent.getTagValue("t:EndTime", null)) {
+			item.endDate = cal.fromRFC3339(aCalendarEvent.getTagValue("t:EndTime", null), this.globalFunctions.ecDefaultTimeZone());
+		}
+
+		//item.endDate = this.tryToSetDateValue(aCalendarEvent.getTagValue("t:EndTime"), null);
 		if (! item.endDate) {
 			if (this.debug) this.logInfo("We have an empty enddate. Skipping this item.");
 			return null;
 		}
+
+
+		// Try to see if it is an all day event. Only to see if all hours, minutes and seconds are 0 (zero)
+		if ( (item.startDate.hour == 0) && (item.startDate.minute == 0) && (item.startDate.second == 0) &&
+		     (item.endDate.hour == 0) && (item.endDate.second == 0) && (item.endDate.second == 0) ) {
+			item.startDate.isDate = true;
+			item.endDate.isDate = true;
+		}
+
 //dump("\n-- added --:"+aCalendarEvent.toString()+"\n");
 		return item;
 	},
@@ -7541,7 +7577,7 @@ return;*/
 				dbVersion = this.globalFunctions.safeGetIntPref(this.prefs, "dbVersion", 0);
 			}
 
-			if (dbVersion < latestDBVersion) {
+//			if (dbVersion < latestDBVersion) {
 				if (!this.offlineCacheDB.tableExists("items")) {
 					if (this.debug) this.logInfo("Table 'items' does not yet exist. We are going to create it.");
 					try {
@@ -7656,6 +7692,7 @@ return;*/
 
 				if (this.debug) this.logInfo("Created/opened offlineCache database.");
 				// Fix the database corruption bug from version 2.0.0-2.0.3 (fixed in version 2.0.4) 26-05-2012
+			if (dbVersion < latestDBVersion) {
 				if (this.debug) this.logInfo("Running fix for database corruption bug from version 2.0.0-2.0.3 (fixed in version 2.0.4)");
 				var masters = this.executeQueryWithResults("SELECT uid FROM items WHERE type='M'",["uid"]);
 				if ((masters) && (masters.length > 0)) {

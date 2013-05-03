@@ -204,7 +204,7 @@ exchangeAbRootDirectory.prototype = {
 	{
 		//exchWebService.commonAbFunctions.logInfo("exchangeAbRootDirectory: isRemote\n");
 //		return true;
-		return false; // This to fake the compose->addressing preferences ldap list.
+		return false; // This to fake the compose->addressing preferences Directory Server list.
 	},
 
 

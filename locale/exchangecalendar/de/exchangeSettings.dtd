@@ -36,12 +36,12 @@ start
 -->
 <!ENTITY ecsettings.tab.offlineCachingproperties "Offline Caching">
 
-<!ENTITY label.offlineCacheproperties.cachingStartDate "Start Date of caching:">
-<!ENTITY label.offlineCacheproperties.cachingEndDate "End date of caching:">
-<!ENTITY label.offlineCacheproperties.totalEvents "Total number of events cached:">
-<!ENTITY label.offlineCacheproperties.totalTasks "Total number of tasks cached:">
+<!ENTITY label.offlineCacheproperties.cachingStartDate "Startdatum im Offline-Cache:">
+<!ENTITY label.offlineCacheproperties.cachingEndDate "Enddatum im Offline-Cache:">
+<!ENTITY label.offlineCacheproperties.totalEvents "Gesamtanzahl von Terminen im Offline-Cache:">
+<!ENTITY label.offlineCacheproperties.totalTasks "Gesamtanzahl von Aufgaben im Offline-Cache:">
 
-<!ENTITY label.offlineCacheproperties.monthsBeforeStartDate "Number of months to cache items prior to today:">
-<!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Number of months to cache items after today:">
+<!ENTITY label.offlineCacheproperties.monthsBeforeStartDate "Wieviele Monate vor dem aktuellen Datum soll der Cache aktiv sein:"> 
+<!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Wieviele Monate nach dem aktuellen Datum soll der Cache aktiv sein:">
 
-<!ENTITY button.offlineCacheproperties.clearCache "Clear Offline Cached Data">
+<!ENTITY button.offlineCacheproperties.clearCache "Offline-Cache löschen">

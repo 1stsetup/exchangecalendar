@@ -79,6 +79,17 @@ mivExchangeAuthPrompt2.prototype = {
 		}
 	},
 
+	removePasswordCache: function _removePasswordCache(aUsername, aURL)
+	{
+		for (var name in this.passwordCache) {
+			if (name.indexOf("|"+aURL+"|")) {
+				this.logInfo("removePasswordCache: Clearing passwordCache for URL:"+aURL);
+
+				delete this.passwordCache[name];
+			}
+		}
+	},
+
 	getPassword: function _getPassword(aChannel, username, aURL, aRealm, alwaysGetPassword, useCached)
 	{
 		if ((!username) || (!aURL)) {
@@ -162,7 +173,7 @@ mivExchangeAuthPrompt2.prototype = {
 			}
 		}
 
-try {
+//try {
 		if (!password) {
 
 			if (!this.details[aURL]) { 
@@ -204,7 +215,7 @@ try {
 
 		this.logInfo("getPassword: We have a password:"+password);
 
-} catch(err) { this.logInfo("getPassword: Error:"+err); }
+//} catch(err) { this.logInfo("getPassword: Error:"+err); }
 		return password;
 	},
  
@@ -236,6 +247,12 @@ try {
 			var level = request.level;
 			var authInfo = request.authInfo;
 			var canUseBasicAuth = false;
+
+			if (this.details[aURL].previousFailedCount > 4) { // Maybe make this a user preference
+				this.logInfo("asyncPromptAuthNotifyCallback: We have more than '"+this.details[aURL].previousFailedCount+"' previous failed for '"+aURL+"'.");
+				aCallback.onAuthCancelled(aContext, false);
+				return;
+			}
 
 			var username;
 			var password;
@@ -398,12 +415,6 @@ try {
 		this.logInfo("asyncPromptAuth: authInfo.password="+authInfo.password);
 		this.logInfo("asyncPromptAuth: authInfo.domain="+authInfo.domain);
 
-		if (authInfo.flags & Ci.nsIAuthInformation.ONLY_PASSWORD) this.logInfo("asyncPromptAuth: authInfo.flags & ONLY_PASSWORD");
-		if (authInfo.flags & Ci.nsIAuthInformation.AUTH_HOST) this.logInfo("asyncPromptAuth: authInfo.flags & AUTH_HOST");
-		if (authInfo.flags & Ci.nsIAuthInformation.AUTH_PROXY) this.logInfo("asyncPromptAuth: authInfo.flags & AUTH_PROXY");
-		if (authInfo.flags & Ci.nsIAuthInformation.NEED_DOMAIN) this.logInfo("asyncPromptAuth: authInfo.flags & NEED_DOMAIN");
-		if (authInfo.flags & Ci.nsIAuthInformation.PREVIOUS_FAILED) this.logInfo("asyncPromptAuth: authInfo.flags & PREVIOUS_FAILED");
-
 		var URL = decodeURIComponent(aChannel.URI.scheme+"://"+aChannel.URI.hostPort+aChannel.URI.path);
 		this.logInfo("asyncPromptAuth: aChannel.URL="+URL+", username="+decodeURIComponent(aChannel.URI.username)+", password="+decodeURIComponent(aChannel.URI.password));
 
@@ -414,7 +425,20 @@ try {
 						canceled: false,
 						queue: new Array(),
 						ntlmCount: 0,
+						previousFailedCount: 0,
 					};
+
+		if (authInfo.flags & Ci.nsIAuthInformation.ONLY_PASSWORD) this.logInfo("asyncPromptAuth: authInfo.flags & ONLY_PASSWORD");
+		if (authInfo.flags & Ci.nsIAuthInformation.AUTH_HOST) this.logInfo("asyncPromptAuth: authInfo.flags & AUTH_HOST");
+		if (authInfo.flags & Ci.nsIAuthInformation.AUTH_PROXY) this.logInfo("asyncPromptAuth: authInfo.flags & AUTH_PROXY");
+		if (authInfo.flags & Ci.nsIAuthInformation.NEED_DOMAIN) this.logInfo("asyncPromptAuth: authInfo.flags & NEED_DOMAIN");
+		if (authInfo.flags & Ci.nsIAuthInformation.PREVIOUS_FAILED) {
+			this.logInfo("asyncPromptAuth: authInfo.flags & PREVIOUS_FAILED");
+			this.details[URL].previousFailedCount++;
+		}
+		else {
+			this.details[URL].previousFailedCount = 0;
+		}
 
 		try {
 			var offeredAuthentications = channel.getRequestHeader("Authorization");

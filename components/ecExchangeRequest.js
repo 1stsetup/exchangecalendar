@@ -732,12 +732,24 @@ catch(err){
 
                                 if (this.debug) this.logInfo(": isConnError req.status="+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText, 2);
 
-				if (this.tryNextURL()) {
-					return true;
+				var myAuthPrompt2 = Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
+				if ((this.urllist.length > 0) && (!myAuthPrompt2.getUserCanceled(this.currentUrl))) {
+					if (this.tryNextURL()) { 
+						return true;
+					}
+	 				this.fail(this.ER_ERROR_HTTP_ERROR4XX, "HTTP Client error "+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText.substr(0,300)+"\n\n");
+				}
+				else {
+					if (myAuthPrompt2.getUserCanceled(this.currentUrl)) {
+		 				this.fail(this.ER_ERROR_USER_ABORT_AUTHENTICATION,  "User canceled providing a valid password for url="+this.currentUrl+". Aborting this request.");
+					}
+					else {
+		 				this.fail(this.ER_ERROR_HTTP_ERROR4XX, "HTTP Client error "+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText.substr(0,300)+"\n\n");
+					}
 				}
 
- 				this.fail(this.ER_ERROR_HTTP_ERROR4XX, "HTTP Client error "+xmlReq.status+": "+errMsg+"\nURL:"+this.currentUrl+"\n"+xmlReq.responseText.substr(0,300)+"\n\n");
                         	return true;
+
                         }
 
                         if ((xmlReq.status > 499) && (xmlReq.status < 600)) {
@@ -929,10 +941,13 @@ catch(err){
 				//header.addChildTag("TimeZoneContext", "nsTypes", null).addChildTagObject(exchTimeZone.timeZone);
 
 				if (this.version.indexOf("2007") > -1) {
-					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:TimeZoneDefinition Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:TimeZoneDefinition xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					tmpTimeZone.setAttribute("Id",exchTimeZone.id); 
 				}
 				else {
-					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:TimeZoneDefinition Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:TimeZoneDefinition xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					tmpTimeZone.setAttribute("Name",exchTimeZone.name); 
+					tmpTimeZone.setAttribute("Id",exchTimeZone.id); 
 				}
 				header.addChildTag("TimeZoneContext", "nsTypes", null).addChildTagObject(tmpTimeZone);
 		}

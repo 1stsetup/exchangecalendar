@@ -102,11 +102,11 @@ mivExchangeEvent.prototype = {
 				}
 				else {
 					if (this.meetingTimeZone) {
-						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone);
+						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone, this._startDate);
 					}
 					else {
 						if (this.timeZone) {
-							var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone);
+							var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone, this._startDate);
 						}
 					}
 				}
@@ -140,11 +140,11 @@ mivExchangeEvent.prototype = {
 				}
 				else {
 					if (this.meetingTimeZone) {
-						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone);
+						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone, this._endDate);
 					}
 					else {
 						if (this.timeZone) {
-							var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone);
+							var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone, this._endDate);
 						}
 					}
 				}
@@ -342,7 +342,10 @@ mivExchangeEvent.prototype = {
 
 				if (!this.calendar.isVersion2007) {
 					var exchTimeZone = this.timeZones.getExchangeTimeZoneByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl, this._newStartDate);
-					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:StartTimeZone Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+//					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:StartTimeZone Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:StartTimeZone xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					tmpTimeZone.setAttribute("Name",exchTimeZone.name); 
+					tmpTimeZone.setAttribute("Id",exchTimeZone.id); 
 					var periods = exchTimeZone.timeZone.getTag("t:Periods");
 					var transitionsGroups = exchTimeZone.timeZone.getTag("t:TransitionsGroups");
 					var transitions = exchTimeZone.timeZone.getTag("t:Transitions");
@@ -378,7 +381,10 @@ mivExchangeEvent.prototype = {
 
 				if (!this.calendar.isVersion2007) {
 					var exchTimeZone = this.timeZones.getExchangeTimeZoneByCalTimeZone(this._newEndDate.timezone, this.calendar.serverUrl, this._newEndDate);
-					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:EndTimeZone Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+//					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:EndTimeZone Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:EndTimeZone xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					tmpTimeZone.setAttribute("Name",exchTimeZone.name); 
+					tmpTimeZone.setAttribute("Id",exchTimeZone.id); 
 					var periods = exchTimeZone.timeZone.getTag("t:Periods");
 					var transitionsGroups = exchTimeZone.timeZone.getTag("t:TransitionsGroups");
 					var transitions = exchTimeZone.timeZone.getTag("t:Transitions");

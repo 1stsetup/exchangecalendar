@@ -24,8 +24,8 @@
 
 <!ENTITY exchangeWebService.preferences.tab.cache "Caching">
 <!ENTITY exchangeWebService.preference.cache.memory.label "Minimaler Zwischenspeicher">
-<!ENTITY exchangeWebService.preference.cache.memory.startupBefore.label "Number of days to download before startdate of program:">
-<!ENTITY exchangeWebService.preference.cache.memory.startupAfter.label "Number of days to download after startdate of program:">
+<!ENTITY exchangeWebService.preference.cache.memory.startupBefore.label "Wieviele Tage vor dem aktuellen Datum soll der Cache-Download aktiv werden wenn das Programm startet:">
+<!ENTITY exchangeWebService.preference.cache.memory.startupAfter.label "Wieviele Tage nach dem aktuellen Datum soll der Cache-Download aktiv werden wenn das Programm startet:">
 
 <!ENTITY exchangeWebService.preferences.tab.others "Anderes">
 <!ENTITY exchangeWebService.preference.others.prefs.label "Kommunikationseigenschaften:">

@@ -188,7 +188,8 @@ exchCheck4Lightning.prototype = {
 					this.globalFunctions.LOG(" ++ URL:"+aResult.updateDetails.updateURL);
 					var self = this;
 					if (this.globalFunctions.safeGetBoolPref(null, "extensions.1st-setup.others.warnAboutNewAddOnVersion", true, true)) {
-						this.lightningAlertTimer2.initWithCallback(function(aResult){ self.lightningAlertCallback2(aResult);}, 15000, this.lightningAlertTimer2.TYPE_ONE_SHOT);
+//						this.lightningAlertTimer2.initWithCallback(function(aResult){ self.lightningAlertCallback2(aResult);}, 15000, this.lightningAlertTimer2.TYPE_ONE_SHOT);
+						this.lightningAlertTimer2.initWithCallback(function(){ self.lightningAlertCallback2(aResult);}, 15000, this.lightningAlertTimer2.TYPE_ONE_SHOT);
 					}
 				}
 	},
@@ -205,7 +206,7 @@ exchCheck4Lightning.prototype = {
 		if (aResult.updateDetails.msg != "") {
 			promptStr += "\n\nChanges:\n"+aResult.updateDetails.msg;
 		}
-		promptStr += "\n\nOr read the info on "+aResult.updateDetails.infoURL;
+		promptStr += '\n\nOr read the info on '+aResult.updateDetails.infoURL;
 		var promptTitle = "Update available";
 
 		var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"].  

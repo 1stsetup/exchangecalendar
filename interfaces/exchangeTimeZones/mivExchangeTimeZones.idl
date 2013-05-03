@@ -36,7 +36,7 @@ interface mivExchangeTimeZones : nsISupports
   AUTF8String getExchangeTimeZoneIdByCalTimeZone(in calITimezone aCalTimeZone, in AUTF8String aURL, in calIDateTime aIndexDate);
   AUTF8String getExchangeTimeZoneNameByCalTimeZone(in calITimezone aCalTimeZone, in AUTF8String aURL, in calIDateTime aIndexDate);
 
-  calITimezone getCalTimeZoneByExchangeMeetingTimeZone(in AUTF8String aTimeZoneName, [optional] in boolean is2007);
+  calITimezone getCalTimeZoneByExchangeMeetingTimeZone(in AUTF8String aTimeZoneName, in calIDateTime aIndexDate);
   calITimezone getCalTimeZoneByExchangeTimeZone(in mivIxml2jxon aExchangeTimeZone, in AUTF8String aURL, in calIDateTime aIndexDate);
 
 };

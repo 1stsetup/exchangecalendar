@@ -2601,11 +2601,13 @@ catch(err){
 				}
 			}
 			else {
-				var fieldValue = setItemField.addChildTag(this._mainTag, "t", null).addChildTag(aField, "t", aValue);
+				if (updateType == "SetItemField") {
+					var fieldValue = setItemField.addChildTag(this._mainTag, "t", null).addChildTag(aField, "t", aValue);
 
-				if (aAttributes) {
-					for (var attribute in aAttributes) {
-						fieldValue.setAttribute(attribute, aAttributes[attribute]);
+					if (aAttributes) {
+						for (var attribute in aAttributes) {
+							fieldValue.setAttribute(attribute, aAttributes[attribute]);
+						}
 					}
 				}
 			}

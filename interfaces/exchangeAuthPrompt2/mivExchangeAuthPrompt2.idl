@@ -33,5 +33,7 @@ interface mivExchangeAuthPrompt2 : nsIAuthPrompt2
 
 	void removeUserCanceled(in AUTF8String aURL);
 
+	void removePasswordCache(in AUTF8String aUsername, in AUTF8String aURL);
+
 
 };

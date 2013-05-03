@@ -130,13 +130,22 @@ erGetUserAvailabilityRequest.prototype = {
 			if (rm.length == 0) {
 				exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: Respons does not contain expected field");
 				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
+				this.isRunning = false;
+				return;
 			}
 			else {
+				var responseCode = rm[0].getTagValue("m:ResponseCode", "");
 				var messageText = rm[0].getTagValue("m:MessageText", "");
-				exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: "+messageText);
-				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_NOACCESSTOFREEBUSY, messageText);
+				if (responseCode.indexOf("ErrorMailRecipientNotFound") > -1) {
+					exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: "+messageText);
+				}
+				else {
+					exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: "+messageText);
+					this.onSendError(aExchangeRequest, this.parent.ER_ERROR_NOACCESSTOFREEBUSY, messageText);
+					this.isRunning = false;
+					return;
+				}
 			}
-			return;
 		}
 		rm = null;
 
