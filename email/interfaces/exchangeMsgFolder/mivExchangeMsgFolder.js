@@ -73,22 +73,35 @@ mivExchangeMsgFolder.prototype = {
 
   /// Returns an enumerator containing the messages within the current database.
 //  readonly attribute nsISimpleEnumerator messages;
-	get msgStore()
+	get messages()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get messages\n");
 		return true;
 	},
 
 //  void startFolderLoading();
+	startFolderLoading: function _startFolderLoading()
+	{
+dump("mivExchangeMsgFolder: function startFolderLoading\n");
+	},
+
 //  void endFolderLoading();
+	endFolderLoading: function _endFolderLoading()
+	{
+dump("mivExchangeMsgFolder: function endFolderLoading\n");
+	},
 
   /* get new headers for db */
 //  void updateFolder(in nsIMsgWindow aWindow);
+	updateFolder: function _updateFolder(aWindow)
+	{
+dump("mivExchangeMsgFolder: function updateFolder\n");
+	},
 
 //  readonly attribute AString prettiestName;
-	get msgStore()
+	get prettiestName()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get prettiestName\n");
 		return true;
 	},
 
@@ -96,9 +109,9 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * URL for this folder
    */
 //  readonly attribute ACString folderURL;
-	get msgStore()
+	get folderURL()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get folderURL\n");
 		return true;
 	},
 
@@ -106,9 +119,9 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * should probably move to the server
    */
 //  readonly attribute boolean showDeletedMessages;
-	get msgStore()
+	get showDeletedMessages()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get showDeletedMessages\n");
 		return true;
 	},
 
@@ -116,9 +129,9 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * this folder's parent server
    */
 //  readonly attribute nsIMsgIncomingServer server;
-	get msgStore()
+	get server()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get server\n");
 		return true;
 	},
 
@@ -126,44 +139,44 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * is this folder the "phantom" server folder?
    */
 //  readonly attribute boolean isServer;
-	get msgStore()
+	get isServer()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get isServer\n");
 		return true;
 	},
 
 //  readonly attribute boolean canSubscribe;
-	get msgStore()
+	get canSubscribe()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get canSubscribe\n");
 		return true;
 	},
 
 //  readonly attribute boolean canFileMessages;
-	get msgStore()
+	get canFileMessages()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get canFileMessages\n");
 		return true;
 	},
 
 //  readonly attribute boolean noSelect;  // this is an imap no select folder
-	get msgStore()
+	get noSelect()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get noSelect\n");
 		return true;
 	},
 
 //  readonly attribute boolean imapShared; // this is an imap shared folder
-	get msgStore()
+	get imapShared()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get imapShared\n");
 		return true;
 	},
 
 //  readonly attribute boolean canDeleteMessages; // can't delete from imap read-only
-	get msgStore()
+	get canDeleteMessages()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get canDeleteMessages\n");
 		return true;
 	},
 
@@ -173,9 +186,9 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * on some IMAP servers cannot have subfolders
    */
 //  readonly attribute boolean canCreateSubfolders;
-	get msgStore()
+	get canCreateSubfolders()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get canCreateSubfolders\n");
 		return true;
 	},
 
@@ -185,16 +198,16 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * and some special folders can't be renamed
    */
 //  readonly attribute boolean canRename;
-	get msgStore()
+	get canRename()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get canRename\n");
 		return true;
 	},
 
 //  readonly attribute boolean canCompact;
-	get msgStore()
+	get canCompact()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get canCompact\n");
 		return true;
 	},
 
@@ -202,9 +215,9 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * the phantom server folder
    */
 //  readonly attribute nsIMsgFolder rootFolder;
-	get msgStore()
+	get rootFolder()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get rootFolder\n");
 		return true;
 	},
 
@@ -222,7 +235,7 @@ dump("mivExchangeMsgFolder: get msgStore\n");
 //  nsIMsgFilterList getFilterList(in nsIMsgWindow msgWindow);
 	getFilterList: function _getFilterList(msgWindow)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getFilterList\n");
 	},
 
   /**
@@ -235,9 +248,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @param aFilterList The new list of filters.
    */
 //  void setFilterList(in nsIMsgFilterList filterList);
-	getFilterList: function _getFilterList(msgWindow)
+	setFilterList: function _setFilterList(filterList)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function setFilterList\n");
 	},
 
   /**
@@ -251,9 +264,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @return            The list of filters
    */
 //  nsIMsgFilterList getEditableFilterList(in nsIMsgWindow aMsgWindow);
-	getFilterList: function _getFilterList(msgWindow)
+	getEditableFilterList: function _getEditableFilterList(aMsgWindow)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getEditableFilterList\n");
 	},
 
   /**
@@ -265,15 +278,15 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @param aFilterList The new list of filters.
    */
 //  void setEditableFilterList(in nsIMsgFilterList aFilterList);
-	getFilterList: function _getFilterList(msgWindow)
+	setEditableFilterList: function _setEditableFilterList(aFilterList)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function setEditableFilterList\n");
 	},
 
 //  void ForceDBClosed ();
-	getFilterList: function _getFilterList(msgWindow)
+	ForceDBClosed: function _ForceDBClosed()
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function ForceDBClosed\n");
 	},
   /**
    * Close and backup a folder database prior to reparsing
@@ -283,34 +296,34 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    *                  folder. Set to empty to use the existing folder name.
    */
 //  void closeAndBackupFolderDB(in ACString newName);
-	getFilterList: function _getFilterList(msgWindow)
+	closeAndBackupFolderDB: function _closeAndBackupFolderDB(newName)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function closeAndBackupFolderDB\n");
 	},
 
 //  void Delete ();
-	getFilterList: function _getFilterList(msgWindow)
+	Delete: function _Delete()
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function Delete\n");
 	},
 
 //  void deleteSubFolders(in nsIArray folders, in nsIMsgWindow msgWindow);
-	getFilterList: function _getFilterList(msgWindow)
+	deleteSubFolders: function _deleteSubFolders(folders, msgWindow)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function deleteSubFolders\n");
 	},
 
 //  void propagateDelete(in nsIMsgFolder folder, in boolean deleteStorage,
 //                       in nsIMsgWindow msgWindow);
-	getFilterList: function _getFilterList(msgWindow)
+	propagateDelete: function _propagateDelete(folder, deleteStorage, msgWindow)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function propagateDelete\n");
 	},
 
 //  void recursiveDelete(in boolean deleteStorage, in nsIMsgWindow msgWindow);
-	getFilterList: function _getFilterList(msgWindow)
+	recursiveDelete: function _recursiveDelete(deleteStorage, msgWindow)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function recursiveDelete\n");
 	},
 
   /**
@@ -324,9 +337,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @exception NS_MSG_FOLDER_EXISTS
    */
 //  void createSubfolder(in AString folderName, in nsIMsgWindow msgWindow);
-	getFilterList: function _getFilterList(msgWindow)
+	createSubfolder: function _createSubfolder(folderName, msgWindow)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function createSubfolder\n");
 	},
 
   /**
@@ -340,9 +353,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @returns The folder added.
    */
 //  nsIMsgFolder addSubfolder(in AString aFolderName);
-	getFilterList: function _getFilterList(msgWindow)
+	addSubfolder: function _addSubfolder(aFolderName)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function addSubfolder\n");
 	},
 
   /* this method ensures the storage for the folder exists.
@@ -351,9 +364,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
     or creates it if it doesn't exist
   */
 //  void createStorageIfMissing(in nsIUrlListener urlListener);
-	getFilterList: function _getFilterList(msgWindow)
+	createStorageIfMissing: function _createStorageIfMissing(urlListener)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function createStorageIfMissing\n");
 	},
 
   /**
@@ -365,9 +378,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @param aMsgWindow  For progress/status, can be null.
    */
 //  void compact(in nsIUrlListener aListener, in nsIMsgWindow aMsgWindow);
-	getFilterList: function _getFilterList(msgWindow)
+	compact: function _compact(aListener, aMsgWindow)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function compact\n");
 	},
 
   /**
@@ -381,23 +394,23 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    */
 //  void compactAll(in nsIUrlListener aListener, in nsIMsgWindow aMsgWindow,
 //                  in boolean aCompactOfflineAlso);
-	getFilterList: function _getFilterList(msgWindow)
+	compactAll: function _compactAll(aListener, aMsgWindow, aCompactOfflineAlso)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function compactAll\n");
 	},
 
 //  void compactAllOfflineStores(in nsIUrlListener aListener,
 //                               in nsIMsgWindow aMsgWindow,
 //                               in nsIArray aOfflineFolderArray);
-	getFilterList: function _getFilterList(msgWindow)
+	compactAllOfflineStores: function _compactAllOfflineStores(aListener, aMsgWindow, aOfflineFolderArray)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function compactAllOfflineStores\n");
 	},
 
 //  void emptyTrash(in nsIMsgWindow aMsgWindow, in nsIUrlListener aListener);
-	getFilterList: function _getFilterList(msgWindow)
+	emptyTrash: function _emptyTrash(aMsgWindow, aListener)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function emptyTrash\n");
 	},
 
   /**
@@ -406,34 +419,34 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @param name the new name of the folder
    */
 //  void rename(in AString name, in nsIMsgWindow msgWindow);
-	getFilterList: function _getFilterList(msgWindow)
+	rename: function _rename(name, msgWindow)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function rename\n");
 	},
 
 //  void renameSubFolders( in nsIMsgWindow msgWindow, in nsIMsgFolder oldFolder);
-	getFilterList: function _getFilterList(msgWindow)
+	renameSubFolders: function _renameSubFolders(msgWindow, oldFolder)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function renameSubFolders\n");
 	},
 
 //  AString generateUniqueSubfolderName(in AString prefix,
 //                                      in nsIMsgFolder otherFolder);
-	getFilterList: function _getFilterList(msgWindow)
+	generateUniqueSubfolderName: function _generateUniqueSubfolderName(prefix, otherFolder)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function generateUniqueSubfolderName\n");
 	},
 
 //  void updateSummaryTotals(in boolean force);
-	getFilterList: function _getFilterList(msgWindow)
+	updateSummaryTotals: function _updateSummaryTotals(force)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function updateSummaryTotals\n");
 	},
 
 //  void summaryChanged();
-	getFilterList: function _getFilterList(msgWindow)
+	summaryChanged: function _summaryChanged()
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function summaryChanged\n");
 	},
 
   /**
@@ -443,9 +456,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @param deep if true, descends into all subfolders and gets a grand total
    */
 //  long getNumUnread(in boolean deep);
-	getFilterList: function _getFilterList(msgWindow)
+	getNumUnread: function _getNumUnread(deep)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getNumUnread\n");
 	},
 
   /**
@@ -455,9 +468,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @param deep if true, descends into all subfolders and gets a grand total
    */
 //  long getTotalMessages(in boolean deep);
-	getFilterList: function _getFilterList(msgWindow)
+	getTotalMessages: function _getTotalMessages(deep)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getTotalMessages\n");
 	},
 
  /**
@@ -473,7 +486,7 @@ dump("mivExchangeMsgFolder: get hasNewMessages\n");
 
 	set hasNewMessages(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set hasNewMessages\n");
 	},
 
   /**
@@ -481,9 +494,9 @@ dump("mivExchangeMsgFolder: get hasNewMessages\n");
    *
    */
 //  readonly attribute nsIMsgDBHdr firstNewMessage;
-	get msgStore()
+	get firstNewMessage()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get firstNewMessage\n");
 		return true;
 	},
 
@@ -491,15 +504,15 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * clear new status flag of all of the new messages
    */
 //  void clearNewMessages();
-	getFilterList: function _getFilterList(msgWindow)
+	clearNewMessages: function _clearNewMessages()
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function clearNewMessages\n");
 	},
 
 //  readonly attribute unsigned long expungedBytes;
-	get msgStore()
+	get expungedBytes()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get expungedBytes\n");
 		return true;
 	},
 
@@ -508,9 +521,9 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * For example, special folders and isServer folders cannot be deleted.
    */
 //  readonly attribute boolean deletable;
-	get msgStore()
+	get deletable()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get deletable\n");
 		return true;
 	},
 
@@ -520,9 +533,9 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * than the sender
    */
 //  readonly attribute boolean displayRecipients;
-	get msgStore()
+	get displayRecipients()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get displayRecipients\n");
 		return true;
 	},
 
@@ -532,32 +545,32 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * synchronously instead of asynchronously
    */
 //  readonly attribute boolean manyHeadersToDownload;
-	get msgStore()
+	get manyHeadersToDownload()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get manyHeadersToDownload\n");
 		return true;
 	},
 
 //  readonly attribute boolean requiresCleanup;
-	get msgStore()
+	get requiresCleanup()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get requiresCleanup\n");
 		return true;
 	},
 
 //  void clearRequiresCleanup();
-	getFilterList: function _getFilterList(msgWindow)
+	clearRequiresCleanup: function _clearRequiresCleanup()
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function clearRequiresCleanup\n");
 	},
 
   /**
    * this should go into a news-specific interface
    */
 //  readonly attribute boolean knowsSearchNntpExtension;
-	get msgStore()
+	get knowsSearchNntpExtension()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get knowsSearchNntpExtension\n");
 		return true;
 	},
 
@@ -565,16 +578,16 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * this should go into a news-specific interface
    */
 //  readonly attribute boolean allowsPosting;
-	get msgStore()
+	get allowsPosting()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get allowsPosting\n");
 		return true;
 	},
 
 //  readonly attribute ACString relativePathName;
-	get msgStore()
+	get relativePathName()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get relativePathName\n");
 		return true;
 	},
 
@@ -583,28 +596,28 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * for imap, it's the sum of the size of the messages
    */
 //  attribute unsigned long sizeOnDisk;
-	get msgStore()
+	get sizeOnDisk()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get sizeOnDisk\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set sizeOnDisk(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set sizeOnDisk\n");
 	},
 
 //  readonly attribute ACString username;
-	get msgStore()
+	get username()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get username\n");
 		return true;
 	},
 
 //  readonly attribute ACString hostname;
-	get msgStore()
+	get hostname()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get hostname\n");
 		return true;
 	},
 
@@ -615,9 +628,9 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * @param flag  The flag to set on the folder.
    */
 //  void setFlag(in unsigned long flag);
-	getFilterList: function _getFilterList(msgWindow)
+	setFlag: function _setFlag(flag)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function setFlag\n");
 	},
 
   /**
@@ -627,9 +640,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @param flag  The flag to clear on the folder.
    */
 //  void clearFlag(in unsigned long flag);
-	getFilterList: function _getFilterList(msgWindow)
+	clearFlag: function _clearFlag(flag)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function clearFlag\n");
 	},
 
   /**
@@ -640,9 +653,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @return      True if the flag exists.
    */
 //  boolean getFlag(in unsigned long flag);
-	getFilterList: function _getFilterList(msgWindow)
+	getFlag: function _getFlag(flag)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getFlag\n");
 	},
 
   /**
@@ -652,9 +665,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @param flag  The flag to toggle
    */
 //  void toggleFlag(in unsigned long flag);
-	getFilterList: function _getFilterList(msgWindow)
+	toggleFlag: function _toggleFlag(flag)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function toggleFlag\n");
 	},
 
   /**
@@ -667,24 +680,24 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @param flag  The flag that was changed.
    */
 //  void onFlagChange(in unsigned long flag);
-	getFilterList: function _getFilterList(msgWindow)
+	onFlagChange: function _onFlagChange(flag)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function onFlagChange\n");
 	},
 
   /**
    * Direct access to the set/get all the flags at once.
    */
 //  attribute unsigned long flags;
-	get msgStore()
+	get flags()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get flags\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set flags(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set flags\n");
 	},
 
   /**
@@ -695,9 +708,9 @@ dump("mivExchangeMsgFolder: get hasNewMessages\n");
    *                 the specified flags set, or null if there are none.
    */
 //  nsIMsgFolder getFolderWithFlags(in unsigned long flags);
-	getFilterList: function _getFilterList(msgWindow)
+	getFolderWithFlags: function _getFolderWithFlags(flags)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getFolderWithFlags\n");
 	},
 
   /**
@@ -708,9 +721,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    *                 The array may have zero elements.
    */
 //  nsIArray getFoldersWithFlags(in unsigned long flags);
-	getFilterList: function _getFilterList(msgWindow)
+	getFoldersWithFlags: function _getFoldersWithFlags(flags)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getFoldersWithFlags\n");
 	},
 
   /**
@@ -721,9 +734,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    */
 //  void listFoldersWithFlags(in unsigned long flags,
 //                            in nsIMutableArray folders);
-	getFilterList: function _getFilterList(msgWindow)
+	listFoldersWithFlags: function _listFoldersWithFlags(flags, folders)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function listFoldersWithFlags\n");
 	},
 
   /**
@@ -734,15 +747,15 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    */
 //  boolean isSpecialFolder(in unsigned long flags,
 //                          [optional] in boolean checkAncestors);
-	getFilterList: function _getFilterList(msgWindow)
+	isSpecialFolder: function _isSpecialFolder(flags, checkAncestors)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function isSpecialFolder\n");
 	},
 
 //  ACString getUriForMsg(in nsIMsgDBHdr msgHdr);
-	getFilterList: function _getFilterList(msgWindow)
+	getUriForMsg: function _getUriForMsg(msgHdr)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getUriForMsg\n");
 	},
 
   /**
@@ -759,25 +772,25 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
 //                      in nsIMsgWindow msgWindow,
 //                      in boolean deleteStorage, in boolean isMove,
 //                      in nsIMsgCopyServiceListener listener, in boolean allowUndo);
-	getFilterList: function _getFilterList(msgWindow)
+	deleteMessages: function _deleteMessages(messages, msgWindow, deleteStorage, isMove, listener, allowUndo)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function deleteMessages\n");
 	},
 
 //  void copyMessages(in nsIMsgFolder srcFolder, in nsIArray messages,
 //                    in boolean isMove, in nsIMsgWindow msgWindow,
 //                    in nsIMsgCopyServiceListener listener, in boolean isFolder,
 //                    in boolean allowUndo);
-	getFilterList: function _getFilterList(msgWindow)
+	copyMessages: function _copyMessages(srcFolder, messages, isMove, msgWindow, listener, isFolder, allowUndo)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function copyMessages\n");
 	},
 
 //  void copyFolder(in nsIMsgFolder srcFolder, in boolean isMoveFolder,
 //                  in nsIMsgWindow msgWindow, in nsIMsgCopyServiceListener listener );
-	getFilterList: function _getFilterList(msgWindow)
+	copyFolder: function _copyFolder(srcFolder, isMoveFolder, msgWindow, listener)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function copyFolder\n");
 	},
 
 //  void copyFileMessage(in nsIFile file, in nsIMsgDBHdr msgToReplace,
@@ -785,40 +798,41 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
 //                       in ACString aKeywords,
 //                       in nsIMsgWindow msgWindow,
 //                       in nsIMsgCopyServiceListener listener);
-	getFilterList: function _getFilterList(msgWindow)
+	copyFileMessage: function _copyFileMessage(file, msgToReplace, isDraft, newMsgFlags, aKeywords,
+                                                    msgWindow, listener)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function copyFileMessage\n");
 	},
 
 //  void acquireSemaphore (in nsISupports semHolder);
-	getFilterList: function _getFilterList(msgWindow)
+	acquireSemaphore: function _acquireSemaphore(semHolder)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function acquireSemaphore\n");
 	},
 
 //  void releaseSemaphore (in nsISupports semHolder);
-	getFilterList: function _getFilterList(msgWindow)
+	releaseSemaphore: function _releaseSemaphore(semHolder)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function releaseSemaphore\n");
 	},
 
 //  boolean testSemaphore (in nsISupports semHolder);
-	getFilterList: function _getFilterList(msgWindow)
+	testSemaphore: function _testSemaphore(semHolder)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function testSemaphore\n");
 	},
 
 //  readonly attribute boolean locked;
-	get msgStore()
+	get locked()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get locked\n");
 		return true;
 	},
 
 //  void getNewMessages(in nsIMsgWindow aWindow, in nsIUrlListener aListener);
-	getFilterList: function _getFilterList(msgWindow)
+	getNewMessages: function _getNewMessages(aWindow, aListener)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getNewMessages\n");
 	},
 
   /**
@@ -826,48 +840,48 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * to the given folder cache (i.e. panacea.dat)
    */
 //  void writeToFolderCache(in nsIMsgFolderCache folderCache, in boolean deep);
-	getFilterList: function _getFilterList(msgWindow)
+	writeToFolderCache: function _writeToFolderCache(folderCache, deep)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function writeToFolderCache\n");
 	},
 
   /**
    * the charset of this folder
    */
 //  attribute ACString charset;
-	get msgStore()
+	get charset()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get charset\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set charset(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set charset\n");
 	},
 
 //  attribute boolean charsetOverride;
-	get msgStore()
+	get charsetOverride()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get charsetOverride\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set charsetOverride(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set charsetOverride\n");
 	},
 
 //  attribute unsigned long biffState;
-	get msgStore()
+	get biffState()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get biffState\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set biffState(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set biffState\n");
 	},
 
   /**
@@ -876,98 +890,98 @@ dump("mivExchangeMsgFolder: get hasNewMessages\n");
    */
 
 //   long getNumNewMessages (in boolean deep);
-	getFilterList: function _getFilterList(msgWindow)
+	getNumNewMessages: function _getNumNewMessages(deep)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getNumNewMessages\n");
 	},
 
 //   void setNumNewMessages(in long numNewMessages);
-	getFilterList: function _getFilterList(msgWindow)
+	setNumNewMessages: function _setNumNewMessages(numNewMessages)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
-	},
-	getFilterList: function _getFilterList(msgWindow)
-	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function setNumNewMessages\n");
 	},
 
   /**
    * are we running a url as a result of the user clicking get msg?
    */
 //  attribute boolean gettingNewMessages;
-	get msgStore()
+	get gettingNewMessages()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get gettingNewMessages\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set gettingNewMessages(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set gettingNewMessages\n");
 	},
 
   /**
    * local path of this folder
    */
 //  attribute nsIFile filePath;
-	get msgStore()
+	get filePath()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get filePath\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set filePath(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set filePath\n");
 	},
 
 //  readonly attribute ACString baseMessageURI;
-	get msgStore()
+	get baseMessageURI()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get baseMessageURI\n");
 		return true;
 	},
 
 //  ACString generateMessageURI(in nsMsgKey msgKey);
+	generateMessageURI: function _generateMessageURI(msgKey)
+	{
+dump("mivExchangeMsgFolder: function generateMessageURI\n");
+	},
 
 //  const nsMsgDispositionState nsMsgDispositionState_None = -1;
 //  const nsMsgDispositionState nsMsgDispositionState_Replied = 0;
 //  const nsMsgDispositionState nsMsgDispositionState_Forwarded = 1;
 //  void addMessageDispositionState(in nsIMsgDBHdr aMessage,
 //                                  in nsMsgDispositionState aDispositionFlag);
-	getFilterList: function _getFilterList(msgWindow)
+	addMessageDispositionState: function _addMessageDispositionState(aMessage, aDispositionFlag)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function addMessageDispositionState\n");
 	},
 
 //  void markMessagesRead(in nsIArray messages, in boolean markRead);
-	getFilterList: function _getFilterList(msgWindow)
+	markMessagesRead: function _markMessagesRead(messages, markRead)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function markMessagesRead\n");
 	},
 
 //  void markAllMessagesRead(in nsIMsgWindow aMsgWindow);
-	getFilterList: function _getFilterList(msgWindow)
+	markAllMessagesRead: function _markAllMessagesRead(aMsgWindow)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function markAllMessagesRead\n");
 	},
 
 //  void markMessagesFlagged(in nsIArray messages, in boolean markFlagged);
-	getFilterList: function _getFilterList(msgWindow)
+	markMessagesFlagged: function _markMessagesFlagged(messages, markFlagged)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function markMessagesFlagged\n");
 	},
 
 //  void markThreadRead(in nsIMsgThread thread);
-	getFilterList: function _getFilterList(msgWindow)
+	markThreadRead: function _markThreadRead(thread)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function markThreadRead\n");
 	},
 
 //  void setLabelForMessages(in nsIArray messages, in nsMsgLabelValue label);
-	getFilterList: function _getFilterList(msgWindow)
+	setLabelForMessages: function _setLabelForMessages(messages, label)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function setLabelForMessages\n");
 	},
 
   /**
@@ -984,15 +998,15 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @see nsIMsgFolder::getDBFolderInfoAndDB.
    */
 //  attribute nsIMsgDatabase msgDatabase;
-	get msgStore()
+	get msgDatabase()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get msgDatabase\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set msgDatabase(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set msgDatabase\n");
 	},
 
   /**
@@ -1002,58 +1016,58 @@ dump("mivExchangeMsgFolder: get hasNewMessages\n");
    * @return   backup message database
    */
 //  nsIMsgDatabase getBackupMsgDatabase();
-	getFilterList: function _getFilterList(msgWindow)
+	getBackupMsgDatabase: function _getBackupMsgDatabase()
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getBackupMsgDatabase\n");
 	},
 
   /**
    * Remove the backup message database file
    */
 //  void removeBackupMsgDatabase();
-	getFilterList: function _getFilterList(msgWindow)
+	removeBackupMsgDatabase: function _removeBackupMsgDatabase()
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function removeBackupMsgDatabase\n");
 	},
 
   /**
    * Open the backup message database file
    */
 //  void openBackupMsgDatabase();
-	getFilterList: function _getFilterList(msgWindow)
+	openBackupMsgDatabase: function _openBackupMsgDatabase()
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function openBackupMsgDatabase\n");
 	},
 
 //  nsIMsgDatabase getDBFolderInfoAndDB(out nsIDBFolderInfo folderInfo);
-	getFilterList: function _getFilterList(msgWindow)
+	getDBFolderInfoAndDB: function _getDBFolderInfoAndDB(folderInfo)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getDBFolderInfoAndDB\n");
 	},
 
 //  nsIMsgDBHdr GetMessageHeader(in nsMsgKey msgKey);
-	getFilterList: function _getFilterList(msgWindow)
+	GetMessageHeader: function _GetMessageHeader(msgKey)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function GetMessageHeader\n");
 	},
 
 //  readonly attribute boolean supportsOffline;
-	get msgStore()
+	get supportsOffline()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get supportsOffline\n");
 		return true;
 	},
 
 //  boolean shouldStoreMsgOffline(in nsMsgKey msgKey);
-	getFilterList: function _getFilterList(msgWindow)
+	shouldStoreMsgOffline: function _shouldStoreMsgOffline(msgKey)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function shouldStoreMsgOffline\n");
 	},
 
 //  boolean hasMsgOffline(in nsMsgKey msgKey);
-	getFilterList: function _getFilterList(msgWindow)
+	hasMsgOffline: function _hasMsgOffline(msgKey)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function hasMsgOffline\n");
 	},
 
   /**
@@ -1069,9 +1083,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
 //  nsIInputStream getOfflineFileStream(in nsMsgKey aMsgKey,
 //                                      out long long aOffset,
 //                                      out unsigned long aSize);
-	getFilterList: function _getFilterList(msgWindow)
+	getOfflineFileStream: function _getOfflineFileStream(aMsgKey, aOffset, aSize)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getOfflineFileStream\n");
 	},
 
   /**
@@ -1081,9 +1095,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    *
    */
 //  nsIMsgFolder GetOfflineMsgFolder(in nsMsgKey msgKey);
-	getFilterList: function _getFilterList(msgWindow)
+	GetOfflineMsgFolder: function _GetOfflineMsgFolder(msgKey)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function GetOfflineMsgFolder\n");
 	},
 
   /**
@@ -1093,9 +1107,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @returns An output stream to write to.
    */
 //  nsIOutputStream getOfflineStoreOutputStream(in nsIMsgDBHdr aHdr);
-	getFilterList: function _getFilterList(msgWindow)
+	getOfflineStoreOutputStream: function _getOfflineStoreOutputStream(aHdr)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getOfflineStoreOutputStream\n");
 	},
 
   /**
@@ -1108,36 +1122,36 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @returns an input stream to read the message from
    */
 //  nsIInputStream getMsgInputStream(in nsIMsgDBHdr aHdr, out boolean aReusable);
-	getFilterList: function _getFilterList(msgWindow)
+	getMsgInputStream: function _getMsgInputStream(aHdr, aReusable)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getMsgInputStream\n");
 	},
 
 //  readonly attribute nsIInputStream offlineStoreInputStream;
-	get msgStore()
+	get offlineStoreInputStream()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get offlineStoreInputStream\n");
 		return true;
 	},
 
 //  void DownloadMessagesForOffline(in nsIArray messages,
 //                                  in nsIMsgWindow window);
-	getFilterList: function _getFilterList(msgWindow)
+	DownloadMessagesForOffline: function _DownloadMessagesForOffline(messages, window)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function DownloadMessagesForOffline\n");
 	},
 
 //  nsIMsgFolder getChildWithURI(in ACString uri, in boolean deep,
 //                               in boolean caseInsensitive);
-	getFilterList: function _getFilterList(msgWindow)
+	getChildWithURI: function _getChildWithURI(uri, deep, caseInsensitive)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getChildWithURI\n");
 	},
 
 //  void downloadAllForOffline(in nsIUrlListener listener, in nsIMsgWindow window);
-	getFilterList: function _getFilterList(msgWindow)
+	downloadAllForOffline: function _downloadAllForOffline(listener, window)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function downloadAllForOffline\n");
 	},
 
   /**
@@ -1148,58 +1162,58 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
 //  const unsigned long allMessageCountNotifications    = 0;
 //  void enableNotifications(in long notificationType, in boolean enable,
 //                           in boolean dbBatching);
-	getFilterList: function _getFilterList(msgWindow)
+	enableNotifications: function _enableNotifications(notificationType, enable, dbBatching)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function enableNotifications\n");
 	},
 
 //  boolean isCommandEnabled(in ACString command);
-	getFilterList: function _getFilterList(msgWindow)
+	isCommandEnabled: function _isCommandEnabled(command)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function isCommandEnabled\n");
 	},
 
 //  boolean matchOrChangeFilterDestination(in nsIMsgFolder folder,
 //                                         in boolean caseInsensitive);
-	getFilterList: function _getFilterList(msgWindow)
+	matchOrChangeFilterDestination: function _matchOrChangeFilterDestination(folder, caseInsensitive)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function matchOrChangeFilterDestination\n");
 	},
 
 //  boolean confirmFolderDeletionForFilter(in nsIMsgWindow msgWindow);
-	getFilterList: function _getFilterList(msgWindow)
+	confirmFolderDeletionForFilter: function _confirmFolderDeletionForFilter(msgWindow)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function confirmFolderDeletionForFilter\n");
 	},
 
 //  void alertFilterChanged(in nsIMsgWindow msgWindow);
-	getFilterList: function _getFilterList(msgWindow)
+	alertFilterChanged: function _alertFilterChanged(msgWindow)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function alertFilterChanged\n");
 	},
 
 //  void throwAlertMsg(in string msgName, in nsIMsgWindow msgWindow);
-	getFilterList: function _getFilterList(msgWindow)
+	throwAlertMsg: function _throwAlertMsg(msgWindow)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function throwAlertMsg\n");
 	},
 
 //  AString getStringWithFolderNameFromBundle(in string msgName);
-	getFilterList: function _getFilterList(msgWindow)
+	getStringWithFolderNameFromBundle: function _getStringWithFolderNameFromBundle(msgName)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getStringWithFolderNameFromBundle\n");
 	},
 
 //  void notifyCompactCompleted();
-	getFilterList: function _getFilterList(msgWindow)
+	notifyCompactCompleted: function _notifyCompactCompleted()
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function notifyCompactCompleted\n");
 	},
 
 //  long compareSortKeys(in nsIMsgFolder msgFolder);
-	getFilterList: function _getFilterList(msgWindow)
+	compareSortKeys: function _compareSortKeys(msgFolder)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function compareSortKeys\n");
 	},
 
   /**
@@ -1208,33 +1222,33 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * Prefer nsIMsgFolder::compareSortKeys over this function.
    */
 //  void getSortKey(out unsigned long length, [array, size_is(length), retval] out octet key);
-	getFilterList: function _getFilterList(msgWindow)
+	getSortKey: function _getSortKey(length)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getSortKey\n");
 	},
 
 //  attribute nsIMsgRetentionSettings retentionSettings;
-	get msgStore()
+	get retentionSettings()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get retentionSettings\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set retentionSettings(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set retentionSettings\n");
 	},
 
 //  attribute nsIMsgDownloadSettings downloadSettings;
-	get msgStore()
+	get downloadSettings()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get downloadSettings\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set downloadSettings(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set downloadSettings\n");
 	},
 
 //  boolean callFilterPlugins(in nsIMsgWindow aMsgWindow);
@@ -1242,103 +1256,103 @@ dump("mivExchangeMsgFolder: get hasNewMessages\n");
    * used for order in the folder pane, folder pickers, etc.
    */
 //  attribute long sortOrder;
-	get msgStore()
+	get sortOrder()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get sortOrder\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set sortOrder(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set sortOrder\n");
 	},
 
 //  attribute nsIDBFolderInfo dBTransferInfo;
-	get msgStore()
+	get dBTransferInfo()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get dBTransferInfo\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set dBTransferInfo(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set dBTransferInfo\n");
 	},
 
 //  ACString getStringProperty(in string propertyName);
-	getFilterList: function _getFilterList(msgWindow)
+	getStringProperty: function _getStringProperty(propertyName)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getStringProperty\n");
 	},
 
 //  void setStringProperty(in string propertyName, in ACString propertyValue);
-	getFilterList: function _getFilterList(msgWindow)
+	setStringProperty: function _setStringProperty(msgWipropertyName, propertyValuendow)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function setStringProperty\n");
 	},
 
   /* does not persist across sessions */
 //  attribute nsMsgKey lastMessageLoaded;
-	get msgStore()
+	get lastMessageLoaded()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get lastMessageLoaded\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set lastMessageLoaded(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set lastMessageLoaded\n");
 	},
 
   /* old nsIFolder properties and methods */
 //  readonly attribute ACString URI;
-	get msgStore()
+	get URI()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get URI\n");
 		return true;
 	},
 
 //  attribute AString name;
-	get msgStore()
+	get name()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get name\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set name(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set name\n");
 	},
 
 //  attribute AString prettyName;
-	get msgStore()
+	get prettyName()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get prettyName\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set prettyName(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set prettyName\n");
 	},
 
 //  readonly attribute AString abbreviatedName;
-	get msgStore()
+	get abbreviatedName()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get abbreviatedName\n");
 		return true;
 	},
 
 //  attribute nsIMsgFolder parent;
-	get msgStore()
+	get parent()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get parent\n");
 		return true;
 	},
 
-	set hasNewMessages(aValue)
+	set parent(aValue)
 	{
-dump("mivExchangeMsgFolder: get hasNewMessages\n");
+dump("mivExchangeMsgFolder: set parent\n");
 	},
 
   /**
@@ -1346,9 +1360,9 @@ dump("mivExchangeMsgFolder: get hasNewMessages\n");
    * subfolders of the instance this is called on.
    */
 //  readonly attribute nsISimpleEnumerator subFolders;
-	get msgStore()
+	get subFolders()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get subFolders\n");
 		return true;
 	},
 
@@ -1356,9 +1370,9 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * Returns true if this folder has sub folders.
    */
 //  readonly attribute boolean hasSubFolders;
-	get msgStore()
+	get hasSubFolders()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get hasSubFolders\n");
 		return true;
 	},
 
@@ -1366,9 +1380,9 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * Returns the number of sub folders that this folder has.
    */
 //  readonly attribute unsigned long numSubFolders;
-	get msgStore()
+	get numSubFolders()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get numSubFolders\n");
 		return true;
 	},
 
@@ -1379,9 +1393,9 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    *                folder.
    */
 //  boolean isAncestorOf(in nsIMsgFolder folder);
-	getFilterList: function _getFilterList(msgWindow)
+	isAncestorOf: function _isAncestorOf(folder)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function isAncestorOf\n");
 	},
 
   /**
@@ -1390,9 +1404,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @param name the name of the target subfolder
    */
 //  boolean containsChildNamed(in AString name);
-	getFilterList: function _getFilterList(msgWindow)
+	containsChildNamed: function _containsChildNamed(name)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function containsChildNamed\n");
 	},
 
   /**
@@ -1403,9 +1417,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @exception NS_ERROR_FAILURE Thrown if the folder with aName does not exist
    */
 //  nsIMsgFolder getChildNamed(in AString aName);
-	getFilterList: function _getFilterList(msgWindow)
+	getChildNamed: function _getChildNamed(aName)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getChildNamed\n");
 	},
 
   /**
@@ -1416,143 +1430,143 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    *                              a nsIMsgFolder may be returned.
    */
 //  nsIMsgFolder findSubFolder(in ACString escapedSubFolderName);
-	getFilterList: function _getFilterList(msgWindow)
+	findSubFolder: function _findSubFolder(escapedSubFolderName)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function findSubFolder\n");
 	},
 
 //  void AddFolderListener(in nsIFolderListener listener);
-	getFilterList: function _getFilterList(msgWindow)
+	AddFolderListener: function _AddFolderListener(listener)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function AddFolderListener\n");
 	},
 
 //  void RemoveFolderListener(in nsIFolderListener listener);
-	getFilterList: function _getFilterList(msgWindow)
+	RemoveFolderListener: function _RemoveFolderListener(listener)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function RemoveFolderListener\n");
 	},
 
 //  void NotifyPropertyChanged(in nsIAtom property,
 //                             in ACString oldValue,
 //                             in ACString newValue);
-	getFilterList: function _getFilterList(msgWindow)
+	NotifyPropertyChanged: function _NotifyPropertyChanged(property, oldValue, newValue)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function NotifyPropertyChanged\n");
 	},
 
 //  void NotifyIntPropertyChanged(in nsIAtom property,
 //                                in long oldValue,
 //                                in long newValue);
-	getFilterList: function _getFilterList(msgWindow)
+	NotifyIntPropertyChanged: function _NotifyIntPropertyChanged(property, oldValue, newValue)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function NotifyIntPropertyChanged\n");
 	},
 
 //  void NotifyBoolPropertyChanged(in nsIAtom property,
 //                                 in boolean oldValue,
 //                                 in boolean newValue);
-	getFilterList: function _getFilterList(msgWindow)
+	NotifyBoolPropertyChanged: function _NotifyBoolPropertyChanged(property, oldValue, newValue)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function NotifyBoolPropertyChanged\n");
 	},
 
 //  void NotifyPropertyFlagChanged(in nsIMsgDBHdr item,
 //                                 in nsIAtom property,
 //                                 in unsigned long oldValue,
 //                                 in unsigned long newValue);
-	getFilterList: function _getFilterList(msgWindow)
+	NotifyPropertyFlagChanged: function _NotifyPropertyFlagChanged(item, property, oldValue, newValue)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function NotifyPropertyFlagChanged\n");
 	},
 
 //  void NotifyUnicharPropertyChanged(in nsIAtom property,
 //                                    in AString oldValue,
 //                                    in AString newValue);
-	getFilterList: function _getFilterList(msgWindow)
+	NotifyUnicharPropertyChanged: function _NotifyUnicharPropertyChanged(property, oldValue, newValue)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function NotifyUnicharPropertyChanged\n");
 	},
 
 //  void NotifyItemAdded(in nsISupports item);
-	getFilterList: function _getFilterList(msgWindow)
+	NotifyItemAdded: function _NotifyItemAdded(item)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function NotifyItemAdded\n");
 	},
 
 //  void NotifyItemRemoved(in nsISupports item);
-	getFilterList: function _getFilterList(msgWindow)
+	NotifyItemRemoved: function _NotifyItemRemoved(item)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function NotifyItemRemoved\n");
 	},
 
 //  void NotifyFolderEvent(in nsIAtom event);
-	getFilterList: function _getFilterList(msgWindow)
+	NotifyFolderEvent: function _NotifyFolderEvent(event)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function NotifyFolderEvent\n");
 	},
 
   //  void NotifyFolderLoaded();
-	getFilterList: function _getFilterList(msgWindow)
+	NotifyFolderLoaded: function _NotifyFolderLoaded()
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function NotifyFolderLoaded\n");
 	},
 
   //  void NotifyDeleteOrMoveMessagesCompleted(in nsIMsgFolder folder);
-	getFilterList: function _getFilterList(msgWindow)
+	NotifyDeleteOrMoveMessagesCompleted: function _NotifyDeleteOrMoveMessagesCompleted(folder)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function NotifyDeleteOrMoveMessagesCompleted\n");
 	},
 
   // lists all descendents, not just first level children
 //  void ListDescendents(in nsISupportsArray descendents);
-	getFilterList: function _getFilterList(msgWindow)
+	ListDescendents: function _ListDescendents(descendents)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function ListDescendents\n");
 	},
 
 //  void Shutdown(in boolean shutdownChildren);
-	getFilterList: function _getFilterList(msgWindow)
+	Shutdown: function _Shutdown(shutdownChildren)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function Shutdown\n");
 	},
 
 //  readonly attribute boolean inVFEditSearchScope;
-	get msgStore()
+	get inVFEditSearchScope()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get inVFEditSearchScope\n");
 		return true;
 	},
 
 //  void setInVFEditSearchScope(in boolean aSearchThisFolder, in boolean aSetOnSubFolders);
-	getFilterList: function _getFilterList(msgWindow)
+	setInVFEditSearchScope: function _setInVFEditSearchScope(aSearchThisFolder, aSetOnSubFolders)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function setInVFEditSearchScope\n");
 	},
 
 //  void copyDataToOutputStreamForAppend(in nsIInputStream aIStream,
 //                     in long aLength, in nsIOutputStream outputStream);
-	getFilterList: function _getFilterList(msgWindow)
+	copyDataToOutputStreamForAppend: function _copyDataToOutputStreamForAppend(aIStream, aLength, outputStream)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function copyDataToOutputStreamForAppend\n");
 	},
 
 //  void copyDataDone();
-	getFilterList: function _getFilterList(msgWindow)
+	copyDataDone: function _copyDataDone()
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function copyDataDone\n");
 	},
 
 //  void setJunkScoreForMessages(in nsIArray aMessages, in ACString aJunkScore);
-	getFilterList: function _getFilterList(msgWindow)
+	setJunkScoreForMessages: function _setJunkScoreForMessages(aMessages, aJunkScore)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function setJunkScoreForMessages\n");
 	},
 
 //  void applyRetentionSettings();
-	getFilterList: function _getFilterList(msgWindow)
+	applyRetentionSettings: function _applyRetentionSettings()
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function applyRetentionSettings\n");
 	},
 
   /**
@@ -1573,24 +1587,24 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
 //  boolean fetchMsgPreviewText([array, size_is (aNumKeys)] in nsMsgKey aKeysToFetch,
 //                      in unsigned long aNumKeys, in boolean aLocalOnly,
 //                      in nsIUrlListener aUrlListener);
-	getFilterList: function _getFilterList(msgWindow)
+	fetchMsgPreviewText: function _fetchMsgPreviewText(aKeysToFetch, aNumKeys, aLocalOnly, aUrlListener)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function fetchMsgPreviewText\n");
 	},
 
   // used to set/clear tags - we could have a single method to setKeywords which
   // would figure out the diffs, but these methods might be more convenient.
   // keywords are space delimited, in the case of multiple keywords
 //  void addKeywordsToMessages(in nsIArray aMessages, in ACString aKeywords);
-	getFilterList: function _getFilterList(msgWindow)
+	addKeywordsToMessages: function _addKeywordsToMessages(aMessages, aKeywords)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function addKeywordsToMessages\n");
 	},
 
 //  void removeKeywordsFromMessages(in nsIArray aMessages, in ACString aKeywords);
-	getFilterList: function _getFilterList(msgWindow)
+	removeKeywordsFromMessages: function _removeKeywordsFromMessages(aMessages, aKeywords)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function removeKeywordsFromMessages\n");
 	},
 
   /**
@@ -1612,24 +1626,25 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
 //                                   in unsigned long aBytesToRead, in unsigned long aMaxOutputLen, 
 //                                   in boolean aCompressQuotes, in boolean aStripHTMLTags,
 //                                   out ACString aContentType);
-	getFilterList: function _getFilterList(msgWindow)
+	getMsgTextFromStream: function _getMsgTextFromStream(aStream, aCharset, aBytesToRead, aMaxOutputLen, 
+								aCompressQuotes, aStripHTMLTags, aContentType)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getMsgTextFromStream\n");
 	},
 
 //  AString convertMsgSnippetToPlainText(in AString aMessageText);
-	getFilterList: function _getFilterList(msgWindow)
+	convertMsgSnippetToPlainText: function _convertMsgSnippetToPlainText(aMessageText)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function convertMsgSnippetToPlainText\n");
 	},
 
   // this allows a folder to have a special identity. E.g., you might want to
   // associate an identity with a particular newsgroup, or for IMAP shared folders in
   // the other users namespace, you might want to create a delegated identity
 //  readonly attribute nsIMsgIdentity customIdentity;
-	get msgStore()
+	get customIdentity()
 	{
-dump("mivExchangeMsgFolder: get msgStore\n");
+dump("mivExchangeMsgFolder: get customIdentity\n");
 		return true;
 	},
 
@@ -1641,9 +1656,9 @@ dump("mivExchangeMsgFolder: get msgStore\n");
    * @return         processing flags
    */
 //  unsigned long getProcessingFlags(in nsMsgKey msgKey);
-	getFilterList: function _getFilterList(msgWindow)
+	getProcessingFlags: function _getProcessingFlags(msgKey)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getProcessingFlags\n");
 	},
 
   /**
@@ -1651,9 +1666,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @param mask     mask to OR into the flags
    */
 //  void orProcessingFlags(in nsMsgKey msgKey, in unsigned long mask);
-	getFilterList: function _getFilterList(msgWindow)
+	orProcessingFlags: function _orProcessingFlags(msgKey, mask)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function orProcessingFlags\n");
 	},
 
   /**
@@ -1661,9 +1676,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @param mask     mask to AND into the flags
    */
 //  void andProcessingFlags(in nsMsgKey msgKey, in unsigned long mask);
-	getFilterList: function _getFilterList(msgWindow)
+	andProcessingFlags: function _andProcessingFlags(msgKey, mask)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function andProcessingFlags\n");
 	},
 
   /** @} */
@@ -1694,9 +1709,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @param propertyName  The name of the property for the value to retrieve.
    */
 //  ACString getInheritedStringProperty(in string propertyName);
-	getFilterList: function _getFilterList(msgWindow)
+	getInheritedStringProperty: function _getInheritedStringProperty(propertyName)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getInheritedStringProperty\n");
 	},
 
   /**
@@ -1707,9 +1722,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @param aForcePropertyEmpty  true if an empty inherited property should be returned
    */
 //  void setForcePropertyEmpty(in string propertyName, in boolean aForcePropertyEmpty);
-	getFilterList: function _getFilterList(msgWindow)
+	setForcePropertyEmpty: function _setForcePropertyEmpty(propertyName, aForcePropertyEmpty)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function setForcePropertyEmpty\n");
 	},
 
   /**
@@ -1721,9 +1736,9 @@ dump("mivExchangeMsgFolder: get getFilterList\n");
    * @return                  true if an empty inherited property should be returned
    */
 //  boolean getForcePropertyEmpty(in string propertyName);
-	getFilterList: function _getFilterList(msgWindow)
+	getForcePropertyEmpty: function _getForcePropertyEmpty(propertyName)
 	{
-dump("mivExchangeMsgFolder: get getFilterList\n");
+dump("mivExchangeMsgFolder: function getForcePropertyEmpty\n");
 	},
 
   /**
