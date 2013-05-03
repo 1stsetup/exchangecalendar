@@ -30,7 +30,7 @@
 <?xml-stylesheet href="chrome://messenger/skin/accountManage.css" type="text/css"?>
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	id="exchWebService-AccountWizard">
+	id="exchWebService-AccountWizardPages">
 
 <!--  <script type="application/javascript"
           src="chrome://messenger/content/AccountManager.js"/>
@@ -43,9 +43,12 @@
   <script type="application/javascript"
           src="chrome://messenger/content/am-prefs.js"/>
 -->
-
-	<radiogroup id="acctyperadio">
-		<radio id="exchWebService_mail" value="exchWebService_mail_accountWizard1, exchWebService_mail_accountWizard2" label="Exchange (EWS) mail"/>
-	</radiogroup>
-
+	<wizard id="AccountWizard">
+		<wizardpage id="exchWebService_mail_accountWizard1" pageid="exchWebService_mail_accountWizard1" label="EWS Settings (1/2)">
+			<label value="page1"/>
+		</wizardpage>
+		<wizardpage id="exchWebService_mail_accountWizard2" pageid="exchWebService_mail_accountWizard2" label="EWS Settings (2/2)">
+			<label value="page2"/>
+		</wizardpage>
+	</wizard>
 </overlay>
