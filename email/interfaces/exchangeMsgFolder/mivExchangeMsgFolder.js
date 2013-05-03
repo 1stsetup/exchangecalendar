@@ -27,6 +27,8 @@ var components = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
+var EXPORTED_SYMBOLS = ["mivExchangeMsgFolder"];
+
 function mivExchangeMsgFolder() {
 
 	//this.logInfo("mivExchangeMsgFolder: init");
@@ -38,7 +40,7 @@ var mivExchangeMsgFolderGUID = "364ed353-d3ad-41d2-9df3-2fab209d9ac1";
 mivExchangeMsgFolder.prototype = {
 
 	QueryInterface : XPCOMUtils.generateQI([Ci.mivExchangeMsgFolder,
-				Ci.nsIMsgProtocolInfo,
+				Ci.nsIMsgFolder,
 				Ci.nsIClassInfo,
 				Ci.nsISupports]),
 
@@ -48,7 +50,7 @@ mivExchangeMsgFolder.prototype = {
 
 	classID : components.ID("{"+mivExchangeMsgFolderGUID+"}"),
 	contractID : "@1st-setup.nl/exchange/msgfolder;1",
-	flags : Ci.nsIClassInfo.THREADSAFE,
+//	flags : Ci.nsIClassInfo.THREADSAFE,
 	implementationLanguage : Ci.nsIProgrammingLanguage.JAVASCRIPT,
 
 	// nsISupports getHelperForLanguage(in PRUint32 language);
@@ -59,7 +61,7 @@ mivExchangeMsgFolder.prototype = {
 	getInterfaces : function _getInterfaces(count) 
 	{
 		var ifaces = [Ci.mivExchangeMsgFolder,
-				Ci.nsIMsgProtocolInfo,
+				Ci.nsIMsgFolder,
 				Ci.nsIClassInfo,
 				Ci.nsISupports];
 		count.value = ifaces.length;
@@ -1309,7 +1311,7 @@ dump("mivExchangeMsgFolder: set lastMessageLoaded\n");
 	get URI()
 	{
 dump("mivExchangeMsgFolder: get URI\n");
-		return true;
+		return "exchangeWebServiceMail://Inbox";
 	},
 
 //  attribute AString name;
@@ -1759,6 +1761,13 @@ function NSGetFactory(cid) {
 	try {
 		if (!NSGetFactory.mivExchangeMsgFolder) {
 			NSGetFactory.mivExchangeMsgFolder = XPCOMUtils.generateNSGetFactory([mivExchangeMsgFolder]);
+
+		dump("Joepie 1 !!!!\n");
+		try {
+			var tmp = new mivExchangeMsgFolder();
+		}
+		catch(err){ dump("err:"+err+"\n"); }
+		dump("Joepie 2 !!!!\n");
 
 	}
 

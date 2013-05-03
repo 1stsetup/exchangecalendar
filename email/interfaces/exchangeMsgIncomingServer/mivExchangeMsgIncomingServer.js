@@ -27,6 +27,12 @@ var components = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
+/*try {
+Cu.import("resource://exchangemailInterface/exchangeMsgFolder/mivExchangeMsgFolder.js");
+}
+catch(err){ dump("err1:"+err+"\n"); }
+*/
+
 function mivExchangeMsgIncomingServer() {
 
 	//this.logInfo("mivExchangeMsgIncomingServer: init");
@@ -191,11 +197,16 @@ mivExchangeMsgIncomingServer.prototype = {
 	get type()
 	{
 		dump("mivExchangeMsgIncomingServer: get type\n");
+		if (!this._type) {
+			this._type = "exchangeWebServiceMail";
+		}
+		return this._type;
 	},
 
 	set type(aValue)
 	{
 		dump("set type aValue:"+aValue+"\n");
+		this._type = aValue;
 	},
 
 //  readonly attribute AString accountManagerChrome;
@@ -289,11 +300,16 @@ mivExchangeMsgIncomingServer.prototype = {
 	get doBiff()
 	{
 		dump("mivExchangeMsgIncomingServer: get doBiff\n");
+		if (!this._doBiff) {
+			this._doBiff = false;
+		}
+		return this._doBiff;
 	},
 
 	set doBiff(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set doBiff aValue:"+aValue+"\n");
+		this._doBiff = aValue;
 	},
 
   /* how often to biff */
@@ -363,11 +379,23 @@ mivExchangeMsgIncomingServer.prototype = {
 	get rootFolder()
 	{
 		dump("mivExchangeMsgIncomingServer: get rootFolder\n");
+		if (!this._rootFolder) {
+try {
+			this._rootFolder = Cc["@1st-setup.nl/exchange/msgfolder;1"]
+					.createInstance(Ci.mivExchangeMsgFolder);
+}catch(err){dump("get rootFolder error:"+err+"\n");}
+		}
+		return this._rootFolder;
 	},
 
 	set rootFolder(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set rootFolder aValue:"+aValue+"\n");
+		if (this._rootFolder) {
+			dump("mivExchangeMsgIncomingServer: set rootFolder: We all ready a a rootFolder.\n");
+		}
+
+		this._rootFolder = aValue;
 	},
 
   /* root folder for this account 
@@ -613,7 +641,9 @@ mivExchangeMsgIncomingServer.prototype = {
 //  ACString getCharValue(in string attr);
 	getCharValue: function _getCharValue(attr)
 	{
-		dump("mivExchangeMsgIncomingServer: function getCharValue\n");
+		dump("mivExchangeMsgIncomingServer: function getCharValue: attr:"+attr+"\n");
+
+		return null;
 	},
 
 //  void setCharValue(in string attr, in ACString value);
@@ -710,11 +740,16 @@ mivExchangeMsgIncomingServer.prototype = {
 	get valid()
 	{
 		dump("mivExchangeMsgIncomingServer: get valid\n");
+		if (!this._valid) {
+			this._valid = true;
+		}
+		return this._valid;
 	},
 
 	set valid(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set valid aValue:"+aValue+"\n");
+		this._valid = aValue;
 	},
   
 //  AString toString();
@@ -907,11 +942,16 @@ mivExchangeMsgIncomingServer.prototype = {
 	get hidden()
 	{
 		dump("mivExchangeMsgIncomingServer: get hidden\n");
+		if (!this._hidden) {
+			this._hidden = false;
+		}
+		return this._hidden;
 	},
 
 	set hidden(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set hidden aValue:"+aValue+"\n");
+		this._hidden = aValue;
 	},
 
   /**
