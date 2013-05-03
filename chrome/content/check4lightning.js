@@ -206,7 +206,7 @@ exchCheck4Lightning.prototype = {
 		if (aResult.updateDetails.msg != "") {
 			promptStr += "\n\nChanges:\n"+aResult.updateDetails.msg;
 		}
-		promptStr += "\n\nOr read the info on "+aResult.updateDetails.infoURL;
+		promptStr += '\n\nOr read the info on '+aResult.updateDetails.infoURL;
 		var promptTitle = "Update available";
 
 		var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"].  
