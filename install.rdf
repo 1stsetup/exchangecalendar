@@ -11,7 +11,7 @@
       <Description>
       	<!-- Thunderbird -->
         <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
-        <em:minVersion>6.0</em:minVersion>
+        <em:minVersion>12.0</em:minVersion>
         <em:maxVersion>23.0</em:maxVersion>
       </Description>
     </em:targetApplication>
@@ -25,8 +25,8 @@
       </Description>
     </em:targetApplication>
 
-    <em:name>Exchange 2007/2010/2013 Calendar, Tasks, Contacts and GAL Provider</em:name>
-    <em:description>Allows you to sync Calendar and Tasks with your Microsoft Exchange 2007/2010 EWS server from within lightning.
+    <em:name>Exchange EWS Provider</em:name>
+    <em:description>Allows you to sync Calendar and Tasks with your Microsoft Exchange 2007/2010/2013 EWS server from within lightning.
 You can also search your contacts folder and the Exchange Global Address List (Read-Only).
 
 You can view, delete, create and update calendar and task/todo items. And manage "Out of Office" settings.
@@ -50,10 +50,11 @@ Some of the icons and images used are from the Fugue Icons Collection made by Yu
 	<em:localized>
 		<Description>
 			<em:locale>en-US</em:locale>
-			<em:name>Exchange 2007/2010 Calendar and Tasks Provider</em:name>
-			<em:description>Allows you to sync Calendar and Tasks with your Microsoft Exchange 2007/2010 EWS server from within lightning.
+			<em:name>Exchange EWS Provider</em:name>
+			<em:description>Allows you to sync Calendar, Tasks and Contacts with your Microsoft Exchange 2007/2010/2013 EWS server from within lightning.
 
 You can view, delete, create and update calendar and task/todo items. And manage "Out of Office" settings.
+You can read and use contacts and global addres list contacts for address autcompletion.
 
 Dutch, French, English, German, Swedish and Japanese localizations.
 
@@ -64,9 +65,10 @@ Some of the icons and images used are from the Fugue Icons Collection made by Yu
 	<em:localized>
 		<Description>
 			<em:locale>nl</em:locale>
-			<em:name>Exchange 2007/2010 Agenda en Taken Provider</em:name>
-			<em:description>Verzorgt de toegang tot een Microsoft Exchange 2007/2010 EWS server binnen lightning.
+			<em:name>Exchange EWS Provider</em:name>
+			<em:description>Verzorgt de toegang tot een Microsoft Exchange 2007/2010/2013 EWS server binnen lightning.
 Op dit moment kan men agenda en taken items bekijken, wijzigen, maken en verwijderen. En Out of Office instellen.
+Tevens kan je je persoonlijke contacten en die in de Global Addres List lezen, bekijken en gebruiken in adres autocompletion.
 
 Je kunt ook de Exchange (EWS) instellingen aanpassen.
 
@@ -79,8 +81,8 @@ Sommige van de iconen en plaatjes komen uit de Fugue Icons collectie gemaakt doo
 	<em:localized>
 		<Description>
 			<em:locale>ja-JP</em:locale>
-			<em:name>Exchange 2007/2010 予定表と仕事プロバイダ</em:name>
-			<em:description>予定表と仕事について、lightningで、マイクロソフト Exchange 2007/2010 EWSサーバと同期できるようにします。
+			<em:name>Exchange EWS Provider</em:name>
+			<em:description>予定表と仕事について、lightningで、マイクロソフト Exchange 2007/2010/2013 EWSサーバと同期できるようにします。
 
 予定表・仕事ややることリストの、閲覧や削除、作成と更新が可能です。「外出中」の管理も可能です。
 
