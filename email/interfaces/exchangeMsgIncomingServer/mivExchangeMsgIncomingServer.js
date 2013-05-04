@@ -232,6 +232,7 @@ mivExchangeMsgIncomingServer.prototype = {
 	get accountManagerChrome()
 	{
 		dump("mivExchangeMsgIncomingServer: get accountManagerChrome\n");
+		return "chrome://exchangemail/am-main.xul");
 	},
 
   /**
@@ -243,6 +244,7 @@ mivExchangeMsgIncomingServer.prototype = {
 	get localStoreType()
 	{
 		dump("mivExchangeMsgIncomingServer: get localStoreType\n");
+		return "exchangeWebServiceMail");
 	},
 
   // Perform specific tasks (reset flags, remove files, etc) for account user/server name changes.
@@ -258,11 +260,16 @@ mivExchangeMsgIncomingServer.prototype = {
 	get password()
 	{
 		dump("mivExchangeMsgIncomingServer: get password\n");
+		if (!this._password) {
+			this._password = "password";
+		}
+		return this._password;
 	},
 
 	set password(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set password aValue:"+aValue+"\n");
+		this._password = aValue;
 	},
 
   /**
@@ -293,6 +300,7 @@ mivExchangeMsgIncomingServer.prototype = {
 	forgetPassword: function _forgetPassword()
 	{
 		dump("mivExchangeMsgIncomingServer: function forgetPassword\n");
+		this._password = undefined;
 	},
 
   /* forget the password in memory which is cached for the session */
@@ -300,6 +308,7 @@ mivExchangeMsgIncomingServer.prototype = {
 	forgetSessionPassword: function _forgetSessionPassword()
 	{
 		dump("mivExchangeMsgIncomingServer: function forgetSessionPassword\n");
+		this._password = undefined;
 	},
 
   /* should we download whole messages when biff goes off? */
@@ -307,11 +316,16 @@ mivExchangeMsgIncomingServer.prototype = {
 	get downloadOnBiff()
 	{
 		dump("mivExchangeMsgIncomingServer: get downloadOnBiff\n");
+		if (!this._downloadOnBiff) {
+			this._downloadOnBiff = false;
+		}
+		return this._downloadOnBiff;
 	},
 
 	set downloadOnBiff(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set downloadOnBiff aValue:"+aValue+"\n");
+		this._downloadOnBiff = aValue;
 	},
 
   /* should we biff the server? */
@@ -336,11 +350,16 @@ mivExchangeMsgIncomingServer.prototype = {
 	get biffMinutes()
 	{
 		dump("mivExchangeMsgIncomingServer: get biffMinutes\n");
+		if (!this._biffMinutes) {
+			this._biffMinutes = 0;
+		}
+		return this._biffMinutes;
 	},
 
 	set biffMinutes(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set biffMinutes aValue:"+aValue+"\n");
+		this._biffMinutes = aValue;
 	},
 
   /* current biff state */
@@ -348,11 +367,16 @@ mivExchangeMsgIncomingServer.prototype = {
 	get biffState()
 	{
 		dump("mivExchangeMsgIncomingServer: get biffState\n");
+		if (!this._biffState) {
+			this._biffState = 0;
+		}
+		return this._biffState;
 	},
 
 	set biffState(aValue)
 	{
 		dump("set biffState aValue:"+aValue+"\n");
+		this._biffState = aValue;
 	},
 
   /* are we running a url as a result of biff going off? (different from user clicking get msg) */
@@ -360,11 +384,16 @@ mivExchangeMsgIncomingServer.prototype = {
 	get performingBiff()
 	{
 		dump("mivExchangeMsgIncomingServer: get performingBiff\n");
+		if (!this._performingBiff) {
+			this._performingBiff = false;
+		}
+		return this._performingBiff;
 	},
 
 	set performingBiff(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set performingBiff aValue:"+aValue+"\n");
+		this._performingBiff = aValue;
 	},
 
   /* the on-disk path to message storage for this server */
@@ -372,11 +401,13 @@ mivExchangeMsgIncomingServer.prototype = {
 	get localPath()
 	{
 		dump("mivExchangeMsgIncomingServer: get localPath\n");
+		return this._localPath;
 	},
 
 	set localPath(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set localPath aValue:"+aValue+"\n");
+		this._localPath = aValue;
 	},
 
   /// message store to use for the folders under this server.
@@ -384,6 +415,7 @@ mivExchangeMsgIncomingServer.prototype = {
 	get msgStore()
 	{
 		dump("mivExchangeMsgIncomingServer: get msgStore\n");
+		return null;
 	},
 
   /* the RDF URI for the root mail folder */
@@ -391,6 +423,7 @@ mivExchangeMsgIncomingServer.prototype = {
 	get serverURI()
 	{
 		dump("mivExchangeMsgIncomingServer: get serverURI\n");
+		return "exchangeWebServiceMail://Inbox");
 	},
 
   /* the root folder for this server, even if server is deferred */
@@ -399,11 +432,7 @@ mivExchangeMsgIncomingServer.prototype = {
 	{
 		dump("mivExchangeMsgIncomingServer: get rootFolder\n");
 		if (!this._rootFolder) {
-try {
 			this._rootFolder = new mivExchangeMsgFolder();
-/*			this._rootFolder = Cc["@1st-setup.nl/exchange/msgfolder;1"]
-					.createInstance(Ci.mivExchangeMsgFolder);*/
-}catch(err){dump("get rootFolder error:"+err+"\n");}
 		}
 		return this._rootFolder;
 	},
@@ -424,6 +453,10 @@ try {
 	get rootMsgFolder()
 	{
 		dump("mivExchangeMsgIncomingServer: get rootMsgFolder\n");
+		if (!this._rootFolder) {
+			this._rootFolder = new mivExchangeMsgFolder();
+		}
+		return this._rootFolder;
 	},
 
   /* are we already getting new Messages on the current server..
@@ -433,11 +466,16 @@ try {
 	get serverBusy()
 	{
 		dump("mivExchangeMsgIncomingServer: get serverBusy\n");
+		if (!this._serverBusy) {
+			this._serverBusy = false;
+		}
+		return this._serverBusy;
 	},
 
 	set serverBusy(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set serverBusy aValue:"+aValue+"\n");
+		this._serverBusy = aValue;
 	},
 
   /**
@@ -447,6 +485,7 @@ try {
 	get isSecure()
 	{
 		dump("mivExchangeMsgIncomingServer: get isSecure\n");
+		return this._isSecure;
 	},
 
   /**
@@ -459,11 +498,16 @@ try {
 	get authMethod()
 	{
 		dump("mivExchangeMsgIncomingServer: get authMethod\n");
+		if (!this._authMethod) {
+			this._authMethod = Ci.nsMsgAuthMethod.none;
+		}
+		return this._authMethod;
 	},
 
 	set authMethod(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set authMethod aValue:"+aValue+"\n");
+		this._authMethod = aValue;
 	},
 
   /**
@@ -476,11 +520,16 @@ try {
 	get socketType()
 	{
 		dump("mivExchangeMsgIncomingServer: get socketType\n");
+		if (!this._socketType) {
+			this._socketType = Ci.nsMsgSocketType.SSL;
+		}
+		return this._socketType;
 	},
 
 	set socketType(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set socketType aValue:"+aValue+"\n");
+		this._socketType = aValue;
 	},
 
   /* empty trash on exit */
@@ -488,11 +537,16 @@ try {
 	get emptyTrashOnExit()
 	{
 		dump("mivExchangeMsgIncomingServer: get emptyTrashOnExit\n");
+		if (!this._emptyTrashOnExit) {
+			this._emptyTrashOnExit = false;
+		}
+		return this._emptyTrashOnExit;
 	},
 
 	set emptyTrashOnExit(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set emptyTrashOnExit aValue:"+aValue+"\n");
+		this._emptyTrashOnExit = aValue;
 	},
 
   /**
@@ -512,6 +566,7 @@ try {
 	getFilterList: function _getFilterList(aMsgWindow)
 	{
 		dump("mivExchangeMsgIncomingServer: function getFilterList\n");
+		return this._filterList;
 	},
 
   /**
@@ -527,6 +582,7 @@ try {
 	setFilterList: function _setFilterList(aFilterList)
 	{
 		dump("mivExchangeMsgIncomingServer: function setFilterList\n");
+		this._filterList = aFilterList;
 	},
 
   /**
@@ -543,6 +599,7 @@ try {
 	getEditableFilterList: function _getEditableFilterList(aMsgWindow)
 	{
 		dump("mivExchangeMsgIncomingServer: function getEditableFilterList\n");
+		return this._editableFilterList;
 	},
 
   /**
@@ -557,6 +614,7 @@ try {
 	setEditableFilterList: function _setEditableFilterList(aFilterList)
 	{
 		dump("mivExchangeMsgIncomingServer: function setEditableFilterList\n");
+		this._editableFilterList = aFilterList;
 	},
 
   /* we use this to set the default local path.  we use this when migrating prefs */
@@ -564,6 +622,7 @@ try {
 	setDefaultLocalPath: function _setDefaultLocalPath(aDefaultLocalPath)
 	{
 		dump("mivExchangeMsgIncomingServer: function setDefaultLocalPath\n");
+		this._defaultLocalPath = aDefaultLocalPath;
 	},
 
   /**
@@ -599,6 +658,10 @@ try {
 	get serverRequiresPasswordForBiff()
 	{
 		dump("mivExchangeMsgIncomingServer: get serverRequiresPasswordForBiff\n");
+		if (!this._serverRequiresPasswordForBiff) {
+			this._serverRequiresPasswordForBiff = true;
+		}
+		return this._serverRequiresPasswordForBiff;
 	},
 
   /* this gets called when the server is expanded in the folder pane */
@@ -650,12 +713,17 @@ try {
 	getBoolValue: function _getBoolValue(attr)
 	{
 		dump("mivExchangeMsgIncomingServer: function getBoolValue\n");
+		return this._boolValues[attr];
 	},
 
 //  void setBoolValue(in string attr, in boolean value);
 	setBoolValue: function _setBoolValue(attr, value)
 	{
 		dump("mivExchangeMsgIncomingServer: function setBoolValue\n");
+		if (!this._boolValues) {
+			this._boolValues = {};
+		}
+		this._boolValues[attr] = value;
 	},
 
 //  ACString getCharValue(in string attr);
@@ -663,37 +731,51 @@ try {
 	{
 		dump("mivExchangeMsgIncomingServer: function getCharValue: attr:"+attr+"\n");
 
-		return null;
+		return this._charValues[attr];
 	},
 
 //  void setCharValue(in string attr, in ACString value);
 	setCharValue: function _setCharValue(attr, value)
 	{
 		dump("mivExchangeMsgIncomingServer: function setCharValue\n");
+		if (!this._charValues) {
+			this._charValues = {};
+		}
+		this._charValues[attr] = value;
 	},
 
 //  AString getUnicharValue(in string attr);
 	getUnicharValue: function _getUnicharValue(attr)
 	{
 		dump("mivExchangeMsgIncomingServer: function getUnicharValue\n");
+		return this._unicharValues[attr];
 	},
 
 //  void setUnicharValue(in string attr, in AString value);
 	setUnicharValue: function _setUnicharValue(attr, value)
 	{
 		dump("mivExchangeMsgIncomingServer: function setUnicharValue\n");
+		if (!this._unicharValues) {
+			this._unicharValues = {};
+		}
+		this._unicharValues[attr] = value;
 	},
   
 //  long getIntValue(in string attr);
 	getIntValue: function _getIntValue(attr)
 	{
 		dump("mivExchangeMsgIncomingServer: function getIntValue\n");
+		return this._IntValues[attr];
 	},
 
 //  void setIntValue(in string attr, in long value);
 	setIntValue: function _setIntValue(attr, value)
 	{
 		dump("mivExchangeMsgIncomingServer: function setIntValue\n");
+		if (!this._IntValues) {
+			this._IntValues = {};
+		}
+		this._IntValues[attr] = value;
 	},
 
   /** @} */
@@ -776,6 +858,7 @@ try {
 	toString: function _toString()
 	{
 		dump("mivExchangeMsgIncomingServer: function toString\n");
+		return "hihi";
 	},
 
 //  void displayOfflineMsg(in nsIMsgWindow aWindow);
@@ -796,6 +879,10 @@ try {
 	get downloadMessagesAtStartup()
 	{
 		dump("mivExchangeMsgIncomingServer: get downloadMessagesAtStartup\n");
+		if (!this._downloadMessagesAtStartup) {
+			this._downloadMessagesAtStartup = true;
+		}
+		return this._downloadMessagesAtStartup;
 	},
 
   /* check to this if the server supports filters */
@@ -803,11 +890,16 @@ try {
 	get canHaveFilters()
 	{
 		dump("mivExchangeMsgIncomingServer: get canHaveFilters\n");
+		if (!this._canHaveFilters) {
+			this._canHaveFilters = false;
+		}
+		return this._canHaveFilters;
 	},
 
 	set canHaveFilters(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set canHaveFilters aValue:"+aValue+"\n");
+		this._canHaveFilters = aValue;
 	},
 
   /**
@@ -818,54 +910,79 @@ try {
 	get canDelete()
 	{
 		dump("mivExchangeMsgIncomingServer: get canDelete\n");
+		if (!this._canDelete) {
+			this._canDelete = false;
+		}
+		return this._canDelete;
 	},
 
 	set canDelete(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set canDelete aValue:"+aValue+"\n");
+		this._canDelete = aValue;
 	},
 
 //  attribute boolean loginAtStartUp;
 	get loginAtStartUp()
 	{
 		dump("mivExchangeMsgIncomingServer: get loginAtStartUp\n");
+		if (!this._loginAtStartUp) {
+			this._loginAtStartUp = false;
+		}
+		return this._loginAtStartUp;
 	},
 
 	set loginAtStartUp(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set loginAtStartUp aValue:"+aValue+"\n");
+		this._loginAtStartUp = aValue;
 	},
 
 //  attribute boolean limitOfflineMessageSize;
 	get limitOfflineMessageSize()
 	{
 		dump("mivExchangeMsgIncomingServer: get limitOfflineMessageSize\n");
+		if (!this._limitOfflineMessageSize) {
+			this._limitOfflineMessageSize = true;
+		}
+		return this._limitOfflineMessageSize;
 	},
 
 	set limitOfflineMessageSize(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set limitOfflineMessageSize aValue:"+aValue+"\n");
+		this._limitOfflineMessageSize = aValue;
 	},
 //  attribute long maxMessageSize;
 	get maxMessageSize()
 	{
 		dump("mivExchangeMsgIncomingServer: get maxMessageSize\n");
+		if (!this._maxMessageSize) {
+			this._maxMessageSize = 1024000000;
+		}
+		return this._maxMessageSize;
 	},
 
 	set maxMessageSize(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set maxMessageSize aValue:"+aValue+"\n");
+		this._maxMessageSize = aValue;
 	},
 
 //  attribute nsIMsgRetentionSettings retentionSettings;
 	get retentionSettings()
 	{
 		dump("mivExchangeMsgIncomingServer: get retentionSettings\n");
+		if (!this._retentionSettings) {
+			this._retentionSettings = null;
+		}
+		return this._retentionSettings;
 	},
 
 	set retentionSettings(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set retentionSettings aValue:"+aValue+"\n");
+		this._retentionSettings = aValue;
 	},
 
   /* check if this server can be a default server */
@@ -873,6 +990,10 @@ try {
 	get canBeDefaultServer()
 	{
 		dump("mivExchangeMsgIncomingServer: get canBeDefaultServer\n");
+		if (!this._canBeDefaultServer) {
+			this._canBeDefaultServer = true;
+		}
+		return this._canBeDefaultServer;
 	},
 
   /* check if this server allows search operations */
@@ -880,6 +1001,10 @@ try {
 	get canSearchMessages()
 	{
 		dump("mivExchangeMsgIncomingServer: get canSearchMessages\n");
+		if (!this._canSearchMessages) {
+			this._canSearchMessages = false;
+		}
+		return this._canSearchMessages;
 	},
 
   /* check if this server allows canEmptyTrashOnExit operations */
@@ -887,6 +1012,10 @@ try {
 	get canEmptyTrashOnExit()
 	{
 		dump("mivExchangeMsgIncomingServer: get canEmptyTrashOnExit\n");
+		if (!this._canEmptyTrashOnExit) {
+			this._canEmptyTrashOnExit = false;
+		}
+		return this._canEmptyTrashOnExit;
 	},
 
   /* display startup page once per account per session */
@@ -894,21 +1023,31 @@ try {
 	get displayStartupPage()
 	{
 		dump("mivExchangeMsgIncomingServer: get displayStartupPage\n");
+		if (!this._displayStartupPage) {
+			this._displayStartupPage = false;
+		}
+		return this._displayStartupPage;
 	},
 
 	set displayStartupPage(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set displayStartupPage aValue:"+aValue+"\n");
+		this._displayStartupPage = aValue;
 	},
 //  attribute nsIMsgDownloadSettings downloadSettings;
 	get downloadSettings()
 	{
 		dump("mivExchangeMsgIncomingServer: get downloadSettings\n");
+		if (!this._downloadSettings) {
+			this._downloadSettings = null;
+		}
+		return this._downloadSettings;
 	},
 
 	set downloadSettings(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set downloadSettings aValue:"+aValue+"\n");
+		this._downloadSettings = aValue;
 	},
 
   /*
@@ -931,11 +1070,16 @@ try {
 	get offlineSupportLevel()
 	{
 		dump("mivExchangeMsgIncomingServer: get offlineSupportLevel\n");
+		if (!this._offlineSupportLevel) {
+			this._offlineSupportLevel = 0;
+		}
+		return this._offlineSupportLevel;
 	},
 
 	set offlineSupportLevel(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set offlineSupportLevel aValue:"+aValue+"\n");
+		this._offlineSupportLevel = aValue;
 	},
 
   /* create pretty name for migrated accounts */
@@ -943,6 +1087,10 @@ try {
 	generatePrettyNameForMigration: function _generatePrettyNameForMigration()
 	{
 		dump("mivExchangeMsgIncomingServer: function generatePrettyNameForMigration\n");
+		if (!this._generatePrettyNameForMigration) {
+			this._generatePrettyNameForMigration = "generatePrettyName";
+		}
+		return this._generatePrettyNameForMigration;
 	},
 
   /* does this server have disk space settings? */
@@ -950,6 +1098,10 @@ try {
 	get supportsDiskSpace()
 	{
 		dump("mivExchangeMsgIncomingServer: get supportsDiskSpace\n");
+		if (!this._supportsDiskSpace) {
+			this._supportsDiskSpace = false;
+		}
+		return this._supportsDiskSpace;
 	},
 
   /**
@@ -989,11 +1141,16 @@ try {
 	get defaultCopiesAndFoldersPrefsToServer()
 	{
 		dump("mivExchangeMsgIncomingServer: get defaultCopiesAndFoldersPrefsToServer\n");
+		if (!this._defaultCopiesAndFoldersPrefsToServer) {
+			this._defaultCopiesAndFoldersPrefsToServer = true;
+		}
+		return this._defaultCopiesAndFoldersPrefsToServer;
 	},
 
 	set defaultCopiesAndFoldersPrefsToServer(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set defaultCopiesAndFoldersPrefsToServer aValue:"+aValue+"\n");
+		this._defaultCopiesAndFoldersPrefsToServer = aValue;
 	},
 
   /* can this server allows sub folder creation */
@@ -1001,11 +1158,16 @@ try {
 	get canCreateFoldersOnServer()
 	{
 		dump("mivExchangeMsgIncomingServer: get canCreateFoldersOnServer\n");
+		if (!this._canCreateFoldersOnServer) {
+			this._canCreateFoldersOnServer = true;
+		}
+		return this._canCreateFoldersOnServer;
 	},
 
 	set canCreateFoldersOnServer(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set canCreateFoldersOnServer aValue:"+aValue+"\n");
+		this._canCreateFoldersOnServer = aValue;
 	},
 
   /* can this server allows message filing ? */
@@ -1013,11 +1175,16 @@ try {
 	get canFileMessagesOnServer()
 	{
 		dump("mivExchangeMsgIncomingServer: get canFileMessagesOnServer\n");
+		if (!this._canFileMessagesOnServer) {
+			this._canFileMessagesOnServer = true;
+		}
+		return this._canFileMessagesOnServer;
 	},
 
 	set canFileMessagesOnServer(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set canFileMessagesOnServer aValue:"+aValue+"\n");
+		this._canFileMessagesOnServer = aValue;
 	},
 
   /* can this server allow compacting folders ? */
@@ -1025,6 +1192,10 @@ try {
 	get canCompactFoldersOnServer()
 	{
 		dump("mivExchangeMsgIncomingServer: get canCompactFoldersOnServer\n");
+		if (!this._canCompactFoldersOnServer) {
+			this._canCompactFoldersOnServer = false;
+		}
+		return this._canCompactFoldersOnServer;
 	},
 
   /* can this server allow undo delete ? */
@@ -1032,6 +1203,10 @@ try {
 	get canUndoDeleteOnServer()
 	{
 		dump("mivExchangeMsgIncomingServer: get canUndoDeleteOnServer\n");
+		if (!this._canUndoDeleteOnServer) {
+			this._canUndoDeleteOnServer = true;
+		}
+		return this._canUndoDeleteOnServer;
 	},
 
   /* used for setting up the filter UI */
