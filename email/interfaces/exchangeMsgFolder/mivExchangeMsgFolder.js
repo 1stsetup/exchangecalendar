@@ -39,9 +39,13 @@ var mivExchangeMsgFolderGUID = "364ed353-d3ad-41d2-9df3-2fab209d9ac1";
 
 mivExchangeMsgFolder.prototype = {
 
-	QueryInterface : XPCOMUtils.generateQI([Ci.mivExchangeMsgFolder,
+/*	QueryInterface : XPCOMUtils.generateQI([Ci.mivExchangeMsgFolder,
 				Ci.nsIMsgFolder,
 				Ci.nsIClassInfo,
+				Ci.nsISupports]),
+*/
+	QueryInterface : XPCOMUtils.generateQI([Ci.mivExchangeMsgFolder,
+				Ci.nsIMsgFolder,
 				Ci.nsISupports]),
 
 	_className : "mivExchangeMsgFolder",
@@ -62,7 +66,6 @@ mivExchangeMsgFolder.prototype = {
 	{
 		var ifaces = [Ci.mivExchangeMsgFolder,
 				Ci.nsIMsgFolder,
-				Ci.nsIClassInfo,
 				Ci.nsISupports];
 		count.value = ifaces.length;
 		return ifaces;
@@ -694,7 +697,7 @@ dump("mivExchangeMsgFolder: function onFlagChange\n");
 	get flags()
 	{
 dump("mivExchangeMsgFolder: get flags\n");
-		return true;
+		return 0;
 	},
 
 	set flags(aValue)
@@ -1777,6 +1780,9 @@ function NSGetFactory(cid) {
 		throw e;
 	}
 
-	return NSGetFactory.mivExchangeMsgFolder(cid);
+try{
+	var result = NSGetFactory.mivExchangeMsgFolder(cid);
+}catch(err){ dump("Error2:"+err+"\n");}
+	return result;
 } 
 

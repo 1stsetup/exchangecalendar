@@ -27,11 +27,11 @@ var components = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
-/*try {
+try {
 Cu.import("resource://exchangemailInterface/exchangeMsgFolder/mivExchangeMsgFolder.js");
 }
 catch(err){ dump("err1:"+err+"\n"); }
-*/
+
 
 function mivExchangeMsgIncomingServer() {
 
@@ -98,11 +98,16 @@ mivExchangeMsgIncomingServer.prototype = {
 	get prettyName()
 	{
 		dump("mivExchangeMsgIncomingServer: get prettyName\n");
+		if (!this._prettyName) {
+			this._prettyName = "No prettyName";
+		}
+		return this._prettyName;
 	},
 
 	set prettyName(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set prettyName aValue:"+aValue+"\n");
+		return this._prettyName;
 	},
 
   /**
@@ -113,6 +118,10 @@ mivExchangeMsgIncomingServer.prototype = {
 	get constructedPrettyName()
 	{
 		dump("mivExchangeMsgIncomingServer: get constructedPrettyName\n");
+		if (!this._constructedPrettyName) {
+			this._constructedPrettyName = "No constructedPrettyName";
+		}
+		return this._constructedPrettyName;
 	},
 
   /**
@@ -138,11 +147,16 @@ mivExchangeMsgIncomingServer.prototype = {
 	get realHostName()
 	{
 		dump("get realHostName\n");
+		if (!this._realHostName) {
+			this._realHostName = "No realHostName";
+		}
+		return this._realHostName;
 	},
 
 	set realHostName(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set realHostName aValue:"+aValue+"\n");
+		this._realHostName = aValue;
 	},
   
   /* port of the server */
@@ -182,11 +196,16 @@ mivExchangeMsgIncomingServer.prototype = {
 	get realUsername()
 	{
 		dump("mivExchangeMsgIncomingServer: get realUsername\n");
+		if (!this._realUsername) {
+			this._realUsername = "No realUsername";
+		}
+		return this._realUsername;
 	},
 
 	set realUsername(aValue)
 	{
 		dump("mivExchangeMsgIncomingServer: set realUsername aValue:"+aValue+"\n");
+		this._realUsername = aValue;
 	},
 
   /**
@@ -381,8 +400,9 @@ mivExchangeMsgIncomingServer.prototype = {
 		dump("mivExchangeMsgIncomingServer: get rootFolder\n");
 		if (!this._rootFolder) {
 try {
-			this._rootFolder = Cc["@1st-setup.nl/exchange/msgfolder;1"]
-					.createInstance(Ci.mivExchangeMsgFolder);
+			this._rootFolder = new mivExchangeMsgFolder();
+/*			this._rootFolder = Cc["@1st-setup.nl/exchange/msgfolder;1"]
+					.createInstance(Ci.mivExchangeMsgFolder);*/
 }catch(err){dump("get rootFolder error:"+err+"\n");}
 		}
 		return this._rootFolder;
