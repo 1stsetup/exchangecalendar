@@ -86,7 +86,10 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 	this.badCertCount = 0;
 	this._notificationCallbacks = null;
 
-	this.uuid = exchWebService.commonFunctions.getUUID();
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+
+	this.uuid = this.globalFunctions.getUUID();
 
 	this.prePassword = "";
 
@@ -103,9 +106,6 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.observerService = Cc["@mozilla.org/observer-service;1"]  
 	                          .getService(Ci.nsIObserverService); 
-
-	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
-				.getService(Ci.mivFunctions);
 
 	this.timeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
 				.getService(Ci.mivExchangeTimeZones);
@@ -152,16 +152,16 @@ ExchangeRequest.prototype = {
 
 	get debug()
 	{
-		if ((this.debuglevel == 0) || (!exchWebService.commonFunctions.shouldLog())) {
+		if ((this.debuglevel == 0) || (!this.globalFunctions.shouldLog())) {
 			return false;
 		}
 
-		return exchWebService.commonFunctions.safeGetBoolPref(this.prefB, "extensions.1st-setup.network.debug", false, true);
+		return this.globalFunctions.safeGetBoolPref(this.prefB, "extensions.1st-setup.network.debug", false, true);
 	},
 
 	get debuglevel()
 	{
-		return exchWebService.commonFunctions.safeGetIntPref(this.prefB, "extensions.1st-setup.network.debuglevel", 0, true);
+		return this.globalFunctions.safeGetIntPref(this.prefB, "extensions.1st-setup.network.debuglevel", 0, true);
 	},
 
 	logInfo: function _logInfo(aMsg, aLevel)
@@ -169,7 +169,7 @@ ExchangeRequest.prototype = {
 		if (!aLevel) var aLevel = 1;
 
 		if ((this.debug) && (aLevel <= this.debuglevel)) {
-			exchWebService.commonFunctions.LOG(this.uuid+": "+aMsg);
+			this.globalFunctions.LOG(this.uuid+": "+aMsg);
 		}
 	},
 
@@ -295,7 +295,8 @@ ExchangeRequest.prototype = {
 
 		this.xmlReq.overrideMimeType('text/xml');
 		this.xmlReq.setRequestHeader("Content-Type", "text/xml");
-		this.xmlReq.setRequestHeader("User-Agent", "extensions.1st-setup.nl/" + gExchangeRequestVersion+"/username="+this.mArgument.user);
+//		this.xmlReq.setRequestHeader("User-Agent", "extensions.1st-setup.nl/" + gExchangeRequestVersion+"/username="+this.mArgument.user);
+		this.xmlReq.setRequestHeader("User-Agent", this.globalFunctions.safeGetCharPref(this.prefB, "extensions.1st-setup.others.userAgent", "exchangecalendar@extensions.1st-setup.nl", true));
 
 		// This is required for NTLM authenticated sessions. Which is default for a default EWS install.
 		this.xmlReq.setRequestHeader("Connection", "keep-alive");
@@ -921,7 +922,7 @@ catch(err){
 	{
 		this.originalReq = aReq;
 
-		var msg = exchWebService.commonFunctions.xmlToJxon('<nsSoap:Envelope xmlns:nsSoap="'+nsSoapStr+'" xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var msg = this.globalFunctions.xmlToJxon('<nsSoap:Envelope xmlns:nsSoap="'+nsSoapStr+'" xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
 		this.version = this.exchangeStatistics.getServerVersion(this.mArgument.serverUrl);
 		
@@ -987,7 +988,11 @@ var ecPasswordErrorList = {};
 function ecnsIAuthPrompt2(aExchangeRequest)
 {
 	this.exchangeRequest = aExchangeRequest;
-	this.uuid = exchWebService.commonFunctions.getUUID();
+
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+	this.uuid = this.globalFunctions.getUUID();
+
 	this.callback = null;
 	this.context = null;
 	this.level = null;
@@ -1064,7 +1069,7 @@ ecnsIAuthPrompt2.prototype = {
 			return Cr.NS_NOINTERFACE;  // We do not support this.
 		}
 
-		exchWebService.commonFunctions.LOG("  >>>>>>>>>>> MAIL THIS LINE TO exchangecalendar@extensions.1st-setup.nl: ecnsIAuthPrompt2.getInterface("+iid+")");
+		this.globalFunctions.LOG("  >>>>>>>>>>> MAIL THIS LINE TO exchangecalendar@extensions.1st-setup.nl: ecnsIAuthPrompt2.getInterface("+iid+")");
 		throw Cr.NS_NOINTERFACE;
 	},
 
@@ -1178,9 +1183,9 @@ ecnsIAuthPrompt2.prototype = {
 		var prefB = Cc["@mozilla.org/preferences-service;1"]
 			.getService(Ci.nsIPrefBranch);
 
-		this.debug = exchWebService.commonFunctions.safeGetBoolPref(prefB, "extensions.1st-setup.authentication.debug", false, true);
+		this.debug = this.globalFunctions.safeGetBoolPref(prefB, "extensions.1st-setup.authentication.debug", false, true);
 		if (this.debug) {
-			exchWebService.commonFunctions.LOG(this.uuid+": "+aMsg);
+			this.globalFunctions.LOG(this.uuid+": "+aMsg);
 		}
 	},
 
