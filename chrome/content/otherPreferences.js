@@ -41,20 +41,38 @@ var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils;
 
-Cu.import("resource://exchangecalendar/ecFunctions.js");
+function exchOtherPreferences(aDocument, aWindow)
+{
+	this._document = aDocument;
+	this._window = aWindow;
 
-if (! exchWebService) var exchWebService = {};
-
-exchWebService.otherPreferences = {
-
-	onLoad: function _onLoad()
-	{
-		
-	},
-	
-	changeRetryCount: function _changeRetryCount()
-	{
-	
-	},
-
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
 }
+
+exchOtherPreferences.prototype = {
+
+	addOnDefault: function _addOnDefault()
+	{
+		this._document.getElementById("extensions.1st-setup.others.userAgent").value = "exchangecalendar@extensions.1st-setup.nl";
+	},
+	
+	mozillaDefault: function _mozillaDefault()
+	{
+		if ((this._window.navigator) && (this._window.navigator.userAgent)) {
+			this._document.getElementById("extensions.1st-setup.others.userAgent").value = this._window.navigator.userAgent;
+		}
+		else {
+			this._document.getElementById("extensions.1st-setup.others.userAgent").value = "Mozilla/5.0 (X11; Linux i686; rv:10.0) Gecko/20100101 Firefox/10.0";
+		}
+	},
+
+	ieDefault: function _ieDefault()
+	{
+		this._document.getElementById("extensions.1st-setup.others.userAgent").value = "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 7.1; Trident/5.0)";
+	},
+	
+}
+
+var tmpOtherPreferences = new exchOtherPreferences(document, window);
+//window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpOtherPreferences.onLoad(); }, true);

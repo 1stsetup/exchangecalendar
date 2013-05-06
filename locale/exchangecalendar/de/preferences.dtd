@@ -39,4 +39,4 @@
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.label "Loadbalancer:">
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.maxJobs.label "Maximale gleichzeitige Zugriffe auf den Exchange Server:">
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.sleepBetweenJobs.label "Minimale Wartezeit zwischen Zugriffen auf den Exchange Server:">
-
+<!ENTITY exchangeWebService.preference.userAgent.label "HTTP user agent:">
