@@ -39,4 +39,4 @@
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.label "Equilibrage de charge:">
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.maxJobs.label "Nombre Max de connexions simultanées vers le serveur Exchange:">
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.sleepBetweenJobs.label "Temps minimum entre les requètes vers le serveur Exchange:">
-
+<!ENTITY exchangeWebService.preference.userAgent.label "HTTP user agent:">
