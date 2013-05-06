@@ -83,7 +83,7 @@ erGetUserAvailabilityRequest.prototype = {
 		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetUserAvailabilityRequest xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
 		/* WTF really?  Just give me UTC. */
-		var timeZone = req.addChildTag("TimeZone", "nsTypes", null);
+/*		var timeZone = req.addChildTag("TimeZone", "nsTypes", null);
 		timeZone.addChildTag("Bias", "nsTypes", "0");
 		var standardTime = timeZone.addChildTag("StandardTime", "nsTypes", null);
 		standardTime.addChildTag("Bias", "nsTypes", "0");
@@ -98,6 +98,7 @@ erGetUserAvailabilityRequest.prototype = {
 		daylightTime.addChildTag("DayOrder", "nsTypes", "1");
 		daylightTime.addChildTag("Month", "nsTypes", "0");
 		daylightTime.addChildTag("DayOfWeek", "nsTypes", "Sunday");
+*/ // Removed because we specify timezone to use in SOAP header.
 
 		var mailboxData = req.addChildTag("MailboxDataArray", "nsMessages", null).addChildTag("MailboxData", "nsTypes", null);
 		mailboxData.addChildTag("Email", "nsTypes", null).addChildTag("Address", "nsTypes", this.email);
