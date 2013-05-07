@@ -53,13 +53,16 @@
   buttons="cancel"
   buttonlabelaccept="&label.acceptbutton;"
   buttonlabelcancel="&label.cancelbutton;"
-  ondialogaccept="return exchWebService.oofSettings.onSave();"
-  onload="exchWebService.oofSettings.onLoad();">
+  ondialogaccept="return tmpOOFSettings.onSave();"
+  onload="tmpOOFSettings.onLoad();">
 
 	<script type="application/javascript" src="chrome://exchangecalendar/content/oofSettings.js"/>
 
 	<commandset>
-		<command id="exchWebService_cmd_oof_scheduled" oncommand="exchWebService.oofSettings.doScheduledChanged();"/>
+		<command id="exchWebService_cmd_oof_scheduled" oncommand="tmpOOFSettings.doScheduledChanged();"/>
+		<command id="cmd_internal_bold" oncommand="tmpOOFSettings.toggleBold();"/>
+		<command id="cmd_internal_italic" oncommand="tmpOOFSettings.toggleItalic();"/>
+		<command id="cmd_internal_underline" oncommand="tmpOOFSettings.toggleUnderline();"/>
 	</commandset>
 
 	<hbox>
@@ -133,20 +136,35 @@
 						<row>-->
 							<toolbox id="FormatToolbox" mode="icons">
 								<toolbar class="chromeclass-toolbar" id="FormatToolbar">
-									<toolbarbutton id="boldButton"
-										class="formatting-button"
+									<toolbarbutton id="exchWebService-oof-boldButton"
+										class="bold-button"
 										tooltiptext="Bold"
 										type="checkbox"
 										autoCheck="false"
-										observes="cmd_bold"
-										state="false"/>
+										observes="cmd_internal_bold"
+										state="true"/>
+									<toolbarbutton id="exchWebService-oof-boldButton"
+										class="italic-button"
+										tooltiptext="Italic"
+										type="checkbox"
+										autoCheck="false"
+										observes="cmd_internal_italic"
+										state="true"/>
+									<toolbarbutton id="exchWebService-oof-underlineButton"
+										class="underline-button"
+										tooltiptext="Underline"
+										type="checkbox"
+										autoCheck="false"
+										observes="cmd_internal_underline"
+										state="true"/>
 								</toolbar>
 							</toolbox>
 							<editor
 								type="content-primary"
 								id="exchWebService-oof-editor-internal"
+								class="exchWebService-editor"
 								src="about:blank"
-								editortype="htmlmail"
+								editortype="html"
 								flex="1"/>
 							</vbox>
 					<!--	</row>

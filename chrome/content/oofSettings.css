@@ -1,6 +1,21 @@
-toolbarbutton.formatting-button { 
-  -list-style-image: url("chrome://exchangecalendar/skin/arrow-circle.png");
-  height: 16px;
-  width: 16px;
+toolbarbutton.bold-button { 
+  list-style-image: url("chrome://exchangecalendar/skin/edit-bold.png");
+  height: 32px;
+  width: 32px;
 }
 
+toolbarbutton.italic-button { 
+  list-style-image: url("chrome://exchangecalendar/skin/edit-italic.png");
+  height: 32px;
+  width: 32px;
+}
+
+toolbarbutton.underline-button { 
+  list-style-image: url("chrome://exchangecalendar/skin/edit-underline.png");
+  height: 32px;
+  width: 32px;
+}
+
+editor.exchWebService-editor {
+  border-style: solid;
+}
