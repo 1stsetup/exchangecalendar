@@ -500,6 +500,12 @@ calExchangeCalendar.prototype = {
 		return this.myId;
 	},
 
+	set id(aValue)
+	{
+		// We ignore this.
+		//dump("Someone is setting the id to '"+aValue+"' for calendar:"+this.name+"\n");
+	},
+
 	//  attribute nsIURI uri;
 	get uri()
 	{
