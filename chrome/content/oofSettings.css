@@ -1,0 +1,6 @@
+toolbarbutton.formatting-button { 
+  -list-style-image: url("chrome://exchangecalendar/skin/arrow-circle.png");
+  height: 16px;
+  width: 16px;
+}
+
