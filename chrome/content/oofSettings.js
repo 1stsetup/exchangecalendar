@@ -76,18 +76,11 @@ exchOOFSettings.prototype = {
 		this.calPrefs = Cc["@mozilla.org/preferences-service;1"]
 		            .getService(Ci.nsIPrefService)
 			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+calId+".");
-
 		this._document.getElementById("exchWebService-oofSettings-title").value = this.globalFunctions.safeGetCharPref(this.calPrefs, "ecMailbox", "null");
 		this.getOofSettings();
 
 		this.internalEditorElement = this._document.getElementById("exchWebService-oof-editor-internal");
-		if (this.internalEditorElement) {
-			this.internalCommandManager = this.internalEditorElement.commandManager;
-		}
 		this.externalEditorElement = this._document.getElementById("exchWebService-oof-editor-external");
-		if (this.externalEditorElement) {
-			this.externalCommandManager = this.externalEditorElement.commandManager;
-		}
 	},
 
 	onSave: function _onSave()
@@ -151,16 +144,12 @@ exchOOFSettings.prototype = {
 		this._document.getElementById("exchWebService-oof-externalaudience").value = aOofSettings.externalAudience;
 
 		if (this.internalEditorElement) {
-dump("jaja 1\n");
-//			this.internalEditorElement.getHTMLEditor(this.internalEditorElement.contentWindow).insertHTML(this.intOofSettings.internalReply);
-			this.internalEditorElement.contentDocument.documentElement.innerHTML = this.intOofSettings.internalReply;
-dump("jaja 2\n");
+			this.internalEditorElement.content = this.intOofSettings.internalReply;
 		}
 
-		this._document.getElementById("exchWebService-oof-textbox-internal").value = this.intOofSettings.internalReply.replace(/\<br\>/g , "\n").replace(/\&nbsp\;/g," ");
-
-		this._document.getElementById("exchWebService-oof-textbox-external").value = this.intOofSettings.externalReply.replace(/\<br\>/g , "\n").replace(/\&nbsp\;/g," ");
-		
+		if (this.externalEditorElement) {
+			this.externalEditorElement.content = this.intOofSettings.externalReply;
+		}
 
 	},
 
@@ -213,11 +202,9 @@ dump("jaja 2\n");
 		var internalReply = this.intOofSettings.internalReply;
 		var externalReply = this.intOofSettings.externalReply;
 		
-dump("internalReply HTML:"+this.internalEditorElement.contentDocument.documentElement.innerHTML+"\n");
-		internalReply = "<html>"+this.internalEditorElement.contentDocument.documentElement.innerHTML+"</html>";
-		//internalReply = this._document.getElementById("exchWebService-oof-textbox-internal").value.replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;');		
+		internalReply = "<html>"+this.internalEditorElement.content+"</html>";
 		
-		externalReply = this._document.getElementById("exchWebService-oof-textbox-external").value.replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;');
+		externalReply = "<html>"+this.externalEditorElement.content+"</html>";
 
 
 		var self = this;
@@ -256,23 +243,8 @@ dump("internalReply HTML:"+this.internalEditorElement.contentDocument.documentEl
 
 	},
 
-	getBoolCommandState: function _getBoolCommandState(aCommandName, aCommandManager, aWindow, aState)
-	{
-		var state = Cc["@mozilla.org/embedcomp/command-params;1"]
-				.createInstance(Ci.nsICommandParams);
-		aCommandManager.getCommandState(aCommandName, aWindow,state);
-		return state.getBooleanValue(aState);
-	},
-
-	toggleBold: function _toggleBold()
-	{
-		if (this.internalCommandManager) {
-			this.internalCommandManager.doCommand("cmd_bold", null, null);
-			this._document.getElementById("exchWebService-oof-boldButton").checked = this.getBoolCommandState("cmd_bold", this.internalCommandManager, this.internalEditorElement.contentWindow, "state_all");
-		}
-	},
 }
 
 var tmpOOFSettings = new exchOOFSettings(document, window);
-//window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpOOFSettings.onLoad(); }, true);
+window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpOOFSettings.onLoad(); }, true);
 

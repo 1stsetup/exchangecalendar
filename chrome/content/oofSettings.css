@@ -19,3 +19,7 @@ toolbarbutton.underline-button {
 editor.exchWebService-editor {
   border-style: solid;
 }
+
+oofEditor {
+  -moz-binding: url(chrome://exchangecalendar/content/oofSettings.xml#exchWebServiceEditor);
+}

@@ -54,15 +54,14 @@
   buttonlabelaccept="&label.acceptbutton;"
   buttonlabelcancel="&label.cancelbutton;"
   ondialogaccept="return tmpOOFSettings.onSave();"
-  onload="tmpOOFSettings.onLoad();">
+	height="600px"
+	persist="width height"
+>
 
 	<script type="application/javascript" src="chrome://exchangecalendar/content/oofSettings.js"/>
 
 	<commandset>
 		<command id="exchWebService_cmd_oof_scheduled" oncommand="tmpOOFSettings.doScheduledChanged();"/>
-		<command id="cmd_internal_bold" oncommand="tmpOOFSettings.toggleBold();"/>
-		<command id="cmd_internal_italic" oncommand="tmpOOFSettings.toggleItalic();"/>
-		<command id="cmd_internal_underline" oncommand="tmpOOFSettings.toggleUnderline();"/>
 	</commandset>
 
 	<hbox>
@@ -71,7 +70,7 @@
 		<label id="exchWebService-load-error-message"/>
 	</hbox>
 
-	<vbox id="vbox-exchWebService-oof-settings" disabled="true">
+	<vbox id="vbox-exchWebService-oof-settings" disabled="true" flex="1">
 		<hbox align="center">
 			<label value="&label.oofstatus;"/>
 			<menulist label="(Make a choice)" id="exchWebService-oof-status" value="1">
@@ -116,69 +115,25 @@
 			</grid>
 		</vbox>
 
-		<spacer flex="2"/>
+		<spacer/>
 
 		<tabbox flex="1">
 			<tabs>
-				<tab label="&button.label.internal;" selected="true"/>
-				<tab label="&button.label.external;"/>
+				<tab label="&button.label.internal;" selected="true" flex="1"/>
+				<tab label="&button.label.external;" flex="1"/>
 			</tabs>
 			<tabpanels flex="1">
-				<tabpanel id="exchWebService-internalreply">
-				<!--	<rows>					
-						<row> -->
-							<vbox flex="1">
-							<label id="exchWebService-oof-label-internal" value="&label.internalreply;" />
-					<!--	</row>	
-						<row>
-						 	<textbox id="exchWebService-oof-textbox-internal" value="" multiline="true" rows="15" cols="80"/>
-						</row> 
-						<row>-->
-							<toolbox id="FormatToolbox" mode="icons">
-								<toolbar class="chromeclass-toolbar" id="FormatToolbar">
-									<toolbarbutton id="exchWebService-oof-boldButton"
-										class="bold-button"
-										tooltiptext="Bold"
-										type="checkbox"
-										autoCheck="false"
-										observes="cmd_internal_bold"
-										state="true"/>
-									<toolbarbutton id="exchWebService-oof-boldButton"
-										class="italic-button"
-										tooltiptext="Italic"
-										type="checkbox"
-										autoCheck="false"
-										observes="cmd_internal_italic"
-										state="true"/>
-									<toolbarbutton id="exchWebService-oof-underlineButton"
-										class="underline-button"
-										tooltiptext="Underline"
-										type="checkbox"
-										autoCheck="false"
-										observes="cmd_internal_underline"
-										state="true"/>
-								</toolbar>
-							</toolbox>
-							<editor
-								type="content-primary"
-								id="exchWebService-oof-editor-internal"
-								class="exchWebService-editor"
-								src="about:blank"
-								editortype="html"
-								flex="1"/>
-							</vbox>
-					<!--	</row>
-					</rows> -->				
+				<tabpanel id="exchWebService-internalreply" flex="1">
+					<vbox flex="1">
+						<label id="exchWebService-oof-label-internal" value="&label.internalreply;" />
+						<oofEditor id="exchWebService-oof-editor-internal" flex="1"/>
+					</vbox> 
 				</tabpanel>
-				<tabpanel id="exchWebService-internalreply">
-					<rows>					
-						<row>
-							<label id="exchWebService-oof-label-external" value="&label.externalreply;"/>
-						</row>	
-						<row>
-						 	<textbox id="exchWebService-oof-textbox-external" value="" multiline="true" rows="15" cols="80"/>
-						</row> 
-					</rows> 
+				<tabpanel id="exchWebService-externalreply" flex="1">
+					<vbox flex="1">
+						<label id="exchWebService-oof-label-external" value="&label.externalreply;" />
+						<oofEditor id="exchWebService-oof-editor-external" flex="1"/>
+					</vbox> 
 				</tabpanel>
 			</tabpanels>
 		</tabbox>

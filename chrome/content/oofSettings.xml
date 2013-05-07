@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: GPL 3.0
+ *
+ * The contents of this file are subject to the General Public License
+ * 3.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ *  Exchange 2007/2010 Contacts.
+ *  For Thunderbird.
+ *
+ * Author: Deepak Kumar
+ * email: deepk2u@gmail.com
+ *
+ *
+ * ***** BEGIN LICENSE BLOCK *****/
+-->
+
+<!DOCTYPE dialog [
+  <!ENTITY % dtd1 SYSTEM "chrome://calendar/locale/global.dtd" > %dtd1;
+  <!ENTITY % dtd2 SYSTEM "chrome://calendar/locale/calendar.dtd" > %dtd2;
+  <!ENTITY % dtd3 SYSTEM "chrome://calendar/locale/calendar-event-dialog.dtd"> %dtd3;
+]>
+
+<bindings xmlns="http://www.mozilla.org/xbl"
+          xmlns:xbl="http://www.mozilla.org/xbl"
+          xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	<binding id="exchWebServiceEditor">
+
+    <content>
+
+	<xul:vbox flex="1">
+		<xul:toolbox id="FormatToolbox" mode="icons">
+			<xul:toolbar class="chromeclass-toolbar" id="FormatToolbar">
+				<xul:toolbarbutton anonid="cmd_bold"
+					class="bold-button"
+					tooltiptext="Bold"
+					type="checkbox"
+					autoCheck="false"
+					state="true"/>
+				<xul:toolbarbutton anonid="cmd_italic"
+					class="italic-button"
+					tooltiptext="Italic"
+					type="checkbox"
+					autoCheck="false"
+					state="true"/>
+				<xul:toolbarbutton anonid="cmd_underline"
+					class="underline-button"
+					tooltiptext="Underline"
+					type="checkbox"
+					autoCheck="false"
+					state="true"/>
+			</xul:toolbar>
+		</xul:toolbox>
+		<xul:editor
+			type="content-primary"
+			anonid="editor"
+			class="exchWebService-editor"
+			src="about:blank"
+			editortype="html"
+			flex="1"/>
+	</xul:vbox>
+
+    </content>
+	<implementation>
+		<constructor><![CDATA[
+			this.editorElement = document.getAnonymousElementByAttribute(this, "anonid", "editor");
+			if (this.editorElement) {
+				this.commandManager = this.editorElement.commandManager;
+				var self=this;
+				this.editorClickFunction = function() { self.onClickEditor();};
+				this.editorElement.addEventListener("click", this.editorClickFunction, true);
+			}
+
+			this.functions = {};
+			this.connectButton("cmd_bold");
+			this.connectButton("cmd_italic");
+			this.connectButton("cmd_underline");
+		]]></constructor>
+
+		<destructor><![CDATA[
+			if (this.editorElement) {
+				this.editorElement.removeEventListener("click", this.editorClickFunction, false);
+			}
+			this.disconnectButton("cmd_bold");
+			this.disconnectButton("cmd_italic");
+			this.disconnectButton("cmd_underline");
+		]]></destructor>
+			
+			<property name="content">
+				<getter>
+				  <![CDATA[
+				    return this.editorElement.contentDocument.documentElement.innerHTML;
+				  ]]>
+				</getter>
+				<setter>
+				  <![CDATA[
+					if (this.editorElement) {
+						this.editorElement.contentDocument.documentElement.innerHTML = val;
+					}
+				  ]]>
+				</setter>
+			</property>
+
+		<method name="connectButton">
+			<parameter name="aAnonId" />
+			<body><![CDATA[
+			var self = this;
+			this.functions[aAnonId] = function() { self.toggleButton(aAnonId);};
+			document.getAnonymousElementByAttribute(this, "anonid", aAnonId).addEventListener("click", this.functions[aAnonId], true);
+		]]></body>
+		</method>
+
+		<method name="disconnectButton">
+			<parameter name="aAnonId" />
+			<body><![CDATA[
+			document.getAnonymousElementByAttribute(this, "anonid", aAnonId).removeEventListener("click", this.functions[aAnonId], false);
+		]]></body>
+		</method>
+
+		<method name="onClickEditor">
+			<body><![CDATA[
+			this.setButtonState("cmd_bold");
+			this.setButtonState("cmd_italic");
+			this.setButtonState("cmd_underline");
+		]]></body>
+		</method>
+
+		<method name="getBoolCommandState">
+			<parameter name="aCommandName" />
+			<parameter name="aCommandManager" />
+			<parameter name="aWindow" />
+			<parameter name="aState" />
+			<body><![CDATA[
+			var state = Components.classes["@mozilla.org/embedcomp/command-params;1"]
+					.createInstance(Components.interfaces.nsICommandParams);
+			aCommandManager.getCommandState(aCommandName, aWindow,state);
+			return state.getBooleanValue(aState);
+		]]></body>
+		</method>
+
+		<method name="setButtonState">
+			<parameter name="aAnonId" />
+			<body><![CDATA[
+			if (this.commandManager) {
+				document.getAnonymousElementByAttribute(this, "anonid", aAnonId).checked = this.getBoolCommandState(aAnonId, this.commandManager, this.editorElement.contentWindow, "state_all");
+			}
+		]]></body>
+		</method>
+		<method name="toggleButton">
+			<parameter name="aAnonId" />
+			<body><![CDATA[
+			if (this.commandManager) {
+				this.commandManager.doCommand(aAnonId, null, null);
+				this.setButtonState(aAnonId);
+			}
+		]]></body>
+		</method>
+	</implementation>
+	</binding>
+</bindings>
