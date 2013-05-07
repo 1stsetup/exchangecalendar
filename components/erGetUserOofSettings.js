@@ -96,7 +96,13 @@ erGetUserOofSettingsRequest.prototype = {
 		var oofSettingsResponse = aResp.XPath("/s:Envelope/s:Body/m:GetUserOofSettingsResponse");
 		var rm = oofSettingsResponse[0].XPath("/m:ResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 		if (rm.length == 0) {
-			var responseCode = rm[0].getTagValue("m:ResponseCode");
+			var rm = oofSettingsResponse[0].XPath("/m:ResponseMessage[@ResponseClass='Error']");
+			if (rm.length > 0) {
+				var responseCode = rm[0].getTagValue("m:ResponseCode");
+			}
+			else {
+				var responseCode = "unknown";
+			}
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getting user Oof Settings:"+responseCode);
 			return;
 		}
