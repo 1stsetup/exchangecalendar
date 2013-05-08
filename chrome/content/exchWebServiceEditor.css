@@ -52,6 +52,30 @@ toolbarbutton.increaseFont-button {
   width: 32px;
 }
 
+toolbarbutton.align-left-button { 
+  list-style-image: url("chrome://exchangecalendar/skin/edit-alignment.png");
+  height: 32px;
+  width: 32px;
+}
+
+toolbarbutton.align-center-button { 
+  list-style-image: url("chrome://exchangecalendar/skin/edit-alignment-center.png");
+  height: 32px;
+  width: 32px;
+}
+
+toolbarbutton.align-right-button { 
+  list-style-image: url("chrome://exchangecalendar/skin/edit-alignment-right.png");
+  height: 32px;
+  width: 32px;
+}
+
+toolbarbutton.align-justify-button { 
+  list-style-image: url("chrome://exchangecalendar/skin/edit-alignment-justify.png");
+  height: 32px;
+  width: 32px;
+}
+
 editor.exchWebService-editor {
   background-color: white;
   border-style: solid;

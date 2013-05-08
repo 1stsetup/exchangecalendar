@@ -120,6 +120,35 @@
 					</xul:stack>
 				</xul:toolbaritem>
 				<xul:toolbarseparator class="toolbarseparator-standard"/>
+				<xul:toolbarbutton anonid="cmd_align_left"
+					class="align-left-button"
+					tooltiptext="Align left"
+					type="checkbox"
+					autoCheck="false"
+					connect="true"
+					state="state_attribute"/>
+				<xul:toolbarbutton anonid="cmd_align_center"
+					class="align-center-button"
+					tooltiptext="Align center"
+					type="checkbox"
+					autoCheck="false"
+					connect="true"
+					state="state_attribute"/>
+				<xul:toolbarbutton anonid="cmd_align_right"
+					class="align-right-button"
+					tooltiptext="Align right"
+					type="checkbox"
+					autoCheck="false"
+					connect="true"
+					state="state_attribute"/>
+				<xul:toolbarbutton anonid="cmd_align_justify"
+					class="align-justify-button"
+					tooltiptext="Align justify"
+					type="checkbox"
+					autoCheck="false"
+					connect="true"
+					state="state_attribute"/>
+				<xul:toolbarseparator class="toolbarseparator-standard"/>
 			</xul:toolbar>
 		</xul:toolbox>
 		<xul:editor
@@ -140,6 +169,10 @@
 				this.commandManager = this.editorElement.commandManager;
 				this.editorClickFunction = function() { self.onClickEditor();};
 				this.editorElement.addEventListener("click", this.editorClickFunction, true);
+
+				this.editorKeyPressFunction = function(aEvent) { self.onKeyPressEditor(aEvent);};
+				this.editorElement.addEventListener("keyup", this.editorKeyPressFunction, true);
+
 			}
 
 			this.atomService = Components.classes["@mozilla.org/atom-service;1"].getService(Components.interfaces.nsIAtomService);
@@ -154,13 +187,14 @@
 			var fontColorElement = document.getAnonymousElementByAttribute(this, "anonid", "cmd_fontColor")
 			fontColorElement.addEventListener("click", this.fontColorFunction, true);
 
-			this.higlighColor = "#FFFFFF";
+			this.highlightColor = "#FFFFFF";
 			this.fontColor = "#000000";
 		]]></constructor>
 
 		<destructor><![CDATA[
 			if (this.editorElement) {
 				this.editorElement.removeEventListener("click", this.editorClickFunction, false);
+				this.editorElement.removeEventListener("keyup", this.editorKeyPressFunction, false);
 			}
 			this.disconnectButtons("FormatToolbar");
 			document.getAnonymousElementByAttribute(this, "anonid", "cmd_backgroundColor").removeEventListener("click", this.bgColorFunction, false);
@@ -232,6 +266,15 @@
 			<parameter name="aStore" />
 			<body><![CDATA[
 			document.getAnonymousElementByAttribute(this, "anonid", aAnonId).removeEventListener("click", this.functions[aStore][aAnonId], false);
+		]]></body>
+		</method>
+
+		<method name="onKeyPressEditor">
+			<parameter name="aEvent" />
+			<body><![CDATA[
+			if ( ( (aEvent.keyCode > 36) && (aEvent.keyCode < 41) ) || (aEvent.keyCode == 33) || (aEvent.keyCode == 34)) {
+				this.onClickEditor();
+			}
 		]]></body>
 		</method>
 
@@ -362,7 +405,12 @@ dump("aAll:"+aAll.value+"\n");*/
 			if (this.commandManager) {
 				var button = document.getAnonymousElementByAttribute(this, "anonid", aAnonId);
 				if (button.hasAttribute("state")) {
-					button.checked = this.getBoolCommandState(aAnonId, this.commandManager, this.editorElement.contentWindow, button.getAttribute("state"));
+					if (aAnonId.indexOf("cmd_align") > -1) {
+						button.checked = (aAnonId.indexOf(this.getCStringCommandState("cmd_align", this.commandManager, this.editorElement.contentWindow, "state_attribute")) > 0);
+					}
+					else {
+						button.checked = this.getBoolCommandState(aAnonId, this.commandManager, this.editorElement.contentWindow, button.getAttribute("state"));
+					}
 				}
 			}
 		]]></body>
@@ -371,8 +419,17 @@ dump("aAll:"+aAll.value+"\n");*/
 			<parameter name="aAnonId" />
 			<body><![CDATA[
 			if (this.commandManager) {
-				this.commandManager.doCommand(aAnonId, null, null);
-				this.setButtonState(aAnonId);
+				if (aAnonId.indexOf("cmd_align") > -1) {
+					var state = Components.classes["@mozilla.org/embedcomp/command-params;1"]
+							.createInstance(Components.interfaces.nsICommandParams);
+					state.setCStringValue("state_attribute", aAnonId.substr(10));
+					this.commandManager.doCommand("cmd_align", state, null);
+				}
+				else {
+					this.commandManager.doCommand(aAnonId, null, null);
+				}
+//				this.setButtonState(aAnonId);
+				this.onClickEditor();
 			}
 		]]></body>
 		</method>
