@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: GPL 3.0
+ *
+ * The contents of this file are subject to the General Public License
+ * 3.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ *  Exchange 2007/2010 Contacts.
+ *  For Thunderbird.
+ *
+ * Author: Deepak Kumar
+ * email: deepk2u@gmail.com
+ *
+ *
+ * ***** BEGIN LICENSE BLOCK *****/
+-->
+
+<!DOCTYPE dialog [
+  <!ENTITY % dtd1 SYSTEM "chrome://calendar/locale/global.dtd" > %dtd1;
+  <!ENTITY % dtd2 SYSTEM "chrome://calendar/locale/calendar.dtd" > %dtd2;
+  <!ENTITY % dtd3 SYSTEM "chrome://calendar/locale/calendar-event-dialog.dtd"> %dtd3;
+]>
+
+<bindings xmlns="http://www.mozilla.org/xbl"
+          xmlns:xbl="http://www.mozilla.org/xbl"
+          xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	<binding id="exchWebServiceEditor">
+
+    <content>
+
+	<xul:vbox flex="1">
+		<xul:toolbox anonid="FormatToolbox" mode="icons">
+			<xul:toolbar class="chromeclass-toolbar" anonid="FormatToolbar">
+				<xul:toolbarbutton anonid="cmd_bold"
+					class="bold-button"
+					tooltiptext="Bold"
+					type="checkbox"
+					autoCheck="false"
+					connect="true"
+					state="state_all"/>
+				<xul:toolbarbutton anonid="cmd_italic"
+					class="italic-button"
+					tooltiptext="Italic"
+					type="checkbox"
+					autoCheck="false"
+					connect="true"
+					state="state_all"/>
+				<xul:toolbarbutton anonid="cmd_underline"
+					class="underline-button"
+					tooltiptext="Underline"
+					type="checkbox"
+					autoCheck="false"
+					connect="true"
+					state="state_all"/>
+				<xul:toolbarseparator class="toolbarseparator-standard"/>
+				<xul:toolbarbutton anonid="cmd_decreaseFont"
+					class="decreaseFont-button"
+					tooltiptext="Indent"
+					type="checkbox"
+					autoCheck="false"
+					connect="true"/>
+				<xul:toolbarbutton anonid="cmd_increaseFont"
+					class="increaseFont-button"
+					tooltiptext="Outdent"
+					type="checkbox"
+					autoCheck="false"
+					connect="true"/>
+				<xul:toolbarseparator class="toolbarseparator-standard"/>
+				<xul:toolbarbutton anonid="cmd_indent"
+					class="indent-button"
+					tooltiptext="Indent"
+					type="checkbox"
+					autoCheck="false"
+					connect="true"/>
+				<xul:toolbarbutton anonid="cmd_outdent"
+					class="outdent-button"
+					tooltiptext="Outdent"
+					type="checkbox"
+					autoCheck="false"
+					connect="true"/>
+				<xul:toolbarseparator class="toolbarseparator-standard"/>
+				<xul:toolbarbutton anonid="cmd_ol"
+					class="orderedlist-button"
+					tooltiptext="Indent"
+					type="checkbox"
+					autoCheck="false"
+					connect="true"
+					state="state_all"/>
+				<xul:toolbarbutton anonid="cmd_ul"
+					class="unorderedlist-button"
+					tooltiptext="Outdent"
+					type="checkbox"
+					autoCheck="false"
+					connect="true"
+					state="state_all"/>
+				<xul:toolbarseparator class="toolbarseparator-standard"/>
+				<xul:toolbaritem class="formatting-button">
+					<xul:stack align="enter" state="rgb(102,102,102)">
+						<xul:box style="background-color:#FFFFFF"
+							anonid="cmd_backgroundColor"
+							class="color-button"
+							tooltiptext="Choose higlight color for text"
+							id="BackgroundColorButton"
+						/>
+						<xul:box style="background-color:rgb(0,0,0)"
+							anonid="cmd_fontColor"
+							class="color-button"
+							tooltiptext="Choose font color for text"
+							id="TextColorButton"
+						/>
+					</xul:stack>
+				</xul:toolbaritem>
+				<xul:toolbarseparator class="toolbarseparator-standard"/>
+			</xul:toolbar>
+		</xul:toolbox>
+		<xul:editor
+			type="content-primary"
+			anonid="editor"
+			class="exchWebService-editor"
+			src="about:blank"
+			editortype="html"
+			flex="1"/>
+	</xul:vbox>
+
+    </content>
+	<implementation>
+		<constructor><![CDATA[
+			this.editorElement = document.getAnonymousElementByAttribute(this, "anonid", "editor");
+			var self=this;
+			if (this.editorElement) {
+				this.commandManager = this.editorElement.commandManager;
+				this.editorClickFunction = function() { self.onClickEditor();};
+				this.editorElement.addEventListener("click", this.editorClickFunction, true);
+			}
+
+			this.atomService = Components.classes["@mozilla.org/atom-service;1"].getService(Components.interfaces.nsIAtomService);
+
+			this.connectButtons("FormatToolbar");
+			// Connect color button
+			this.bgColorFunction = function(){ self.selectColor("cmd_backgroundColor");};
+			var bgColorElement = document.getAnonymousElementByAttribute(this, "anonid", "cmd_backgroundColor")
+			bgColorElement.addEventListener("click", this.bgColorFunction, true);
+
+			this.fontColorFunction = function(){ self.selectColor("cmd_fontColor");};
+			var fontColorElement = document.getAnonymousElementByAttribute(this, "anonid", "cmd_fontColor")
+			fontColorElement.addEventListener("click", this.fontColorFunction, true);
+
+			this.higlighColor = "#FFFFFF";
+			this.fontColor = "#000000";
+		]]></constructor>
+
+		<destructor><![CDATA[
+			if (this.editorElement) {
+				this.editorElement.removeEventListener("click", this.editorClickFunction, false);
+			}
+			this.disconnectButtons("FormatToolbar");
+			document.getAnonymousElementByAttribute(this, "anonid", "cmd_backgroundColor").removeEventListener("click", this.bgColorFunction, false);
+			document.getAnonymousElementByAttribute(this, "anonid", "cmd_fontColor").removeEventListener("click", this.fontColorFunction, false);
+		]]></destructor>
+			
+			<property name="content">
+				<getter>
+				  <![CDATA[
+				    return this.editorElement.contentDocument.documentElement.innerHTML;
+				  ]]>
+				</getter>
+				<setter>
+				  <![CDATA[
+					if (this.editorElement) {
+						this.editorElement.contentDocument.documentElement.innerHTML = val;
+					}
+				  ]]>
+				</setter>
+			</property>
+
+		<method name="connectButtons">
+			<parameter name="aAnonId" />
+			<body><![CDATA[
+			var toolbar = document.getAnonymousElementByAttribute(this, "anonid", aAnonId);
+
+			if (!this.functions) {
+				this.functions = {};
+			}
+
+			if (toolbar) {
+				var toolbarButtons = toolbar.getElementsByTagName("xul:toolbarbutton");
+				for (var i=0; i<toolbarButtons.length;i++) {
+					if ((toolbarButtons[i].hasAttribute("connect")) && (toolbarButtons[i].getAttribute("connect") == "true")) {
+						this.connectButton(toolbarButtons[i].getAttribute("anonid"), aAnonId);
+					}
+				}
+			}
+		]]></body>
+		</method>
+
+		<method name="connectButton">
+			<parameter name="aAnonId" />
+			<parameter name="aStore" />
+			<body><![CDATA[
+			var self = this;
+
+			if (!this.functions[aStore]) {
+				this.functions[aStore] = {};
+			}
+			this.functions[aStore][aAnonId] = function() { self.toggleButton(aAnonId);};
+			document.getAnonymousElementByAttribute(this, "anonid", aAnonId).addEventListener("click", this.functions[aStore][aAnonId], true);
+		]]></body>
+		</method>
+
+		<method name="disconnectButtons">
+			<parameter name="aAnonId" />
+			<body><![CDATA[
+			if (this.functions[aAnonId]) {
+				for (var name in this.functions[aAnonId]) {
+					this.disconnectButton(name, aAnonId);
+				}
+			}
+		]]></body>
+		</method>
+
+		<method name="disconnectButton">
+			<parameter name="aAnonId" />
+			<parameter name="aStore" />
+			<body><![CDATA[
+			document.getAnonymousElementByAttribute(this, "anonid", aAnonId).removeEventListener("click", this.functions[aStore][aAnonId], false);
+		]]></body>
+		</method>
+
+		<method name="onClickEditor">
+			<body><![CDATA[
+			for (var aStore in this.functions) {
+				for (var aAnonId in this.functions[aStore]) {
+					this.setButtonState(aAnonId);
+				}
+			}
+
+			var color = this.getCStringCommandState("cmd_fontColor", this.commandManager, this.editorElement.contentWindow, "state_attribute");
+			if (color == "") {
+				color = "transparent";
+			}
+			else {
+				color = this.ConvertRGBColorIntoHEXColor(color);
+			}
+			document.getAnonymousElementByAttribute(this, "anonid", "cmd_fontColor").setAttribute("style","background-color:"+color);
+			
+			var aFirst = { value: false };
+			var aAny = { value: false };
+			var aAll = { value: false };
+			var propAtom = this.atomService.getAtom("font");
+			var edElement = this.editorElement.getHTMLEditor(this.editorElement.contentWindow);
+			color = edElement.getInlinePropertyWithAttrValue(propAtom, "bgcolor", null, aFirst, aAny, aAll);			
+
+			document.getAnonymousElementByAttribute(this, "anonid", "cmd_backgroundColor").setAttribute("style","background-color:"+color);
+			
+/*dump("color:"+color+"\n");
+dump("aFirst:"+aFirst.value+"\n");
+dump("aAny:"+aAny.value+"\n");
+dump("aAll:"+aAll.value+"\n");*/
+						
+		]]></body>
+		</method>
+
+		
+		<method name="selectColor">
+			<parameter name="aAnonId" />
+			<body><![CDATA[
+			var element = document.getAnonymousElementByAttribute(this, "anonid", aAnonId);
+
+			// Get current color
+			var color = this.getCStringCommandState(aAnonId, this.commandManager, this.editorElement.contentWindow, "state_attribute");
+			if (color == "") {
+				color = "transparent";
+			}
+			else {
+				color = this.ConvertRGBColorIntoHEXColor(color);
+			}
+			var colorObj = {};
+			colorObj.Type = "Text";
+			colorObj.TextColor = color;
+			window.openDialog("chrome://editor/content/EdColorPicker.xul", "_blank", "chrome,close,titlebar,modal", "", colorObj);
+
+			if (colorObj.Cancel) {
+				return;
+			}
+
+			element.setAttribute("style","background-color:"+colorObj.TextColor);
+
+			if (aAnonId == "cmd_fontColor") {
+				var state = Components.classes["@mozilla.org/embedcomp/command-params;1"]
+						.createInstance(Components.interfaces.nsICommandParams);
+				state.setCStringValue("state_attribute", colorObj.TextColor);
+				this.commandManager.doCommand(aAnonId, state, null);
+			}
+			else {
+				var propAtom = this.atomService.getAtom("font");
+				var edElement = this.editorElement.getHTMLEditor(this.editorElement.contentWindow);
+				edElement.setInlineProperty(propAtom, "bgcolor", colorObj.TextColor);			
+			}
+
+		]]></body>
+		</method>
+
+		<method name="ConvertRGBColorIntoHEXColor">
+			<parameter name="color" />
+			<body><![CDATA[
+			  if ( /rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/.test(color) ) {
+			    var r = Number(RegExp.$1).toString(16);
+			    if (r.length == 1) r = "0"+r;
+			    var g = Number(RegExp.$2).toString(16);
+			    if (g.length == 1) g = "0"+g;
+			    var b = Number(RegExp.$3).toString(16);
+			    if (b.length == 1) b = "0"+b;
+			    return "#"+r+g+b;
+			  }
+			  else
+			  {
+			    return color;
+			  }
+		]]></body>
+		</method>
+
+		<method name="getCStringCommandState">
+			<parameter name="aCommandName" />
+			<parameter name="aCommandManager" />
+			<parameter name="aWindow" />
+			<parameter name="aState" />
+			<body><![CDATA[
+			var state = Components.classes["@mozilla.org/embedcomp/command-params;1"]
+					.createInstance(Components.interfaces.nsICommandParams);
+			aCommandManager.getCommandState(aCommandName, aWindow,state);
+
+			return state.getCStringValue(aState);
+		]]></body>
+		</method>
+
+		<method name="getBoolCommandState">
+			<parameter name="aCommandName" />
+			<parameter name="aCommandManager" />
+			<parameter name="aWindow" />
+			<parameter name="aState" />
+			<body><![CDATA[
+			var state = Components.classes["@mozilla.org/embedcomp/command-params;1"]
+					.createInstance(Components.interfaces.nsICommandParams);
+			aCommandManager.getCommandState(aCommandName, aWindow,state);
+
+			return state.getBooleanValue(aState);
+		]]></body>
+		</method>
+
+		<method name="setButtonState">
+			<parameter name="aAnonId" />
+			<body><![CDATA[
+			if (this.commandManager) {
+				var button = document.getAnonymousElementByAttribute(this, "anonid", aAnonId);
+				if (button.hasAttribute("state")) {
+					button.checked = this.getBoolCommandState(aAnonId, this.commandManager, this.editorElement.contentWindow, button.getAttribute("state"));
+				}
+			}
+		]]></body>
+		</method>
+		<method name="toggleButton">
+			<parameter name="aAnonId" />
+			<body><![CDATA[
+			if (this.commandManager) {
+				this.commandManager.doCommand(aAnonId, null, null);
+				this.setButtonState(aAnonId);
+			}
+		]]></body>
+		</method>
+
+	</implementation>
+	</binding>
+</bindings>

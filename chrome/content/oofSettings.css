@@ -1,25 +1,3 @@
-toolbarbutton.bold-button { 
-  list-style-image: url("chrome://exchangecalendar/skin/edit-bold.png");
-  height: 32px;
-  width: 32px;
-}
-
-toolbarbutton.italic-button { 
-  list-style-image: url("chrome://exchangecalendar/skin/edit-italic.png");
-  height: 32px;
-  width: 32px;
-}
-
-toolbarbutton.underline-button { 
-  list-style-image: url("chrome://exchangecalendar/skin/edit-underline.png");
-  height: 32px;
-  width: 32px;
-}
-
-editor.exchWebService-editor {
-  border-style: solid;
-}
-
 oofEditor {
-  -moz-binding: url(chrome://exchangecalendar/content/oofSettings.xml#exchWebServiceEditor);
+  -moz-binding: url(chrome://exchangecalendar/content/exchWebServiceEditor.xml#exchWebServiceEditor);
 }
