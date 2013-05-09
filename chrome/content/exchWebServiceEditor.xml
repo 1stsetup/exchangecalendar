@@ -148,7 +148,15 @@
 					autoCheck="false"
 					connect="true"
 					state="state_attribute"/>
-				<xul:toolbarseparator class="toolbarseparator-standard"/>
+			</xul:toolbar>
+		</xul:toolbox>
+		<xul:toolbox anonid="FormatToolbox" mode="icons">
+			<xul:toolbar class="chromeclass-toolbar" anonid="FormatToolbar">
+				<xul:toolbaritem class="formatting-button">
+					<xul:menulist anonid="fontFaceMenuList" class="toolbar-focustarget" crop="right">
+						<xul:menupopup anonid="fontFaceSelect"/>
+					</xul:menulist>
+				</xul:toolbaritem>
 			</xul:toolbar>
 		</xul:toolbox>
 		<xul:editor
@@ -156,7 +164,7 @@
 			anonid="editor"
 			class="exchWebService-editor"
 			src="about:blank"
-			editortype="html"
+			editortype="htmlmail"
 			flex="1"/>
 	</xul:vbox>
 
@@ -189,6 +197,12 @@
 
 			this.highlightColor = "#FFFFFF";
 			this.fontColor = "#000000";
+
+			// Fill fontfac popup menu
+			this.menuPopupFunction = function(event){ self.selectFont("cmd_fontFace", event.target.value);};
+			this.menuPopup = document.getAnonymousElementByAttribute(this, "anonid", "fontFaceSelect");
+			this.menuPopup.addEventListener("command", this.menuPopupFunction, true);
+			this.fillFontFace();
 		]]></constructor>
 
 		<destructor><![CDATA[
@@ -199,6 +213,7 @@
 			this.disconnectButtons("FormatToolbar");
 			document.getAnonymousElementByAttribute(this, "anonid", "cmd_backgroundColor").removeEventListener("click", this.bgColorFunction, false);
 			document.getAnonymousElementByAttribute(this, "anonid", "cmd_fontColor").removeEventListener("click", this.fontColorFunction, false);
+			this.menuPopup.removeEventListener("command", this.menuPopupFunction, false);
 		]]></destructor>
 			
 			<property name="content">
@@ -215,6 +230,42 @@
 				  ]]>
 				</setter>
 			</property>
+
+		<method name="fillFontFace">
+			<body><![CDATA[
+			if (gExchWebServiceLocalFonts == undefined) {
+				// Build list of all local fonts once per editor
+				try {
+					var enumerator = Components.classes["@mozilla.org/gfx/fontenumerator;1"]
+								 .getService(Components.interfaces.nsIFontEnumerator);
+					var localFontCount = { value: 0 }
+					var gExchWebServiceLocalFonts = enumerator.EnumerateAllFonts(localFontCount);
+				}
+				catch(e) { }
+			}
+
+			if (gExchWebServiceLocalFonts != undefined) {
+
+				var itemNode = document.createElementNS("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul", "menuitem");
+				itemNode.setAttribute("label", "Variable width");
+				itemNode.setAttribute("value", "Arial");
+				this.menuPopup.appendChild(itemNode);
+
+				var itemNode = document.createElementNS("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul", "menuseparator");
+				this.menuPopup.appendChild(itemNode);
+
+				for (var i = 0; i < gExchWebServiceLocalFonts.length; ++i) {
+					if (gExchWebServiceLocalFonts[i] != "") {
+						var itemNode = document.createElementNS("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul", "menuitem");
+						itemNode.setAttribute("label", gExchWebServiceLocalFonts[i]);
+						itemNode.setAttribute("value", gExchWebServiceLocalFonts[i]);
+						itemNode.setAttribute("style", "font-family: "+gExchWebServiceLocalFonts[i]+" !important;");
+						this.menuPopup.appendChild(itemNode);
+					}
+				}
+			}
+		]]></body>
+		</method>
 
 		<method name="connectButtons">
 			<parameter name="aAnonId" />
@@ -246,7 +297,7 @@
 				this.functions[aStore] = {};
 			}
 			this.functions[aStore][aAnonId] = function() { self.toggleButton(aAnonId);};
-			document.getAnonymousElementByAttribute(this, "anonid", aAnonId).addEventListener("click", this.functions[aStore][aAnonId], true);
+			document.getAnonymousElementByAttribute(this, "anonid", aAnonId).addEventListener("command", this.functions[aStore][aAnonId], true);
 		]]></body>
 		</method>
 
@@ -265,7 +316,19 @@
 			<parameter name="aAnonId" />
 			<parameter name="aStore" />
 			<body><![CDATA[
-			document.getAnonymousElementByAttribute(this, "anonid", aAnonId).removeEventListener("click", this.functions[aStore][aAnonId], false);
+			document.getAnonymousElementByAttribute(this, "anonid", aAnonId).removeEventListener("command", this.functions[aStore][aAnonId], false);
+		]]></body>
+		</method>
+
+		<method name="selectFont">
+			<parameter name="aCmd" />
+			<parameter name="aFontName" />
+			<body><![CDATA[
+			var state = Components.classes["@mozilla.org/embedcomp/command-params;1"]
+					.createInstance(Components.interfaces.nsICommandParams);
+			state.setCStringValue("state_attribute", aFontName);
+			this.commandManager.doCommand(aCmd, state, null);
+			document.getAnonymousElementByAttribute(this, "anonid", "fontFaceMenuList").setAttribute("style", "font-family: "+aFontName+";");
 		]]></body>
 		</method>
 
@@ -304,11 +367,26 @@
 
 			document.getAnonymousElementByAttribute(this, "anonid", "cmd_backgroundColor").setAttribute("style","background-color:"+color);
 			
-/*dump("color:"+color+"\n");
-dump("aFirst:"+aFirst.value+"\n");
-dump("aAny:"+aAny.value+"\n");
-dump("aAll:"+aAll.value+"\n");*/
-						
+			var font = this.getCStringCommandState("cmd_fontFace", this.commandManager, this.editorElement.contentWindow, "state_attribute");
+			font = font.replace(/"/g, "");
+			var fontElement;
+			if (font.indexOf(",") > -1) {
+				var fonts = font.split(",");
+				for(var i = 0; ((i<fonts.length) && (!fontElement)); i++) {
+					fontElement = document.getAnonymousElementByAttribute(this, "label", fonts[i]);
+					font = fonts[i];
+				}
+			}
+			else {
+				fontElement = document.getAnonymousElementByAttribute(this, "label", font);
+			}
+			if (fontElement) {
+				document.getAnonymousElementByAttribute(this, "anonid", "fontFaceMenuList").selectedItem = fontElement;
+				document.getAnonymousElementByAttribute(this, "anonid", "fontFaceMenuList").setAttribute("style", "font-family: "+font+";");
+			}
+			else {
+			}
+		
 		]]></body>
 		</method>
 
