@@ -380,6 +380,7 @@ mivExchangeTodo.prototype = {
 				for each(var string in tmpStr) {
 					this._companies.push(string.value);
 				}
+				tmpStr = null;
 			}
 		}
 

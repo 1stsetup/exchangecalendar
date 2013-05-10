@@ -196,6 +196,7 @@ erFindCalendarItemsRequest.prototype = {
 								break;
 						}
 					}
+					calendarItems = null;
 				}
 				else {
 					// We do not know how to handle this yet. Do not know if it ever happens. We did not restrict MaxEntriesReturned.
@@ -220,6 +221,8 @@ erFindCalendarItemsRequest.prototype = {
 				aMsg = "Wrong response received.";
 			}
 		}
+		
+		rm = null;
 
 		if (aError) {
 			this.onSendError(aExchangeRequest, aCode, aMsg);

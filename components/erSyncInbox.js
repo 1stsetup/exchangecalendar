@@ -166,6 +166,7 @@ erSyncInboxRequest.prototype = {
 				}
 		//	}
 
+			rm = null;
 			if (lastItemInRange == "false") {
 				this.execute(syncState);
 				return;
@@ -178,6 +179,7 @@ erSyncInboxRequest.prototype = {
 			}
 		}
 		else {
+			rm = null;
 			var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage");
 			if (rm.length > 0) {
 				var ResponseCode = rm[0].getTagValue("m:ResponseCode");
@@ -186,6 +188,7 @@ erSyncInboxRequest.prototype = {
 				var ResponseCode = "Unknown error from Exchange server.";
 			}
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SYNCFOLDERITEMS_UNKNOWN, "Error during SyncFolderItems:"+ResponseCode);
+			rm = null;
 			return;
 		}
 

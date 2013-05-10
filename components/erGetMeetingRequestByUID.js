@@ -130,6 +130,7 @@ erGetMeetingRequestByUIDRequest.prototype = {
 		}
 
 		var responseCode = rm[0].value;
+		rm = null;
 
 		if (responseCode != "NoError") {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getting erGetMeetingRequestByUIDRequest:"+responseCode);
@@ -151,7 +152,7 @@ erGetMeetingRequestByUIDRequest.prototype = {
 				aMeetingRequests.push(tmpItem);
 			}
 		}
-
+		rootFolder = null;
 		
 		if (this.mCbOk) {
 			this.mCbOk(this, aMeetingRequests);

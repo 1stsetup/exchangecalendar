@@ -162,6 +162,7 @@ erFindFolderRequest.prototype = {
 					aContinue = false;
 					aError = true;
 				}
+				folder = null;
 			}
 			else {
 				exchWebService.commonFunctions.LOG("totalItemsInView != 1 ("+totalItemsInView+")\n");
@@ -176,6 +177,8 @@ erFindFolderRequest.prototype = {
 			aContinue = false;
 			aError = true;
 		}
+
+		rm = null;
 
 		if (aError) {
 			this.onSendError(aExchangeRequest, aCode, aMsg);

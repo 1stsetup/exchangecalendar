@@ -293,10 +293,12 @@ erFindMasterOccurrencesRequest.prototype = {
 				items.push(calendarItem[0]);
 			}
 		}
-		
+		rm = null;
+
 		if (this.mCbOk) {
 			this.mCbOk(this, items);
 		}
+		items = null;
 		this.isRunning = false;
 	},
 

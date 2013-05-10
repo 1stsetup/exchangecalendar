@@ -445,6 +445,7 @@ mivExchangeTimeZones.prototype = {
 		for (var index in timeZoneDefinitionArray) {
 			this._timeZones[aVersion][timeZoneDefinitionArray[index].getAttribute("Id")] = timeZoneDefinitionArray[index];
 		}
+		timeZoneDefinitionArray = null;
 		rm = null;
 		//dump("\nEnd of get ews_2010_timezonedefinitions. We have: "+timeZoneDefinitionArray.length+" definitions.\n");
 	},
@@ -476,6 +477,7 @@ mivExchangeTimeZones.prototype = {
 		timezonedefinitions.processXMLString(lines, 0, null);
 
 		this.addExchangeTimeZones(timezonedefinitions, "Exchange2007_SP1");
+		timezonedefinitions = null;
 	},
 
 	logInfo: function _logInfo(message, aDebugLevel) {

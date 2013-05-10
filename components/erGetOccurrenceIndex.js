@@ -148,6 +148,7 @@ erGetOccurrenceIndexRequest.prototype = {
 							break;
 						}
 					}
+					items = null;
 					break;
 				case "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange" :
 					finished = true;
@@ -157,7 +158,8 @@ erGetOccurrenceIndexRequest.prototype = {
 				break;	// break the loop
 			}
 		}
-	
+		rm = null;
+
 		if (found) {
 			// We found our occurrence.
 			if (this.mCbOk) {

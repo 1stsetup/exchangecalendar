@@ -133,6 +133,7 @@ erAutoDiscoverRequest.prototype = {
 			this.isRunning = false;
 			return;
 		}
+		account = null;
 
 		// Try to get the Displayname if it is available
 		var tag = aResp.XPath("/a1:Autodiscover/a2:Response/a2:User/a2:DisplayName");
@@ -142,6 +143,7 @@ erAutoDiscoverRequest.prototype = {
 		else {
 			exchWebService.commonFunctions.LOG("autodiscoverOk but Displayname is not available.");
 		}
+		tag = null;
 
 		// Try to get the SMTP address if it is available
 		var tag = aResp.XPath("/a1:Autodiscover/a2:Response/a2:User/a2:AutoDiscoverSMTPAddress");
@@ -151,6 +153,7 @@ erAutoDiscoverRequest.prototype = {
 		else {
 			exchWebService.commonFunctions.LOG("autodiscoverOk but AutoDiscoverSMTPAddress is not available.");
 		}
+		tag = null;
 
 		// Try to get the EWS urls if they are available
 		ewsUrls = aResp.XPath("/a1:Autodiscover/a2:Response/a2:Account/a2:Protocol[a2:Type='WEB']/*/a2:Protocol/a2:ASUrl");
@@ -180,6 +183,7 @@ erAutoDiscoverRequest.prototype = {
 			}
 		}
 		this.isRunning = false;
+		ewsUrls = null;
 	},
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)

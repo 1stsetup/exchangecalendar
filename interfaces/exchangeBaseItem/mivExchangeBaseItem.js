@@ -2040,6 +2040,7 @@ catch(err){
 					this._xMozSnoozeTime = this._reminderSignalTime.icalString;
 				}
 			}
+			tmpObject = null;
 		}
 		return this._reminderSignalTime;
 	},

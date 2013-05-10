@@ -128,6 +128,7 @@ erGetFolderRequest.prototype = {
 				aCode = this.parent.ER_ERROR_FINDFOLDER_FOLDERID_DETAILS;
 				aError = true;
 			}
+			calendarFolder = null;
 		}
 		else {
 			aMsg = this.parent.getSoapErrorMsg(aResp);
@@ -141,6 +142,8 @@ erGetFolderRequest.prototype = {
 				aMsg = "Wrong response received.";
 			}
 		}
+
+		rm = null;
 
 		if (aError) {
 			this.onSendError(aExchangeRequest, aCode, aMsg);

@@ -201,6 +201,7 @@ erSyncFolderItemsRequest.prototype = {
 				else {
 					var ResponseCode = "Unknown error from Exchange server.";
 				}
+				rm = null;
 				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SYNCFOLDERITEMS_UNKNOWN, "Error during SyncFolderItems:"+ResponseCode);
 				return;
 			}

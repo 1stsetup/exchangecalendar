@@ -288,10 +288,13 @@ erGetItemsRequest.prototype = {
 			}
 		}
 
+		rm = null;
+
 		if (this.mCbOk) {
 			this.mCbOk(this, items);
 		}
 
+		items= null;
 		this.isRunning = false;
 	},
 

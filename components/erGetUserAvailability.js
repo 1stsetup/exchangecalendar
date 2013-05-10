@@ -126,6 +126,7 @@ erGetUserAvailabilityRequest.prototype = {
 
 
 		if (rm.length == 0) {
+			rm = null;
 			var rm = aResp.XPath("/s:Envelope/s:Body/m:GetUserAvailabilityResponse/m:FreeBusyResponseArray/m:FreeBusyResponse/m:ResponseMessage[@ResponseClass='Error']");
 			if (rm.length == 0) {
 				exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: Respons does not contain expected field");

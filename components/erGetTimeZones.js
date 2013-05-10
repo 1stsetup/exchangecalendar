@@ -114,8 +114,10 @@ erGetTimeZonesRequest.prototype = {
 		else {
 			exchWebService.commonFunctions.LOG("erGetTimeZonesRequest.onSendOk: DID NOT FIND valid response.");
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SYNCFOLDERITEMS_UNKNOWN, "Error during SyncFolderItems:"+ResponseCode);
+			rm = null;
 			return;
 		}
+		rm = null;
 	},
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)

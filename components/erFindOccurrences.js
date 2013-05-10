@@ -172,6 +172,7 @@ erFindOccurrencesRequest.prototype = {
 							break;
 						}
 					}
+					tmpItems = null;
 					break;
 				case "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange" :
 					finished = true;
@@ -185,7 +186,8 @@ erFindOccurrencesRequest.prototype = {
 				break;	// break the loop
 			}
 		}
-	
+		rm = null;
+
 		if (finished) {
 			// We found our occurrence.
 			if (this.mCbOk) {

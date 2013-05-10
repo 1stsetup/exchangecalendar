@@ -108,6 +108,7 @@ erFindTaskItemsRequest.prototype = {
 			ids.push({Id: e.getAttributeByTag("t:ItemId","Id"),
 				  ChangeKey: e.getAttributeByTag("t:ItemId","ChangeKey")});
 		}
+		rm = null;
 	
 		if (this.mCbOk) {
 			this.mCbOk(this, ids);

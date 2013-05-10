@@ -144,9 +144,11 @@ erAutoDiscoverySOAPRequest.prototype = {
 				this.onSendError(aExchangeRequest, aCode, aMsg);
 			}
 			this.isRunning = false;
+			rm = null;
 			return;
 		}
-		
+		rm = null;
+
 		var rm = aResp.XPath("/s:Envelope/s:Body/_default_:GetUserSettingsResponseMessage/_default_:Response[_default_:ErrorCode='NoError']/_default_:UserResponses/_default_:UserResponse[_default_:ErrorCode='NoError']/_default_:UserSettings/_default_:UserSetting");
 
 		if (rm.length > 0) {
@@ -174,6 +176,7 @@ erAutoDiscoverySOAPRequest.prototype = {
 			exchWebService.commonFunctions.LOG("autodiscoverySOAPOk but no settings returned.");
 			aCode = this.parent.ER_ERROR_AUTODISCOVER_GET_EWSULR;
 		}
+		rm = null;
 
 		// Try to get the SMTP address if it is available
 		if ((!aError) && (SMTPaddress == "")) {
