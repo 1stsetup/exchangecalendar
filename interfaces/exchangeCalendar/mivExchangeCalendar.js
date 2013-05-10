@@ -1202,6 +1202,8 @@ calExchangeCalendar.prototype = {
 if (this.debug) this.logInfo("singleModified doNotify");
 				this.notifyTheObservers("onModifyItem", [aModifiedSingle, this.itemCache[aModifiedSingle.id]]);
 			}
+			this.itemCache[aModifiedSingle.id].exchangeData = null;
+			delete this.itemCache[aModifiedSingle.id];
 			this.itemCache[aModifiedSingle.id] = aModifiedSingle;
 		}
 	},
@@ -6324,6 +6326,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		//item.id = this.tryToSetValue(aCalendarItem.getAttributeByTag("t:ItemId", "Id"), item.id);
 		if (! item.id) {
 			if (this.debug) this.logInfo("Item.id is missing. this is a required field.");
+			item.exchangeData = null;
+			item = null;
 			return null;
 		}
 
@@ -6339,6 +6343,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		if (this.itemCache[item.id]) {
 			if (this.itemCache[item.id].changeKey == item.changeKey) {
 				//if (this.debug) this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
+				item.exchangeData = null;
+				item = null;
 				return null;
 			}
 		}
@@ -6346,6 +6352,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			if (this.recurringMasterCache[uid]) {
 				if ( (this.recurringMasterCache[uid].changeKey == aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey")) && (this.recurringMasterCache[uid].id == item.id)) {
 					//if (this.debug) this.logInfo("Master item is allready in cache and the id and changeKey are the same. Skipping it.");
+					item.exchangeData = null;
+					item = null;
 					return null;
 				}
 			}
@@ -6354,11 +6362,15 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 		if (! item.startDate) {
 			if (this.debug) this.logInfo("We have an empty startdate. Skipping this item.");
+			item.exchangeData = null;
+			item = null;
 			return null;
 		}
 
 		if (! item.endDate) {
 			if (this.debug) this.logInfo("We have an empty enddate. Skipping this item.");
+			item.exchangeData = null;
+			item = null;
 			return null;
 		}
 
@@ -6499,6 +6511,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 					}
 
 					if (this.debug) this.logInfo("This is a master it will not be put into the normal items cache list.");
+					item.exchangeData = null;
+					item = null;
 					return null;  // The master will not be visible
 
 					break;
@@ -6536,6 +6550,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		if (this.itemCache[item.id]) {
 			if (this.itemCache[item.id].changeKey == aTask.getAttributeByTag("t:ItemId", "ChangeKey")) {
 				//if (this.debug) this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
+				item.exchangeData = null;
+				item = null;
 				return null;
 			}
 		}

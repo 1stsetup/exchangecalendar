@@ -286,6 +286,7 @@ erGetItemsRequest.prototype = {
 				//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.item: "+item[0]+"\n");
 				items.push(item[0]);
 			}
+			item = null;
 		}
 
 		rm = null;
