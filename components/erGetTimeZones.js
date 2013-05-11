@@ -97,6 +97,7 @@ erGetTimeZonesRequest.prototype = {
 		this.parent.xml2jxon = true;
 		//dump("erGetTimeZonesRequest.execute:"+req.toString()+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)

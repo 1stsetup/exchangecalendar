@@ -115,6 +115,7 @@ erFindFolderRequest.prototype = {
 			</nsMessages:Restriction>;*/
 
 		req.addChildTagObject(restr);
+		restr = null;
 	
 		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
 		req.addChildTagObject(parentFolder);
@@ -123,6 +124,7 @@ erFindFolderRequest.prototype = {
 
 		//exchWebService.commonFunctions.LOG("erFindFolderRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 
 	},
 

@@ -74,7 +74,7 @@ erForewardItemRequest.prototype = {
 
 	execute: function _execute()
 	{
-		exchWebService.commonFunctions.LOG("erForewardItemRequest.execute\n");
+		//exchWebService.commonFunctions.LOG("erForewardItemRequest.execute\n");
 
 		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:CreateItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 		req.setAttribute("MessageDisposition", "SendAndSaveCopy");
@@ -106,6 +106,7 @@ erForewardItemRequest.prototype = {
 		//exchWebService.commonFunctions.LOG("erForewardItemRequest.execute>"+String(this.parent.makeSoapMessage(req)));
  
                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 		
 	},
 
@@ -120,6 +121,7 @@ erForewardItemRequest.prototype = {
 		}
 
 		var responseCode = rm[0].value;
+		rm = null;
 
 		var response;
 		if (responseCode != "NoError") {
@@ -132,6 +134,7 @@ erForewardItemRequest.prototype = {
 			}
 			response="Event forewarding not successful!:"+messageText+"("+responseCode+")";
 			//this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Event forewarding not successful!:"+messageText+"("+responseCode+")" );
+			messageText = null;
 		}
 		else{
 			response = "Event forewarding successful!";

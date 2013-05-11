@@ -742,7 +742,7 @@ calExchangeCalendar.prototype = {
 	setProperty: function setProperty(aName, aValue)
 	{
 
-		if (this.debug) this.logInfo("setProperty. aName:"+aName+", aValue:"+aValue);
+		//if (this.debug) this.logInfo("setProperty. aName:"+aName+", aValue:"+aValue);
 		switch (aName) {
 		case "exchangeCurrentStatus":
 			//dump("name1:"+this.name+", exchangeCurrentStatus:"+this._exchangeCurrentStatus+", newStatus:"+aValue+"\n");
@@ -6511,8 +6511,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 					}
 
 					if (this.debug) this.logInfo("This is a master it will not be put into the normal items cache list.");
-					item.exchangeData = null;
-					item = null;
+					//item.exchangeData = null;
+					//item = null;
 					return null;  // The master will not be visible
 
 					break;
@@ -7173,6 +7173,7 @@ return;*/
 				this.folderIsNotAvailable = true;
 
 				this.setFolderProperties(tmpXML, tmpFolderClass);
+				tmpXML = null;
 			}
 		}
 
@@ -8353,6 +8354,7 @@ return;*/
 					//cachedItem.content = ;
 					//if (this.debug) this.logInfo(" --:"+cachedItem.toString());
 					result.push(cachedItem);
+					cachedItem = null;
 				}
 			}
 		}

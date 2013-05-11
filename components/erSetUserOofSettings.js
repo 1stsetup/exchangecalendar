@@ -103,6 +103,7 @@ erSetUserOofSettingsRequest.prototype = {
 
 		exchWebService.commonFunctions.LOG("erSetUserOofSettingsRequest.execute: "+String(this.parent.makeSoapMessage(req))+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -118,8 +119,10 @@ erSetUserOofSettingsRequest.prototype = {
 		var responseCode = rm[0].getTagValue("m:ResponseCode");
 		if (responseCode != "NoError") {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on setting user Oof Settings:"+responseCode);
+			rm = null;
 			return;
 		}
+		rm = null;
 
 		if (this.mCbOk) {
 			this.mCbOk(this);

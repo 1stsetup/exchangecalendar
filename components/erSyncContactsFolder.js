@@ -115,6 +115,7 @@ erSyncContactsFolderRequest.prototype = {
 
 		//exchWebService.commonFunctions.LOG("erSyncContactsFolderRequest.execute:"+String(this.parent.makeSoapMessage(req))+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)

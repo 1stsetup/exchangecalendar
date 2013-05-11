@@ -122,6 +122,7 @@ erSyncFolderItemsRequest.prototype = {
 		//exchWebService.commonFunctions.LOG(String(this.parent.makeSoapMessage(req)));
 		this.attempts++;
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -143,11 +144,13 @@ erSyncFolderItemsRequest.prototype = {
 						this.creations.push({Id: calendarItem.getAttribute("Id").toString(),
 							  ChangeKey: calendarItem.getAttribute("ChangeKey").toString()});
 					}
+					calendarItems = null;
 					var tasks = creation.XPath("/t:Task/t:ItemId");
 					for each (var task in tasks) {
 						this.creations.push({Id: task.getAttribute("Id").toString(),
 							  ChangeKey: task.getAttribute("ChangeKey").toString()});
 					}
+					tasks = null;
 				}
 				createItems = null;
 
@@ -158,11 +161,13 @@ erSyncFolderItemsRequest.prototype = {
 						this.updates.push({Id: calendarItem.getAttribute("Id").toString(),
 					  ChangeKey: calendarItem.getAttribute("ChangeKey").toString()});
 					}
+					calendarItems = null;
 					var tasks = update.XPath("/t:Task/t:ItemId");
 					for each (var task in tasks) {
 						this.updates.push({Id: task.getAttribute("Id").toString(),
 					  ChangeKey: task.getAttribute("ChangeKey").toString()});
 					}
+					tasks = null;
 				}
 				updateItems = null;
 

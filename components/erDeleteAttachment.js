@@ -92,6 +92,7 @@ erDeleteAttachmentRequest.prototype = {
 
 		//exchWebService.commonFunctions.LOG("erDeleteAttachmentRequest.execute>"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -118,6 +119,7 @@ erDeleteAttachmentRequest.prototype = {
 
 		if (weHaveAnError) {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on deleting attachments:("+errorCount+" errors and "+okCount+" ok) "+String(aResp));
+			deleteAttachmentResponseMessages = null;
 			return;
 		}
 		else {
@@ -127,9 +129,11 @@ erDeleteAttachmentRequest.prototype = {
 			}
 			else {
 				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_CREATING_ITEM_UNKNOWN, "Error. Unknown item deletion:"+String(aResp));
+				deleteAttachmentResponseMessages = null;
 				return;
 			}
 		}
+		deleteAttachmentResponseMessages = null;
 
 		if (this.mCbOk) {
 			this.mCbOk(this, RootItemId, RootItemChangeKey);
