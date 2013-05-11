@@ -100,10 +100,12 @@ erAutoDiscoverRequest.prototype = {
 		var request = req.addChildTag("Request", null, null);
 		request.addChildTag("EMailAddress", null, email);
 		request.addChildTag("AcceptableResponseSchema", null, "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a");
+		request = null;
 
 		exchWebService.commonFunctions.LOG("sendAutodiscover.execute:"+req.toString()+"\n");
  		this.parent.xml2jxon = true;
 		this.parent.sendRequest(xml_tag + req.toString());
+		req = null;
 
 	},
 

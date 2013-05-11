@@ -86,6 +86,7 @@ erFindTaskItemsRequest.prototype = {
 
 		var itemShape = req.addChildTag("ItemShape", "nsMessages", null); 
 		itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");
+		itemShape = null;
 
 		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
 		req.addChildTagObject(parentFolder);
@@ -95,6 +96,7 @@ erFindTaskItemsRequest.prototype = {
 
 		//exchWebService.commonFunctions.LOG("erFindTaskItemsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)

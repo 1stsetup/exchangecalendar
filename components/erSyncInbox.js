@@ -96,6 +96,7 @@ erSyncInboxRequest.prototype = {
 
 		var itemShape = req.addChildTag("ItemShape", "nsMessages", null);
 		itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");
+		itemShape = null;
 
 		var parentFolder = makeParentFolderIds2("SyncFolderId", this.argument);
 		req.addChildTagObject(parentFolder);

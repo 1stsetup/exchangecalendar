@@ -140,6 +140,9 @@ erCreateAttachmentRequest.prototype = {
 		
 		//exchWebService.commonFunctions.LOG("erCreateAttachmentRequest.execute>"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
+		attachments = null;
+		parentItemId = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)

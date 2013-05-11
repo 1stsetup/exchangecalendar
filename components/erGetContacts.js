@@ -91,6 +91,8 @@ erGetContactsRequest.prototype = {
 		extendedFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
 		extendedFieldURI.setAttribute("PropertyId", MAPI_PidTagBody);
 		extendedFieldURI.setAttribute("PropertyType", "String");
+		itemids = null;
+		itemids = null;
 
 		var itemids = req.addChildTag("ItemIds", "nsMessages", null);
 		for each (var item in this.ids) {
@@ -99,12 +101,16 @@ erGetContactsRequest.prototype = {
 			if (item.ChangeKey) {
 				itemId.setAttribute("ChangeKey", item.ChangeKey);
 			}
+			itemId = null;
 		}
+		itemids = null;
 
 		this.parent.xml2jxon = true;
 
 		//exchWebService.commonFunctions.LOG("erGetContactsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
+		itemShape = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)

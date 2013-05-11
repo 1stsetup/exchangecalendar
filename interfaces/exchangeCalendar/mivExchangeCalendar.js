@@ -6743,6 +6743,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 		item.id = this.md5(aCalendarEvent.toString());
 		if (this.itemCache[item.id]) {
+			item = null;
 			return null;
 		}
 
@@ -6777,6 +6778,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 //		item.startDate = this.tryToSetDateValue(aCalendarEvent.getTagValue("t:StartTime"), null);
 		if (! item.startDate) {
 			if (this.debug) this.logInfo("We have an empty startdate. Skipping this item.");
+			item = null;
 			return null;
 		}
 

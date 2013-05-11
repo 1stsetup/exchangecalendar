@@ -240,8 +240,10 @@ ExchangeRequest.prototype = {
 		catch(err) {
 			this.logInfo(err);
 			this.fail(this.ER_ERROR_USER_ABORT_AUTHENTICATION, "User canceled providing a valid password for url="+this.currentUrl+". Aborting this request.");
+			myAuthPrompt2 = null;
 			return;
 		}
+		myAuthPrompt2 = null;
 
 		this.xmlReq = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance();
 
@@ -640,6 +642,7 @@ catch(err){
 			}
 
 			this.mCbOk(this, resp);
+			this.originalReq = null;
 		}
 
 		resp = null;
@@ -916,6 +919,7 @@ catch(err){
 		if (this.mCbError) {
 			this.mCbError(this, aCode, aMsg);
 		}
+		this.originalReq = null;
 	},
 
 	makeSoapMessage: function erMakeSoapMessage(aReq)
@@ -953,6 +957,7 @@ catch(err){
 				header.addChildTag("TimeZoneContext", "nsTypes", null).addChildTagObject(tmpTimeZone);
 				tmpTimeZone = null;
 		}
+		header = null;
 
 		msg.addChildTag("Body", "nsSoap", null).addChildTagObject(aReq);
 
