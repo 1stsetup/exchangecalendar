@@ -92,6 +92,7 @@ erGetFolderRequest.prototype = {
 
 		var parentFolder = makeParentFolderIds2("FolderIds", this.argument);
 		req.addChildTagObject(parentFolder);
+		parentFolder = null;
 
 		//exchWebService.commonFunctions.LOG(" ++ xml2jxon ++:"+this.parent.makeSoapMessage(req));
 

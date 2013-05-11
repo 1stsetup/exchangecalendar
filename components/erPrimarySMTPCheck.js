@@ -87,6 +87,7 @@ erPrimarySMTPCheckRequest.prototype = {
 
 		var parentFolderIds = makeParentFolderIds2("ParentFolderIds", this.argument);
 		req.addChildTagObject(parentFolderIds);
+		parentFolderIds = null;
 
 		//exchWebService.commonFunctions.LOG("erPrimarySMTPCheckRequest.execute: "+String(this.parent.makeSoapMessage(req)));
 		this.parent.xml2jxon = true;

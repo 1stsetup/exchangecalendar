@@ -278,6 +278,7 @@ mivIxml2jxon.prototype = {
 		}
 
 		if (this.nameSpaces[aAlias]) {
+			this.nameSpaces[aAlias] = null;
 			delete this.nameSpaces[aAlias];
 		}
 	},

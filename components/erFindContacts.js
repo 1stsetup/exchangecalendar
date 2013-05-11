@@ -86,6 +86,7 @@ erFindContactsRequest.prototype = {
 
 		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
 		req.addChildTagObject(parentFolder);
+		parentFolder = null;
 
 		this.parent.xml2jxon = true;
 

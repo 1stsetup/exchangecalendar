@@ -98,6 +98,7 @@ erGetMasterOccurrenceIdRequest.prototype = {
 		recurringMasterItemId.setAttribute("ChangeKey", this.changeKey);
 
 		req.addChildTagObject(itemids);
+		itemids = null;
 
 		this.parent.xml2jxon = true;
 

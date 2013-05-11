@@ -132,6 +132,7 @@ erCreateAttachmentRequest.prototype = {
 			attachment.addChildTag("Content", "nsTypes", fileData.content);
 
 			attachments.addChildTagObject(attachment);
+			attachment = null;
 			
 		}
 

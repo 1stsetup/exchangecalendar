@@ -951,6 +951,7 @@ catch(err){
 					tmpTimeZone.setAttribute("Id",exchTimeZone.id); 
 				}
 				header.addChildTag("TimeZoneContext", "nsTypes", null).addChildTagObject(tmpTimeZone);
+				tmpTimeZone = null;
 		}
 
 		msg.addChildTag("Body", "nsSoap", null).addChildTagObject(aReq);

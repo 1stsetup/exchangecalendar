@@ -4982,6 +4982,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		upd.addChildTagObject(updateObject);
+		updateObject = null;
 		if (aNewItem.nonPersonalDataChanged) {
 			onlySnoozeChanged = false;
 		}

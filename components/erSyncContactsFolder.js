@@ -104,6 +104,7 @@ erSyncContactsFolderRequest.prototype = {
 
 		var parentFolder = makeParentFolderIds2("SyncFolderId", this.argument);
 		req.addChildTagObject(parentFolder);
+		parentFolder = null;
 	
 		if (aSyncState) {
 			req.addChildTag("SyncState", "nsMessages", aSyncState);

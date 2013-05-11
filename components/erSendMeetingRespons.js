@@ -122,6 +122,7 @@ erSendMeetingResponsRequest.prototype = {
 		referenceItemId.setAttribute("ChangeKey", this.item.changeKey);
 
 		req.addChildTag("Items", "nsMessages", null).addChildTagObject(r);
+		r = null;
 
 		this.parent.xml2jxon = true;
 
