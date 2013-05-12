@@ -601,6 +601,11 @@ mivIxml2jxon.prototype = {
 		return result;
 	},
 
+	clone: function _clone()
+	{
+		return new mivIxml2jxon(this.toString(), 0, null);
+	},
+
 	toString: function _toString(parentNameSpace)
 	{
 		//this.logInfo(this.tagName+":toString", 2);

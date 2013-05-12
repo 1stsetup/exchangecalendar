@@ -6317,7 +6317,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 		//var item = createEvent();
 		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
-				.createInstance(Ci.mivExchangeEvent);
+				.createInstance(Ci.mivExchangeEvent, this);
 
 		item.addMailboxAlias(this.mailbox);
 		item.exchangeData = aCalendarItem;
