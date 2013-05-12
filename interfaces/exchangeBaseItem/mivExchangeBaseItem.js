@@ -396,9 +396,9 @@ try {
 			result.addMailboxAlias(alias);
 		}
 		result.exchangeData = this._exchangeData;
+
 		result.cloneToCalEvent(this._calEvent);
 		if (this._newId !== undefined) result.id = this._newId;
-//		result.calendar = this._calEvent.calendar;
 		result.calendar = this.calendar;
 
 		if (this._newStartDate !== undefined) result.startDate = this.startDate.clone();
