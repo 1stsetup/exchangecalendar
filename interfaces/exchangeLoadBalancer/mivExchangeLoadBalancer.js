@@ -51,28 +51,12 @@ mivExchangeLoadBalancer.prototype = {
 
 	// methods from nsISupport
 
-	_refCount: 0,
-
-	//nsrefcnt AddRef();
-	AddRef: function _AddRef()
-	{
-		this._refCount++;
-		return this._refCount;
-	},
-
 	/* void QueryInterface(
 	  in nsIIDRef uuid,
 	  [iid_is(uuid),retval] out nsQIResult result
 	);	 */
 	QueryInterface: XPCOMUtils.generateQI([Ci.mivExchangeLoadBalancer,
 			Ci.nsISupports]),
-
-	//nsrefcnt Release();
-	Release: function _Release()
-	{
-		this._refCount--;
-		return this._refCount;
-	},
 
 	// Attributes from nsIClassInfo
 
@@ -175,6 +159,7 @@ mivExchangeLoadBalancer.prototype = {
 				else {
 					// Running job stopped.
 					this.jobsRunning--;
+					oldList[runningJob].exchangeRequest = null;
 					this.logInfo("this.jobsRunning:"+this.jobsRunning);
 				}
 			}

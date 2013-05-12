@@ -3566,6 +3566,8 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		var items = new Array();
 		if (this.OnlyShowAvailability) {
 			this.updateCalendar(erGetUserAvailabilityRequest, aEvents, true);
+			aEvents = null;
+			erGetUserAvailabilityRequest = null;
 		}
 		else {
 			for (var index in aEvents) {
@@ -5677,6 +5679,8 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		// Cache full master details.
 		this.updateCalendar(erGetItemsRequest, aIds, true);
 		if (this.debug) this.logInfo("findMasterOccurrencesOk:End: aIds.length="+aIds.length);
+		erGetItemsRequest= null;
+		aIds = null;
 
 	},
 
@@ -5792,6 +5796,9 @@ if (this.debug) this.logInfo("getTaskItemsOK 2");
 
 if (this.debug) this.logInfo("getTaskItemsOK 3");
 		this.updateCalendar(erGetItemsRequest, aItems, true);
+		aItems  = null;
+		erGetItemsRequest = null;
+
 if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 		this.syncBusy = false;
@@ -6872,6 +6879,10 @@ return;*/
 			this.updateCalendarItems.shift();
 //			this.updateCalendar2(updateRecord.request, tmpItems, updateRecord.doNotify);
 			this.updateCalendar2(updateRecord.request, tmpItems, true);
+			tmpItems = null;
+			updateRecord.item = null;
+			updateRecord.request = null;
+			updateRecord = null;
 		}
 
 		if (this.updateCalendarItems.length == 0) {
@@ -6917,7 +6928,7 @@ return;*/
 
 		}
 
-		return convertedItems;
+		//return convertedItems;
 
 	},
 
@@ -6933,7 +6944,8 @@ return;*/
 		}
 
 		this.updateCalendar(erGetItemsRequest, aItems, true, true);
-
+		aItems = null;
+		erGetItemsRequest = null;
 	},
 
 	getCalendarItemsError: function _getCalendarItemsError(erGetItemsRequest, aCode, aMsg)
