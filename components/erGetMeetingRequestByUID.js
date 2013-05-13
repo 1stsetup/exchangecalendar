@@ -108,14 +108,17 @@ erGetMeetingRequestByUIDRequest.prototype = {
 		isEqualTo2.addChildTag("FieldURIOrConstant", "nsTypes", null).addChildTag("Constant", "nsTypes", null).setAttribute("Value", this.argument.uid);*/
 
 		req.addChildTagObject(restr);
+		restr = null;
 
 		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
 		req.addChildTagObject(parentFolder);
+		parentFolder = null;
 
 		this.parent.xml2jxon = true;
 
 		//exchWebService.commonFunctions.LOG("erGetMeetingRequestByUIDRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -130,6 +133,7 @@ erGetMeetingRequestByUIDRequest.prototype = {
 		}
 
 		var responseCode = rm[0].value;
+		rm = null;
 
 		if (responseCode != "NoError") {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getting erGetMeetingRequestByUIDRequest:"+responseCode);
@@ -151,7 +155,7 @@ erGetMeetingRequestByUIDRequest.prototype = {
 				aMeetingRequests.push(tmpItem);
 			}
 		}
-
+		rootFolder = null;
 		
 		if (this.mCbOk) {
 			this.mCbOk(this, aMeetingRequests);

@@ -396,9 +396,9 @@ try {
 			result.addMailboxAlias(alias);
 		}
 		result.exchangeData = this._exchangeData;
+
 		result.cloneToCalEvent(this._calEvent);
 		if (this._newId !== undefined) result.id = this._newId;
-//		result.calendar = this._calEvent.calendar;
 		result.calendar = this.calendar;
 
 		if (this._newStartDate !== undefined) result.startDate = this.startDate.clone();
@@ -1716,8 +1716,9 @@ catch(err){
 	//void addAttachment(in calIAttachment attachment);
 	addAttachment: function _addAttachment(attachment)
 	{
-		//this.logInfo("addAttachment: title:"+this.title);
-		if (!this._newAttachments) this._newAttachments = new Array();
+		//dump("addAttachment: title:"+this.title+"\n");
+		this.getAttachments({});
+		if (!this._changesAttachments) this._changesAttachments = new Array();
 		this._changesAttachments.push({ action: "add", attachment: attachment.clone()});
 		this._calEvent.addAttachment(attachment);
 	},
@@ -1725,8 +1726,10 @@ catch(err){
 	//void removeAttachment(in calIAttachment attachment);
 	removeAttachment: function _removeAttachment(attachment)
 	{
+		//dump("removeAttachment: title:"+this.title+"\n");
 		//this.logInfo("removeAttachment: title:"+this.title);
-		if (!this._removedAttachments) this._removedAttachments = new Array();
+		this.getAttachments({});
+		if (!this._changesAttachments) this._changesAttachments = new Array();
 		this._changesAttachments.push({ action: "remove", attachment: attachment.clone()});
 		this._calEvent.removeAttachment(attachment);
 	},
@@ -1734,10 +1737,12 @@ catch(err){
 	//void removeAllAttachments();
 	removeAllAttachments: function _removeAllAttachments()
 	{
+		//dump("removeAllAttachments: title:"+this.title+"\n");
 		//this.logInfo("removeAllAttachments: title:"+this.title);
-		var allAttachments = this._calEvent.getAttachments({});
+//		var allAttachments = this._calEvent.getAttachments({});
+		var allAttachments = this.getAttachments({});
 		for each(var attachment in allAttachments) {
-			if (!this._removedAttachments) this._removedAttachments = new Array();
+			if (!this._changesAttachments) this._changesAttachments = new Array();
 			this._changesAttachments.push({ action: "remove", attachment: attachment.clone()});
 		}
 		allAttachments = null;			
@@ -2040,6 +2045,7 @@ catch(err){
 					this._xMozSnoozeTime = this._reminderSignalTime.icalString;
 				}
 			}
+			tmpObject = null;
 		}
 		return this._reminderSignalTime;
 	},

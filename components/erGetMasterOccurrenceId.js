@@ -98,11 +98,13 @@ erGetMasterOccurrenceIdRequest.prototype = {
 		recurringMasterItemId.setAttribute("ChangeKey", this.changeKey);
 
 		req.addChildTagObject(itemids);
+		itemids = null;
 
 		this.parent.xml2jxon = true;
 
 		//exchWebService.commonFunctions.LOG("erGetMasterOccurrenceIdRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -113,12 +115,15 @@ erGetMasterOccurrenceIdRequest.prototype = {
 
 		if (rm.length == 0) {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getting OccurrenceMasterId.");
+			rm = null;
 			return;
 		}
 
 		var aId = rm[0].getAttributeByTag("t:ItemId","Id");
 		var aChangeKey = rm[0].getAttributeByTag("t:ItemId","ChangeKey");
 		
+		rm = null;
+
 		if (this.mCbOk) {
 			this.mCbOk(this, aId, aChangeKey);
 		}

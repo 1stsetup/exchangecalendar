@@ -79,6 +79,10 @@
                         name="extensions.1st-setup.exchangecalendar.loadbalancer.sleepBetweenJobs"
                         type="int"/>
 
+            <preference id="extensions.1st-setup.others.userAgent"
+                        name="extensions.1st-setup.others.userAgent"
+                        type="unichar"/>
+
         </preferences>
 
         <groupbox id="exchangeWebService_others_prefs_groupbox">
@@ -123,6 +127,29 @@
 					preference="extensions.1st-setup.others.warnAboutNewAddOnVersion"
 					label="&exchangeWebService.preference.warnForUpdates.label;"/>
             </vbox>
+	</groupbox>
+
+        <groupbox id="exchangeWebService_others_prefs_groupbox3">
+            <caption label="&exchangeWebService.preference.userAgent.label;"/>
+		<vbox>
+		    <hbox valign="center">
+				<label value="&exchangeWebService.preference.userAgent.label;"/>
+				<textbox id="exchangeWebService_preference_userAgent" 
+					preference="extensions.1st-setup.others.userAgent"
+					flex="1"/>
+		    </hbox>
+			<hbox>
+				<button id="exchangeWebService_preference_userAgent_addonDefault_button" label="Add-on Default" 
+					oncommand="tmpOtherPreferences.addOnDefault();"
+					flex="1"/>
+				<button id="exchangeWebService_preference_userAgent_mozillaDefault_button" label="Mozilla Default" 
+					oncommand="tmpOtherPreferences.mozillaDefault();"
+					flex="1"/>
+				<button id="exchangeWebService_preference_userAgent_ieDefault_button" label="IE Default" 
+					oncommand="tmpOtherPreferences.ieDefault();"
+					flex="1"/>
+			</hbox>
+		</vbox>
 	</groupbox>
 
     </vbox>

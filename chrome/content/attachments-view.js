@@ -188,8 +188,10 @@ exchAttachments.prototype = {
 	deleteAttachment: function deleteAttachment()
 	{
 		var documentLink = this._document.getElementById("exchWebService-attachment-link");
-		delete gAttachMap[documentLink.selectedItem.attachment.hashId];
-		documentLink.removeItemAt(documentLink.selectedIndex);
+		if ((documentLink.selectedItem) && (documentLink.selectedItem.attachment)) {
+			delete gAttachMap[documentLink.selectedItem.attachment.hashId];
+			documentLink.removeItemAt(documentLink.selectedIndex);
+		}
 	},
 
 	showAttachmentListbox: function _showAttachmentListbox()

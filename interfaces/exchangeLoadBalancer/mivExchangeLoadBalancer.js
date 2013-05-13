@@ -51,28 +51,12 @@ mivExchangeLoadBalancer.prototype = {
 
 	// methods from nsISupport
 
-	_refCount: 0,
-
-	//nsrefcnt AddRef();
-	AddRef: function _AddRef()
-	{
-		this._refCount++;
-		return this._refCount;
-	},
-
 	/* void QueryInterface(
 	  in nsIIDRef uuid,
 	  [iid_is(uuid),retval] out nsQIResult result
 	);	 */
 	QueryInterface: XPCOMUtils.generateQI([Ci.mivExchangeLoadBalancer,
 			Ci.nsISupports]),
-
-	//nsrefcnt Release();
-	Release: function _Release()
-	{
-		this._refCount--;
-		return this._refCount;
-	},
 
 	// Attributes from nsIClassInfo
 
@@ -158,17 +142,24 @@ mivExchangeLoadBalancer.prototype = {
 
 		for (var server in this.serverQueue) {
 
-			// Cleanup jobs with have finished
+			// Cleanup jobs wich have finished
 			var oldList = this.serverQueue[server].runningJobs;
 			this.serverQueue[server].runningJobs = new Array();
 			for (var runningJob in oldList) {
 				if (oldList[runningJob].exchangeRequest.isRunning) {
 					//this.logInfo("this.jobsRunning:"+this.jobsRunning);
 					this.serverQueue[server].runningJobs.push(oldList[runningJob]);
+					// Check how long this job is running
+					var timeNow = new Date().getTime();
+					var timeDiff = timeNow - oldList[runningJob].startTime;
+					if (timeDiff > 300000) {
+						dump("We have a job which is running longer than 5 minutes:"+oldList[runningJob].job.ecRequest+"\n"); 
+					} 
 				}
 				else {
 					// Running job stopped.
 					this.jobsRunning--;
+					oldList[runningJob].exchangeRequest = null;
 					this.logInfo("this.jobsRunning:"+this.jobsRunning);
 				}
 			}
@@ -215,9 +206,10 @@ mivExchangeLoadBalancer.prototype = {
 					var self = this;
 
 					var newJob = { job: job,
+							startTime: new Date().getTime(),
 							exchangeRequest: new job.ecRequest(job.arguments, 
-							function myOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) { self.onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);}, 
-							function myError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {self.onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);}
+							function myOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) { self.onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job);}, 
+							function myError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {self.onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job);}
 							, job.listener)
 									};
 					this.serverQueue[server].runningJobs.push(newJob);
@@ -238,25 +230,25 @@ mivExchangeLoadBalancer.prototype = {
 
 	},
 
-	onRequestOk: function _onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+	onRequestOk: function _onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job)
 	{
 
 		try{
 			this.logInfo("onRequestOk job to queue for server '"+arg1.argument.serverUrl+"' for calendar '"+arg1.argument.job.calendar.id+"'. We now have:"+this.serverQueue[arg1.argument.serverUrl].jobs[arg1.argument.calendar.id].length+" jobs in queue and "+this.serverQueue[arg1.argument.serverUrl].runningJobs.length+" jobs running.");
 			arg1.argument.cbOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-			arg1.isRunning = false;
+//			arg1.isRunning = false;
 		}
 		catch(err) { 
 			this.globalFunctions.LOG("onRequestOk Error:"+err + " ("+this.globalFunctions.STACK()+")", -1);
 		}
 	},
 
-	onRequestError: function _onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+	onRequestError: function _onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job)
 	{
 		try{
 			this.logInfo("onRequestError job to queue for server '"+arg1.argument.serverUrl+"' for calendar '"+arg1.argument.job.calendar.id+"'. We now have:"+this.serverQueue[arg1.argument.serverUrl].jobs[arg1.argument.calendar.id].length+" jobs in queue and "+this.serverQueue[arg1.argument.serverUrl].runningJobs.length+" jobs running.");
 			arg1.argument.cbError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-			arg1.isRunning = false;
+//			arg1.isRunning = false;
 		}
 		catch(err) { 
 			this.globalFunctions.LOG("onRequestError Error:"+err + " ("+this.globalFunctions.STACK()+")", -1);

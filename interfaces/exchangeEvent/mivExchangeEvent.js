@@ -420,7 +420,12 @@ mivExchangeEvent.prototype = {
 			}
 
 			if (((this._newStartDate) || (this._newEndDate)) && (this.calendar.isVersion2007)) {
-				this.addSetItemField(updates, "MeetingTimeZone", null, { TimeZoneName: this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl, this._newStartDate)});
+				if (this._newStartDate) {
+					this.addSetItemField(updates, "MeetingTimeZone", null, { TimeZoneName: this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl, this._newStartDate)});
+				}
+				else {
+					this.addSetItemField(updates, "MeetingTimeZone", null, { TimeZoneName: this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newEndDate.timezone, this.calendar.serverUrl, this._newEndDate)});
+				}
 			}
 
 			if (this._newLegacyFreeBusyStatus) {

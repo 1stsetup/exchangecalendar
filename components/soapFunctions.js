@@ -34,10 +34,14 @@
  *
  * ***** BEGIN LICENSE BLOCK *****/
 
+var Cc = Components.classes;
+var Ci = Components.interfaces;
 var Cu = Components.utils;
+var Cr = Components.results;
+var components = Components;
 
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
-Cu.import("resource://exchangecalendar/ecFunctions.js");
+//Cu.import("resource://exchangecalendar/ecFunctions.js");
 
 var EXPORTED_SYMBOLS = ["makeParentFolderIds2", "publicFoldersMap"];
 
@@ -46,10 +50,13 @@ const publicFoldersMap = { "publicfoldersroot" : true };
 // This is the xml2jxon version.
 function makeParentFolderIds2(aParentItem, aArgument)
 {
-	var ParentFolderIds = exchWebService.commonFunctions.xmlToJxon('<nsMessages:'+aParentItem+' xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+	var globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+			.getService(Ci.mivFunctions);
+
+	var ParentFolderIds = globalFunctions.xmlToJxon('<nsMessages:'+aParentItem+' xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
 	if (! aArgument.folderID) {
-		var DistinguishedFolderId = exchWebService.commonFunctions.xmlToJxon('<nsTypes:DistinguishedFolderId xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var DistinguishedFolderId = globalFunctions.xmlToJxon('<nsTypes:DistinguishedFolderId xmlns:nsTypes="'+nsTypesStr+'"/>');
 		DistinguishedFolderId.setAttribute("Id", aArgument.folderBase);
 
 		// If the folderBase is a public folder then do not provide mailbox if
@@ -60,15 +67,17 @@ function makeParentFolderIds2(aParentItem, aArgument)
 			}
 		}
 		ParentFolderIds.addChildTagObject(DistinguishedFolderId);
+		DistinguishedFolderId = null;
 	}
 	else {
-		var FolderId = exchWebService.commonFunctions.xmlToJxon('<nsTypes:FolderId xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var FolderId = globalFunctions.xmlToJxon('<nsTypes:FolderId xmlns:nsTypes="'+nsTypesStr+'"/>');
 		FolderId.setAttribute("Id", aArgument.folderID);
 		if ((aArgument.changeKey) && (aArgument.changeKey != "")) {
 			FolderId.setAttribute("ChangeKey", aArgument.changeKey);
 		}
 		
 		ParentFolderIds.addChildTagObject(FolderId);
+		FolderId = null;
 	}
 
 	return ParentFolderIds;

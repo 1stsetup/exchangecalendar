@@ -83,13 +83,16 @@ erPrimarySMTPCheckRequest.prototype = {
 		view.setAttribute("EndDate", "2011-01-30T11:35:00Z");
 		view.setAttribute("MaxEntriesReturned", "1");
 		req.addChildTagObject(view);
+		view = null;
 
 		var parentFolderIds = makeParentFolderIds2("ParentFolderIds", this.argument);
 		req.addChildTagObject(parentFolderIds);
+		parentFolderIds = null;
 
 		//exchWebService.commonFunctions.LOG("erPrimarySMTPCheckRequest.execute: "+String(this.parent.makeSoapMessage(req)));
 		this.parent.xml2jxon = true;
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -116,6 +119,7 @@ erPrimarySMTPCheckRequest.prototype = {
 					aCode = this.parent.ER_ERROR_PRIMARY_SMTP_NOTFOUND;
 					aError = true;
 				}
+				aResult = null;
 				break;
 			case "ErrorNonExistentMailbox": 
 				aCode = this.parent.ER_ERROR_SPECIFIED_SMTP_NOTFOUND; 
@@ -127,6 +131,7 @@ erPrimarySMTPCheckRequest.prototype = {
 				break;
 			}
 		}
+		rm = null;
 
 		if (aError) {
 			this.onSendError(aExchangeRequest, aCode, aMsg);

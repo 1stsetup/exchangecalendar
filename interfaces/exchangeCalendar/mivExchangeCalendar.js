@@ -500,6 +500,12 @@ calExchangeCalendar.prototype = {
 		return this.myId;
 	},
 
+	set id(aValue)
+	{
+		// We ignore this.
+		//dump("Someone is setting the id to '"+aValue+"' for calendar:"+this.name+"\n");
+	},
+
 	//  attribute nsIURI uri;
 	get uri()
 	{
@@ -736,7 +742,7 @@ calExchangeCalendar.prototype = {
 	setProperty: function setProperty(aName, aValue)
 	{
 
-		if (this.debug) this.logInfo("setProperty. aName:"+aName+", aValue:"+aValue);
+		//if (this.debug) this.logInfo("setProperty. aName:"+aName+", aValue:"+aValue);
 		switch (aName) {
 		case "exchangeCurrentStatus":
 			//dump("name1:"+this.name+", exchangeCurrentStatus:"+this._exchangeCurrentStatus+", newStatus:"+aValue+"\n");
@@ -1196,6 +1202,8 @@ calExchangeCalendar.prototype = {
 if (this.debug) this.logInfo("singleModified doNotify");
 				this.notifyTheObservers("onModifyItem", [aModifiedSingle, this.itemCache[aModifiedSingle.id]]);
 			}
+			this.itemCache[aModifiedSingle.id].exchangeData = null;
+			delete this.itemCache[aModifiedSingle.id];
 			this.itemCache[aModifiedSingle.id] = aModifiedSingle;
 		}
 	},
@@ -3558,6 +3566,8 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		var items = new Array();
 		if (this.OnlyShowAvailability) {
 			this.updateCalendar(erGetUserAvailabilityRequest, aEvents, true);
+			aEvents = null;
+			erGetUserAvailabilityRequest = null;
 		}
 		else {
 			for (var index in aEvents) {
@@ -4974,6 +4984,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		upd.addChildTagObject(updateObject);
+		updateObject = null;
 		if (aNewItem.nonPersonalDataChanged) {
 			onlySnoozeChanged = false;
 		}
@@ -5668,6 +5679,8 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		// Cache full master details.
 		this.updateCalendar(erGetItemsRequest, aIds, true);
 		if (this.debug) this.logInfo("findMasterOccurrencesOk:End: aIds.length="+aIds.length);
+		erGetItemsRequest= null;
+		aIds = null;
 
 	},
 
@@ -5783,6 +5796,9 @@ if (this.debug) this.logInfo("getTaskItemsOK 2");
 
 if (this.debug) this.logInfo("getTaskItemsOK 3");
 		this.updateCalendar(erGetItemsRequest, aItems, true);
+		aItems  = null;
+		erGetItemsRequest = null;
+
 if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 		this.syncBusy = false;
@@ -6301,7 +6317,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 		//var item = createEvent();
 		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
-				.createInstance(Ci.mivExchangeEvent);
+				.createInstance(Ci.mivExchangeEvent, this);
 
 		item.addMailboxAlias(this.mailbox);
 		item.exchangeData = aCalendarItem;
@@ -6318,6 +6334,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		//item.id = this.tryToSetValue(aCalendarItem.getAttributeByTag("t:ItemId", "Id"), item.id);
 		if (! item.id) {
 			if (this.debug) this.logInfo("Item.id is missing. this is a required field.");
+			item.exchangeData = null;
+			item = null;
 			return null;
 		}
 
@@ -6333,6 +6351,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		if (this.itemCache[item.id]) {
 			if (this.itemCache[item.id].changeKey == item.changeKey) {
 				//if (this.debug) this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
+				item.exchangeData = null;
+				item = null;
 				return null;
 			}
 		}
@@ -6340,6 +6360,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 			if (this.recurringMasterCache[uid]) {
 				if ( (this.recurringMasterCache[uid].changeKey == aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey")) && (this.recurringMasterCache[uid].id == item.id)) {
 					//if (this.debug) this.logInfo("Master item is allready in cache and the id and changeKey are the same. Skipping it.");
+					item.exchangeData = null;
+					item = null;
 					return null;
 				}
 			}
@@ -6348,11 +6370,15 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 		if (! item.startDate) {
 			if (this.debug) this.logInfo("We have an empty startdate. Skipping this item.");
+			item.exchangeData = null;
+			item = null;
 			return null;
 		}
 
 		if (! item.endDate) {
 			if (this.debug) this.logInfo("We have an empty enddate. Skipping this item.");
+			item.exchangeData = null;
+			item = null;
 			return null;
 		}
 
@@ -6493,6 +6519,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 					}
 
 					if (this.debug) this.logInfo("This is a master it will not be put into the normal items cache list.");
+					//item.exchangeData = null;
+					//item = null;
 					return null;  // The master will not be visible
 
 					break;
@@ -6530,6 +6558,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		if (this.itemCache[item.id]) {
 			if (this.itemCache[item.id].changeKey == aTask.getAttributeByTag("t:ItemId", "ChangeKey")) {
 				//if (this.debug) this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
+				item.exchangeData = null;
+				item = null;
 				return null;
 			}
 		}
@@ -6720,6 +6750,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 		item.id = this.md5(aCalendarEvent.toString());
 		if (this.itemCache[item.id]) {
+			item = null;
 			return null;
 		}
 
@@ -6754,6 +6785,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 //		item.startDate = this.tryToSetDateValue(aCalendarEvent.getTagValue("t:StartTime"), null);
 		if (! item.startDate) {
 			if (this.debug) this.logInfo("We have an empty startdate. Skipping this item.");
+			item = null;
 			return null;
 		}
 
@@ -6847,6 +6879,10 @@ return;*/
 			this.updateCalendarItems.shift();
 //			this.updateCalendar2(updateRecord.request, tmpItems, updateRecord.doNotify);
 			this.updateCalendar2(updateRecord.request, tmpItems, true);
+			tmpItems = null;
+			updateRecord.item = null;
+			updateRecord.request = null;
+			updateRecord = null;
 		}
 
 		if (this.updateCalendarItems.length == 0) {
@@ -6892,7 +6928,7 @@ return;*/
 
 		}
 
-		return convertedItems;
+		//return convertedItems;
 
 	},
 
@@ -6908,7 +6944,8 @@ return;*/
 		}
 
 		this.updateCalendar(erGetItemsRequest, aItems, true, true);
-
+		aItems = null;
+		erGetItemsRequest = null;
 	},
 
 	getCalendarItemsError: function _getCalendarItemsError(erGetItemsRequest, aCode, aMsg)
@@ -7151,6 +7188,7 @@ return;*/
 				this.folderIsNotAvailable = true;
 
 				this.setFolderProperties(tmpXML, tmpFolderClass);
+				tmpXML = null;
 			}
 		}
 
@@ -8331,6 +8369,7 @@ return;*/
 					//cachedItem.content = ;
 					//if (this.debug) this.logInfo(" --:"+cachedItem.toString());
 					result.push(cachedItem);
+					cachedItem = null;
 				}
 			}
 		}

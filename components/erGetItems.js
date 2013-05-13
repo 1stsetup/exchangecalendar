@@ -127,16 +127,19 @@ erGetItemsRequest.prototype = {
 		extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
 		extFieldURI.setAttribute("PropertyId", MAPI_PidLidReminderSignalTime);
 		extFieldURI.setAttribute("PropertyType", "SystemTime");
-		
+		extFieldURI = null;
+
 		extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
 		extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
 		extFieldURI.setAttribute("PropertyId", MAPI_PidLidReminderSet);
 		extFieldURI.setAttribute("PropertyType", "Boolean");
+		extFieldURI = null;
 		
 		extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
 		extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
 		extFieldURI.setAttribute("PropertyId", MAPI_PidLidReminderDelta);
 		extFieldURI.setAttribute("PropertyType", "Integer");
+		extFieldURI = null;
 
 			// Calendar fields
 		switch (this.folderClass) {
@@ -210,36 +213,43 @@ erGetItemsRequest.prototype = {
 			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
 			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskAccepted);
 			extFieldURI.setAttribute("PropertyType", "Boolean");
+			extFieldURI = null;
 
 			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
 			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
 			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskLastUpdate);
 			extFieldURI.setAttribute("PropertyType", "SystemTime");
+			extFieldURI = null;
 
 			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
 			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
 			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskAcceptanceState);
 			extFieldURI.setAttribute("PropertyType", "Integer");
+			extFieldURI = null;
 
 			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
 			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
 			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskMode);
 			extFieldURI.setAttribute("PropertyType", "Integer");
+			extFieldURI = null;
 
 			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
 			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
 			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskGlobalId);
 			extFieldURI.setAttribute("PropertyType", "Binary");
+			extFieldURI = null;
 
 			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
 			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
 			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskHistory);
 			extFieldURI.setAttribute("PropertyType", "Integer");
+			extFieldURI = null;
 
 			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
 			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
 			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskOwnership);
 			extFieldURI.setAttribute("PropertyType", "Integer");
+			extFieldURI = null;
 		}
 /*
 			//meeting fields
@@ -263,13 +273,19 @@ erGetItemsRequest.prototype = {
 				//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute. We have an index.");
 				this.argument.occurrenceIndexes[item.Id] = item.index;
 			}
+			itemId = null;
 		}
+		itemids = null;
 
 		this.parent.xml2jxon = true;
 		
 		//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 
 		this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
+
+		itemShape = null;
+		additionalProperties = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -286,12 +302,16 @@ erGetItemsRequest.prototype = {
 				//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.item: "+item[0]+"\n");
 				items.push(item[0]);
 			}
+			item = null;
 		}
+
+		rm = null;
 
 		if (this.mCbOk) {
 			this.mCbOk(this, items);
 		}
 
+		items= null;
 		this.isRunning = false;
 	},
 

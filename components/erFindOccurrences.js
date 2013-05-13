@@ -127,11 +127,13 @@ erFindOccurrencesRequest.prototype = {
 		}
 
 		req.addChildTagObject(itemids);
+		itemids = null;
 
 		this.parent.xml2jxon = true;
 
 		//exchWebService.commonFunctions.LOG("erFindOccurrencesRequest.execute>"+String(this.parent.makeSoapMessage(req))+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -172,6 +174,7 @@ erFindOccurrencesRequest.prototype = {
 							break;
 						}
 					}
+					tmpItems = null;
 					break;
 				case "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange" :
 					finished = true;
@@ -185,7 +188,8 @@ erFindOccurrencesRequest.prototype = {
 				break;	// break the loop
 			}
 		}
-	
+		rm = null;
+
 		if (finished) {
 			// We found our occurrence.
 			if (this.mCbOk) {

@@ -278,6 +278,7 @@ mivIxml2jxon.prototype = {
 		}
 
 		if (this.nameSpaces[aAlias]) {
+			this.nameSpaces[aAlias] = null;
 			delete this.nameSpaces[aAlias];
 		}
 	},
@@ -598,6 +599,11 @@ mivIxml2jxon.prototype = {
 			}
 		}
 		return result;
+	},
+
+	clone: function _clone()
+	{
+		return new mivIxml2jxon(this.toString(), 0, null);
 	},
 
 	toString: function _toString(parentNameSpace)
@@ -1390,8 +1396,8 @@ dump("3. !!??\n");
 								tmpChild = new mivIxml2jxon(aString, tmpPos+1, this);
 								this.messageLength = tmpChild.lastPos - this.startPos + 1;
 								tmpPos = tmpChild.lastPos;
-
 							}
+							tmpChild = null;
 							this.lastPos = tmpPos;
 
 							

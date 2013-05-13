@@ -153,6 +153,8 @@ mivExchangeTimeZone.prototype = {
 				transitionIndex = absoluteDateTransition.getTagValue("t:To", 0);
 			}
 		}
+		absoluteDateTransitions = null;
+
 		//dump("\nindexDateStr:"+indexDateStr+", lastDate:"+lastDate+", transitionIndex:"+transitionIndex+"\n\n");
 
 		// Now we are going to find the right transition.
@@ -172,6 +174,7 @@ mivExchangeTimeZone.prototype = {
 				}
 			}
 		}
+		transitions = null;
 
 		const dayMap = { Sunday : "SU",
 				Saturday : "SA",
@@ -187,6 +190,7 @@ mivExchangeTimeZone.prototype = {
 			if (standardPeriods.length > 0) {
 				this._standardBias = this.globalFunctions.convertDurationToSeconds(standardPeriods[0].getAttribute("Bias"));
 			}
+			standardPeriods = null;
 
 			if (standardTransition.tagName == "RecurringDayTransition") {
 				this._standardRRule = "FREQ=YEARLY;BYDAY="+standardTransition.getTagValue("t:Occurrence", 1)+dayMap[standardTransition.getTagValue("t:DayOfWeek", "Sunday")]+";BYMONTH="+standardTransition.getTagValue("t:Month", 3);
@@ -203,6 +207,7 @@ mivExchangeTimeZone.prototype = {
 			if (daylightPeriods.length > 0) {
 				this._daylightBias = this.globalFunctions.convertDurationToSeconds(daylightPeriods[0].getAttribute("Bias"));
 			}
+			daylightPeriods = null;
 
 			this._daylightRRule = "FREQ=YEARLY;BYDAY="+daylightTransition.getTagValue("t:Occurrence", 1)+dayMap[daylightTransition.getTagValue("t:DayOfWeek", "Sunday")]+";BYMONTH="+daylightTransition.getTagValue("t:Month", 3);
 			//dump("this._daylightRRule:"+this._daylightRRule+"\n");

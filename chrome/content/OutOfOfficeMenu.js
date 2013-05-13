@@ -40,17 +40,27 @@ var components = Components;
 
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 
-if (! exchWebService) var exchWebService = {};
+//if (! exchWebService) var exchWebService = {};
 
+function exchToolsMenu(aDocument, aWindow)
+{
+	this._document = aDocument;
+	this._window = aWindow;
 
-exchWebService.outOfOfficeMenu = {
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+}
+
+exchToolsMenu.prototype = {
+
+//exchWebService.outOfOfficeMenu = {
 
 	isLoaded: false,
 
 	showHide: function _showHide(){
 		var myCal = getSelectedCalendar();
 		var calType= myCal.type;
-		var menuItem = document.getElementById("exchangecalendar-OutOfOfficeMenu");
+		var menuItem = this._document.getElementById("exchangecalendar-OutOfOfficeMenu");
 		if (myCal && calType=="exchangecalendar"){
 			menuItem.setAttribute("hidden", false);
 		}
@@ -62,7 +72,7 @@ exchWebService.outOfOfficeMenu = {
 	showHideonTools: function _showHideonTools(){
 		var myCal = getSelectedCalendar();
 		var calType= myCal.type;
-		var menuItem = document.getElementById("exchangecalendar-tools-OutOfOfficeMenu");
+		var menuItem = this._document.getElementById("exchangecalendar-tools-OutOfOfficeMenu");
 		if (myCal && calType=="exchangecalendar"){
 			menuItem.setAttribute("hidden", false);
 		}
@@ -75,7 +85,7 @@ exchWebService.outOfOfficeMenu = {
 		var myCal = getSelectedCalendar();		
 		var aResult = "";
 		aResult = { calendar: myCal, answer: ""};
-		window.openDialog("chrome://exchangecalendar/content/oofSettings.xul",
+		this._window.openDialog("chrome://exchangecalendar/content/oofSettings.xul",
 			"oofSettings",
 			"chrome,titlebar,toolbar,centerscreen,dialog,modal=yes,resizable=yes",
 			aResult); 
@@ -86,21 +96,30 @@ exchWebService.outOfOfficeMenu = {
 	{
 		if (!this.isLoaded) {
 			this.isLoaded = true;
-			window.removeEventListener("load", exchWebService.outOfOfficeMenu.onLoad, true);
-			document.getElementById("taskPopup").addEventListener("popupshowing", exchWebService.outOfOfficeMenu.showHideonTools, true);
-			document.getElementById("menu_Event_Task_Popup").addEventListener("popupshowing", exchWebService.outOfOfficeMenu.showHide, true);
+//			window.removeEventListener("load", exchWebService.outOfOfficeMenu.onLoad, true);
+			var self = this;
+			this._document.getElementById("taskPopup").addEventListener("popupshowing", function(){ self.showHideonTools();}, true);
+			this._document.getElementById("menu_Event_Task_Popup").addEventListener("popupshowing", function(){ self.showHide();}, true);
 		}
+	},
+
+	showAboutMemory: function _showAboutMemory(aVerbose)
+	{
+		openContentTab(aVerbose ? "about:memory?verbose" : "about:memory", "tab", "www.1st-setup.nl");
 	},
 
 }
 
-window.addEventListener("load", exchWebService.outOfOfficeMenu.onLoad, true);
+var tmpToolsMenu = new exchToolsMenu(document, window);
+window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpToolsMenu.onLoad(); }, true);
 
-exchWebService.aboutMemory = {
+//window.addEventListener("load", exchWebService.outOfOfficeMenu.onLoad, true);
+
+/*exchWebService.aboutMemory = {
 
 	show: function _show()
 	{
 		openContentTab("about:memory", "tab", "www.1st-setup.nl");
 	},
-}
+}*/
 

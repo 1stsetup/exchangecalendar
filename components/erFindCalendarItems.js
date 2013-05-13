@@ -132,15 +132,18 @@ erFindCalendarItemsRequest.prototype = {
 		//view.setAttribute("MaxEntriesReturned", "15");
 
 		req.addChildTagObject(view);
+		view = null;
 
 		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
 		req.addChildTagObject(parentFolder);
+		parentFolder = null;
 
 		this.parent.xml2jxon = true;
 
 		//exchWebService.commonFunctions.LOG("erFindCalendarItemsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -196,6 +199,7 @@ erFindCalendarItemsRequest.prototype = {
 								break;
 						}
 					}
+					calendarItems = null;
 				}
 				else {
 					// We do not know how to handle this yet. Do not know if it ever happens. We did not restrict MaxEntriesReturned.
@@ -220,6 +224,8 @@ erFindCalendarItemsRequest.prototype = {
 				aMsg = "Wrong response received.";
 			}
 		}
+		
+		rm = null;
 
 		if (aError) {
 			this.onSendError(aExchangeRequest, aCode, aMsg);

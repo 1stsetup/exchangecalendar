@@ -562,6 +562,7 @@ mivExchangeAbCard.prototype = {
 					this.deleteProperty("PhotoData");
 				//dump("no photo: "+primaryEmail+"\n");
 				}
+				attachments = null;
 			}
 		}
 	},  

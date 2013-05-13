@@ -115,14 +115,17 @@ erFindFolderRequest.prototype = {
 			</nsMessages:Restriction>;*/
 
 		req.addChildTagObject(restr);
+		restr = null;
 	
 		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
 		req.addChildTagObject(parentFolder);
+		parentFolder = null;
 
 		this.parent.xml2jxon = true;
 
 		//exchWebService.commonFunctions.LOG("erFindFolderRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 
 	},
 
@@ -162,6 +165,7 @@ erFindFolderRequest.prototype = {
 					aContinue = false;
 					aError = true;
 				}
+				folder = null;
 			}
 			else {
 				exchWebService.commonFunctions.LOG("totalItemsInView != 1 ("+totalItemsInView+")\n");
@@ -176,6 +180,8 @@ erFindFolderRequest.prototype = {
 			aContinue = false;
 			aError = true;
 		}
+
+		rm = null;
 
 		if (aError) {
 			this.onSendError(aExchangeRequest, aCode, aMsg);

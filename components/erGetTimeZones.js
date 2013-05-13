@@ -97,6 +97,7 @@ erGetTimeZonesRequest.prototype = {
 		this.parent.xml2jxon = true;
 		//dump("erGetTimeZonesRequest.execute:"+req.toString()+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -114,8 +115,10 @@ erGetTimeZonesRequest.prototype = {
 		else {
 			exchWebService.commonFunctions.LOG("erGetTimeZonesRequest.onSendOk: DID NOT FIND valid response.");
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SYNCFOLDERITEMS_UNKNOWN, "Error during SyncFolderItems:"+ResponseCode);
+			rm = null;
 			return;
 		}
+		rm = null;
 	},
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)

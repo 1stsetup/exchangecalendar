@@ -86,14 +86,17 @@ erFindTaskItemsRequest.prototype = {
 
 		var itemShape = req.addChildTag("ItemShape", "nsMessages", null); 
 		itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");
+		itemShape = null;
 
 		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
 		req.addChildTagObject(parentFolder);
+		parentFolder = null;
 
 		this.parent.xml2jxon = true;
 
 		//exchWebService.commonFunctions.LOG("erFindTaskItemsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -108,6 +111,7 @@ erFindTaskItemsRequest.prototype = {
 			ids.push({Id: e.getAttributeByTag("t:ItemId","Id"),
 				  ChangeKey: e.getAttributeByTag("t:ItemId","ChangeKey")});
 		}
+		rm = null;
 	
 		if (this.mCbOk) {
 			this.mCbOk(this, ids);
