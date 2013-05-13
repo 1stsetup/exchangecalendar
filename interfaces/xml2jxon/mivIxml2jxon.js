@@ -61,6 +61,39 @@ function xmlErrorObject(aName, aMessage, aCode) {
 	this.code = aCode;
 }
 
+function roughSizeOfObject( object ) {
+
+    var objectList = [];
+    var stack = [ object ];
+    var bytes = 0;
+
+    while ( stack.length ) {
+        var value = stack.pop();
+
+        if ( typeof value === 'boolean' ) {
+            bytes += 4;
+        }
+        else if ( typeof value === 'string' ) {
+            bytes += value.length * 2;
+        }
+        else if ( typeof value === 'number' ) {
+            bytes += 8;
+        }
+        else if (typeof value === 'object' && objectList.indexOf( value ) === -1 )
+        {
+            objectList.push( value );
+
+            for( i in value ) {
+if (value[ i ].toString().indexOf("function") == -1) {
+	dump("object '"+i+"'="+value[ i ]+"\n");
+}
+                stack.push( value[ i ] );
+            }
+        }
+    }
+    return bytes;
+}
+
 function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 
 	this.content = {};
@@ -617,11 +650,13 @@ mivIxml2jxon.prototype = {
 			if ((this.content[index] instanceof Ci.mivIxml2jxon) || (this.content[index] instanceof mivIxml2jxon)) {
 
 				//this.logInfo(this.tagName+":Found object at content index '"+index+"'.", 2);
+dump("Is a mivIxml2jxon: tagName:"+this.tagName+", "+this.content[index].tagName+"\n");
 				result += this.content[index].toString(nameSpaces);
 			}
 			else {
 				if ((typeof this.content[index] === "string") || (this.content[index] instanceof String)) {
 					//this.logInfo(this.tagName+":Found string at content index '"+index+"'.", 2);
+dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
 					result += this.content[index];
 				}
 				else {
@@ -1425,6 +1460,12 @@ dump("3. !!??\n");
 			return;
 		}
 
+	},
+
+	getSize: function _getSize()
+	{
+		// Memory usage
+		return roughSizeOfObject(this);
 	},
 
 	findCharacter: function _findCharacter(aString, aStartPos, aChar)

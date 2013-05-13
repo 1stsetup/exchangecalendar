@@ -32,6 +32,9 @@ function mivExchangeStatistics() {
 
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
+
+	this.dataRead = {};
+	this.dataSend = {};
 }
 
 var PREF_MAINPART = 'extensions.1st-setup.exchangecalendar.statistics.';
@@ -95,6 +98,24 @@ mivExchangeStatistics.prototype = {
 		}
 		aCount.value = result.length;
 		return result;
+	},
+
+	addDataRead: function _addDataRead(aURL, aSize)
+	{
+		if (!this.dataRead[aURL]) {
+			this.dataRead[aURL] = 0;
+		}
+		this.dataRead[aURL] += aSize;
+		dump("addDataRead: server:"+aURL+", dataRead:"+this.dataRead[aURL]+"\n");
+	},
+
+	addDataSend: function _addDataSend(aURL, aSize)
+	{
+		if (!this.dataSend[aURL]) {
+			this.dataSend[aURL] = 0;
+		}
+		this.dataSend[aURL] += aSize;
+		dump("addDataSend: server:"+aURL+", dataSend:"+this.dataSend[aURL]+"\n");
 	},
 
 	// Internal methods.
