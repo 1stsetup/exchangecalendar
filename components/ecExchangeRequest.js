@@ -622,7 +622,7 @@ catch(err){
 		}
 		catch(exc) { if (this.debug) this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
 
-		dump("StringSize:"+xml.length+", xmlSize:"+newXML.getSize()+"\n");
+//		dump("StringSize:"+xml.length+", xmlSize:"+newXML.getSize()+"\n");
 
 		this.mAuthFail = 0;
 		this.mRunning  = false;

@@ -25,7 +25,7 @@
 interface mivTagNames : nsISupports
 {
 
-  AUTF8String getTagName(in short aIndex);
-  short addTagName(in AUTF8String aValue);
+  string getTagName(in short aIndex);
+  short addTagName(in string aValue);
 
 };

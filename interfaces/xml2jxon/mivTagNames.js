@@ -80,8 +80,7 @@ mivTagNames.prototype = {
 
 	getTagName: function _getTagName(aIndex)
 	{
-		if (aIndex >= this.tagNames.length) return null;
-
+		if (aIndex >= this.tagNames.length) return "";
 		return this.tagNames[aIndex];
 	},
 
@@ -95,7 +94,6 @@ mivTagNames.prototype = {
 		}
 
 		this.tagNames.push(aValue);
-dump("Adding tagName: ["+(this.tagNames.length-1)+"]value:"+aValue+"\n");
 		return (this.tagNames.length-1);
 	},
 

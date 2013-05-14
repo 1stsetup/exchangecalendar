@@ -6845,7 +6845,6 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 				if (aExchangeItem.tagName == "CalendarEvent") {
 					return this.convertExchangeUserAvailabilityToCalAppointment(aExchangeItem);
 				}
-
 				if (this.debug) this.logInfo("WARNING: convertExchangeToCal: unknown ItemClass = '"+switchValue+"'");
 		}
 	},

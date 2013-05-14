@@ -480,7 +480,9 @@ dump("we get here 3.\n");
 		var timezonedefinitions = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
 						.createInstance(Ci.mivIxml2jxon);
 dump("we get here 4.\n");
+try {
 		timezonedefinitions.processXMLString(lines, 0, null);
+} catch(err) { dump("timezone error:"+err+"\n"); }
 dump("we get here 5.\n");
 
 		this.addExchangeTimeZones(timezonedefinitions, "Exchange2007_SP1");

@@ -38,6 +38,7 @@ interface mivIxml2jxon : nsISupports
   readonly attribute boolean isXMLHeader;
 
   attribute AUTF8String uuid;
+  readonly attribute short tagNameIndex;
   attribute AUTF8String tagName;
   attribute AUTF8String nameSpace;
   attribute jsval nameSpaces;

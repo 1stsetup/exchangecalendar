@@ -351,22 +351,13 @@ mivIxml2jxon.prototype = {
 
 	get tagName()
 	{
-dump("get tagName this._tagNameIndex:"+this._tagNameIndex+"\n");
-//try {
-		if (!this._tagNameIndex) return "";
-
+		if (this._tagNameIndex === undefined) return "";
 		return this.tagNameMgr.getTagName(this._tagNameIndex);
-//}
-//catch(err) { dump("get tagName error:"+err+"\n");}
-		return null;
 	},
 
 	set tagName(aValue)
 	{
-//try{
 		this._tagNameIndex = this.tagNameMgr.addTagName(aValue);
-//}
-//catch(err) { dump("get tagName error:"+err+"\n");}
 	},
 
 	getTag: function _getTag(aTagName)
@@ -1030,7 +1021,7 @@ dump("get tagName this._tagNameIndex:"+this._tagNameIndex+"\n");
 			for (let index in this.tags) {
 
 				if ((this.tags[index]) && (index.indexOf(tagSeparator) > -1)) {
-					var tmpTagName = "";
+					let tmpTagName = "";
 					var tmpIsArray = isArray(this.tags[index]);
 					if (tmpIsArray) {
 						tmpTagName = this.tags[index][0].tagName;
