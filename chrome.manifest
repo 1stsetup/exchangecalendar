@@ -42,6 +42,7 @@ manifest interfaces/exchangeBadCertListener2/mivExchangeBadCertListener2.manifes
 manifest interfaces/global/mivFunctions.manifest
 manifest interfaces/xml2jxon/mivIxml2jxon.manifest
 manifest interfaces/xml2jxon/mivNameSpaces.manifest
+manifest interfaces/xml2jxon/mivTagNames.manifest
 manifest interfaces/updater/mivUpdater.manifest
 manifest interfaces/exchangeLoadBalancer/mivExchangeLoadBalancer.manifest
 manifest interfaces/exchangeAuthPromptProvider/mivExchangeAuthPromptProvider.manifest

@@ -1,0 +1,5 @@
+interfaces mivTagNames.xpt
+component {b7309b24-96c6-4393-9ae4-05f3e7e8a4ac} mivTagNames.js
+contract @1st-setup.nl/conversion/tagnames;1 {b7309b24-96c6-4393-9ae4-05f3e7e8a4ac}
+ 
+
