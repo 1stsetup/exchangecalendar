@@ -68,6 +68,4 @@ interface mivIxml2jxon : nsISupports
   jsval addChildTag(in AUTF8String aTagName, in AUTF8String aNameSpace, in AUTF8String aValue);
   jsval addSibblingTag(in AUTF8String aTagName, in AUTF8String aNameSpace, in AUTF8String aValue);
 
-  unsigned long long getSize();
-
 };

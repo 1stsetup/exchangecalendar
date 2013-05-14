@@ -171,11 +171,11 @@ mivIxml2jxon.prototype = {
 	{
 		var strLength = aValue.length;
 		var leftPos = 0;
-		while ((leftPos < strLength) && (aValue.substr(leftPos,1) == " ")) {
+		while ((leftPos < strLength) && (aValue[leftPos] == " ")) {
 			leftPos++;
 		}
 		var rightPos = strLength-1;
-		while ((rightPos >= 0) && (aValue.substr(rightPos,1) == " ")) {
+		while ((rightPos >= 0) && (aValue[rightPos] == " ")) {
 			rightPos--;
 		}
 		return aValue.substr(leftPos, rightPos - leftPos + 1);
@@ -198,9 +198,10 @@ mivIxml2jxon.prototype = {
 		var attributeName = this.trim(aValue.substr(0, splitPos));
 		var attributeValue = this.trim(aValue.substr(splitPos+1));
 
-		if ((attributeValue.substr(0,1) == "'") || (attributeValue.substr(0,1) == '"')) {
+		var tmpChar = attributeValue[0];
+		if ((tmpChar == "'") || (tmpChar == '"')) {
 			var valueLength = attributeValue.length;
-			if (attributeValue.substr(0,1) == attributeValue.substr(valueLength-1,1)) {
+			if (tmpChar == attributeValue.substr(valueLength-1,1)) {
 				// Remove quote around attribute value.
 				attributeValue = attributeValue.substr(1, valueLength-2);
 			}
@@ -464,8 +465,8 @@ mivIxml2jxon.prototype = {
 	replaceFromXML: function _replaceFromXML(str, r1)
 	{
 		var result = str;
-		if (r1.substr(0,1) == "#") {
-			if (r1.substr(1,1) == "x") {
+		if (r1[0] == "#") {
+			if (r1[1] == "x") {
 				// hexadecimal
 				result = String.fromCharCode(parseInt(r1.substr(2),16))
 			}
@@ -616,14 +617,15 @@ mivIxml2jxon.prototype = {
 	convertComparisonPart: function _convertComparisonPart(aPart)
 	{
 		var result = new Array();
-		if ((aPart.substr(0,1) == "/") || (aPart.substr(0,1) == ".") || (aPart.substr(0,1) == "@")) {
+		var tmpChar = aPart[0];
+		if ((tmpChar == "/") || (tmpChar == ".") || (tmpChar == "@")) {
 			// Left side is a XPath query.
 			result = this.XPath(aPart);
 		}
 		else {
 			// Left side is a number or string.
 			var result = new Array();
-			if ( (aPart.substr(0,1) == "'") || (aPart.substr(0,1) == '"')) {
+			if ( (tmpChar == "'") || (tmpChar == '"')) {
 				result.push(new String(aPart.substr(1,aPart.length-2)));
 			}
 			else {
@@ -649,7 +651,7 @@ mivIxml2jxon.prototype = {
 			var startPos = 0;
 			var weHaveSubCondition = false;
 
-			if (tmpCondition.substr(0,1) == "(") {
+			if (tmpCondition[0] == "(") {
 				var subCondition = this.globalFunctions.splitOnCharacter(tmpCondition.substr(1), 0, ")");
 				if (subCondition) {
 					startPos = subCondition.length;
@@ -670,7 +672,7 @@ mivIxml2jxon.prototype = {
 
 				// Findout which operator was specified.
 			
-				if (tmpCondition.substr(0,1) == "a") {
+				if (tmpCondition[0] == "a") {
 					var operator = "and";
 					tmpCondition = tmpCondition.substr(4);
 				}
@@ -696,20 +698,20 @@ mivIxml2jxon.prototype = {
 					var equalTo = false;
 					var biggerThen = false;
 					var splitPos2 = splitPart2.length;
-					switch (splitPart.substr(splitPos2, 1)) {
+					switch (splitPart[splitPos2]) {
 						case "!" : 
 							comparison = "!=";
 							break;
 						case "<" : 
 							comparison = "<";
-							if (splitPart.substr(splitPos2+1, 1) == "=") comparison = "<="; 
+							if (splitPart[splitPos2+1] == "=") comparison = "<="; 
 							break;
 						case "=" : 
 							comparison = "="; 
 							break;
 						case ">" : 
 							comparison = ">";
-							if (splitPart.substr(splitPos2+1, 1) == "=") comparison = ">="; 
+							if (splitPart[splitPos2+1] == "=") comparison = ">="; 
 							break;
 					}
 					compareList.push( { left: this.trim(splitPart2), right: this.trim(splitPart.substr(splitPart2.length+comparison.length)), operator: operator, comparison: comparison, subCondition: subCondition} );
@@ -852,11 +854,11 @@ mivIxml2jxon.prototype = {
 		var tmpPath = aPath;
 		var result = new Array();
 
-		if (tmpPath.substr(0, 1) == "/") {
+		if (tmpPath[0] == "/") {
 			tmpPath = tmpPath.substr(1);
 		}
 
-		switch (tmpPath.substr(0,1)) {
+		switch (tmpPath[0]) {
 		case "/" : // Find all elements by specified element name
 			var allTag = this.globalFunctions.splitOnCharacter(tmpPath.substr(1), 0, ["/", "["]);
 			if (!allTag) {
@@ -1045,7 +1047,7 @@ mivIxml2jxon.prototype = {
 
 			pos++;
 			// check if next character is special character "?"
-			var tmpChar = aString.substr(pos, 1);
+			var tmpChar = aString[pos];
 			if ( (pos < strLength) && (tmpChar == "?")) {
 				// found special character "?"
 				// Next four characters should be "xml " or else error.
@@ -1124,12 +1126,12 @@ mivIxml2jxon.prototype = {
 							var tmpStart = this.startPos + 1;
 
 							let tmpTagName = "";
-							tmpChar = aString.substr(tmpStart,1);
+							tmpChar = aString[tmpStart];
 							while ((tmpStart < strLength) && (tmpChar != ">") && 
 								(tmpChar != "/") && (!(isInList(specialChars1,tmpChar)))) {
 								tmpTagName = tmpTagName + tmpChar;
 								tmpStart++;
-								tmpChar = aString.substr(tmpStart,1);
+								tmpChar = aString[tmpStart];
 							}
 
 							var xmlnsPos = tmpTagName.indexOf(tagSeparator);
@@ -1157,9 +1159,8 @@ mivIxml2jxon.prototype = {
 									// get attributes &
 									// get namespaces
 									var attribute = "";
-									var attributes = [];
 									tmpStart++;
-									tmpChar = aString.substr(tmpStart,1);
+									tmpChar = aString[tmpStart];
 									var quoteOpen = false;
 									var seenAttributeSeparator = false;
 									var quoteChar = "";
@@ -1185,20 +1186,18 @@ mivIxml2jxon.prototype = {
 										}
 
 										tmpStart++;
-										tmpChar = aString.substr(tmpStart,1);
+										tmpChar = aString[tmpStart];
 
 										if ((seenAttributeSeparator) && (tmpStart < strLength) && (isInList(specialChars1,tmpChar)) && (!quoteOpen)) {
-											attributes.push(attribute);
 											this.explodeAttribute(attribute);
 											attribute = "";
 											seenAttributeSeparator = false;
 											tmpStart++;
-											tmpChar = aString.substr(tmpStart,1);
+											tmpChar = aString[tmpStart];
 										}
 									}
 
 									if ((seenAttributeSeparator) && (!quoteOpen) && (tmpStart < strLength) && (attribute.length > 0)) {
-										attributes.push(attribute);
 										this.explodeAttribute(attribute);
 										seenAttributeSeparator = false;
 										attribute = "";
@@ -1261,19 +1260,13 @@ mivIxml2jxon.prototype = {
 
 	},
 
-	getSize: function _getSize()
-	{
-		// Memory usage
-		return roughSizeOfObject(this);
-	},
-
 	findCharacter: function _findCharacter(aString, aStartPos, aChar)
 	{
 		if (!aString) return -1;
 
 		var pos = aStartPos;
 		var strLength = aString.length;
-		while ((pos < strLength) && (aString.substr(pos, 1) != aChar)) {
+		while ((pos < strLength) && (aString[pos] != aChar)) {
 			pos++;
 		}
 
@@ -1289,13 +1282,13 @@ mivIxml2jxon.prototype = {
 		if (!aString) return -1;
 
 		var pos = aStartPos;
-		var strLength = aString.length;
 		var needleLength = aNeedle.length;
+		var strLength = aString.length - needleLength + 1;
 		while ((pos < strLength) && (aString.substr(pos, needleLength) != aNeedle)) {
 			pos++;
 		}
 
-		if ((pos < strLength) && (aString.substr(pos, needleLength) == aNeedle)) {
+		if (pos < strLength) {
 			return pos;
 		}
 	
