@@ -1277,7 +1277,7 @@ mivIxml2jxon.prototype = {
 			pos++;
 		}
 
-		if ((pos < strLength) && (aString.substr(pos, 1) == aChar)) {
+		if (pos < strLength) {
 			return pos;
 		}
 	
