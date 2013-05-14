@@ -295,35 +295,38 @@ mivIxml2jxon.prototype = {
 			return this.tags[aTagName];
 		}
 
+		var inputTagName = aTagName;
+		var separaTorPos = inputTagName.indexOf(tagSeparator);
+		if (separaTorPos > -1) {
+			inputTagName = inputTagName.substr(separaTorPos);
+		}
+
 		var realIndex;
-		for (var index in this.tags) {
-//			if (index.indexOf(tagSeparator) > -1) { removed for performance
-				if ((this.tags[index] instanceof Ci.mivIxml2jxon) || (this.tags[index] instanceof mivIxml2jxon)) {
-					// this[index] is an xml2jxon object.
-					realIndex = this.tags[index].realTagName(index);
-					realATagName = this.tags[index].realTagName(aTagName);
-					if (realIndex == realATagName) {
-						return this.tags[index];
-					}
-				}
-				else {
-					if (isArray(this.tags[index])) {
-						// this[index] is an array of xml2jxon objects. We pick the first
-						let arrayIndex = 0;
-						let continueArray = true;
-						while ((arrayIndex < this.tags[index].length) && (continueArray)) {
-							if ((this.tags[index][arrayIndex] instanceof Ci.mivIxml2jxon) || (this.tags[index][arrayIndex] instanceof mivIxml2jxon)) {
-								realIndex = this.tags[index][arrayIndex].realTagName(index);
-								realATagName = this.tags[index][arrayIndex].realTagName(aTagName);
-								if (realIndex == realATagName) {
-									return this.tags[index];
-								}
-							}
-							arrayIndex++;
+		var realATagName;
+		for (let index in this.tags) {
+				if (index.indexOf(inputTagName) > -1) {
+					let childTag = this.tags[index];
+					if ((childTag instanceof Ci.mivIxml2jxon) || (childTag instanceof mivIxml2jxon)) {
+						// this[index] is an xml2jxon object.
+						realIndex = childTag.realTagName(index);
+						realATagName = childTag.realTagName(aTagName);
+						if (realIndex == realATagName) {
+							return childTag;
 						}
 					}
+					else {
+						// this[index] is an array of xml2jxon objects. We pick the first
+						for (let arrayIndex in childTag) {
+							realIndex = childTag[arrayIndex].realTagName(index);
+							realATagName = childTag[arrayIndex].realTagName(aTagName);
+							if (realIndex == realATagName) {
+								return childTag;
+							}
+						}
+
+					}
 				}
-//			} // Removed for performance
+
 		}
 
 		return null;
