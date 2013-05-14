@@ -118,6 +118,9 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 	this.nameSpaceMgr = Cc["@1st-setup.nl/conversion/namespaces;1"]
 				.getService(Ci.mivNameSpaces);
 
+	this.tagNameMgr = Cc["@1st-setup.nl/conversion/tagnames;1"]
+				.getService(Ci.mivTagNames);
+
 	this.uuid = this.globalFunctions.getUUID();
 
 	//this.logInfo("mivIxml2jxon.init",2);
@@ -290,13 +293,6 @@ mivIxml2jxon.prototype = {
 		}
 
 		return this.nameSpaceMgr.getNameSpace(this.nameSpaces[aAlias]);
-/*
-		if ((this.nameSpaces) && (this.nameSpaces[aAlias])) {
-			//this.logInfo("getNameSpace: found namespace '"+this.nameSpaces[aAlias]+"' for aAlias '"+aAlias+"' in tag:"+this.tagName+".", 2);
-			return this.nameSpaces[aAlias];
-		}
-
-		return null; */
 	},
 
 	addNameSpace: function _addNameSpace(aAlias, aValue)
@@ -322,14 +318,6 @@ mivIxml2jxon.prototype = {
 
 	deleteNameSpace: function _deleteNameSpace(aAlias)
 	{
-/*		if ((aAlias == "") || (aAlias === undefined)) {
-			aAlias = "_default_";
-		}
-
-		if (this.nameSpaces[aAlias]) {
-			this.nameSpaces[aAlias] = null;
-			delete this.nameSpaces[aAlias];
-		}*/
 		return;
 	},
 
@@ -361,6 +349,26 @@ mivIxml2jxon.prototype = {
 		}
 	},
 
+	get tagName()
+	{
+dump("get tagName this._tagNameIndex:"+this._tagNameIndex+"\n");
+//try {
+		if (!this._tagNameIndex) return "";
+
+		return this.tagNameMgr.getTagName(this._tagNameIndex);
+//}
+//catch(err) { dump("get tagName error:"+err+"\n");}
+		return null;
+	},
+
+	set tagName(aValue)
+	{
+//try{
+		this._tagNameIndex = this.tagNameMgr.addTagName(aValue);
+//}
+//catch(err) { dump("get tagName error:"+err+"\n");}
+	},
+
 	getTag: function _getTag(aTagName)
 	{
 		if (this.tags[aTagName]) {
@@ -381,8 +389,8 @@ mivIxml2jxon.prototype = {
 				else {
 					if (isArray(this.tags[index])) {
 						// this[index] is an array of xml2jxon objects. We pick the first
-						var arrayIndex = 0;
-						var continueArray = true;
+						let arrayIndex = 0;
+						let continueArray = true;
 						while ((arrayIndex < this.tags[index].length) && (continueArray)) {
 							if ((this.tags[index][arrayIndex] instanceof Ci.mivIxml2jxon) || (this.tags[index][arrayIndex] instanceof mivIxml2jxon)) {
 								realIndex = this.tags[index][arrayIndex].realTagName(index);
@@ -447,7 +455,7 @@ mivIxml2jxon.prototype = {
 			this.nameSpaces = {};
 		}
 
-		for (var index in aParent.nameSpaces) {
+		for (let index in aParent.nameSpaces) {
 			if (!this.nameSpaces[index]) {
 //if ((this.tagName == 'GetServerTimeZonesResponse') || (this.tagName == 'ResponseMessages')) {
 //	dump("addParentNameSpaces:"+aParent.tagName+"|"+this.tagName+", index:"+index+"("+aParent.nameSpaces[index]+")"+"\n");
@@ -479,7 +487,7 @@ mivIxml2jxon.prototype = {
 		}
 		else {
 			if (!isArray(this.tags[aNameSpace+tagSeparator+aTagName])) {
-				var firstObject = this.tags[aNameSpace+tagSeparator+aTagName];
+				let firstObject = this.tags[aNameSpace+tagSeparator+aTagName];
 				////this.logInfo("creating array:'"+aNameSpace+tagSeparator+aTagName+"'",1);
 				this.tags[aNameSpace+tagSeparator+aTagName] = new Array();
 				this.tags[aNameSpace+tagSeparator+aTagName].push(firstObject);
@@ -537,17 +545,6 @@ mivIxml2jxon.prototype = {
 	{
 		if (this.content[0]) {
 			//this.logInfo("We have content getting first string record.", 2);
-/*			var index = 0;
-			var value = "";
-			while ((index < this.itemCount) && (value == "")) {
-
-				if ((typeof this.content[index] === "string") || (this.content[index] instanceof String)) {
-					//this.logInfo(" @@: index:"+index+", content:"+this.content[index], 2);
-					value = this.content[index];
-				}
-				index++;
-			}
-			return value; */
 			return this.content[0];
 		}
 		else {
@@ -640,7 +637,7 @@ mivIxml2jxon.prototype = {
 	attributesToString: function _attributesToString()
 	{
 		var result = "";
-		for (var index in this.attr) {
+		for (let index in this.attr) {
 				result += " "+index + '="'+this.attr[index]+'"';
 		}
 		return result;
@@ -649,16 +646,7 @@ mivIxml2jxon.prototype = {
 	nameSpacesToString: function _nameSpacesToString()
 	{
 		var result = "";
-/*		for (var index in this.nameSpaces) {
-			if (index == "_default_") {   
-				result += ' xmlns="'+this.nameSpaces[index]+'"';
-			}
-			else {
-				result += " xmlns:"+index+'="'+this.nameSpaces[index]+'"';
-			}
-		}
-*/
-		for (var index in this.nameSpaces) {
+		for (let index in this.nameSpaces) {
 			if (index == "_default_") {   
 				result += ' xmlns="'+this.nameSpaceMgr.getNameSpace(this.nameSpaces[index])+'"';
 			}
@@ -681,10 +669,10 @@ mivIxml2jxon.prototype = {
 		var nameSpaces = this.nameSpacesToString();
 		var result = "";
 		var contentCount = 0;
-		for (var index in this.tags) {
+		for (let index in this.tags) {
 			contentCount++;
 			if (isArray(this.tags[index])) {
-				for each(var tag in this.tags[index]) {
+				for each(let tag in this.tags[index]) {
 					//dump("Is a mivIxml2jxon: tagName:"+this.tagName+", "+tag.tagName+"\n");
 					result += tag.toString(nameSpaces);
 				}
@@ -697,7 +685,7 @@ mivIxml2jxon.prototype = {
 		}
 
 
-		for (var index in this.content) {
+		for (let index in this.content) {
 			contentCount++;
 			if ((typeof this.content[index] === "string") || (this.content[index] instanceof String)) {
 				//this.logInfo(this.tagName+":Found string at content index '"+index+"'.", 2);
@@ -708,25 +696,6 @@ mivIxml2jxon.prototype = {
 				//this.logInfo(this.tagName+":Found UNKNOWN at content index '"+index+"'.", 2);
 			}
 		}
-
-/*		for (var index in this.content) {
-			if ((this.content[index] instanceof Ci.mivIxml2jxon) || (this.content[index] instanceof mivIxml2jxon)) {
-
-				//this.logInfo(this.tagName+":Found object at content index '"+index+"'.", 2);
-dump("Is a mivIxml2jxon: tagName:"+this.tagName+", "+this.content[index].tagName+"\n");
-				result += this.content[index].toString(nameSpaces);
-			}
-			else {
-				if ((typeof this.content[index] === "string") || (this.content[index] instanceof String)) {
-					//this.logInfo(this.tagName+":Found string at content index '"+index+"'.", 2);
-dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
-					result += this.content[index];
-				}
-				else {
-					//this.logInfo(this.tagName+":Found UNKNOWN at content index '"+index+"'.", 2);
-				}
-			}
-		}  */
 
 		if ((parentNameSpace) && (nameSpaces == parentNameSpace)) {
 			nameSpaces = "";
@@ -749,7 +718,7 @@ dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
 			result = "<"+nameSpace+this.tagName+attributes+nameSpaces+">" + result + "</"+nameSpace+this.tagName+">";
 		}
 
-		for each(var sibling in this._siblings) {
+		for each(let sibling in this._siblings) {
 			result = result + sibling.toString();
 		}
 
@@ -878,7 +847,7 @@ dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
 
 		var totalResult = true;
 		var lastOperator = null;
-		for (var index in compareList) {
+		for (let index in compareList) {
 			
 			var tmpResult = false;
 
@@ -888,8 +857,8 @@ dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
 			}
 			else {
 				//dump(" ------------------------------------2: compareList[index].left:"+compareList[index].left+", compareList[index].right:"+compareList[index].right+"\n");
-				var tmpLeft = this.convertComparisonPart(compareList[index].left);
-				var tmpRight = this.convertComparisonPart(compareList[index].right);
+				let tmpLeft = this.convertComparisonPart(compareList[index].left);
+				let tmpRight = this.convertComparisonPart(compareList[index].right);
 
 				if (tmpLeft.length > 0) {
 					//this.logInfo("tmpLeft.length:"+tmpLeft.length,level);
@@ -1039,7 +1008,7 @@ dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
 
 			//this.logInfo(" @@ allTag="+allTag, 2);
 
-			for (var index in this.tags) {
+			for (let index in this.tags) {
 				if (index.indexOf(tagSeparator) > -1) {
 					result.push(this.tags[index]);
 				}
@@ -1058,7 +1027,7 @@ dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
 
 		case "*" : // Wildcard. Will parse all children.
 			tmpPath = tmpPath.substr(1);
-			for (var index in this.tags) {
+			for (let index in this.tags) {
 
 				if ((this.tags[index]) && (index.indexOf(tagSeparator) > -1)) {
 					var tmpTagName = "";
@@ -1073,7 +1042,7 @@ dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
 					if (tmpTagName != this.tagName) {
 						//this.logInfo(" -- tag:"+index, 2);
 						if (tmpIsArray) {
-							for (var index2 in this.tags[index]) {
+							for (let index2 in this.tags[index]) {
 								result.push(this.tags[index][index2]);
 							}
 						}
@@ -1136,55 +1105,11 @@ dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
 
 			if (tmpPath2 != "") {
 
-				//tmpPath2 = this.realTagName(tmpPath2);
-
+				//this.logInfo("We will check if specified element '"+tmpPath2+"' exists as child in '"+this.tagName+"'", 0);
 				var equalTags = this.getTags(tmpPath2);
-				for (var index in equalTags) {
+				for (let index in equalTags) {
 					result.push(equalTags[index]);
 				}
-
-				//this.logInfo("We will check if specified element '"+tmpPath2+"' exists as child in '"+this.tagName+"'", 0);
-/*				for (var index in this.tags) {
-					if (index.indexOf(tagSeparator) > -1) {
-						//this.logInfo(" %%:"+index, 2);
-
-						var realIndex = index;
-						if (realIndex != tmpPath2) {
-							if ((this.tags[index] instanceof Ci.mivIxml2jxon) || (this.tags[index] instanceof mivIxml2jxon)) {
-								// this[index] is an xml2jxon object.
-								realIndex = this.tags[index].realTagName(index);
-							}
-							else {
-								if (isArray(this.tags[index])) {
-									// this[index] is an array of xml2jxon objects. We pick the first
-									var arrayIndex = 0;
-									var continueArray = true;
-									while ((arrayIndex < this.tags[index].length) && (continueArray)) {
-										if ((this.tags[index][arrayIndex] instanceof Ci.mivIxml2jxon) || (this.tags[index][arrayIndex] instanceof mivIxml2jxon)) {
-											realIndex = this.tags[index][arrayIndex].realTagName(index);
-											continueArray = false;
-										}
-										arrayIndex++;
-									}
-								}
-							}
-						}
-
-						if (realIndex == tmpPath2) {
-							if (isArray(this.tags[index])) {
-								//this.logInfo(" ^^ found tag:"+index+" and is an array with "+this[index].length+" elements.", 2);
-								for (var index2 in this.tags[index]) {
-									result.push(this.tags[index][index2]);
-								}
-							}
-							else {
-								//this.logInfo(" ^^ found tag:"+index, 2);
-								result.push(this.tags[index]);
-							}
-						}
-					}
-				} */
-
 			}
 
 		} // End of switch
@@ -1193,18 +1118,18 @@ dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
 		if ((result.length > 0) && (tmpPath != "")) {
 			//this.logInfo("tmpPath:"+tmpPath,2);
 			var finalResult = new Array();
-			for (var index in result) {
+			for (let index in result) {
 
 				if ((typeof result[index] === "string") || (result[index] instanceof String)) {
 					finalResult.push(result[index]);
 				}
 				else {
 					if (isArray(result[index])) {
-						for (var index2 in result[index]) {
+						for (let index2 in result[index]) {
 							//this.logInfo("~~a:"+result[index][index2].tagName, 2);
-							var tmpResult = result[index][index2].XPath(tmpPath);
+							let tmpResult = result[index][index2].XPath(tmpPath);
 							if (tmpResult) {
-								for (var index3 in tmpResult) {
+								for (let index3 in tmpResult) {
 									finalResult.push(tmpResult[index3]);
 									tmpResult[index3] = null;
 								}
@@ -1215,9 +1140,9 @@ dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
 					else {
 						//this.logInfo("~~aa:index:"+index, 2);
 						//this.logInfo("~~ab:"+result[index].tagName, 2);
-						var tmpResult = result[index].XPath(tmpPath);
+						let tmpResult = result[index].XPath(tmpPath);
 						if (tmpResult) {
-							for (var index2 in tmpResult) {
+							for (let index2 in tmpResult) {
 								finalResult.push(tmpResult[index2]);
 								tmpResult[index2] = null;
 							}
@@ -1232,9 +1157,9 @@ dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
 			if ((tmpPath != "") && (tmpPath.substr(0,2) != "//")) {
 				var finalResult = new Array();
 				//this.logInfo("~~b:"+this.tagName, 2);
-				var tmpResult = this.XPath(tmpPath);
+				let tmpResult = this.XPath(tmpPath);
 				if (tmpResult) {
-					for (var index2 in tmpResult) {
+					for (let index2 in tmpResult) {
 						finalResult.push(tmpResult[index2]);
 						tmpResult[index2] = null;
 					}
@@ -1252,9 +1177,9 @@ dump("3. !!??\n");
 			if ((tmpPath != "") && (tmpPath.substr(0,2) != "//")) {
 				var finalResult = new Array();
 				//this.logInfo("~~c:"+this.tagName, 2);
-				var tmpResult = this.XPath(tmpPath);
+				let tmpResult = this.XPath(tmpPath);
 				if (tmpResult) {
-					for (var index2 in tmpResult) {
+					for (let index2 in tmpResult) {
 						finalResult.push(tmpResult[index2]);
 						tmpResult[index2] = null;
 					}
@@ -1369,23 +1294,27 @@ dump("3. !!??\n");
 						
 							// get tag name.
 							var tmpStart = this.startPos + 1;
-							this.tagName = "";
+
+							let tmpTagName = "";
 							tmpChar = aString.substr(tmpStart,1);
 							while ((tmpStart < strLength) && (tmpChar != ">") && 
 								(tmpChar != "/") && (!(isInList(specialChars1,tmpChar)))) {
-								this.tagName = this.tagName + tmpChar;
+								tmpTagName = tmpTagName + tmpChar;
 								tmpStart++;
 								tmpChar = aString.substr(tmpStart,1);
 							}
 
-							var xmlnsPos = this.tagName.indexOf(tagSeparator);
+							var xmlnsPos = tmpTagName.indexOf(tagSeparator);
 							if (xmlnsPos > -1) {
-								this.nameSpace = this.tagName.substr(0, xmlnsPos);
-								this.tagName = this.tagName.substr(xmlnsPos+1);
+								this.nameSpace = tmpTagName.substr(0, xmlnsPos);
+								tmpTagName = tmpTagName.substr(xmlnsPos+1);
 							}
 							else {
 								this.nameSpace = "_default_";
 							}
+
+							this.tagName = tmpTagName;
+
 							//this.logInfo("Found opening tag '"+this.tagName+"' in xml namespace '"+this.nameSpace+"'",2);
 							if (aParent) {
 								aParent.addChildTagObject(this);

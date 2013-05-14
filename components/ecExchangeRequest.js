@@ -320,7 +320,7 @@ catch(err) {
 
 		if (this.debug) this.logInfo(": sendRequest Sending: " + this.mData+"\n", 2);
 
-		this.exchangeStatistics.addDataSend(this.currentUrl, this.mData.length);
+		//this.exchangeStatistics.addDataSend(this.currentUrl, this.mData.length);
 
 		this.xmlReq.send(this.mData);
 	},
@@ -574,7 +574,7 @@ catch(err){
 		if (this.debug) this.logInfo(": ExchangeRequest.onLoad :"+evt.type+", readyState:"+xmlReq.readyState+", status:"+xmlReq.status);
 		if (this.debug) this.logInfo(": ExchangeRequest.onLoad :"+xmlReq.responseText,2);
 
-		this.exchangeStatistics.addDataRead(this.currentUrl, xmlReq.responseText.length);
+		//this.exchangeStatistics.addDataRead(this.currentUrl, xmlReq.responseText.length);
 
 		if (xmlReq.readyState != 4) {
 			if (this.debug) this.logInfo("readyState < 4. THIS SHOULD NEVER HAPPEN. PLEASE REPORT.");
@@ -622,7 +622,7 @@ catch(err){
 		}
 		catch(exc) { if (this.debug) this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
 
-//		dump("StringSize:"+xml.length+", xmlSize:"+newXML.getSize()+"\n");
+		dump("StringSize:"+xml.length+", xmlSize:"+newXML.getSize()+"\n");
 
 		this.mAuthFail = 0;
 		this.mRunning  = false;
