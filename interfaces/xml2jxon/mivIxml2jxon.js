@@ -210,9 +210,6 @@ mivIxml2jxon.prototype = {
 		}
 
 		if (attributeName.toLowerCase().indexOf("xmlns") == 0) {
-			if (!this.nameSpaces) {
-				this.nameSpaces = {};
-			}
 			var xmlnsPos = attributeName.indexOf(":");
 			if (xmlnsPos > -1) {
 				this.addNameSpace(attributeName.substr(xmlnsPos+1), attributeValue);
@@ -242,10 +239,6 @@ mivIxml2jxon.prototype = {
 
 	addNameSpace: function _addNameSpace(aAlias, aValue)
 	{
-		if (!this.nameSpaces) {
-			this.nameSpaces = {};
-		}
-
 		var index = aAlias;
 		if ((aAlias == "") || (aAlias === undefined)) {
 			index = "_default_";
@@ -257,11 +250,6 @@ mivIxml2jxon.prototype = {
 		for each(var child in this.tags) {
 			child.addNameSpace(index, aValue);
 		}
-	},
-
-	deleteNameSpace: function _deleteNameSpace(aAlias)
-	{
-		return;
 	},
 
 	setAttribute: function _setAttribute(aAttribute, aValue)
@@ -309,7 +297,7 @@ mivIxml2jxon.prototype = {
 
 		var realIndex;
 		for (var index in this.tags) {
-			if (index.indexOf(tagSeparator) > -1) {
+//			if (index.indexOf(tagSeparator) > -1) { removed for performance
 				if ((this.tags[index] instanceof Ci.mivIxml2jxon) || (this.tags[index] instanceof mivIxml2jxon)) {
 					// this[index] is an xml2jxon object.
 					realIndex = this.tags[index].realTagName(index);
@@ -335,7 +323,7 @@ mivIxml2jxon.prototype = {
 						}
 					}
 				}
-			}
+//			} // Removed for performance
 		}
 
 		return null;
