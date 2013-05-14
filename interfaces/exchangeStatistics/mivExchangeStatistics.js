@@ -106,7 +106,7 @@ mivExchangeStatistics.prototype = {
 			this.dataRead[aURL] = 0;
 		}
 		this.dataRead[aURL] += aSize;
-		dump("addDataRead: server:"+aURL+", dataRead:"+this.dataRead[aURL]+"\n");
+//		dump("addDataRead: server:"+aURL+", dataRead:"+this.dataRead[aURL]+"\n");
 	},
 
 	addDataSend: function _addDataSend(aURL, aSize)
@@ -115,7 +115,7 @@ mivExchangeStatistics.prototype = {
 			this.dataSend[aURL] = 0;
 		}
 		this.dataSend[aURL] += aSize;
-		dump("addDataSend: server:"+aURL+", dataSend:"+this.dataSend[aURL]+"\n");
+//		dump("addDataSend: server:"+aURL+", dataSend:"+this.dataSend[aURL]+"\n");
 	},
 
 	// Internal methods.

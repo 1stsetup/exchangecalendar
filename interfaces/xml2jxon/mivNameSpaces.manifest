@@ -1,0 +1,5 @@
+interfaces mivNameSpaces.xpt
+component {c58005d7-70c2-4f2e-935a-af11333f8964} mivNameSpaces.js
+contract @1st-setup.nl/conversion/namespaces;1 {c58005d7-70c2-4f2e-935a-af11333f8964}
+ 
+

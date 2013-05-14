@@ -41,6 +41,7 @@ manifest interfaces/exchangeTimeZones/mivExchangeTimeZones.manifest
 manifest interfaces/exchangeBadCertListener2/mivExchangeBadCertListener2.manifest
 manifest interfaces/global/mivFunctions.manifest
 manifest interfaces/xml2jxon/mivIxml2jxon.manifest
+manifest interfaces/xml2jxon/mivNameSpaces.manifest
 manifest interfaces/updater/mivUpdater.manifest
 manifest interfaces/exchangeLoadBalancer/mivExchangeLoadBalancer.manifest
 manifest interfaces/exchangeAuthPromptProvider/mivExchangeAuthPromptProvider.manifest

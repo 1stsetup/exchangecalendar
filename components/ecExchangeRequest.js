@@ -622,7 +622,7 @@ catch(err){
 		}
 		catch(exc) { if (this.debug) this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
 
-		dump("StringSize:"+xml.length+", xmlSize:"+newXML.getSize()+"\n");
+//		dump("StringSize:"+xml.length+", xmlSize:"+newXML.getSize()+"\n");
 
 		this.mAuthFail = 0;
 		this.mRunning  = false;
@@ -966,6 +966,9 @@ catch(err){
 		header = null;
 
 		msg.addChildTag("Body", "nsSoap", null).addChildTagObject(aReq);
+
+//dump("Going to send1:"+msg.toString().length+", xml:"+msg.getSize()+"\n");
+//dump("Going to send2:"+msg.toString()+"\n");
 
 		var tmpStr = xml_tag + msg.toString();
 		msg = null;

@@ -63,35 +63,41 @@ function xmlErrorObject(aName, aMessage, aCode) {
 
 function roughSizeOfObject( object ) {
 
-    var objectList = [];
-    var stack = [ object ];
-    var bytes = 0;
+	var bytes = 0;
 
-    while ( stack.length ) {
-        var value = stack.pop();
+	if ((object instanceof Ci.mivIxml2jxon) || (object instanceof mivIxml2jxon)) {
+//		dump("mivIxml2jxon. tagname:"+object.tagName+"\n");
+		for (var index in object) {
+//			dump("\n'"+index+"'");
+			bytes += roughSizeOfObject(object[index]);
+		}
+	}
+	else if ( typeof object === 'boolean' ) {
+//		dump(object+"(bool)");
+		    bytes += 4;
+	}
+	else if ( typeof object === 'string' ) {
+//		dump(object+"(str)");
+	    bytes += object.length * 2;
+	}
+	else if ( typeof object === 'number' ) {
+//		dump(object+"(num)");
+	    bytes += 8;
+	}
+	else if ( typeof object === 'object' ) {
+		if (object.toString().indexOf("function") == -1) {
+			for (var index in object) {
+//				dump("'"+index+"'");
+				bytes += roughSizeOfObject(object[index]);
+			}
+		}
+		else {
+//			dump("function(..)");
+		}
+	}
 
-        if ( typeof value === 'boolean' ) {
-            bytes += 4;
-        }
-        else if ( typeof value === 'string' ) {
-            bytes += value.length * 2;
-        }
-        else if ( typeof value === 'number' ) {
-            bytes += 8;
-        }
-        else if (typeof value === 'object' && objectList.indexOf( value ) === -1 )
-        {
-            objectList.push( value );
 
-            for( i in value ) {
-if (value[ i ].toString().indexOf("function") == -1) {
-	dump("object '"+i+"'="+value[ i ]+"\n");
-}
-                stack.push( value[ i ] );
-            }
-        }
-    }
-    return bytes;
+	return bytes;
 }
 
 function mivIxml2jxon(aXMLString, aStartPos, aParent) {
@@ -108,6 +114,9 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
+
+	this.nameSpaceMgr = Cc["@1st-setup.nl/conversion/namespaces;1"]
+				.getService(Ci.mivNameSpaces);
 
 	this.uuid = this.globalFunctions.getUUID();
 
@@ -195,6 +204,10 @@ mivIxml2jxon.prototype = {
 
 	addToContent: function _addToContent(aValue)
 	{
+//dump("addToContent:'"+this.tagName+"' ["+this.itemCount+"]typeof:"+typeof aValue+", aValue:"+aValue+"."+this.globalFunctions.STACKshort()+"\n");
+		if ((this.itemCount > 0) && (this.trim(aValue) == "")) {
+			return;
+		}
 		this.content[this.itemCount] = aValue;
 		this.itemCount++;
 	},
@@ -276,12 +289,14 @@ mivIxml2jxon.prototype = {
 			aAlias = "_default_";
 		}
 
+		return this.nameSpaceMgr.getNameSpace(this.nameSpaces[aAlias]);
+/*
 		if ((this.nameSpaces) && (this.nameSpaces[aAlias])) {
 			//this.logInfo("getNameSpace: found namespace '"+this.nameSpaces[aAlias]+"' for aAlias '"+aAlias+"' in tag:"+this.tagName+".", 2);
 			return this.nameSpaces[aAlias];
 		}
 
-		return null;
+		return null; */
 	},
 
 	addNameSpace: function _addNameSpace(aAlias, aValue)
@@ -296,7 +311,8 @@ mivIxml2jxon.prototype = {
 		}
 
 		this.logInfo("addNameSpace: aAlias:"+index+", aValue:"+aValue+" to tag:"+this.tagName, 1);
-		this.nameSpaces[index] = aValue;
+//		this.nameSpaces[index] = aValue;
+		this.nameSpaces[index] = this.nameSpaceMgr.addNameSpace(aAlias, aValue);
 
 		// Add new namespace to children.
 		for each(var child in this.tags) {
@@ -306,14 +322,15 @@ mivIxml2jxon.prototype = {
 
 	deleteNameSpace: function _deleteNameSpace(aAlias)
 	{
-		if ((aAlias == "") || (aAlias === undefined)) {
+/*		if ((aAlias == "") || (aAlias === undefined)) {
 			aAlias = "_default_";
 		}
 
 		if (this.nameSpaces[aAlias]) {
 			this.nameSpaces[aAlias] = null;
 			delete this.nameSpaces[aAlias];
-		}
+		}*/
+		return;
 	},
 
 	setAttribute: function _setAttribute(aAttribute, aValue)
@@ -431,7 +448,12 @@ mivIxml2jxon.prototype = {
 		}
 
 		for (var index in aParent.nameSpaces) {
-			this.nameSpaces[index] = aParent.nameSpaces[index];
+			if (!this.nameSpaces[index]) {
+//if ((this.tagName == 'GetServerTimeZonesResponse') || (this.tagName == 'ResponseMessages')) {
+//	dump("addParentNameSpaces:"+aParent.tagName+"|"+this.tagName+", index:"+index+"("+aParent.nameSpaces[index]+")"+"\n");
+//}
+				this.nameSpaces[index] = aParent.nameSpaces[index];
+			}
 		}
 	},
 
@@ -445,13 +467,15 @@ mivIxml2jxon.prototype = {
 			aObject.addParentNameSpaces(this);
 		}
 
+		//this.addNameSpace(aObject.nameSpace, aObject.getNameSpace(aObject.nameSpace));
+
 		var aNameSpace = aObject.nameSpace;
 		var aTagName = aObject.tagName;
 		if (!this.tags[aNameSpace+tagSeparator+aTagName]) {
 			//this.logInfo("First childTag: "+this.tagName+"."+aNameSpace+tagSeparator+aTagName+"="+aObject,2);
 			this.tags[aNameSpace+tagSeparator+aTagName] = aObject;
 			//this[aNameSpace+tagSeparator+aTagName] = aObject;
-			this.addToContent(aObject);
+//			this.addToContent(aObject);
 		}
 		else {
 			if (!isArray(this.tags[aNameSpace+tagSeparator+aTagName])) {
@@ -464,7 +488,7 @@ mivIxml2jxon.prototype = {
 			////this.logInfo("adding item to array:'"+aNameSpace+tagSeparator+aTagName+"'",1);
 			this.tags[aNameSpace+tagSeparator+aTagName].push(aObject);
 			//this[aNameSpace+tagSeparator+aTagName] = this.tags[aNameSpace+tagSeparator+aTagName];
-			this.addToContent(aObject);
+//			this.addToContent(aObject);
 		}
 	},
 
@@ -513,16 +537,18 @@ mivIxml2jxon.prototype = {
 	{
 		if (this.content[0]) {
 			//this.logInfo("We have content getting first string record.", 2);
-			var index = 0;
+/*			var index = 0;
 			var value = "";
 			while ((index < this.itemCount) && (value == "")) {
+
 				if ((typeof this.content[index] === "string") || (this.content[index] instanceof String)) {
 					//this.logInfo(" @@: index:"+index+", content:"+this.content[index], 2);
 					value = this.content[index];
 				}
 				index++;
 			}
-			return value;
+			return value; */
+			return this.content[0];
 		}
 		else {
 			//this.logInfo("We have no content.tagName:"+this.tagName, 2);
@@ -623,7 +649,7 @@ mivIxml2jxon.prototype = {
 	nameSpacesToString: function _nameSpacesToString()
 	{
 		var result = "";
-		for (var index in this.nameSpaces) {
+/*		for (var index in this.nameSpaces) {
 			if (index == "_default_") {   
 				result += ' xmlns="'+this.nameSpaces[index]+'"';
 			}
@@ -631,6 +657,16 @@ mivIxml2jxon.prototype = {
 				result += " xmlns:"+index+'="'+this.nameSpaces[index]+'"';
 			}
 		}
+*/
+		for (var index in this.nameSpaces) {
+			if (index == "_default_") {   
+				result += ' xmlns="'+this.nameSpaceMgr.getNameSpace(this.nameSpaces[index])+'"';
+			}
+			else {
+				result += " xmlns:"+index+'="'+this.nameSpaceMgr.getNameSpace(this.nameSpaces[index])+'"';
+			}
+		}
+
 		return result;
 	},
 
@@ -645,8 +681,35 @@ mivIxml2jxon.prototype = {
 		var nameSpaces = this.nameSpacesToString();
 		var result = "";
 		var contentCount = 0;
+		for (var index in this.tags) {
+			contentCount++;
+			if (isArray(this.tags[index])) {
+				for each(var tag in this.tags[index]) {
+					//dump("Is a mivIxml2jxon: tagName:"+this.tagName+", "+tag.tagName+"\n");
+					result += tag.toString(nameSpaces);
+				}
+			}
+			else {
+				//dump("Is a mivIxml2jxon: tagName:"+this.tagName+", "+this.tags[index].tagName+"\n");
+				result += this.tags[index].toString(nameSpaces);
+			}
+			
+		}
+
+
 		for (var index in this.content) {
 			contentCount++;
+			if ((typeof this.content[index] === "string") || (this.content[index] instanceof String)) {
+				//this.logInfo(this.tagName+":Found string at content index '"+index+"'.", 2);
+//dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
+				result += this.content[index];
+			}
+			else {
+				//this.logInfo(this.tagName+":Found UNKNOWN at content index '"+index+"'.", 2);
+			}
+		}
+
+/*		for (var index in this.content) {
 			if ((this.content[index] instanceof Ci.mivIxml2jxon) || (this.content[index] instanceof mivIxml2jxon)) {
 
 				//this.logInfo(this.tagName+":Found object at content index '"+index+"'.", 2);
@@ -663,7 +726,7 @@ dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
 					//this.logInfo(this.tagName+":Found UNKNOWN at content index '"+index+"'.", 2);
 				}
 			}
-		}
+		}  */
 
 		if ((parentNameSpace) && (nameSpaces == parentNameSpace)) {
 			nameSpaces = "";
@@ -947,11 +1010,13 @@ dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
 		else {
 			tmpTagName = aCurrentTagName;
 		}
+
 		var newNameSpace = this.getNameSpace(tmpAlias);
 		if (newNameSpace) {
 			result = newNameSpace + tagSeparator + tmpTagName;
 		}
 
+//dump("aCurrentTagName:"+aCurrentTagName+"|"+this.tagName+" -> "+result+" | tmpAlias:"+tmpAlias+"("+this.nameSpaces[tmpAlias]+") "+this.globalFunctions.STACKshort()+"\n");
 		return result;
 	},
 
@@ -1071,10 +1136,15 @@ dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
 
 			if (tmpPath2 != "") {
 
-				tmpPath2 = this.realTagName(tmpPath2);
+				//tmpPath2 = this.realTagName(tmpPath2);
+
+				var equalTags = this.getTags(tmpPath2);
+				for (var index in equalTags) {
+					result.push(equalTags[index]);
+				}
 
 				//this.logInfo("We will check if specified element '"+tmpPath2+"' exists as child in '"+this.tagName+"'", 0);
-				for (var index in this.tags) {
+/*				for (var index in this.tags) {
 					if (index.indexOf(tagSeparator) > -1) {
 						//this.logInfo(" %%:"+index, 2);
 
@@ -1113,7 +1183,7 @@ dump("Is a string: tagName:"+this.tagName+", "+this.content[index]+"\n");
 							}
 						}
 					}
-				}
+				} */
 
 			}
 
@@ -1214,7 +1284,8 @@ dump("3. !!??\n");
 			this.skipped = pos - aStartPos;
 			if ((this.skipped > 0) && (aParent)) {
 				//this.logInfo("Added content '"+aString.substr(aStartPos, this.skipped)+"' to tag '"+aParent.tagName+"'.", 2);
-				aParent.addToContent(new String(aString.substr(aStartPos, this.skipped)));
+//				aParent.addToContent(new String(aString.substr(aStartPos, this.skipped)));
+				aParent.addToContent(aString.substr(aStartPos, this.skipped));
 			}
 
 			pos++;

@@ -51,6 +51,7 @@ function mivExchangeTimeZones() {
 	this.exchangeToLightningMemory = {};
 
 	// load timezone file from resource. This is for Exchange server version before 2010.
+dump("we get here 1.\n");
 	this.load_timezonedefinitions_file();
 }
 
@@ -437,7 +438,9 @@ mivExchangeTimeZones.prototype = {
 	addExchangeTimeZones: function _addExchangeTimeZones(aTimeZoneDefinitions, aVersion)
 	{
 		var rm = aTimeZoneDefinitions.XPath("/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage");
+dump("we get here 7.\n");
 		if (rm.length == 0) return null;
+dump("we get here 8.\n");
 
 		this._timeZones[aVersion] = {};
 
@@ -447,11 +450,12 @@ mivExchangeTimeZones.prototype = {
 		}
 		timeZoneDefinitionArray = null;
 		rm = null;
-		//dump("\nEnd of get ews_2010_timezonedefinitions. We have: "+timeZoneDefinitionArray.length+" definitions.\n");
+		dump("addExchangeTimeZones. aVersion:"+aVersion+".\n");
 	},
 
 	load_timezonedefinitions_file: function _load_timezonedefinitions_file()
 	{
+dump("we get here 2.\n");
 		var somefile = this.globalFunctions.chromeToPath("chrome://exchangeTimeZones/content/ewsTimesZoneDefinitions_2007.xml");
 		var file = Components.classes["@mozilla.org/file/local;1"]
 				.createInstance(Components.interfaces.nsILocalFile);
@@ -472,11 +476,15 @@ mivExchangeTimeZones.prototype = {
 		  
 		istream.close();
 
+dump("we get here 3.\n");
 		var timezonedefinitions = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
 						.createInstance(Ci.mivIxml2jxon);
+dump("we get here 4.\n");
 		timezonedefinitions.processXMLString(lines, 0, null);
+dump("we get here 5.\n");
 
 		this.addExchangeTimeZones(timezonedefinitions, "Exchange2007_SP1");
+dump("we get here 6.\n");
 		timezonedefinitions = null;
 	},
 
