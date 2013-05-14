@@ -107,7 +107,6 @@ mivNameSpaces.prototype = {
 			}
 		}
 
-dump("Adding namespace: alias:"+tmpAlias+", value:"+aValue+"\n");
 		this.nameSpaces.push({ alias: tmpAlias,
 				       value: aValue});
 		return (this.nameSpaces.length-1);
