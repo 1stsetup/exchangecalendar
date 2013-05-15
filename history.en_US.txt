@@ -5,6 +5,7 @@ Version 3.2.0:
 - Fixes Bug 277 - Cannot extend the time on a calendar event (Exchange2007)
 - Improved Out Of Office text editor so it is fully HTML aware again.
 - Improved memory usage. It shoud use lees memory now. Please read bug 279 on https://www.1st-setup.nl/bugzilla
+- Fixed Bug 287 - no folder details anymore in the ews settings of calendar
 
 Version 3.2.0-Beta20:
 - Fixed Bug 276 - Duplicate entries, wrong hours and sometimes missing entries when viewving other calendars
