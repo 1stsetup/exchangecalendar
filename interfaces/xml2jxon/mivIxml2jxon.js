@@ -87,10 +87,10 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 	if (aXMLString) {
 		this.processXMLString(aXMLString, aStartPos, aParent);
 	}
-	else {
-		this.isXMLHeader = true;
-		this.XMLHeader = '<?xml version="1.0" encoding="utf-8"?>';
-	}
+/*	else {
+		//this.isXMLHeader = true;
+		//this.XMLHeader = '<?xml version="1.0" encoding="utf-8"?>';
+	} */
 }
 
 var xml2jxonGUID = "d7165a60-7d64-42b2-ac48-6ccfc0962abb";
@@ -1060,10 +1060,11 @@ mivIxml2jxon.prototype = {
 					}
 					else {
 						// found complete special tag.
-						this.isXMLHeader = true;
-						this.XMLHeader = aString.substr(this.startPos, tmpPos-this.startPos+1);
-						this.addToContent(new mivIxml2jxon(aString, tmpPos+2, this));
-						this.messageLength = tmpPos - this.startPos + 3;
+						//this.isXMLHeader = true;
+						//this.XMLHeader = aString.substr(this.startPos, tmpPos-this.startPos+1);
+//						this.addToContent(new mivIxml2jxon(aString, tmpPos+2, this));
+						this.processXMLString(aString, tmpPos+2, null);
+						//this.messageLength = tmpPos - this.startPos + 3;
 						this.closed = true; 
 						return;						
 					}
