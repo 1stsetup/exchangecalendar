@@ -244,9 +244,14 @@ mivExchangeEvent.prototype = {
 			if (this._newPrivacy) {
 				this.addSetItemField(updates, "Sensitivity", this._newPrivacy);
 			}
-			if (this._newBody) {
+			if (this._newBody !== undefined) {
 				this._nonPersonalDataChanged = true;
-				this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
+				if (this._newBody === null) {
+					this.addDeleteItemField(updates, "Body");
+				}
+				else {
+					this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
+				}
 			}
 			// Categories
 			if (this._changesCategories) {
