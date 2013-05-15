@@ -82,7 +82,7 @@ interface mivExchangeBaseItem : calIItemBase
 	void cloneToCalEvent(in calIItemBase aCalEvent);
 
 	attribute mivIxml2jxon exchangeData;
-	attribute uint32_t occurrenceIndex;
+	attribute long occurrenceIndex;
 	readonly attribute mivIxml2jxon updateXML;
 
 	readonly attribute boolean nonPersonalDataChanged;

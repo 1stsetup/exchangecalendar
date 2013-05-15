@@ -517,6 +517,9 @@ try {
 			if (this._newCompanies) result.companies = this.companies;
 		}
 
+		if (this._occurrenceIndex) {
+			result.occurrenceIndex = this._occurrenceIndex;
+		}
 		//this.logInfo("clone 99: title:"+this.title+", startDate:"+result.startDate, -1);
 }
 catch(err){
@@ -1844,10 +1847,10 @@ catch(err){
 	//	              [array,size_is(aCount),retval] out calIItemBase aOccurrences);
 	getOccurrencesBetween: function _getOccurrencesBetween(aStartDate, aEndDate, aCount)
 	{
-		if (aStartDate == null) {
+		if (aStartDate === null) {
 			if (this.startDate) aStartDate = this.startDate.clone();
 		}
-		if (aEndDate == null) {
+		if (aEndDate === null) {
 			if (this.endDate) aEndDate = this.endDate.clone();
 		}
 
@@ -1856,20 +1859,20 @@ catch(err){
 		case "Single":
 		case "Occurrence":
 		case "Exception":
-			if ( ((aStartDate == null) || (this.startDate.compare(aStartDate) >= 0)) && ((aEndDate == null) || (this.endDate.compare(aEndDate) < 0)) ) {
+			if ( ((aStartDate === null) || (this.startDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (this.endDate.compare(aEndDate) < 0)) ) {
 				//this.logInfo("getOccurrencesBetween 0a: inserting myself into list.");
 				occurrences.push(this);
 			}
 			break;
 		case "RecurringMaster":
 			for each(var exception in this._exceptions) {
-				if ( ((aStartDate == null) || (exception.startDate.compare(aStartDate) >= 0)) && ((aEndDate == null) || (exception.endDate.compare(aEndDate) < 0)) ) {
+				if ( ((aStartDate === null) || (exception.startDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (exception.endDate.compare(aEndDate) < 0)) ) {
 					//this.logInfo("getOccurrencesBetween 0d: inserting myself into list.");
 					occurrences.push(exception);
 				}
 			}
 			for each(var occurrence in this._occurrences) {
-				if ( ((aStartDate == null) || (occurrence.startDate.compare(aStartDate) >= 0)) && ((aEndDate == null) || (occurrence.endDate.compare(aEndDate) < 0)) ) {
+				if ( ((aStartDate === null) || (occurrence.startDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (occurrence.endDate.compare(aEndDate) < 0)) ) {
 					//this.logInfo("getOccurrencesBetween 0e: inserting myself into list.");
 					occurrences.push(occurrence);
 				}
@@ -2399,6 +2402,7 @@ catch(err){
 		if ((aItem.calendarItemType == "Exception") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
 			aItem.parentItem = this;
 			this._exceptions[aItem.id] = aItem.clone();
+//			this._exceptions[aItem.id] = aItem;
 			this.recurrenceInfo.modifyException(aItem, true);
 
 			var itemAlarms = aItem.getAlarms({});
@@ -2414,6 +2418,11 @@ catch(err){
 		this.logInfo("modifyException: aItem.title:"+aItem.title+"\n");
 		if ((aItem.calendarItemType == "Exception") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
 
+			if ((this._exceptions[aItem.id]) && (this._exceptions[aItem.id].changeKey == aItem.changeKey)) {
+				// We already have this in the list. No need to change.
+				return;
+			}
+
 			// Remove any alarms we might have for this exception.
 			if (this._exceptions[aItem.id]) {
 				var itemAlarms = this._exceptions[aItem.id].getAlarms({});
@@ -2423,6 +2432,7 @@ catch(err){
 			}
 
 			this._exceptions[aItem.id] = aItem.clone();
+//			this._exceptions[aItem.id] = aItem;
 
 			var itemAlarms = aItem.getAlarms({});
 			if ((itemAlarms.length > 0) && (aItem.startDate.compare(this.reminderDueBy) == 0)) {
@@ -2485,6 +2495,7 @@ catch(err){
 		if ((aItem.calendarItemType == "Occurrence") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
 			aItem.parentItem = this;
 			this._occurrences[aItem.id] = aItem.clone();
+//			this._occurrences[aItem.id] = aItem;
 
 			var itemAlarms = aItem.getAlarms({});
 			//this.logInfo("AddOccurrence: itemAlarms.length:"+itemAlarms.length+", X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);

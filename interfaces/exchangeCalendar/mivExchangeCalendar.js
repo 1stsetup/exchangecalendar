@@ -1647,15 +1647,30 @@ if (this.debug) this.logInfo("singleModified doNotify");
 					var self = this;
 					if (aOldItem.occurrenceIndex > -1) {
 						if (this.debug) this.logInfo(" [[[[[[[[[[[[ We allready have an index for this occurrence ]]]]]]]]]]]]");
+						var tmpRequest = {};
+						tmpRequest.argument = {user: this.user, 
+						 mailbox: this.mailbox,
+						 folderBase: this.folderBase,
+						 serverUrl: this.serverUrl,
+						 masterItem: aOldItem.parentItem,
+						 item: aOldItem,
+						 folderID: this.folderID,
+						 changeKey: this.changeKey,
+						 newItem: aNewItem,
+						 actionStart: Date.now(),
+						 attachmentsUpdates: attachmentsUpdates,
+						 sendto: input.response};
+						this.modifyItemgetOccurrenceIndexOk(tmpRequest, aOldItem.occurrenceIndex, aOldItem.parentItem.id, aOldItem.parentItem.changeKey);
 					}
-						if (this.debug) this.logInfo(" [[[[[[[[[[[[ Index:"+aOldItem.occurrenceIndex+" ]]]]]]]]]]]]");
+					else {
+						if (this.debug) this.logInfo(" [[[[[[[[[[[[ Index:"+aOldItem.occurrenceIndex+" | "+aOldItem.title+" | "+aOldItem.startDate.toString()+" ]]]]]]]]]]]]");
 
 					this.addToQueue( erGetOccurrenceIndexRequest,
 						{user: this.user, 
 						 mailbox: this.mailbox,
 						 folderBase: this.folderBase,
 						 serverUrl: this.serverUrl,
-						 masterItem: aOldItem,
+						 masterItem: aOldItem.parentItem,
 						 item: aOldItem,
 						 folderID: this.folderID,
 						 changeKey: this.changeKey,
@@ -1666,7 +1681,8 @@ if (this.debug) this.logInfo("singleModified doNotify");
 						function(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey) { self.modifyItemgetOccurrenceIndexOk(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey);}, 
 						function(erGetOccurrenceIndexRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erGetOccurrenceIndexRequest, aCode, aMsg);},
 						aListener);
-					this.singleModified(aNewItem);
+					}
+					//this.singleModified(aNewItem);
 					return;
 				}
 			}
@@ -2383,6 +2399,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 			.ITEM_FILTER_TYPE_TODO) != 0);
 
 		for (var index in this.itemCache) {
+try{
 			if (isEvent(this.itemCache[index])) {
 				if ( ( (this.itemCache[index].startDate.compare(aRangeEnd) < 1) &&
 				      (this.itemCache[index].endDate.compare(aRangeStart) > -1) ) ||
@@ -2398,6 +2415,9 @@ if (this.debug) this.logInfo("singleModified doNotify");
 					}
 				}
 			}
+}
+catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
+
 		}
 
 		if (this.debug) this.logInfo("We got '"+events.length+"' events and  '"+tasks.length+"'  tasks from memory cache.");
@@ -6047,6 +6067,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		var deletedOccurrences = aElement.XPath("/t:DeletedOccurrences/*");
 		for each (var mit in deletedOccurrences) {
 			for (var index in this.itemCache) {
+try{
 				if ( (this.itemCache[index]) &&
 				     (this.itemCache[index].parentItem.id == aItem.id) &&
 				     (this.itemCache[index].startDate.compare(this.tryToSetDateValue(mit.getTagValue("t:Start"))) == 0) ) {
@@ -6055,6 +6076,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 					this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
 					break;
 				}
+}
+catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 			}
 
 			
@@ -6351,6 +6374,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		if (this.itemCache[item.id]) {
 			if (this.itemCache[item.id].changeKey == item.changeKey) {
 				//if (this.debug) this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
+				this.itemCache[item.id].occurrenceIndex = item.occurrenceIndex
 				item.exchangeData = null;
 				item = null;
 				return null;
