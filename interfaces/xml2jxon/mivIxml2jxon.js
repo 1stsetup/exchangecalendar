@@ -1052,7 +1052,7 @@ mivIxml2jxon.prototype = {
 				// found special character "?"
 				// Next four characters should be "xml " or else error.
 				pos++;
-				if (aString,substr(pos, 4) == "xml ") {
+				if (aString.substr(pos, 4) == "xml ") {
 					// We have a header.
 					var tmpPos = this.findString(aString, pos, "?>");
 					if (tmpPos == -1) {

@@ -600,9 +600,8 @@ catch(err){
 			xml = this.unchunk(xml);
 		}*/
 
-		xml = xml.replace(/^<\?xml\s+version\s*=\s*(?:"[^"]+"|'[^']+')[^?]*\?>/, ""); // bug 336551
-
-		xml = xml.replace(/&#x10;/g, ""); // BUG 61 remove hexadecimal code 0x10. It will fail in xml conversion.
+// Removed following as this is no longer a problem as we are not using E4X anymore.
+//		xml = xml.replace(/&#x10;/g, ""); // BUG 61 remove hexadecimal code 0x10. It will fail in xml conversion.
 
 		try {
 		    var newXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
