@@ -6865,7 +6865,7 @@ return;*/
 			this.updateCalendarTimerRunning = true;
 		        let self = this;
 			this.observerService.notifyObservers(this, "onExchangeProgressChange", "2");
-			this.updateCalendarTimer.initWithCallback({ notify: function setTimeout_notify() {self.doUpdateCalendarItem();	}}, 2, this.updateCalendarTimer.TYPE_REPEATING_SLACK);
+			this.updateCalendarTimer.initWithCallback({ notify: function setTimeout_notify() {self.doUpdateCalendarItem();	}}, 50, this.updateCalendarTimer.TYPE_REPEATING_SLACK);
 		}
 	},
 	
