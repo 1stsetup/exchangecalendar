@@ -594,6 +594,7 @@ catch(err){
 		// It appears that in IIS7 it is possible the xml response is send in chunks with a length header.
 		// Try to detect this.
 
+// Removed as the reporter had a strange situation in place which has been resolved. Could not reproduce.
 /*		var header = xml.substr(0,6);
 		if (header.indexOf("\r\n") > -1) {
 			if (this.debug) this.logInfo("onLoad: Looks like we have a chunked response. Will try to unchunk it.");
