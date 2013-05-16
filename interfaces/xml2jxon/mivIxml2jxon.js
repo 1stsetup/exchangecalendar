@@ -305,7 +305,7 @@ mivIxml2jxon.prototype = {
 		var realIndex;
 		var realATagName;
 		for (let index in this.tags) {
-				if (index.indexOf(inputTagName) > -1) {
+//				if (index.indexOf(inputTagName) > -1) {
 					let childTag = this.tags[index];
 					if ((childTag instanceof Ci.mivIxml2jxon) || (childTag instanceof mivIxml2jxon)) {
 						// this[index] is an xml2jxon object.
@@ -326,7 +326,7 @@ mivIxml2jxon.prototype = {
 						}
 
 					}
-				}
+//				}
 
 		}
 
@@ -396,18 +396,17 @@ mivIxml2jxon.prototype = {
 			aObject.addParentNameSpaces(this);
 		}
 
-		var aNameSpace = aObject.nameSpace;
-		var aTagName = aObject.tagName;
-		if (!this.tags[aNameSpace+tagSeparator+aTagName]) {
-			this.tags[aNameSpace+tagSeparator+aTagName] = aObject;
+		var aNSTagName = aObject.nameSpace+tagSeparator+aObject.tagName;
+		if (!this.tags[aNSTagName]) {
+			this.tags[aNSTagName] = aObject;
 		}
 		else {
-			if (!isArray(this.tags[aNameSpace+tagSeparator+aTagName])) {
-				let firstObject = this.tags[aNameSpace+tagSeparator+aTagName];
-				this.tags[aNameSpace+tagSeparator+aTagName] = new Array();
-				this.tags[aNameSpace+tagSeparator+aTagName].push(firstObject);
+			if (!isArray(this.tags[aNSTagName])) {
+				let firstObject = this.tags[aNSTagName];
+				this.tags[aNSTagName] = new Array();
+				this.tags[aNSTagName].push(firstObject);
 			}
-			this.tags[aNameSpace+tagSeparator+aTagName].push(aObject);
+			this.tags[aNSTagName].push(aObject);
 		}
 	},
 
@@ -866,9 +865,7 @@ mivIxml2jxon.prototype = {
 			}
 
 			for (let index in this.tags) {
-				if (index.indexOf(tagSeparator) > -1) {
-					result.push(this.tags[index]);
-				}
+				result.push(this.tags[index]);
 			}
 			tmpPath = "/"+tmpPath;
 			break;
@@ -884,7 +881,7 @@ mivIxml2jxon.prototype = {
 			tmpPath = tmpPath.substr(1);
 			for (let index in this.tags) {
 
-				if ((this.tags[index]) && (index.indexOf(tagSeparator) > -1)) {
+//				if (this.tags[index]) && (index.indexOf(tagSeparator) > -1)) {
 					let tmpTagName = "";
 					var tmpIsArray = isArray(this.tags[index]);
 					if (tmpIsArray) {
@@ -905,7 +902,7 @@ mivIxml2jxon.prototype = {
 						}
 					}
 					
-				}
+//				}
 
 			}
 			break;
