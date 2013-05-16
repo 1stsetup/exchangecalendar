@@ -41,8 +41,6 @@ function mivExchangeEvent() {
 
 	this.initExchangeBaseItem();
 
-	//this.logInfo("mivExchangeEvent: init");
-
 }
 
 var mivExchangeEventGUID = "4cd0469e-093f-4f7c-8ace-68f6ec76b36e";
@@ -122,7 +120,7 @@ mivExchangeEvent.prototype = {
 
 	set startDate(aValue)
 	{
-		//this.logInfo("set startdate: title:"+this.title+", aValue:"+aValue);
+		dump("set startdate: title:"+this.title+", aValue:"+aValue+"\n");
 		if (aValue.toString() != this.startDate.toString()) {
 			this._newStartDate = aValue;
 			this._calEvent.startDate = aValue;
@@ -205,7 +203,7 @@ mivExchangeEvent.prototype = {
 
 	set status(aValue)
 	{
-		this.logInfo("set status: title:"+this.title+", aValue:"+aValue);
+		//this.logInfo("set status: title:"+this.title+", aValue:"+aValue);
 		if (aValue != this.status) {
 			const statuses = { "NONE": "NoResponseReceived",
 					"TENTATIVE": "Tentative", 
@@ -286,28 +284,28 @@ mivExchangeEvent.prototype = {
 			var recurrenceInfoChanged;
 			if (this._recurrenceInfo) {
 				// We had recurrenceInfo. Lets see if it changed.
-				this.logInfo("We had recurrenceInfo. Lets see if it changed.");
+				//this.logInfo("We had recurrenceInfo. Lets see if it changed.");
 				if (this._newRecurrenceInfo !== undefined) {
 					// It was changed or removed
 					if (this._newRecurrenceInfo === null) {
 						// It was removed
-						this.logInfo("We had recurrenceInfo. And it is removed.");
+						//this.logInfo("We had recurrenceInfo. And it is removed.");
 						recurrenceInfoChanged = false;
 						this._nonPersonalDataChanged = true;
 						this.addDeleteItemField(updates, "Recurrence");
 					}
 					else {
 						// See if something changed
-						this.logInfo("We had recurrenceInfo. And it was changed.");
+						//this.logInfo("We had recurrenceInfo. And it was changed.");
 						recurrenceInfoChanged = true;
 					}
 				}
 			}
 			else {
 				// We did not have recurrence info. Check if we have now
-				this.logInfo("We did not have recurrenceInfo. See if it was added.");
+				//this.logInfo("We did not have recurrenceInfo. See if it was added.");
 				if (this._newRecurrenceInfo) {
-					this.logInfo("We did not have recurrenceInfo. But we do have now.");
+					//this.logInfo("We did not have recurrenceInfo. But we do have now.");
 					recurrenceInfoChanged = true;
 				}
 			}
@@ -328,9 +326,9 @@ mivExchangeEvent.prototype = {
 				var tmpStart = this._newStartDate.clone();
 				if (this._newStartDate.isDate) {
 					tmpStart.isDate = false;
-					var tmpDuration = cal.createDuration();
-					tmpDuration.minutes = -60;
-					tmpStart.addDuration(tmpDuration);
+					//var tmpDuration = cal.createDuration();
+					//tmpDuration.minutes = -60;
+					//tmpStart.addDuration(tmpDuration);
 
 					// We make a non-UTC datetime value for this.globalFunctions.
 					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
@@ -521,7 +519,7 @@ mivExchangeEvent.prototype = {
 			this.checkAlarmChange(updates);
 		}
 
-		this.logInfo("updates:"+updates.toString()+"\n");
+		//dump("updates:"+updates.toString()+"\n");
 		return updates;
 	},
 
