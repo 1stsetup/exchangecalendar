@@ -78,6 +78,7 @@ erGetContactsRequest.prototype = {
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "contacts:HasPicture");
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:HasAttachments");
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Attachments");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:EffectiveRights");
 
 		this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
 				.getService(Ci.mivExchangeStatistics);

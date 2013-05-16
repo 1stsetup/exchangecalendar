@@ -1235,6 +1235,14 @@ if (this.debug) this.logInfo("singleModified doNotify");
 		this.recurringMasterCache[aModifiedMaster.uid] = aModifiedMaster;
 	},
 
+	/**
+	* Returns the acl entry associated to the calendar.
+	*/
+	//readonly attribute calICalendarACLEntry aclEntry;
+	//get aclEntry()
+	//{
+	//},
+
 	//  calIOperation modifyItem(in calIItemBase aNewItem,
         //                   in calIItemBase aOldItem,
         //                   in calIOperationListener aListener);

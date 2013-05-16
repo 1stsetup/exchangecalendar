@@ -569,7 +569,29 @@ catch(err){
 	//readonly attribute calIItemACLEntry aclEntry;
 	get aclEntry()
 	{
-		return this._calEvent.aclEntry;
+/*dump("aclEntry:"+this.title+".\n");
+		if (!this._effectiveRights) {
+
+			this._effectiveRights = this.getTag("t:EffectiveRights", null);
+
+			if (this._effectiveRights) {
+				this._canDelete = this._effectiveRights.getTagValue("t:Delete", "false");
+				this._canModify = this._effectiveRights.getTagValue("t:Modify", "false");
+				this._canRead = this._effectiveRights.getTagValue("t:Read", "false");
+			}
+		}
+*/
+		var result = this._calEvent.aclEntry;
+/*		if (this._effectiveRights) {
+dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", Modify="+this._canModify+", Read="+this._canRead+"\n");
+			result = {
+					calendarEntry : this.calendar.aclEntry,
+					userCanModify : (this._canModify == "true") || (this._canDelete == "true"),
+					userCanRespond : (this._canModify == "true"),
+					userCanViewAll : (this._canRead == "true"),
+					userCanViewDateAndTime: true,};
+		} */
+		return result;
 	},
 
 	//
