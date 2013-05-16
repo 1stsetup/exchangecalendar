@@ -2406,7 +2406,7 @@ catch(err){
 			this.recurrenceInfo.modifyException(aItem, true);
 
 			var itemAlarms = aItem.getAlarms({});
-			if ((itemAlarms.length > 0) && (aItem.startDate.compare(this.reminderDueBy) == 0)) {
+			if ((itemAlarms.length > 0) && (this.reminderDueBy) && (aItem.startDate.compare(this.reminderDueBy) == 0)) {
 				this.setProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime, this.reminderSignalTime.getInTimezone(cal.UTC()).icalString);
 			}
 		}
@@ -2426,7 +2426,7 @@ catch(err){
 			// Remove any alarms we might have for this exception.
 			if (this._exceptions[aItem.id]) {
 				var itemAlarms = this._exceptions[aItem.id].getAlarms({});
-				if ((itemAlarms.length > 0) && (aItem.startDate.compare(this.reminderDueBy) == 0)) {
+				if ((itemAlarms.length > 0) && (this.reminderDueBy) && (aItem.startDate.compare(this.reminderDueBy) == 0)) {
 					this.deleteProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
 				}
 			}
