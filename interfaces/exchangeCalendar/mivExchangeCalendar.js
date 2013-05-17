@@ -414,6 +414,7 @@ calExchangeCalendar.prototype = {
 	getInterfaces: function _getInterfaces(count) 
 	{
 		var ifaces = [Ci.mivExchangeCalendar,
+			Ci.calICalendarACLManager,
 			Ci.calICalendar,
 			Ci.calICalendarProvider,
 			Ci.calIFreeBusyService,
@@ -473,6 +474,31 @@ calExchangeCalendar.prototype = {
 		throw NS_ERROR_NOT_IMPLEMENTED;
 	},
 // End calICalendarProvider
+
+// Begin calICalendarACLManager
+	/* Gets the calICalendarACLEntry of the current user for the specified
+	calendar. */
+	//void getCalendarEntry(in calICalendar aCalendar,
+	//	          in calIOperationListener aListener);
+	getCalendarEntry: function _getCalendarEntry(aCalendar, aListener)
+	{
+		dump("getCalendarEntry: aCalendar.name:"+aCalendar.name+", aLsitener:"+aListener+"\n");
+	},
+
+	/* Gets the calIItemACLEntry of the current user for the specified
+	calendar item. Depending on the implementation, each item can have
+	different permissions based on specific attributes.
+	(TODO: should be made asynchronous one day) */
+	//calIItemACLEntry getItemEntry(in calIItemBase aItem);
+	getItemEntry: function _getItemEntry(aItem)
+	{
+		dump("getItemEntry: aCalendar.name:"+this.name+", aItem:"+aItem.title+"\n");
+		if (this.itemCache[aItem.id]) {
+			return this.itemCache[aItem.id].aclEntry;
+		}
+	},
+
+// End calICalendarACLManager
 
 // Begin calICalendar
 
@@ -1239,9 +1265,22 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	* Returns the acl entry associated to the calendar.
 	*/
 	//readonly attribute calICalendarACLEntry aclEntry;
-	//get aclEntry()
-	//{
-	//},
+	get aclEntry()
+	{
+		var self = this;
+		return {
+			aclManager: this,
+			hasAccessControl: true,
+			userIsOwner: (this.canDelete || this.canModify),
+			userCanAddItems: this._canCreateContent,
+			userCanDeleteItems: this._canDelete,
+			getUserAddresses: function(aCount) { dump("calICalendarACLEntry getUserAddresses:"+self.name+"\n"); aCount.value = 0; return []; },
+			getUserIdentities: function(aCount) { dump("calICalendarACLEntry getUserIdentities:"+self.name+"\n"); aCount.value = 0; return []; },
+			getOwnerIdentities: function(aCount) { dump("calICalendarACLEntry getOwnerIdentities:"+self.name+"\n"); aCount.value = 0; return []; },
+			refresh: function() { dump("calICalendarACLEntry refresh:"+self.name+"\n");  },
+			};
+	},
+
 
 	//  calIOperation modifyItem(in calIItemBase aNewItem,
         //                   in calIItemBase aOldItem,
@@ -1279,6 +1318,17 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	        	                             aNewItem);
 			return null;
 	        }
+
+dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:"+aOldItem.canModify+"\n");
+		if ((aOldItem.className) && (!aOldItem.canModify)) {
+			if (this.debug) this.logInfo("modifyItem and this item is ReadOnly for this user.");
+	        	this.notifyOperationComplete(aListener,
+	        	                             Cr.NS_OK,
+	        	                             Ci.calIOperationListener.MODIFY,
+	        	                             aOldItem.id,
+	        	                             aOldItem);
+			return null;
+		}
 
 	        if (!aNewItem) {
 	            throw Cr.NS_ERROR_INVALID_ARG;
@@ -1789,6 +1839,16 @@ if (this.debug) this.logInfo("singleModified doNotify");
 	                                         "Calendar is readonly");*/
 			return null;
 	        }
+
+		if ((aItem.className) && (!aItem.canDelete)) {
+			if (this.debug) this.logInfo("User is not allowed to delete this item.");
+	        	this.notifyOperationComplete(aListener,
+        	                             Ci.calIErrors.OPERATION_CANCELLED,
+                        	             Ci.calIOperationListener.DELETE,
+                        	             aItem.id,
+                        	             aItem);
+			return null;
+		}
 
 		if (aItem.id == null) {
 			if (aListener) {
@@ -2597,7 +2657,9 @@ catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
 			var exchangeItem = aItem.QueryInterface(Ci.mivExchangeEvent);
 
 			if (exchangeItem) {
-				return aItem.isInvitation;
+				//if (aItem.canModify) {
+					return aItem.isInvitation;
+				//}
 			}
 		}
 		catch(err){
@@ -7355,6 +7417,25 @@ return;*/
 		// Problem is when is this condition true
 		// For now we will set OnlyShowAvailability = true when EffectiveRights.Read == false
 		if (this.debug) this.logInfo(" >>>>>>>>>>>>>>MIV>:"+aFolderClass.toString());
+		var rm = aFolderProperties.XPath("/s:Envelope/s:Body/m:GetFolderResponse/m:ResponseMessages/m:GetFolderResponseMessage/m:Folders/*/t:EffectiveRights");
+		if (rm.length > 0) {
+			this._effectiveRights = rm[0];
+			if (this._effectiveRights) {
+				this._canDelete = (this._effectiveRights.getTagValue("t:Delete", "false") == "true");
+				this._canModify = (this._effectiveRights.getTagValue("t:Modify", "false") == "true");
+				this._canRead = (this._effectiveRights.getTagValue("t:Read", "false") == "true");
+				this._canCreateContent = (this._effectiveRights.getTagValue("t:CreateContents", "false") == "true"); 
+			}
+		}
+		else {
+			this._effectiveRights = null;
+			this._canDelete = false;
+			this._canModify = false;
+			this._canRead = false;
+			this._canCreateContent = false;
+		}
+		rm = null;
+
 		var rm = aFolderProperties.XPath("/s:Envelope/s:Body/m:GetFolderResponse/m:ResponseMessages/m:GetFolderResponseMessage/m:Folders/*/t:EffectiveRights[t:Read='true']");
 
 		this.folderIsNotAvailable = false;

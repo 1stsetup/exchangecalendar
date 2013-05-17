@@ -26,6 +26,9 @@ interface mivIxml2jxon;
 [scriptable, uuid(9bc0fca0-9465-11e2-9e96-0800200c9a66)]
 interface mivExchangeBaseItem : calIItemBase
 {
+	readonly attribute boolean canDelete;
+	readonly attribute boolean canModify;
+	readonly attribute boolean canRead;
 
 	readonly attribute AUTF8String subject;
 	readonly attribute AUTF8String sensitivity;

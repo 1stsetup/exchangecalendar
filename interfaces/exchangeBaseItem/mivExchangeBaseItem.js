@@ -563,34 +563,49 @@ catch(err){
 		return this._calEvent.hasSameIds(aItem);
 	},
 
+	get canDelete()
+	{
+		return this._canDelete;
+	},
+
+	get canModify()
+	{
+		return this._canModify;
+	},
+
+	get canRead()
+	{
+		return this._canRead;
+	},
+
 	/**
 	* Returns the acl entry associated to the item.
 	*/
 	//readonly attribute calIItemACLEntry aclEntry;
 	get aclEntry()
 	{
-/*dump("aclEntry:"+this.title+".\n");
+dump("aclEntry:"+this.title+".\n");
 		if (!this._effectiveRights) {
 
 			this._effectiveRights = this.getTag("t:EffectiveRights", null);
 
 			if (this._effectiveRights) {
-				this._canDelete = this._effectiveRights.getTagValue("t:Delete", "false");
-				this._canModify = this._effectiveRights.getTagValue("t:Modify", "false");
-				this._canRead = this._effectiveRights.getTagValue("t:Read", "false");
+				this._canDelete = (this._effectiveRights.getTagValue("t:Delete", "false") == "true");
+				this._canModify = (this._effectiveRights.getTagValue("t:Modify", "false") == "true");
+				this._canRead = (this._effectiveRights.getTagValue("t:Read", "false") == "true");
 			}
 		}
-*/
+
 		var result = this._calEvent.aclEntry;
-/*		if (this._effectiveRights) {
+		if (this._effectiveRights) {
 dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", Modify="+this._canModify+", Read="+this._canRead+"\n");
 			result = {
 					calendarEntry : this.calendar.aclEntry,
-					userCanModify : (this._canModify == "true") || (this._canDelete == "true"),
-					userCanRespond : (this._canModify == "true"),
-					userCanViewAll : (this._canRead == "true"),
+					userCanModify : ((this._canModify) || (this._canDelete)),
+					userCanRespond : this._canModify,
+					userCanViewAll : this._canRead,
 					userCanViewDateAndTime: true,};
-		} */
+		} 
 		return result;
 	},
 
