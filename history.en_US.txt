@@ -9,6 +9,7 @@ Version 3.2.0:
 - Fixed a bug where it was not possible to create an exception.
 - Update on French locale.
 - Fixed Bug 291 - Modify instance of recurring meeting fails silently
+- Added Access Control List functionality of Lightning to follow user rights and permissions.
 
 Version 3.2.0-Beta20:
 - Fixed Bug 276 - Duplicate entries, wrong hours and sometimes missing entries when viewving other calendars
