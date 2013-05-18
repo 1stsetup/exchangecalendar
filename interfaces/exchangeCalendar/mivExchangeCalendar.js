@@ -6949,10 +6949,10 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 	updateCalendar: function _updateCalendar(erGetItemsRequest, aItems, doNotify)
 	{
-		this.observers.notify("onStartBatch");
-		this.updateCalendar2(erGetItemsRequest, aItems,doNotify);
-		this.observers.notify("onEndBatch");
-return;
+//		this.observers.notify("onStartBatch");
+//		this.updateCalendar2(erGetItemsRequest, aItems,doNotify);
+//		this.observers.notify("onEndBatch");
+//return;
 		for (var index in aItems) {
 			this.updateCalendarItems.push({ request: erGetItemsRequest,
 							item: aItems[index],

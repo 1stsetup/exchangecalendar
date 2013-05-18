@@ -73,8 +73,8 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 
 	this._siblings = new Array();
 
-	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
-				.getService(Ci.mivFunctions);
+	//this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+	//			.getService(Ci.mivFunctions);
 
 	this.nameSpaceMgr = Cc["@1st-setup.nl/conversion/namespaces;1"]
 				.getService(Ci.mivNameSpaces);
@@ -82,7 +82,10 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 	this.tagNameMgr = Cc["@1st-setup.nl/conversion/tagnames;1"]
 				.getService(Ci.mivTagNames);
 
-	this.uuid = this.globalFunctions.getUUID();
+	//this.uuid = this.globalFunctions.getUUID();
+
+	this.uuid = Cc["@mozilla.org/uuid-generator;1"]
+				.getService(Ci.nsIUUIDGenerator).generateUUID().toString().replace(/[{}]/g, '');
 
 	if (aXMLString) {
 		this.processXMLString(aXMLString, aStartPos, aParent);
@@ -651,7 +654,7 @@ mivIxml2jxon.prototype = {
 			var weHaveSubCondition = false;
 
 			if (tmpCondition[0] == "(") {
-				var subCondition = this.globalFunctions.splitOnCharacter(tmpCondition.substr(1), 0, ")");
+				var subCondition = this.splitOnCharacter(tmpCondition.substr(1), 0, ")");
 				if (subCondition) {
 					startPos = subCondition.length;
 					weHaveSubCondition = true;
@@ -661,7 +664,7 @@ mivIxml2jxon.prototype = {
 				}
 			}
 
-			var splitPart = this.globalFunctions.splitOnCharacter(tmpCondition.toLowerCase(), startPos, [" and ", " or "]);
+			var splitPart = this.splitOnCharacter(tmpCondition.toLowerCase(), startPos, [" and ", " or "]);
 
 			var operator = null;
 			var comparison = null;
@@ -690,7 +693,7 @@ mivIxml2jxon.prototype = {
 				compareList.push( { left: subCondition, right: "", operator: operator, comparison: comparison, subCondition: subCondition} );
 			}
 			else {
-				var splitPart2 = this.globalFunctions.splitOnCharacter(splitPart, 0, ["!=", "<=", ">=", "<", "=", ">"]);
+				var splitPart2 = this.splitOnCharacter(splitPart, 0, ["!=", "<=", ">=", "<", "=", ">"]);
 				if (splitPart2) {
 					// Get comparison type
 					var smallerThen = false;
@@ -859,7 +862,7 @@ mivIxml2jxon.prototype = {
 
 		switch (tmpPath[0]) {
 		case "/" : // Find all elements by specified element name
-			var allTag = this.globalFunctions.splitOnCharacter(tmpPath.substr(1), 0, ["/", "["]);
+			var allTag = this.splitOnCharacter(tmpPath.substr(1), 0, ["/", "["]);
 			if (!allTag) {
 				allTag = tmpPath.substr(1);
 			}
@@ -909,7 +912,7 @@ mivIxml2jxon.prototype = {
 
 		case "[" : // Compare/match function
 
-			var index = this.globalFunctions.splitOnCharacter(tmpPath.substr(1), 0, "]");
+			var index = this.splitOnCharacter(tmpPath.substr(1), 0, "]");
 			if (!index) {
 				throw "XPath error: Did not find closing square bracket. tagName:"+this.tagName+", tmpPath:"+tmpPath;
 			}
@@ -1293,6 +1296,67 @@ mivIxml2jxon.prototype = {
 		return -1;
 	},
 
+	splitOnCharacter: function _splitOnCharacter(aString, aStartPos, aSplitCharacter)
+	{
+		if (!aString) {
+			return null;
+		}
+
+		var tmpPos = aStartPos;
+		var result = "";
+		var notClosed = true;
+		var notQuoteOpen = true;
+		var quotesUsed = "";
+		var strLen = aString.length;
+		var splitCharIsArray = isArray(aSplitCharacter);
+		while ((tmpPos < strLen) && (notClosed)) {
+			if ((aString[tmpPos] == "'") || (aString[tmpPos] == '"')) {
+				// We found quotes. Do they belong to our string.
+				if (notQuoteOpen) {
+					quotesUsed = aString[tmpPos];
+					notQuoteOpen = false;
+				}
+				else {
+					if (aString[tmpPos] == quotesUsed) {
+						quotesUsed = "";
+						notQuoteOpen = true;
+					}
+				}
+			}
+
+			var hitSplitCharacter = false;
+			if (notQuoteOpen) {
+				if (splitCharIsArray) {
+					for (var index in aSplitCharacter) {
+						if (aString.substr(tmpPos,aSplitCharacter[index].length) == aSplitCharacter[index]) {
+							hitSplitCharacter = true;
+							break;
+						}
+					}
+				}
+				else {
+					if (aString.substr(tmpPos,aSplitCharacter.length) == aSplitCharacter) {
+						hitSplitCharacter = true;
+					}
+				}
+			}
+
+			if (hitSplitCharacter) {
+				notClosed = false;
+			}
+			else {
+				result += aString[tmpPos];
+			}
+			tmpPos++;
+		}
+
+		if (!notClosed) {
+			return result;
+		}
+		else {
+			return null;
+		}
+	},
 
 }
 

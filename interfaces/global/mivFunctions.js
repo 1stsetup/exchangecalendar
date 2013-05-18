@@ -32,8 +32,6 @@ Cu.import("resource:///modules/Services.jsm");
 
 function mivFunctions()
 {
-	this.uuidGen = Cc["@mozilla.org/uuid-generator;1"]
-			.getService(Ci.nsIUUIDGenerator);
 	//dump("\n ++ mivFunctions.init\n");
 }
 
@@ -364,7 +362,11 @@ mivFunctions.prototype = {
  */
 	getUUID: function _getUUID() {
 	    // generate uuids without braces to avoid problems with
-	    return this.uuidGen.generateUUID().toString().replace(/[{}]/g, '');
+		if (!this.uuidGen) {
+			this.uuidGen = Cc["@mozilla.org/uuid-generator;1"]
+					.getService(Ci.nsIUUIDGenerator);
+		}
+		return this.uuidGen.generateUUID().toString().replace(/[{}]/g, '');
 	},
 
 
@@ -689,7 +691,6 @@ mivFunctions.prototype = {
 
 	splitOnCharacter: function _splitOnCharacter(aString, aStartPos, aSplitCharacter)
 	{
-dump("splitOnCharacter: aStartPos:"+aStartPos+", aSplitCharacter:"+aSplitCharacter+"\n");
 		if (!aString) {
 			return null;
 		}
@@ -702,7 +703,6 @@ dump("splitOnCharacter: aStartPos:"+aStartPos+", aSplitCharacter:"+aSplitCharact
 		var strLen = aString.length;
 		var splitCharIsArray = Array.isArray(aSplitCharacter);
 		while ((tmpPos < strLen) && (notClosed)) {
-dump("    splitOnCharacter: tmpPos:"+tmpPos+"\n");
 			if ((aString[tmpPos] == "'") || (aString[tmpPos] == '"')) {
 				// We found quotes. Do they belong to our string.
 				if (notQuoteOpen) {
@@ -743,7 +743,6 @@ dump("    splitOnCharacter: tmpPos:"+tmpPos+"\n");
 			tmpPos++;
 		}
 
-dump("splitOnCharacter: done.\n");
 		if (!notClosed) {
 			return result;
 		}
@@ -754,7 +753,6 @@ dump("splitOnCharacter: done.\n");
 
 	findCharacter: function _findCharacter(aString, aStartPos, aChar)
 	{
-dump("findCharacter: aString.length:"+aString.length+".("+this.STACKshort()+")\n");
 		if (!aString) return -1;
 
 		var pos = aStartPos;
@@ -764,17 +762,14 @@ dump("findCharacter: aString.length:"+aString.length+".("+this.STACKshort()+")\n
 		}
 
 		if (pos < strLength) {
-//dump("findCharacter: pos:"+pos+"\n");
 			return pos;
 		}
 	
-dump("findCharacter: pos:-1\n");
 		return -1;
 	},
 
 	findString: function _findString(aString, aStartPos, aNeedle)
 	{
-dump("findString: done.\n");
 		if (!aString) return -1;
 
 		if (aNeedle.length == 1) {
