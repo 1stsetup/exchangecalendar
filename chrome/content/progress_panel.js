@@ -198,7 +198,7 @@ exchProgressPanel.prototype = {
 }
 
 var myExchProgressPanel = new exchProgressPanel(document, window);
-window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); myExchProgressPanel.onLoad(); }, true);
+window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,true); dump("progress_panel\n"); myExchProgressPanel.onLoad(); }, true);
 
 /**
  * Creates the given element in the XUL namespace.

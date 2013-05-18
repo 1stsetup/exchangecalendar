@@ -91,6 +91,8 @@ function erFindCalendarItemsRequest(aArgument, aCbOk, aCbError, aListener)
 	this.occurrenceIds = [];
 	this.ids = [];
 
+	this.newStartDate = null;
+
 	this.isRunning = true;
 	this.execute();
 }
@@ -116,11 +118,17 @@ erFindCalendarItemsRequest.prototype = {
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Subject");
 
 		var view = exchWebService.commonFunctions.xmlToJxon('<nsMessages:CalendarView xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
-		if (this.rangeStart) {
-			view.setAttribute("StartDate", convDate(this.rangeStart));
+
+		if (this.newStartDate) {
+				view.setAttribute("StartDate", this.newStartDate);
 		}
 		else {
-			view.setAttribute("StartDate", "1900-01-01T00:00:00-00:00");
+			if (this.rangeStart) {
+				view.setAttribute("StartDate", convDate(this.rangeStart));
+			}
+			else {
+				view.setAttribute("StartDate", "1900-01-01T00:00:00-00:00");
+			}
 		}
 
 		if (this.rangeEnd) {
@@ -129,7 +137,7 @@ erFindCalendarItemsRequest.prototype = {
 		else {
 			view.setAttribute("EndDate", "2300-01-01T00:00:00-00:00");
 		}
-		//view.setAttribute("MaxEntriesReturned", "15");
+		view.setAttribute("MaxEntriesReturned", "10");
 
 		req.addChildTagObject(view);
 		view = null;
@@ -158,7 +166,7 @@ erFindCalendarItemsRequest.prototype = {
 		 * We first collect all non-Occurrences, and after that we fill in
 		 * Occurrence for those masters that did not yet see any Exception.
 		 */
-		//exchWebService.commonFunctions.LOG("erFindCalendarItemsRequest.onSendOk:"+String(aResp)+"\n");
+		exchWebService.commonFunctions.LOG("erFindCalendarItemsRequest.onSendOk:"+String(aResp)+"\n");
 
 		var aError = false;
 		var aCode = 0;
@@ -169,11 +177,14 @@ erFindCalendarItemsRequest.prototype = {
 		if (rm.length > 0) {
 			var rootFolder = rm[0].getTag("m:RootFolder");
 			if (rootFolder) {
-				if (rootFolder.getAttribute("IncludesLastItemInRange") == "true") {
+					if (this.newStartDate) exchWebService.commonFunctions.LOG("next run because previous did not contain all items.");
 					// Process results.
 					var calendarItems = rootFolder.XPath("/t:Items/t:CalendarItem");
 					for (var index in calendarItems) {
 						var uid = calendarItems[index].getTagValue("t:UID", "");
+
+						this.newStartDate = calendarItems[index].getTagValue("t:End");
+
 						switch (calendarItems[index].getTagValue("t:CalendarItemType")) {
 							case "Occurrence" :
 							case "Exception" :
@@ -200,10 +211,31 @@ erFindCalendarItemsRequest.prototype = {
 						}
 					}
 					calendarItems = null;
+
+				if (rootFolder.getAttribute("IncludesLastItemInRange") == "true") {
+					// We are done.
+					exchWebService.commonFunctions.LOG("erFindCalendarItems: retrieved:"+rootFolder.getAttribute("TotalItemsInView")+" items. Includes last item in range.");
 				}
 				else {
+					// We return the result to be processed.
+					exchWebService.commonFunctions.LOG("erFindCalendarItems: retrieved:"+rootFolder.getAttribute("TotalItemsInView")+" items. Last item not in range so going for another run.");
+					if (this.mCbOk) {
+						var occurrenceList = [];
+						for (var index in this.occurrences) {
+							occurrenceList.push(this.occurrences[index]);
+						}
+						this.mCbOk(this, this.ids, occurrenceList);
+					}
+					this.recurringMasters = [];
+					this.occurrences = [];
+					this.occurrenceIds = [];
+					this.ids = [];
+
+					// Lets do a new request to the exchange server but with the startdate set to the last enddate.
+					this.execute(); 
 					// We do not know how to handle this yet. Do not know if it ever happens. We did not restrict MaxEntriesReturned.
 					exchWebService.commonFunctions.LOG("PLEASE MAIL THIS LINE TO exchangecalendar@extensions.1st-setup.nl: IncludesLastItemInRange == false in FindItemResponse.");
+					return;
 				}
 			}
 			else {
@@ -238,6 +270,8 @@ erFindCalendarItemsRequest.prototype = {
 				}
 				this.mCbOk(this, this.ids, occurrenceList);
 			}
+			this.ids = null;
+			this.occurrences = null;
 			this.isRunning = false;
 		}
 		

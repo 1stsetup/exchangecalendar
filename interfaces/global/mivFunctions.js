@@ -32,6 +32,8 @@ Cu.import("resource:///modules/Services.jsm");
 
 function mivFunctions()
 {
+	this.uuidGen = Cc["@mozilla.org/uuid-generator;1"]
+			.getService(Ci.nsIUUIDGenerator);
 	//dump("\n ++ mivFunctions.init\n");
 }
 
@@ -361,11 +363,8 @@ mivFunctions.prototype = {
  * Make a UUID using the UUIDGenerator service available, we'll use that.
  */
 	getUUID: function _getUUID() {
-	    var uuidGen = Cc["@mozilla.org/uuid-generator;1"]
-	                  .getService(Ci.nsIUUIDGenerator);
 	    // generate uuids without braces to avoid problems with
-	    // CalDAV servers that don't support filenames with {}
-	    return uuidGen.generateUUID().toString().replace(/[{}]/g, '');
+	    return this.uuidGen.generateUUID().toString().replace(/[{}]/g, '');
 	},
 
 
@@ -690,8 +689,7 @@ mivFunctions.prototype = {
 
 	splitOnCharacter: function _splitOnCharacter(aString, aStartPos, aSplitCharacter)
 	{
-//		this.LOG("splitOnCharacter: aString:"+aString+", aSplitCharacter:"+aSplitCharacter);
-
+dump("splitOnCharacter: aStartPos:"+aStartPos+", aSplitCharacter:"+aSplitCharacter+"\n");
 		if (!aString) {
 			return null;
 		}
@@ -701,15 +699,18 @@ mivFunctions.prototype = {
 		var notClosed = true;
 		var notQuoteOpen = true;
 		var quotesUsed = "";
-		while ((tmpPos < aString.length) && (notClosed)) {
-			if ((aString.substr(tmpPos,1) == "'") || (aString.substr(tmpPos,1) == '"')) {
+		var strLen = aString.length;
+		var splitCharIsArray = Array.isArray(aSplitCharacter);
+		while ((tmpPos < strLen) && (notClosed)) {
+dump("    splitOnCharacter: tmpPos:"+tmpPos+"\n");
+			if ((aString[tmpPos] == "'") || (aString[tmpPos] == '"')) {
 				// We found quotes. Do they belong to our string.
 				if (notQuoteOpen) {
-					quotesUsed = aString.substr(tmpPos,1);
+					quotesUsed = aString[tmpPos];
 					notQuoteOpen = false;
 				}
 				else {
-					if (aString.substr(tmpPos,1) == quotesUsed) {
+					if (aString[tmpPos] == quotesUsed) {
 						quotesUsed = "";
 						notQuoteOpen = true;
 					}
@@ -718,12 +719,10 @@ mivFunctions.prototype = {
 
 			var hitSplitCharacter = false;
 			if (notQuoteOpen) {
-				if (Array.isArray(aSplitCharacter)) {
-//					this.LOG("splitOnCharacter: isArray");
+				if (splitCharIsArray) {
 					for (var index in aSplitCharacter) {
 						if (aString.substr(tmpPos,aSplitCharacter[index].length) == aSplitCharacter[index]) {
 							hitSplitCharacter = true;
-//							this.LOG("splitOnCharacter: hitSplitCharacter: index="+result);
 							break;
 						}
 					}
@@ -739,17 +738,61 @@ mivFunctions.prototype = {
 				notClosed = false;
 			}
 			else {
-				result += aString.substr(tmpPos,1);
+				result += aString[tmpPos];
 			}
 			tmpPos++;
 		}
 
+dump("splitOnCharacter: done.\n");
 		if (!notClosed) {
 			return result;
 		}
 		else {
 			return null;
 		}
+	},
+
+	findCharacter: function _findCharacter(aString, aStartPos, aChar)
+	{
+dump("findCharacter: aString.length:"+aString.length+".("+this.STACKshort()+")\n");
+		if (!aString) return -1;
+
+		var pos = aStartPos;
+		var strLength = aString.length;
+		while ((pos < strLength) && (aString[pos] != aChar)) {
+			pos++;
+		}
+
+		if (pos < strLength) {
+//dump("findCharacter: pos:"+pos+"\n");
+			return pos;
+		}
+	
+dump("findCharacter: pos:-1\n");
+		return -1;
+	},
+
+	findString: function _findString(aString, aStartPos, aNeedle)
+	{
+dump("findString: done.\n");
+		if (!aString) return -1;
+
+		if (aNeedle.length == 1) {
+			return this.findCharacter(aString, aStartPos, aNeedle[0]);
+		}
+
+		var pos = aStartPos;
+		var needleLength = aNeedle.length;
+		var strLength = aString.length - needleLength + 1;
+		while ((pos < strLength) && (aString.substr(pos, needleLength) != aNeedle)) {
+			pos++;
+		}
+
+		if (pos < strLength) {
+			return pos;
+		}
+	
+		return -1;
 	},
 
 	copyCalendarSettings: function _copyCalendarSettings(aFromId, aToId)

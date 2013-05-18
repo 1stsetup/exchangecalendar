@@ -565,16 +565,19 @@ catch(err){
 
 	get canDelete()
 	{
+		this.aclEntry;
 		return this._canDelete;
 	},
 
 	get canModify()
 	{
+		this.aclEntry;
 		return this._canModify;
 	},
 
 	get canRead()
 	{
+		this.aclEntry;
 		return this._canRead;
 	},
 

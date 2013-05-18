@@ -382,6 +382,10 @@ function calExchangeCalendar() {
 			.createInstance(Ci.nsITimer); 
 	this.updateCalendarTimerRunning = false;
 
+	this._canDelete = false;
+	this._canModify = false;
+	this._canCreateContent = false;
+
 	this.mIsOffline = Components.classes["@mozilla.org/network/io-service;1"]
                              .getService(Components.interfaces.nsIIOService).offline;
 	
@@ -6945,10 +6949,10 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 	updateCalendar: function _updateCalendar(erGetItemsRequest, aItems, doNotify)
 	{
-/*		this.observers.notify("onStartBatch");
+		this.observers.notify("onStartBatch");
 		this.updateCalendar2(erGetItemsRequest, aItems,doNotify);
 		this.observers.notify("onEndBatch");
-return;*/
+return;
 		for (var index in aItems) {
 			this.updateCalendarItems.push({ request: erGetItemsRequest,
 							item: aItems[index],
