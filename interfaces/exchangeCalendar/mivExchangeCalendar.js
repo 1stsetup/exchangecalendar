@@ -6957,6 +6957,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			this.updateCalendarItems.push({ request: erGetItemsRequest,
 							item: aItems[index],
 							doNotify: doNotify});
+			aItems[index] = null;
 		}
 
 		if ((this.updateCalendarItems.length > 0) && (!this.updateCalendarTimerRunning)) {

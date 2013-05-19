@@ -877,7 +877,7 @@ dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", 
 	getAlarms: function _getAlarms(count)
 	{
 
-		//dump("getAlarms 1: title:"+this.title+"\n");
+		//dump("getAlarms 1: title:"+this.title+"("+this.calendarItemType+")\n");
 		if (this._alarm === undefined) {
 			this._alarm = null;
 			switch (this._className) {
@@ -941,11 +941,11 @@ dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", 
 
 		// As exchange can only handle one alarm. We make sure there is only one.
 
-		//dump("addAlarm 1: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"\n");
+		//dump("addAlarm 1: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"("+this.calendarItemType+")\n");
 		this.getAlarms({}); // Preload
 
 		if (((this._alarm) && (!this.alarmsAreEqual(this._alarm, aAlarm))) || (!this._alarm)) {
-			//dump("addAlarm 2: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"\n");
+			//dump("addAlarm 2: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"("+this.calendarItemType+")\n");
 			this._calEvent.clearAlarms();
 			this._newAlarm = aAlarm.clone();
 		}
@@ -960,7 +960,7 @@ dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", 
 	//void deleteAlarm(in calIAlarm aAlarm);
 	deleteAlarm: function _deleteAlarm(aAlarm)
 	{
-		//dump("deleteAlarm: title:"+this.title+"\n");
+		//dump("deleteAlarm: title:"+this.title+"("+this.calendarItemType+")\n");
 		this._newAlarm = null;
 		this._calEvent.clearAlarms();
 	},
@@ -971,7 +971,7 @@ dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", 
 	//void clearAlarms();
 	clearAlarms: function _clearAlarms()
 	{
-		//dump("clearAlarms: title:"+this.title+"\n");
+		//dump("clearAlarms: title:"+this.title+"("+this.calendarItemType+")\n");
 		this._newAlarm = null;
 		this._calEvent.clearAlarms();
 	},
@@ -980,8 +980,14 @@ dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", 
 	//attribute calIDateTime alarmLastAck;
 	get alarmLastAck()
 	{
+		dump("get alarmLastAck. this._alarmLastAck:"+this._alarmLastAck+"\n");
 		if (!this._alarmLastAck) {
-			this._alarmLastAck = this.reminderSignalTime;
+			try {
+				this._alarmLastAck = this.reminderSignalTime.clone();
+			}
+			catch(err){
+				this._alarmLastAck = this.tryToSetDateValueUTC("2030-01-01T00:00:00Z", null);
+			}
 			if (!this._alarmLastAck) {
 				this._alarmLastAck = this.tryToSetDateValueUTC("2030-01-01T00:00:00Z", null);
 			}
@@ -1003,26 +1009,33 @@ dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", 
 			case "Single":
 				this._alarmLastAck.addDuration(cal.createDuration('-PT1S'));
 				break;
+			default:
+				dump("get alarmLastAck: this.calendarItemType:"+this.calendarItemType+"\n");
 			}
 			this._calEvent.alarmLastAck = this._alarmLastAck;
 		}
-		//this.logInfo("get alarmLastAck: title:"+this.title+", alarmLastAck:"+this._calEvent.alarmLastAck, -1);
+		dump("get alarmLastAck: title:"+this.title+", alarmLastAck:"+this._calEvent.alarmLastAck+"\n");
 		return this._calEvent.alarmLastAck;
 	},
 
 	set alarmLastAck(aValue)
 	{
+dump("set alarmLastAck 1:"+aValue+"\n");
+try {
 		if ((aValue) && (aValue.compare(this.alarmLastAck) != 0)) {
 
-			//this.logInfo("set alarmLastAck: User snoozed alarm. Title:"+this.title+", aValue:"+aValue.toString()+", alarmTime:"+this.getAlarmTime(), -1);
+			//dump("set alarmLastAck: User snoozed alarm. Title:"+this.title+", aValue:"+aValue.toString()+", alarmTime:"+this.getAlarmTime(), -1);
+dump("set alarmLastAck 2:"+aValue+"\n");
 			this._newAlarmLastAck = aValue.clone();
 		}
 		else {
+dump("set alarmLastAck 3:"+aValue+"\n");
 			if (aValue === null) {
-				//this.logInfo("set alarmLastAck: set to NULL. Title:"+this.title+", aValue:"+aValue+", alarmTime:"+this.getAlarmTime(), -1);
+				//dump("set alarmLastAck: set to NULL. Title:"+this.title+", aValue:"+aValue+", alarmTime:"+this.getAlarmTime(), -1);
 				this._newAlarmLastAck = null;
 			}
 		}
+}catch(err){dump("alarmlastack err:"+err+"\n");}
 		this._calEvent.alarmLastAck = aValue;
 	},
 
@@ -1277,7 +1290,12 @@ dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", 
 		case "CLASS":
 			this.privacy; // preload
 			break;
-
+		default:
+			if (name.indexOf("X-MOZ-SNOOZE-TIME-") > -1) {
+				//this.logInfo("setProperty: "+name+" is set to value:"+value);
+				dump("getProperty:"+name+":"+this._calEvent.getProperty(name)+"\n");
+				dump("getProperty: this.reminderSignalTime:"+this.reminderSignalTime+"\n");
+			}
 		}
 
 		//this.logInfo("get property 2: title:"+this.title+", name:"+name+", value:"+this._calEvent.getProperty(name)+", _newLocation:"+this._newLocation);
@@ -1372,6 +1390,7 @@ dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", 
 			break;
 		case "X-MOZ-SNOOZE-TIME":
 				if (value != this._xMozSnoozetime) {
+dump("X-MOZ-SNOOZE-TIME:"+value+"\n");
 					this._newXMozSnoozeTime = value;
 				}
 				else {
@@ -1382,7 +1401,10 @@ dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", 
 			if (name.indexOf("X-MOZ-SNOOZE-TIME-") > -1) {
 				//this.logInfo("setProperty: "+name+" is set to value:"+value);
 				if (value != this._xMozSnoozetime) {
+dump("setProperty "+name+":"+value+"\n");
 					this._newXMozSnoozeTime = value;
+					this._lastXMozSnoozeTimeNativeId = name.substr(18);
+dump("setProperty this._lastXMozSnoozeTimeNativeId:"+this._lastXMozSnoozeTimeNativeId+"\n");
 				}
 				else {
 					this._newXMozSnoozeTime = undefined;
@@ -1431,6 +1453,8 @@ dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", 
 				//this.logInfo("setProperty: "+name+" is set to value:"+value);
 				if (this._xMozSnoozetime) {
 					this._newXMozSnoozeTime = null;
+					this._lastXMozSnoozeTimeNativeId = name.substr(18);
+dump("deleteProperty this._lastXMozSnoozeTimeNativeId:"+this._lastXMozSnoozeTimeNativeId+"\n");
 				}
 				else {
 					this._newXMozSnoozeTime = undefined;
@@ -2064,7 +2088,12 @@ dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", 
 		if ((!this._reminderSignalTime) && (this._exchangeData)) {
 			var tmpObject = this._exchangeData.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']");
 			if (tmpObject.length > 0) {
+dump(this.title+"| /t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']:"+tmpObject[0].getTagValue("t:Value", null)+"\n");
 				this._reminderSignalTime = this.tryToSetDateValueUTC(tmpObject[0].getTagValue("t:Value", null), null);
+dump(this.title+"| this._reminderSignalTime:"+this._reminderSignalTime+"\n");
+dump(this.title+"| this._reminderSignalTime.icalString:"+this._reminderSignalTime.icalString+"\n");
+dump(this.title+"| this.calendarItemType:"+this.calendarItemType+"\n");
+
 				//this.logInfo("Setting X-MOZ-SNOOZE-TIME by data in exchangedata", -1);
 				if (this.className == "mivExchangeEvent") {
 					switch (this.calendarItemType) {
@@ -2446,8 +2475,9 @@ dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", 
 			this.recurrenceInfo.modifyException(aItem, true);
 
 			var itemAlarms = aItem.getAlarms({});
-			if ((itemAlarms.length > 0) && (this.reminderDueBy) && (aItem.startDate.compare(this.reminderDueBy) == 0)) {
-				this.setProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime, this.reminderSignalTime.getInTimezone(cal.UTC()).icalString);
+dump("addException:"+this.title+"| itemAlarms.length:"+itemAlarms.length+", aItem.reminderSignalTime:"+aItem.reminderSignalTime+"\n");
+			if ((itemAlarms.length > 0) && (aItem.reminderSignalTime) && (aItem.startDate.compare(aItem.reminderSignalTime) >= 0)) {
+				this.setProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime, aItem.reminderSignalTime.getInTimezone(cal.UTC()).icalString);
 			}
 		}
 	},
@@ -2466,7 +2496,7 @@ dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", 
 			// Remove any alarms we might have for this exception.
 			if (this._exceptions[aItem.id]) {
 				var itemAlarms = this._exceptions[aItem.id].getAlarms({});
-				if ((itemAlarms.length > 0) && (this.reminderDueBy) && (aItem.startDate.compare(this.reminderDueBy) == 0)) {
+				if (itemAlarms.length > 0) {
 					this.deleteProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
 				}
 			}
@@ -2475,7 +2505,7 @@ dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", 
 //			this._exceptions[aItem.id] = aItem;
 
 			var itemAlarms = aItem.getAlarms({});
-			if ((itemAlarms.length > 0) && (aItem.startDate.compare(this.reminderDueBy) == 0)) {
+			if ((itemAlarms.length > 0) && (aItem.reminderSignalTime) && (aItem.startDate.compare(aItem.reminderSignalTime) >= 0)) {
 				this.setProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime, this.reminderSignalTime.getInTimezone(cal.UTC()).icalString);
 			}
 		}
@@ -2920,7 +2950,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 			// Alarm was changed.
 			if (this._newAlarm === null) {
 				// Alarm was removed.
-				//this.logInfo("checkAlarmChange: this._newAlarm !== undefined and this._newAlarm === null.");
+				dump("checkAlarmChange: alarm is removed. this._newAlarm !== undefined and this._newAlarm === null.\n");
 				reminderIsSetChanged = "false";
 			}
 			else {
@@ -2934,7 +2964,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 					var alarm = alarms[0];
 
 					if ((!this._alarm) || (this._alarm.offset != alarm.offset) || (this.className == "mivExchangeTodo")) {
-//dump(" We have alarms."+alarms[0].alarmDate+", alarm:"+alarm+", alarm.offset:"+alarm.offset+", X-MOZ-SNOOZE-TIME:"+this.getProperty("X-MOZ-SNOOZE-TIME")+"\n");
+dump(" We have alarms."+alarms[0].alarmDate+", alarm:"+alarm+", alarm.offset:"+alarm.offset+", X-MOZ-SNOOZE-TIME:"+this.getProperty("X-MOZ-SNOOZE-TIME")+"\n");
 						// Exchange alarm is always an offset to the start.
 						// A Todo always has an alarm.related of ALARM_RELATED_ABSOLUTE
 						// So referenceDate is set there.
@@ -2989,73 +3019,188 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 		}
 		else {
+dump("no new alarm or we are recurringmaster. this.calendarItemType:"+this.calendarItemType+"\n");
 			if (this.calendarItemType == "RecurringMaster") {
 				// Check if we are passed last occurrence or exception
+dump("value of this._xMozSnoozeTime:"+this._xMozSnoozeTime+", this._newXMozSnoozeTime:"+this._newXMozSnoozeTime+", this._newAlarmLastAck:"+this._newAlarmLastAck+"\n");
 				if (!this._newXMozSnoozeTime) {
-					var nextOccurrence;
-					if (this.recurrenceInfo) {
-						if (this.reminderDueBy) {
-							//this.logInfo("before 3: We have a reminderDueBy");
-							nextOccurrence = this.recurrenceInfo.getNextOccurrence(this.reminderDueBy);
+					if (this._newAlarmLastAck) {
+						// Alarm was not snoozed but dismissed.
+						//Try to find which occurrence was dismissed and if it is an exception.
+						var dismissedException = null;
+						for (var index in this._exceptions) {
+							if (this._exceptions[index].reminderIsSet) {
+								var minutes = this._exceptions[index].reminderMinutesBeforeStart * -1;
+								var tmpDuration = cal.createDuration();
+								tmpDuration.minutes = minutes;
+								var exceptionAlarmTime = this._exceptions[index].startDate.clone();
+	dump("exceptionAlarmTime:"+exceptionAlarmTime+", tmpDuration:"+tmpDuration+"\n");
+								exceptionAlarmTime.addDuration(tmpDuration);
+								var exceptionAlarmTimeStr = exceptionAlarmTime.getInTimezone(cal.UTC()).icalString;
+	dump("exceptionAlarmTimeStr:"+exceptionAlarmTimeStr+", tmpDuration:"+tmpDuration+"\n");
+	dump("this._exceptions[index].alarmLastAck:"+this._exceptions[index].alarmLastAck+", tmpDuration:"+tmpDuration+"\n");
+								if (this._exceptions[index].alarmLastAck.compare(this._newAlarmLastAck) < 0) {
+									// found the exception for which the alarm was dismissed.
+									dismissedException = this._exceptions[index];
+									break;
+								}
+							}
+						}
+
+						if (dismissedException) {
+							// Going to dismiss the exception.
+							dump("Found exception for which this alarm was dismissed. Going to change exception\n");
+							var newException = dismissedException.clone();
+							newException.clearAlarms;
+							newException.alarmLastAck = this._newAlarmLastAck;
+							this.calendar.modifyItem(newException, dismissedException, null);
+							return;
 						}
 						else {
-							//this.logInfo("before 3: We do not have a reminderDueBy we will use now.");
-							nextOccurrence = this.recurrenceInfo.getNextOccurrence(cal.now());
+
+							var foundNext = null;
+							var nextOccurrence = this.recurrenceInfo.getNextOccurrence(this._newAlarmLastAck);
+							while ((foundNext === null) && (nextOccurrence)) {
+
+								// Do we have a reminder for this occurrence.
+	dump("nextOccurrence:"+nextOccurrence+"\n");
+								if (nextOccurrence) {
+		dump("nextOccurrence.reminderIsSet:"+nextOccurrence.reminderIsSet+"\n");
+									// Lets see what the alarmtime is for this occurrence. In the past or in the future.
+									if (nextOccurrence.reminderIsSet) {
+		dump("nextOccurrence.reminderMinutesBeforeStart:"+nextOccurrence.reminderMinutesBeforeStart+"\n");
+										var minutes = nextOccurrence.reminderMinutesBeforeStart * -1;
+										var tmpDuration = cal.createDuration();
+										tmpDuration.minutes = minutes;
+				dump("after 2: nextOccurrence.startDate:"+nextOccurrence.startDate+", nextOccurrence.reminderMinutesBeforeStart:"+nextOccurrence.reminderMinutesBeforeStart+ ", reminderMinutesBeforeStart:"+minutes+"\n");
+										var newAlarmTime = nextOccurrence.startDate.clone();
+	dump("newAlarmTime:"+newAlarmTime+", tmpDuration:"+tmpDuration+"\n");
+	try{
+										newAlarmTime.addDuration(tmpDuration);
+	dump("newAlarmTime:"+newAlarmTime+"\n");
+										if (newAlarmTime.compare(cal.now()) > 0) {
+											foundNext = newAlarmTime.getInTimezone(cal.UTC()).icalString;
+										}
+	}catch(err){dump("err:"+err+"\n");}
+									}
+								
+	dump("foundNext:"+foundNext+"\n");
+									if (foundNext === null) {
+										nextOccurrence = this.recurrenceInfo.getNextOccurrence(nextOccurrence.endDate);
+									}
+								}
+							}
+
+							if (foundNext !== null) {
+								dump("Found new occurrence with alarm:"+nextOccurrence.startDate+", newAlarmTime:"+foundNext+"\n");
+								this.setProperty("X-MOZ-SNOOZE-TIME-"+nextOccurrence.recurrenceId.nativeTime, newSnoozeTimeStr);
+							}
+							else {
+								dump("checkAlarmChange: We do not have a nextOccurrence and reminder was set. Going to tunr it off.");
+								if (this.reminderIsSet) {
+									reminderIsSetChanged = "false";
+								}
+							}
 						}
 					}
-	//				var nextOccurrence = this.recurrenceInfo.getNextOccurrence(this._reminderSignalTime);
-	//this.logInfo("after 1");
-					if ((! nextOccurrence) && (this.reminderIsSet)) {
-						//this.logInfo("checkAlarmChange: We do not have a nextOccurrence and reminder was set. Going to tunr it off.");
-						reminderIsSetChanged = "false";
-					}
 					else {
-						if (nextOccurrence) {
-							var minutes = nextOccurrence.reminderMinutesBeforeStart * -1;
-							var tmpDuration = cal.createDuration();
-							tmpDuration.minutes = minutes;
-	//this.logInfo("after 2: nextOccurrence.startDate:"+nextOccurrence.startDate+", nextOccurrence.reminderMinutesBeforeStart:"+nextOccurrence.reminderMinutesBeforeStart+ ", reminderMinutesBeforeStart:"+minutes);
-							nextOccurrence.startDate.addDuration(tmpDuration);
-							this.setProperty("X-MOZ-SNOOZE-TIME-"+nextOccurrence.recurrenceId.nativeTime, nextOccurrence.startDate.getInTimezone(cal.UTC()).icalString);					}
+
+						var nextOccurrence;
+						if (this.recurrenceInfo) {
+						
+							if (this.reminderDueBy) {
+								dump("before 3: We have a reminderDueBy\n");
+								nextOccurrence = this.recurrenceInfo.getNextOccurrence(this.reminderDueBy);
+							}
+							else {
+								dump("before 3: We do not have a reminderDueBy we will use now.\n");
+								nextOccurrence = this.recurrenceInfo.getNextOccurrence(cal.now());
+							}
+						}
+		//				var nextOccurrence = this.recurrenceInfo.getNextOccurrence(this._reminderSignalTime);
+		dump("after 1: nextOccurrence.reminderIsSet:"+nextOccurrence.reminderIsSet+"\n");
+						if ((! nextOccurrence) && (this.reminderIsSet)) {
+							dump("checkAlarmChange: We do not have a nextOccurrence and reminder was set. Going to tunr it off.");
+							reminderIsSetChanged = "false";
+						}
+						else {
+							if (nextOccurrence) {
+								var minutes = nextOccurrence.reminderMinutesBeforeStart * -1;
+								var tmpDuration = cal.createDuration();
+								tmpDuration.minutes = minutes;
+		dump("after 2: nextOccurrence.startDate:"+nextOccurrence.startDate+", nextOccurrence.reminderMinutesBeforeStart:"+nextOccurrence.reminderMinutesBeforeStart+ ", reminderMinutesBeforeStart:"+minutes+"\n");
+								var newSnoozeTime = nextOccurrence.startDate.clone();
+								newSnoozeTime.addDuration(tmpDuration);
+								var newSnoozeTimeStr = newSnoozeTime.getInTimezone(cal.UTC()).icalString;
+								this.setProperty("X-MOZ-SNOOZE-TIME-"+nextOccurrence.recurrenceId.nativeTime, newSnoozeTimeStr);
+							}
+						}
 					}
 				}
 				else {
-	//this.logInfo("after 3: alarm was snoozed to new time and not dismissed.");
+	dump("after 3: alarm was snoozed to new time and not dismissed.\n");
 				}
 			}
 		}
 
 		// Alarm snooze
 		if (this._newXMozSnoozeTime) {
+dump("We have a this._newXMozSnoozeTime:"+this._newXMozSnoozeTime+"\n");
 			if (this._newAlarmLastAck) {
-					if (this._newXMozSnoozeTime) {
-						//this.logInfo("checkAlarmChange: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime);
-						var newSnoozeTime = cal.createDateTime(this._newXMozSnoozeTime);
-					}
-					else {
-						//this.logInfo("checkAlarmChange: this._newXMozSnoozeTime:"+this._xMozSnoozeTime);
-						var newSnoozeTime = cal.createDateTime(this._xMozSnoozeTime);
-					}
-					newSnoozeTime = newSnoozeTime.getInTimezone(cal.UTC());
-					const MAPI_PidLidReminderSignalTime = "34144";
+dump("We have a this._newAlarmLastAck.\n");
+				//Try to find which occurrence was snoozed and if it is an exception.
 
-					this.addSetItemField(updates, "ExtendedFieldURI", cal.toRFC3339(newSnoozeTime), 
-							{ DistinguishedPropertySetId: "Common",
-							  PropertyId: MAPI_PidLidReminderSignalTime,
-							  PropertyType: "SystemTime"} );
+				if (this._lastXMozSnoozeTimeNativeId) {
+					var dismissedException = null;
+					for (var index in this._exceptions) {
+						if (this._exceptions[index].recurrenceId.nativeTime == this._lastXMozSnoozeTimeNativeId) {
+							// found the exception for which the alarm was snoozed.
+							dismissedException = this._exceptions[index];
+							break;
+						}
+					}
+
+					if (dismissedException) {
+						// Going to snooze the exception.
+						dump("Found exception for which this alarm was dismissed. Going to change exception\n");
+						var newException = dismissedException.clone();
+						newException.setProperty("X-MOZ-SNOOZE-TIME",this._newXMozSnoozeTime);
+						newException.alarmLastAck = this._newAlarmLastAck;
+try{
+						this.calendar.modifyItem(newException, dismissedException, null);
+}catch(err){dump("!!!! err:"+err+"\n");}
+						return;
+					}
+				}
+
+				if (this._newXMozSnoozeTime) {
+					//this.logInfo("checkAlarmChange: this._newXMozSnoozeTime:"+this._newXMozSnoozeTime);
+					var newSnoozeTime = cal.createDateTime(this._newXMozSnoozeTime);
+				}
+				else {
+					//this.logInfo("checkAlarmChange: this._newXMozSnoozeTime:"+this._xMozSnoozeTime);
+					var newSnoozeTime = cal.createDateTime(this._xMozSnoozeTime);
+				}
+				newSnoozeTime = newSnoozeTime.getInTimezone(cal.UTC());
+				const MAPI_PidLidReminderSignalTime = "34144";
+
+				this.addSetItemField(updates, "ExtendedFieldURI", cal.toRFC3339(newSnoozeTime), 
+						{ DistinguishedPropertySetId: "Common",
+						  PropertyId: MAPI_PidLidReminderSignalTime,
+						  PropertyType: "SystemTime"} );
 			}
 			else {
-				//dump("------------ user snoozed (2) but how?????????????.\n");
+				dump("------------ user snoozed (2) but how?????????????.\n");
 				// This happens when someone changes the recurrence info on a master.
 			}
 		}
 		else {
 			if (this._newAlarmLastAck) {
 				reminderIsSetChanged = "false";
-				//this.logInfo("checkAlarmChange: this._xMozSnoozeTime == this._newXMozSnoozeTime and this._newAlarmLastAck.");
+				dump("checkAlarmChange: this._xMozSnoozeTime == this._newXMozSnoozeTime and this._newAlarmLastAck.\n");
 			}
 			else {
-				//dump("---------- xmozsnoozetime DID not change. X-MOZ-SNOOZE-TIME:"+this.getProperty("X-MOZ-SNOOZE-TIME")+" but alarmLastAck was not changed. What did user do????.\n");
+				dump("---------- xmozsnoozetime DID not change. X-MOZ-SNOOZE-TIME:"+this.getProperty("X-MOZ-SNOOZE-TIME")+" but alarmLastAck was not changed. What did user do????.\n");
 				// User probably changed some other field.
 			}
 		}
@@ -3259,7 +3404,21 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	tryToSetDateValueUTC: function _tryToSetDateValueUTC(ewsvalue, aDefault)
 	{
 		if ((ewsvalue) && (ewsvalue.toString().length)) {
-			return cal.fromRFC3339(ewsvalue, this.globalFunctions.ecTZService().UTC);
+			if (ewsvalue.indexOf("Z") > -1) {
+				return cal.fromRFC3339(ewsvalue, this.globalFunctions.ecTZService().UTC);
+			}
+			else {
+				return cal.fromRFC3339(ewsvalue, this.globalFunctions.ecDefaultTimeZone()).getInTimezone(this.globalFunctions.ecTZService().UTC);
+			}
+		}
+
+		return aDefault;
+	},
+
+	tryToSetDateValueDefaultTZ: function _tryToSetDateValueDefaultTZ(ewsvalue, aDefault)
+	{
+		if ((ewsvalue) && (ewsvalue.toString().length)) {
+			return cal.fromRFC3339(ewsvalue, this.globalFunctions.ecDefaultTimeZone());
 		}
 
 		return aDefault;

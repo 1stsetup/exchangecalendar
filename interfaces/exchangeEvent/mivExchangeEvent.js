@@ -519,7 +519,7 @@ mivExchangeEvent.prototype = {
 			this.checkAlarmChange(updates);
 		}
 
-		//dump("updates:"+updates.toString()+"\n");
+		dump("updates:"+updates.toString()+"\n");
 		return updates;
 	},
 

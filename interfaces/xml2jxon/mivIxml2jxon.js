@@ -30,27 +30,27 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
 function typeString(o) {
-  if (typeof o != 'object')
-    return typeof o;
+	if (typeof o != 'object')
+		return typeof o;
 
-  if (o === null)
-      return "null";
+	if (o === null)
+		return "null";
   //object, array, function, date, regexp, string, number, boolean, error
-  var internalClass = Object.prototype.toString.call(o)
+	var internalClass = Object.prototype.toString.call(o)
                                                .match(/\[object\s(\w+)\]/)[1];
-  return internalClass.toLowerCase();
+	return internalClass.toLowerCase();
 }
 
-var isArray = function(obj) {
-        return typeString(obj) == "array";
-    }
+function isArray(obj) {
+	return (typeString(obj) == "array");
+}
 
 function isInList(inArray, inStr)
 {
 	return (inArray[inStr] !== undefined);
 }
 
-var specialChars1 = {	" ": true, 
+const specialChars1 = {	" ": true, 
 			"\n" : true, 
 			"\r" : true, 
 			"\t" : true };
