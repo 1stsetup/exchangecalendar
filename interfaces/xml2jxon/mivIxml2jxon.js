@@ -404,7 +404,8 @@ mivIxml2jxon.prototype = {
 		else {if (this.nameSpace) {ns = this.nameSpace;}
 			else {ns = "_default_";}
 		}
-		if ((c) && (c != "")) {var xml = "<"+ns+tsep+a+">"+convertSpecialCharatersToXML(c)+"</"+ns+tsep+a+">"}
+		if (c === false) {c = "false";}
+		if ((c !== undefined) && (c !== null) && (c != "")) {var xml = "<"+ns+tsep+a+">"+convertSpecialCharatersToXML(c)+"</"+ns+tsep+a+">"}
 		else {var xml = "<"+ns+tsep+a+"/>"}
 		var r = new mivIxml2jxon(xml,0, this);
 		return r;
