@@ -55,12 +55,6 @@ const specialChars1 = {	" ": true,
 			"\r" : true, 
 			"\t" : true };
 
-function xmlErrorObject(aName, aMessage, aCode) {
-	this.name = aName;
-	this.message = aMessage;
-	this.code = aCode;
-}
-
 function findCharacter(aString, aStartPos, aChar)
 {
 	if (!aString) return -1;
@@ -248,7 +242,7 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 	this.content = {};
 	this.itemCount = 0;
 	this.messageLength = 0;
-	this._closed = false;
+	this._c1 = false;
 	this.nameSpaces = {};
 	this.tags = {};
 	this.attr = {};
@@ -257,42 +251,20 @@ function mivIxml2jxon(aXMLString, aStartPos, aParent) {
 	if (aXMLString) {this.processXMLString(aXMLString, aStartPos, aParent);}
 }
 
-var xml2jxonGUID = "d7165a60-7d64-42b2-ac48-6ccfc0962abb";
-
+const xguid = "d7165a60-7d64-42b2-ac48-6ccfc0962abb";
 const tagSeparator = ":";
 
 mivIxml2jxon.prototype = {
 	QueryInterface: XPCOMUtils.generateQI([Ci.mivIxml2jxon,Ci.nsIClassInfo,Ci.nsISupports]),
 	getHelperForLanguage: function _getHelperForLanguage(language) {return null;},
-	getInterfaces: function _getInterfaces(count)	{
-		var ifaces = [Ci.mivIxml2jxon,Ci.nsIClassInfo,Ci.nsISupports];
-		count.value = ifaces.length;
-		return ifaces;
-	},
+	getInterfaces: function _getInterfaces(c){c.value = 3;return [Ci.mivIxml2jxon,Ci.nsIClassInfo,Ci.nsISupports];},
 	classDescription: "XML2JXON",
-	classID: components.ID("{"+xml2jxonGUID+"}"),
+	classID: components.ID("{"+xguid+"}"),
 	contractID: cId,
 	flags: Ci.nsIClassInfo.THREADSAFE,
 	implementationLanguage: Ci.nsIProgrammingLanguage.JAVASCRIPT,
-	get closed(){return this._closed;},
-	set closed(aValue){this._closed = aValue;},
-	xmlError: function _xmlError(aErrorID){
-		switch (aErrorID) {
-			case Ci.mivIxml2jxon.ERR_MISSING_SPECIAL_TAG: 
-				return new xmlErrorObject("ERR_MISSING_SPECIAL_TAG","A special tag like '?' is missing",aErrorID);
-			case Ci.mivIxml2jxon.ERR_INVALID_TAG: 
-				return new xmlErrorObject("ERR_INVALID_SPECIAL_TAG", "Tag is invalid", aErrorID);
-			case Ci.mivIxml2jxon.ERR_INVALID_SPECIAL_TAG: 
-				return new xmlErrorObject("ERR_INVALID_SPECIAL_TAG", "Special Tag is invalid", aErrorID);
-			case Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG: 
-				return new xmlErrorObject("ERR_WRONG_CLOSING_TAG", "Found wrong closing tag. Expected another.", aErrorID);
-			case Ci.mivIxml2jxon.ERR_WRONG_ATTRIBUTE_SEPARATOR: 
-				return new xmlErrorObject("ERR_WRONG_ATTRIBUTE_SEPARATOR", "Found wrong attribute separator. Expected '=' character.", aErrorID);
-			case Ci.mivIxml2jxon.ERR_ATTRIBUTE_VALUE_QUOTES: 
-				return new xmlErrorObject("ERR_ATTRIBUTE_VALUE_QUOTES", "Found error in attribute value quotes.", aErrorID);
-		}
-	},
-
+	get closed(){return this._c1;},
+	set closed(a){this._c1 = a;},
 	addToContent: function _addToContent(aValue){
 		if ((this.itemCount > 0) && (trim(aValue) == "")) {return;}
 		this.content[this.itemCount] = aValue;
@@ -307,7 +279,7 @@ mivIxml2jxon.prototype = {
 
 
 		var splitPos = aValue.indexOf("=");
-		if (splitPos == -1) {throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_ATTRIBUTE_SEPARATOR);}
+		if (splitPos == -1) {throw Ci.mivIxml2jxon.ERR_WRONG_ATTRIBUTE_SEPARATOR;}
  
 		// trim left and right.
 		var attributeName = trim(aValue.substr(0, splitPos));
@@ -321,7 +293,7 @@ mivIxml2jxon.prototype = {
 				attributeValue = attributeValue.substr(1, valueLength-2);
 			}
 			else {
-				throw this.xmlError(Ci.mivIxml2jxon.ERR_ATTRIBUTE_VALUE_QUOTES);
+				throw Ci.mivIxml2jxon.ERR_ATTRIBUTE_VALUE_QUOTES;
 			}
 		}
 
@@ -847,14 +819,14 @@ try{
 				pos++;
 				if (aString.substr(pos, 4) == "xml ") {
 					var tmpPos = findString(aString, pos, "?>");
-					if (tmpPos == -1) {throw this.xmlError(Ci.mivIxml2jxon.ERR_INVALID_SPECIAL_TAG);}
+					if (tmpPos == -1) {throw Ci.mivIxml2jxon.ERR_INVALID_SPECIAL_TAG;}
 					else {
 						this.processXMLString(aString, tmpPos+2, null);
 						this.closed = true; 
 						return;						
 					}
 				}
-				else {throw this.xmlError(Ci.mivIxml2jxon.ERR_MISSING_SPECIAL_TAG);}
+				else {throw Ci.mivIxml2jxon.ERR_MISSING_SPECIAL_TAG;}
 			}
 			else {
 				if ( (pos < strLength) && (tmpChar == "/")) {
@@ -876,11 +848,11 @@ try{
 								this.closed = true;
 								return;
 							}
-							else {throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG);}
+							else {throw Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG;}
 						}
-						else {throw this.xmlError(Ci.mivIxml2jxon.ERR_INVALID_TAG);}
+						else {throw Ci.mivIxml2jxon.ERR_INVALID_TAG;}
 					}
-					else {throw this.xmlError(Ci.mivIxml2jxon.ERR_INVALID_TAG);}
+					else {throw Ci.mivIxml2jxon.ERR_INVALID_TAG;}
 				}
 				else {if (pos < strLength) {
 						var tmpPos = findCharacter(aString, pos, ">");
@@ -948,10 +920,10 @@ try{
 										this.lastPos = tmpStart+1;
 										return;
 									}
-									else {if (!((tmpStart < strLength) && (tmpChar == ">"))) {throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG);}}
+									else {if (!((tmpStart < strLength) && (tmpChar == ">"))) {throw Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG;}}
 
 								}
-								else {if (!((tmpStart < strLength) && (tmpChar == ">"))) {throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG);}}
+								else {if (!((tmpStart < strLength) && (tmpChar == ">"))) {throw Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG;}}
 							}
 							var tmpChild = null;
 							while (((!tmpChild) || (!tmpChild.closed)) && (tmpPos)) {
@@ -963,9 +935,9 @@ try{
 							tmpChild = null;
 							this.lastPos = tmpPos;
 						}
-						else {throw this.xmlError(Ci.mivIxml2jxon.ERR_INVALID_TAG);}
+						else {throw Ci.mivIxml2jxon.ERR_INVALID_TAG;}
 					}
-					else {throw this.xmlError(Ci.mivIxml2jxon.ERR_INVALID_TAG);}
+					else {throw Ci.mivIxml2jxon.ERR_INVALID_TAG;}
 				}
 			}
 		}
