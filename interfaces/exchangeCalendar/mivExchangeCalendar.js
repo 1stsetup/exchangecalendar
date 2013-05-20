@@ -1336,6 +1336,19 @@ dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:
 			return null;
 		}
 
+		if ((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) {
+			dump("item was changed from single into recurring.\n");
+			if (this.debug) this.logInfo("modifyItem item was changed from single into recurring.");
+	        	this.notifyOperationComplete(aListener,
+	        	                             Cr.NS_OK,
+	        	                             Ci.calIOperationListener.MODIFY,
+	        	                             aOldItem.id,
+	        	                             aOldItem);
+			this.addItem(aNewItem, null);
+			this.deleteItem(aOldItem, null);
+			return null;
+		}
+
 	        if (!aNewItem) {
 	            throw Cr.NS_ERROR_INVALID_ARG;
 	        }

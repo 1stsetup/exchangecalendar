@@ -1104,15 +1104,48 @@ dump("set alarmLastAck 3:"+aValue+"\n");
 
 	set recurrenceInfo(aValue)
 	{
-		this.logInfo("set recurrenceInfo 1: title:"+this.title+", aValue:"+aValue, 1, 2);
+		//dump("set recurrenceInfo 1: title:"+this.title+", aValue:"+aValue+"\n");
 		if (!this._recurrenceInfo) this.recurrenceInfo;
 
 		if (aValue) {
-			this._newRecurrenceInfo = aValue.clone();
-//			this._newRecurrenceInfo = aValue;
+			// Lets see if something changed.
+			var infoChanged = false;
+			if (this._calEvent.recurrenceInfo) {
+				if (this._calEvent.recurrenceInfo.countRecurrenceItems() == aValue.countRecurrenceItems()) 
+				{
+					var oldRecurrenceItems = this._calEvent.recurrenceInfo.getRecurrenceItems({});
+					var newRecurrenceItems = aValue.getRecurrenceItems({});
+					// See if the oldReccurrenceItems exists in the new
+					var allOldExist = true;
+					for each(var oldRecurrenceItem in oldRecurrenceItems) {
+						var oldExists = false;
+						for each(var newRecurrenceItem in newRecurrenceItems) {
+							if (newRecurrenceItem.icalString == oldRecurrenceItem.icalString) {
+								oldExists = true;
+								break;
+							}
+						}
+						if (!oldExists) {
+							allOldExist = false;
+							break;
+						}
+					}
+					if (!allOldExist) {
+						infoChanged = true;
+					}
+				}
+				else {
+					infoChanged = true;
+				}
+			}
+			if (infoChanged) {
+				this._newRecurrenceInfo = aValue.clone();
+			}
 		}
 		else {
-			this._newRecurrenceInfo = aValue;
+			if (this._calEvent.recurrenceInfo) {
+				this._newRecurrenceInfo = aValue;
+			}
 		}
 
 		if (aValue) {
@@ -2946,7 +2979,8 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	{
 		var reminderIsSetChanged = undefined;
 		// Alarm
-		if ((this._newAlarm !== undefined) && (this.calendarItemType != "RecurringMaster")) {
+//		if ((this._newAlarm !== undefined) && (this.calendarItemType != "RecurringMaster")) {
+		if (this._newAlarm !== undefined) {
 			// Alarm was changed.
 			if (this._newAlarm === null) {
 				// Alarm was removed.
