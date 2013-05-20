@@ -6993,9 +6993,11 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 	{
 		if (this.updateCalendarItems.length > 0) {
 			var tmpItems = [];
-			var updateRecord = this.updateCalendarItems[0];
+//			var updateRecord = this.updateCalendarItems[0];
+			var updateRecord = this.updateCalendarItems.shift();
+
 			tmpItems.push(updateRecord.item);
-			this.updateCalendarItems.shift();
+			//this.updateCalendarItems.shift();
 //			this.updateCalendar2(updateRecord.request, tmpItems, updateRecord.doNotify);
 			this.updateCalendar2(updateRecord.request, tmpItems, true);
 			tmpItems = null;
@@ -7014,15 +7016,15 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 	updateCalendar2: function _updateCalendar2(erGetItemsRequest, aItems, doNotify)
 	{
 		//if (this.debug) this.logInfo("updateCalendar");
-		var items = [];
-		var convertedItems = [];
+//		var items = [];
+//		var convertedItems = [];
 		if (this.debug) this.logInfo("updateCalendar: We have '"+aItems.length+"' items to update in calendar.");
 
 		for (var index in aItems) {
 
 			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify);
 			if (item) {
-				convertedItems.push(item);
+				//convertedItems.push(item);
 				if (!this.itemCache[item.id]) {
 					// This is a new unknown item
 					this.itemCache[item.id] = item;
