@@ -53,7 +53,7 @@
 			oncommand="tmpToolsMenu.showAboutMemory(false);" hidden="false"/>
 		<menuitem id="exchangecalendar-tools-aboutMemoryVerbose" label="about:memory?verbose"
 			oncommand="tmpToolsMenu.showAboutMemory(true);" hidden="false"/>
-		<menuitem id="exchangecalendar-tools-xml2jxontest" label="XML2JXON tes"
-			oncommand="tmpToolsMenu.showXML2JXonTest();" hidden="false"/>
+	<!--	<menuitem id="exchangecalendar-tools-xml2jxontest" label="XML2JXON tes"
+			oncommand="tmpToolsMenu.showXML2JXonTest();" hidden="false"/> -->
 	</menupopup>
 </overlay>

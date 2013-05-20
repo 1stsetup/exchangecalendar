@@ -788,6 +788,7 @@ calExchangeCalendar.prototype = {
 			this._disabled = aValue;
 			this.prefs.setBoolPref("disabled", aValue);
 			if ((aValue) && (oldDisabledState != this._disabled)) {
+dump("Calendar is set to disabled\n");
 				this.resetCalendar();
 			}
 			if ((!this._disabled) && (oldDisabledState != this._disabled)) {
@@ -1233,6 +1234,7 @@ if (this.debug) this.logInfo("singleModified doNotify");
 				this.notifyTheObservers("onModifyItem", [aModifiedSingle, this.itemCache[aModifiedSingle.id]]);
 			}
 			this.itemCache[aModifiedSingle.id].exchangeData = null;
+			this.itemCache[aModifiedSingle.id] = null;
 			delete this.itemCache[aModifiedSingle.id];
 			this.itemCache[aModifiedSingle.id] = aModifiedSingle;
 		}
@@ -1579,6 +1581,8 @@ dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:
 							if (this.debug) this.logInfo("modifyItem: changed:"+String(changes));
 
 							this.removeChildrenFromMaster(this.recurringMasterCache[aOldItem.uid]);
+							this.itemCache[aOldItem.id].exchangeData = null;
+							this.itemCache[aOldItem.id] = null;
 							delete this.itemCache[aOldItem.id];
 							delete this.recurringMasterCache[aOldItem.uid];
 
@@ -3728,16 +3732,22 @@ catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
 
 		if (this.getProperty("disabled")) {
 			// Remove all items in cache from calendar.
+dump("Calendar is set to disabled. We are going to release the memory.\n");
 			if (this.debug) this.logInfo("Calendar is disabled. So we are done resetting.");
+			this.observers.notify("onStartBatch");
 			for (var index in this.itemCache) {
 				if (this.itemCache[index]) {
 					this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
-					this.itemCache[index]= null;
+					this.itemCache[index].exchangeData = null;
+					this.itemCache[index] = null;
+					delete this.itemCache[index];
 				}
 			}
+			this.observers.notify("onEndBatch");
 			this.itemCache = [];
 			this.recurringMasterCache = [];
 			this.doReset = false;
+dump("Calendar is set to disabled. Released memory.\n");
 		}
 		else {
 			this.performReset();
@@ -3768,11 +3778,16 @@ catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
 		this.firstSyncDone = false;
 		
 		// Remove all items in cache from calendar.
+		this.observers.notify("onStartBatch");
 		for (var index in this.itemCache) {
 			if (this.itemCache[index]) {
 				this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
+				this.itemCache[index].exchangeData = null;
+				this.itemCache[index] = null;
+				delete this.itemCache[index];
 			}
 		}
+		this.observers.notify("onEndBatch");
 
 		// Reset caches.
 		this.itemCache = [];
@@ -6185,12 +6200,16 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 		for each(var child in aMaster.getExceptions({})) {
 			aMaster.removeException(child);
 			this.notifyTheObservers("onDeleteItem", [child]);
+			this.itemCache[child.id].exchangeData = null;
+			this.itemCache[child.id] = null;
 			delete this.itemCache[child.id];
 		}
 
 		for each(var child in aMaster.getOccurrences({})) {
 			aMaster.removeOccurrence(child);
 			this.notifyTheObservers("onDeleteItem", [child]);
+			this.itemCache[child.id].exchangeData = null;
+			this.itemCache[child.id] = null;
 			delete this.itemCache[child.id];
 		}
 
@@ -6528,6 +6547,8 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 					if (this.itemCache[item.id]) {
 						if (this.debug) this.logInfo("This master also existed as an normal item. Probably an upgrade from single to master.");
 						this.notifyTheObservers("onDeleteItem", [this.itemCache[item.id]]);
+						this.itemCache[item.id].exchangeData = null;
+						this.itemCache[item.id] = null;
 						delete this.itemCache[item.id];
 					}
 
@@ -7221,6 +7242,8 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 							if (this.debug) this.logInfo("This is a Occurrence or Exception to delete. THIS SHOULD NEVER HAPPEN.");
 						}
 						this.notifyTheObservers("onDeleteItem", [item]);
+						this.itemCache[item.id].exchangeData = null;
+						this.itemCache[item.id] = null;
 						delete this.itemCache[item.id];
 					}
 					else {
@@ -7647,11 +7670,14 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		this.weAreSyncing = false;
 		
 		// Remove all items in cache from calendar.
-/*		for (var index in this.itemCache) {
+		for (var index in this.itemCache) {
 			if (this.itemCache[index]) {
-				this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
+				//this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
+				this.itemCache[index].exchangeData = null;
+				this.itemCache[index] = null;
+				delete this.itemCache[index];
 			}
-		}  // This is removed to speed up shutdown */
+		} 
 
 		// Reset caches.
 		this.itemCache = [];
