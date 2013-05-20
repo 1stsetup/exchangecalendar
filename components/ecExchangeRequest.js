@@ -47,6 +47,8 @@ Cu.import("resource://calendar/modules/calUtils.jsm");
 
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 
+Cu.import("resource://interfaces/xml2jxon/mivIxml2jxon.js");
+
 var EXPORTED_SYMBOLS = ["ExchangeRequest", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponseStr1", "nsAutodiscoverResponseStr2", "nsAutodiscover2010Str", "nsErrors", "nsWSAStr", "nsXSIStr", "xml_tag"];
 
 var xml_tag = '<?xml version="1.0" encoding="utf-8"?>\n';
@@ -591,22 +593,11 @@ catch(err){
 
 		var xml = xmlReq.responseText; // bug 270553
 
-		// It appears that in IIS7 it is possible the xml response is send in chunks with a length header.
-		// Try to detect this.
-
-// Removed as the reporter had a strange situation in place which has been resolved. Could not reproduce.
-/*		var header = xml.substr(0,6);
-		if (header.indexOf("\r\n") > -1) {
-			if (this.debug) this.logInfo("onLoad: Looks like we have a chunked response. Will try to unchunk it.");
-			xml = this.unchunk(xml);
-		}*/
-
 // Removed following as this is no longer a problem as we are not using E4X anymore.
 //		xml = xml.replace(/&#x10;/g, ""); // BUG 61 remove hexadecimal code 0x10. It will fail in xml conversion.
 
 		try {
-		    var newXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
-				       .createInstance(Ci.mivIxml2jxon);
+			var newXML = new mivIxml2jxon('', 0, null);
 		}
 		catch(exc) { if (this.debug) this.logInfo("createInstance error:"+exc);}
 
@@ -616,8 +607,6 @@ catch(err){
 			newXML.addNameSpace("t", nsTypesStr);
 			newXML.addNameSpace("a1", nsAutodiscoverResponseStr1);
 			newXML.addNameSpace("a2", nsAutodiscoverResponseStr2);
-			//newXML.addNameSpace("a3", nsAutodiscover2010Str);
-			//newXML.addNameSpace("e", nsErrors);
 			newXML.processXMLString(xml, 0, null);
 		}
 		catch(exc) { if (this.debug) this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
@@ -932,7 +921,7 @@ catch(err){
 	{
 		this.originalReq = aReq;
 
-		var msg = this.globalFunctions.xmlToJxon('<nsSoap:Envelope xmlns:nsSoap="'+nsSoapStr+'" xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var msg = new mivIxml2jxon('<nsSoap:Envelope xmlns:nsSoap="'+nsSoapStr+'" xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>', 0, null);
 
 		this.version = this.exchangeStatistics.getServerVersion(this.mArgument.serverUrl);
 		
@@ -952,11 +941,11 @@ catch(err){
 				//header.addChildTag("TimeZoneContext", "nsTypes", null).addChildTagObject(exchTimeZone.timeZone);
 
 				if (this.version.indexOf("2007") > -1) {
-					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:TimeZoneDefinition xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var tmpTimeZone = new mivIxml2jxon('<t:TimeZoneDefinition xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>',0,null);
 					tmpTimeZone.setAttribute("Id",exchTimeZone.id); 
 				}
 				else {
-					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:TimeZoneDefinition xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var tmpTimeZone = new mivIxml2jxon('<t:TimeZoneDefinition xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>',0,null);
 					tmpTimeZone.setAttribute("Name",exchTimeZone.name); 
 					tmpTimeZone.setAttribute("Id",exchTimeZone.id); 
 				}

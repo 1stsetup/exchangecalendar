@@ -31,7 +31,7 @@ Cu.import("resource://calendar/modules/calProviderUtils.jsm");
 
 Cu.import("resource://exchangecalendar/erGetTimeZones.js");
 
-//Cu.import("resource://interfaces/exchangeTimeZones//mivExchangeTimeZone.js");
+Cu.import("resource://interfaces/xml2jxon/mivIxml2jxon.js");
 
 function mivExchangeTimeZones() {
 	this._timeZones = {};
@@ -51,7 +51,7 @@ function mivExchangeTimeZones() {
 	this.exchangeToLightningMemory = {};
 
 	// load timezone file from resource. This is for Exchange server version before 2010.
-//	this.load_timezonedefinitions_file();
+	this.load_timezonedefinitions_file();
 }
 
 var PREF_MAINPART = 'extensions.1st-setup.exchangecalendar.timezones.';
@@ -442,9 +442,7 @@ mivExchangeTimeZones.prototype = {
 		  
 		istream.close();
 
-		var timezonedefinitions = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
-						.createInstance(Ci.mivIxml2jxon);
-		timezonedefinitions.processXMLString(lines, 0, null);
+		var timezonedefinitions = new mivIxml2jxon(lines, 0, null);
 
 		this.addExchangeTimeZones(timezonedefinitions, "Exchange2007_SP1");
 	},
