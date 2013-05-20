@@ -227,9 +227,6 @@ function trim(aValue)
 	return aValue.substr(leftPos, rightPos - leftPos + 1);
 }
 
-var globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
-			.getService(Ci.mivFunctions);
-
 var nameSpaceMgr = Cc["@1st-setup.nl/conversion/namespaces;1"]
 			.getService(Ci.mivNameSpaces);
 

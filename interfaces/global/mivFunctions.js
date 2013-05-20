@@ -30,6 +30,8 @@ var components = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource:///modules/Services.jsm");
 
+Cu.import("resource://interfaces/xml2jxon/mivIxml2jxon.js");
+
 function mivFunctions()
 {
 	//dump("\n ++ mivFunctions.init\n");
@@ -642,16 +644,14 @@ mivFunctions.prototype = {
 
 	xmlToJxon: function _xmlToJxon(aXMLString) 
 	{
-		var result = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
-				.createInstance(Ci.mivIxml2jxon);
-		if ((result) && (aXMLString) && (aXMLString != ""))	{
-			try {
-				result.processXMLString(aXMLString, 0, null);
-			}
-			catch(exc) {
-				this.LOG("xmlToJxon: Error processXMLString:"+exc+".("+aXMLString+")");
-				result = null;
-			}
+		if ((!aXMLString) || (aXMLString == "")) { return null;}
+		
+		try {
+			var result = new mivIxml2jxon(aXMLString, 0, null);
+		}
+		catch(exc) {
+			this.LOG("xmlToJxon: Error processXMLString:"+exc+".("+aXMLString+")");
+			result = null;
 		}
 
 		return result;
