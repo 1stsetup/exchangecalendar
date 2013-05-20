@@ -44,59 +44,30 @@ function mivTagNames() {
 var mivTagNamesGUID = "b7309b24-96c6-4393-9ae4-05f3e7e8a4ac";
 
 mivTagNames.prototype = {
-
-	// methods from nsISupport
-
-	/* void QueryInterface(
-	  in nsIIDRef uuid,
-	  [iid_is(uuid),retval] out nsQIResult result
-	);	 */
-	QueryInterface: XPCOMUtils.generateQI([Ci.mivTagNames,
-			Ci.nsIClassInfo,
-			Ci.nsISupports]),
-
-	// Attributes from nsIClassInfo
-
+	QueryInterface: XPCOMUtils.generateQI([Ci.mivTagNames,Ci.nsIClassInfo,Ci.nsISupports]),
 	classDescription: "XML TagNames manager.",
 	classID: components.ID("{"+mivTagNamesGUID+"}"),
 	contractID: "@1st-setup.nl/conversion/tagnames;1",
 	flags: Ci.nsIClassInfo.SINGLETON || Ci.nsIClassInfo.THREADSAFE,
 	implementationLanguage: Ci.nsIProgrammingLanguage.JAVASCRIPT,
-
-	// void getInterfaces(out PRUint32 count, [array, size_is(count), retval] out nsIIDPtr array);
 	getInterfaces: function _getInterfaces(count) 
 	{
-		var ifaces = [Ci.mivTagNames,
-			Ci.nsIClassInfo,
-			Ci.nsISupports];
+		var ifaces = [Ci.mivTagNames,Ci.nsIClassInfo,Ci.nsISupports];
 		count.value = ifaces.length;
 		return ifaces;
 	},
-
-	getHelperForLanguage: function _getHelperForLanguage(language) {
-		return null;
-	},
-	// External methods
-
+	getHelperForLanguage: function _getHelperForLanguage(language) {return null;},
 	getTagName: function _getTagName(aIndex)
 	{
 		if (aIndex >= this.tagNames.length) return "";
 		return this.tagNames[aIndex];
 	},
-
 	addTagName: function _addTagName(aValue)
 	{
-		// find if we already have this namespace and value.
-		for (let index in this.tagNames) {
-			if (this.tagNames[index] == aValue) {
-				return index;
-			}
-		}
-
+		for (let index in this.tagNames) {if (this.tagNames[index] == aValue) {return index;}}
 		this.tagNames.push(aValue);
 		return (this.tagNames.length-1);
 	},
-
 }
 
 function NSGetFactory(cid) {

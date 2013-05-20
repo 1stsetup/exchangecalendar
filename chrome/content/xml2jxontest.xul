@@ -23,8 +23,9 @@
  * of old code and this one is build up from the ground. It still uses some parts from the 
  * "Exchange Data Provider for Lightning" project.
  *
- * Author: Deepak Kumar
- * email: deepk2u@gmail.com
+ * Author: Michel Verbraak (info@1st-setup.nl)
+ * Website: http://www.1st-setup.nl/wordpress/?page_id=133
+ * email: exchangecalendar@extensions.1st-setup.nl
  *
  *
  * This code uses parts of the Microsoft Exchange Calendar Provider code on which the
@@ -37,23 +38,24 @@
  * ***** BEGIN LICENSE BLOCK *****/
 -->
 
+<window 
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" 
+  id="exchWebService_xml2jxon_test_dialog" 
+  title="XML2JXON test" 
+  buttons="accept"
+  buttonlabelaccept="Close"
+  ondialogaccept="return tmpXML2JXonTestDialog.onClose();"
+	width="800px" height="600px"
+	persist="width height"
+>
 
-<overlay id="outOfOfficeMenu"
-	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-	<script type="application/javascript" src="chrome://exchangecalendar/content/OutOfOfficeMenu.js" />
-	<menupopup id="menu_Event_Task_Popup">
-		<menuitem id="exchangecalendar-OutOfOfficeMenu" label="Out of Office..."
-			oncommand="tmpToolsMenu.openOutofOfficeDialog();" hidden="true"/>
-	</menupopup>
+	<script type="application/javascript" src="chrome://exchangecalendar/content/xml2jxontest.js"/>
 
-	<menupopup id="taskPopup">
-		<menuitem id="exchangecalendar-tools-OutOfOfficeMenu" label="Out of Office..."
-			oncommand="tmpToolsMenu.openOutofOfficeDialog();" hidden="true"/>
-		<menuitem id="exchangecalendar-tools-aboutMemory" label="about:memory"
-			oncommand="tmpToolsMenu.showAboutMemory(false);" hidden="false"/>
-		<menuitem id="exchangecalendar-tools-aboutMemoryVerbose" label="about:memory?verbose"
-			oncommand="tmpToolsMenu.showAboutMemory(true);" hidden="false"/>
-		<menuitem id="exchangecalendar-tools-xml2jxontest" label="XML2JXON tes"
-			oncommand="tmpToolsMenu.showXML2JXonTest();" hidden="false"/>
-	</menupopup>
-</overlay>
+	<vbox>
+		<button label="Start" oncommand="tmpXML2JXonTestDialog.onStart()"/>
+		<button label="Clear" oncommand="tmpXML2JXonTestDialog.onClear()"/>
+
+		<label id="xml2jxon_test_result_label" value=""/>
+	</vbox>
+
+</window>
