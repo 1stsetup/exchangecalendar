@@ -137,7 +137,7 @@ erFindCalendarItemsRequest.prototype = {
 		else {
 			view.setAttribute("EndDate", "2300-01-01T00:00:00-00:00");
 		}
-		//view.setAttribute("MaxEntriesReturned", "10");
+		//view.setAttribute("MaxEntriesReturned", "25");
 
 		req.addChildTagObject(view);
 		view = null;
@@ -233,8 +233,6 @@ erFindCalendarItemsRequest.prototype = {
 
 					// Lets do a new request to the exchange server but with the startdate set to the last enddate.
 					this.execute(); 
-					// We do not know how to handle this yet. Do not know if it ever happens. We did not restrict MaxEntriesReturned.
-					exchWebService.commonFunctions.LOG("PLEASE MAIL THIS LINE TO exchangecalendar@extensions.1st-setup.nl: IncludesLastItemInRange == false in FindItemResponse.");
 					return;
 				}
 			}

@@ -74,7 +74,7 @@ function erFindOccurrencesRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.currentSearchIndex = 1;
 	this.currentRealIndex = 0;
-	this.idGroupSize = 15; // We will request in pages of 15 occurrences of the list at once
+	this.idGroupSize = 50; // We will request in pages of 50 occurrences of the list at once
 	this.items = [];
 
 	var self = this;
@@ -124,6 +124,7 @@ erFindOccurrencesRequest.prototype = {
 			occurrenceItemID.setAttribute("RecurringMasterId", this.masterID);
 			occurrenceItemID.setAttribute("ChangeKey", this.masterChangeKey);
 			occurrenceItemID.setAttribute("InstanceIndex", this.currentSearchIndex++);
+			occurrenceItemID = null;
 		}
 
 		req.addChildTagObject(itemids);
@@ -200,6 +201,10 @@ erFindOccurrencesRequest.prototype = {
 		else {
 			// We did not find the occurrence but we did not yet hit the end of the
 			// occurrence list. Request the next page.
+			if (this.mCbOk) {
+				this.mCbOk(this, this.items);
+			}
+			this.items = [];
 			this.execute();
 		}
 	},

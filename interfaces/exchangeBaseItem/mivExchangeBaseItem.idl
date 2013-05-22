@@ -98,4 +98,6 @@ interface mivExchangeBaseItem : calIItemBase
 
 	readonly attribute AUTF8String className;
 
+	void deleteItem();
+
 };

@@ -2503,6 +2503,12 @@ dump(this.title+"| this.calendarItemType:"+this.calendarItemType+"\n");
 		this.logInfo("addException: aItem.title:"+aItem.title+"\n");
 		if ((aItem.calendarItemType == "Exception") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
 			aItem.parentItem = this;
+
+			if (this._exceptions[aItem.id]) {
+				this._exceptions[aItem.id].deleteItem();
+				this._exceptions[aItem.id] = null;
+				delete this._exceptions[aItem.id];
+			}
 			this._exceptions[aItem.id] = aItem.clone();
 //			this._exceptions[aItem.id] = aItem;
 			this.recurrenceInfo.modifyException(aItem, true);
@@ -2532,6 +2538,9 @@ dump("addException:"+this.title+"| itemAlarms.length:"+itemAlarms.length+", aIte
 				if (itemAlarms.length > 0) {
 					this.deleteProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
 				}
+				this._exceptions[aItem.id].deleteItem();
+				this._exceptions[aItem.id] = null;
+				delete this._exceptions[aItem.id];
 			}
 
 			this._exceptions[aItem.id] = aItem.clone();
@@ -2550,11 +2559,12 @@ dump("addException:"+this.title+"| itemAlarms.length:"+itemAlarms.length+", aIte
 		if ((aItem.calendarItemType == "Exception") && (this.calendarItemType == "RecurringMaster")) {
 			if (this._exceptions[aItem.id]) {
 				this.recurrenceInfo.removeExceptionFor(aItem.recurrenceId);
-				this._exceptions[aItem.id] = null;
 
 				if (this.hasProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime)) {
 					this.deleteProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
 				}
+				this._exceptions[aItem.id].deleteItem();
+				this._exceptions[aItem.id] = null;
 				delete this._exceptions[aItem.id];
 			}
 		}
@@ -2597,8 +2607,14 @@ dump("addException:"+this.title+"| itemAlarms.length:"+itemAlarms.length+", aIte
 		this.logInfo("addOccurrence: aItem.title:"+aItem.title+", startDate:"+aItem.startDate.toString()+"\n");
 		if ((aItem.calendarItemType == "Occurrence") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
 			aItem.parentItem = this;
-			this._occurrences[aItem.id] = aItem.clone();
+
+			if (this._occurrences[aItem.id]) {
+				this._occurrences[aItem.id].deleteItem();
+				this._occurrences[aItem.id] = null;
+				delete this._occurrences[aItem.id];
+			}
 //			this._occurrences[aItem.id] = aItem;
+			this._occurrences[aItem.id] = aItem.clone();
 
 			var itemAlarms = aItem.getAlarms({});
 			//this.logInfo("AddOccurrence: itemAlarms.length:"+itemAlarms.length+", X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
@@ -2614,10 +2630,11 @@ dump("addException:"+this.title+"| itemAlarms.length:"+itemAlarms.length+", aIte
 		if (aItem) {
 			if ((aItem.calendarItemType == "Occurrence") && (this.calendarItemType == "RecurringMaster")) {
 				if (this._occurrences[aItem.id]) {
-					this._occurrences[aItem.id] = null;
 					if (this.hasProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime)) {
 						this.deleteProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
 					}
+					this._occurrences[aItem.id].deleteItem();
+					this._occurrences[aItem.id] = null;
 					delete this._occurrences[aItem.id];
 				}
 			}
@@ -3535,6 +3552,22 @@ try{
 		}
 	},
 
+	deleteItem: function _deleteItem()
+	{
+		for (var index in this._occurrences) {
+			this._occurrences[index].deleteItem();
+			this._occurrences[index] = null;
+			delete this._occurrences[index];
+		}
+
+		for (var index in this._exceptions) {
+			this._exceptions[index].deleteItem();
+			this._exceptions[index] = null;
+			delete this._exceptions[index];
+		}
+
+		this._exchangeData = null;
+	},
 }
 
 function NSGetFactory(cid) {

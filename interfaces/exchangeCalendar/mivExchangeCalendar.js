@@ -397,6 +397,7 @@ function calExchangeCalendar() {
 	this.itemCount = 0;
 	this.itemUpdates = 0;
 	this.itemsFromExchange = 0;
+	this.masterCount = 0;
 }
 
 var calExchangeCalendarGUID = "720a458e-b6cd-4883-8a4d-5be27ec454d8";
@@ -791,7 +792,7 @@ calExchangeCalendar.prototype = {
 			this._disabled = aValue;
 			this.prefs.setBoolPref("disabled", aValue);
 			if ((aValue) && (oldDisabledState != this._disabled)) {
-dump("Calendar is set to disabled\n");
+//dump("Calendar is set to disabled\n");
 				this.resetCalendar();
 			}
 			if ((!this._disabled) && (oldDisabledState != this._disabled)) {
@@ -1233,13 +1234,13 @@ dump("Calendar is set to disabled\n");
 	{
 		if (this.itemCache[aModifiedSingle.id]) {
 			this.itemUpdates++;
-			dump(" ==Cal:"+this.name+", item updated:"+this.itemUpdates+", title:"+aModifiedSingle.title+", startDate:"+aModifiedSingle.startDate+"\n");
+			//dump(" ==Cal:"+this.name+", item updated:"+this.itemUpdates+", title:"+aModifiedSingle.title+", startDate:"+aModifiedSingle.startDate+"\n");
 
 			if (doNotify) {
 				if (this.debug) this.logInfo("singleModified doNotify");
 				this.notifyTheObservers("onModifyItem", [aModifiedSingle, this.itemCache[aModifiedSingle.id]]);
 			}
-			this.itemCache[aModifiedSingle.id].exchangeData = null;
+			this.itemCache[aModifiedSingle.id].deleteItem();
 			this.itemCache[aModifiedSingle.id] = null;
 			delete this.itemCache[aModifiedSingle.id];
 			this.itemCache[aModifiedSingle.id] = aModifiedSingle;
@@ -1600,9 +1601,10 @@ dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:
 							if (this.debug) this.logInfo("modifyItem: changed:"+String(changes));
 
 							this.removeChildrenFromMaster(this.recurringMasterCache[aOldItem.uid]);
-							this.itemCache[aOldItem.id].exchangeData = null;
+							this.itemCache[aOldItem.id].deleteItem();
 							this.itemCache[aOldItem.id] = null;
 							delete this.itemCache[aOldItem.id];
+							this.recurringMasterCache[aOldItem.uid].deleteItem();
 							delete this.recurringMasterCache[aOldItem.uid];
 
 							if (this.debug) this.logInfo(" When CHANGED master arrives for '"+aNewItem.title+"' then it's children we all be downloaded.");
@@ -3751,9 +3753,9 @@ catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
 
 		if (this.getProperty("disabled")) {
 			// Remove all items in cache from calendar.
-//dump("Calendar is set to disabled. We are going to release the memory.\n");
+/*dump("Calendar is set to disabled. We are going to release the items cache memory.\n");
 			if (this.debug) this.logInfo("Calendar is disabled. So we are done resetting.");
-/*			this.observers.notify("onStartBatch");
+			this.observers.notify("onStartBatch");
 			var counter1 = 0;
 			var counter2 = 0;
 			for (var index in this.itemCache) {
@@ -3761,19 +3763,30 @@ catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
 				if (this.itemCache[index]) {
 					counter2++;
 					this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
-					this.itemCache[index].exchangeData = null;
+					this.itemCache[index].deleteItem();
 					this.itemCache[index] = null;
 					delete this.itemCache[index];
 				}
 			}
 			this.observers.notify("onEndBatch");
 			this.itemCache = [];
+dump("Calendar is set to disabled. We are going to release the master cache memory.\n");
+			var counter3 = 0;
+			for (var index in this.recurringMasterCache) {
+				if (this.recurringMasterCache[index]) {
+					counter3++;
+					this.recurringMasterCache[index].deleteItem();
+					this.recurringMasterCache[index] = null;
+					delete this.recurringMasterCache[index];
+				}
+			}
+
 			this.recurringMasterCache = [];
 			this.itemCount = 0;
 			this.itemUpdates = 0;
 			this.itemsFromExchange = 0;*/
 			this.doReset = false;
-//dump("Calendar is set to disabled. Released memory."+counter1+"/"+counter2+"\n");
+//dump("Calendar is set to disabled. Released memory."+counter1+"/"+counter2+"/"+counter3+"\n");
 		}
 		else {
 			this.performReset();
@@ -3808,7 +3821,7 @@ catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
 		for (var index in this.itemCache) {
 			if (this.itemCache[index]) {
 				this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
-				this.itemCache[index].exchangeData = null;
+				this.itemCache[index].deleteItem();
 				this.itemCache[index] = null;
 				delete this.itemCache[index];
 			}
@@ -3817,6 +3830,14 @@ catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
 
 		// Reset caches.
 		this.itemCache = [];
+
+		for (var index in this.recurringMasterCache) {
+			if (this.recurringMasterCache[index]) {
+				this.recurringMasterCache[index].deleteItem();
+				this.recurringMasterCache[index] = null;
+				delete this.recurringMasterCache[index];
+			}
+		}
 		this.recurringMasterCache = [];
 
 		if (this.startDate) {
@@ -5713,7 +5734,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 		// Removed Single/Master items in the lists which we already have in memory
 		var newIdList = new Array();
-dump("     findCalendarItemsOK: aIds.length:"+aIds.length+"\n");
+//dump("     findCalendarItemsOK: aIds.length:"+aIds.length+"\n");
 		for each(var item in aIds) {
 			var inItemCache = ((this.itemCache[item.Id]) && (this.itemCache[item.Id].changeKey == item.ChangeKey));
 			var inMasterCache = ((item.type == "RecurringMaster") && (this.recurringMasterCache[item.uid]) && (this.recurringMasterCache[item.uid].changeKey == item.ChangeKey));
@@ -5721,17 +5742,17 @@ dump("     findCalendarItemsOK: aIds.length:"+aIds.length+"\n");
 				newIdList.push(item);
 			}
 		}
-dump("     findCalendarItemsOK: newIdList.length:"+newIdList.length+"\n");
+//dump("     findCalendarItemsOK: newIdList.length:"+newIdList.length+"\n");
 
 		// Remove Occurrence/Exception items in the lists which we already have in memory
 		var newOccurrenceList = new Array();
-dump("     findCalendarItemsOK: aOccurrences.length:"+aOccurrences.length+"\n");
+//dump("     findCalendarItemsOK: aOccurrences.length:"+aOccurrences.length+"\n");
 		for each(var item in aOccurrences) {
 			if (!this.recurringMasterCache[item.uid]) {
 				newOccurrenceList.push(item);
 			}
 		}
-dump("     findCalendarItemsOK: newOccurrenceList.length:"+newOccurrenceList.length+"\n");
+//dump("     findCalendarItemsOK: newOccurrenceList.length:"+newOccurrenceList.length+"\n");
 
        		var self = this;
 
@@ -5844,6 +5865,7 @@ dump("     findCalendarItemsOK: newOccurrenceList.length:"+newOccurrenceList.len
 	findOccurrencesOK: function _findOccurrencesOK(erFindOccurrencesRequest, aIds)
 	{
 		if (this.debug) this.logInfo("findOccurrencesOK: aIds.length="+aIds.length);
+		//dump("findOccurrencesOK: aIds.length="+aIds.length+"\n");
 		// Get full details of occurrences and exceptions and cache them.
 		this.notConnected = false;
 		this.findCalendarItemsOK(erFindOccurrencesRequest, aIds, []);
@@ -6248,7 +6270,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 		for each(var child in aMaster.getExceptions({})) {
 			aMaster.removeException(child);
 			this.notifyTheObservers("onDeleteItem", [child]);
-			this.itemCache[child.id].exchangeData = null;
+			this.itemCache[child.id].deleteItem();
 			this.itemCache[child.id] = null;
 			delete this.itemCache[child.id];
 		}
@@ -6256,7 +6278,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 		for each(var child in aMaster.getOccurrences({})) {
 			aMaster.removeOccurrence(child);
 			this.notifyTheObservers("onDeleteItem", [child]);
-			this.itemCache[child.id].exchangeData = null;
+			this.itemCache[child.id].deleteItem();
 			this.itemCache[child.id] = null;
 			delete this.itemCache[child.id];
 		}
@@ -6478,7 +6500,6 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 	{
 		if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment:"+String(aCalendarItem), 2);
 
-
 		//var item = createEvent();
 		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 				.createInstance(Ci.mivExchangeEvent, this);
@@ -6498,9 +6519,9 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 		//item.id = this.tryToSetValue(aCalendarItem.getAttributeByTag("t:ItemId", "Id"), item.id);
 		if (! item.id) {
 			if (this.debug) this.logInfo("Item.id is missing. this is a required field.");
-			item.exchangeData = null;
+			item.deleteItem();
 			item = null;
-			dump("convertExchangeAppointmentToCalAppointment. Item.id is missing. this is a required field.\n");
+			//dump("convertExchangeAppointmentToCalAppointment. Item.id is missing. this is a required field.\n");
 			return null;
 		}
 
@@ -6516,9 +6537,9 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 		if (this.itemCache[item.id]) {
 			if (this.itemCache[item.id].changeKey == item.changeKey) {
 				//if (this.debug) this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
-			dump("convertExchangeAppointmentToCalAppointment. Item is allready in cache and the id and changeKey are the same. Skipping it:"+item.title+", startDate"+item.startDate+"\n");
+			//dump("convertExchangeAppointmentToCalAppointment. Item is allready in cache and the id and changeKey are the same. Skipping it:"+item.title+", startDate"+item.startDate+"\n");
 				this.itemCache[item.id].occurrenceIndex = item.occurrenceIndex
-				item.exchangeData = null;
+				item.deleteItem();
 				item = null;
 				return null;
 			}
@@ -6527,8 +6548,8 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 			if (this.recurringMasterCache[uid]) {
 				if ( (this.recurringMasterCache[uid].changeKey == aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey")) && (this.recurringMasterCache[uid].id == item.id)) {
 					//if (this.debug) this.logInfo("Master item is allready in cache and the id and changeKey are the same. Skipping it.");
-			dump("convertExchangeAppointmentToCalAppointment. Master item is allready in cache and the id and changeKey are the same. Skipping it:"+item.title+", item.calendarItemType:"+item.calendarItemType+"\n");
-					item.exchangeData = null;
+			//dump("convertExchangeAppointmentToCalAppointment. Master item is allready in cache and the id and changeKey are the same. Skipping it:"+item.title+", item.calendarItemType:"+item.calendarItemType+"\n");
+					item.deleteItem();
 					item = null;
 					return null;
 				}
@@ -6538,17 +6559,17 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 
 		if (! item.startDate) {
 			if (this.debug) this.logInfo("We have an empty startdate. Skipping this item.");
-			item.exchangeData = null;
+			item.deleteItem();
 			item = null;
-			dump("convertExchangeAppointmentToCalAppointment. We have an empty startdate. Skipping this item.\n");
+			//dump("convertExchangeAppointmentToCalAppointment. We have an empty startdate. Skipping this item.\n");
 			return null;
 		}
 
 		if (! item.endDate) {
 			if (this.debug) this.logInfo("We have an empty enddate. Skipping this item.");
-			item.exchangeData = null;
+			item.deleteItem();
 			item = null;
-			dump("convertExchangeAppointmentToCalAppointment. We have an empty enddate. Skipping this item.\n");
+			//dump("convertExchangeAppointmentToCalAppointment. We have an empty enddate. Skipping this item.\n");
 			return null;
 		}
 
@@ -6600,7 +6621,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 					if (this.itemCache[item.id]) {
 						if (this.debug) this.logInfo("This master also existed as an normal item. Probably an upgrade from single to master.");
 						this.notifyTheObservers("onDeleteItem", [this.itemCache[item.id]]);
-						this.itemCache[item.id].exchangeData = null;
+						this.itemCache[item.id].deleteItem();
 						this.itemCache[item.id] = null;
 						delete this.itemCache[item.id];
 					}
@@ -6656,8 +6677,16 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 
 					this.addToOfflineCache(item, aCalendarItem);
 
+					if (this.recurringMasterCache[uid]) {
+						this.masterCount--;
+						//dump("   xx MasterCount:"+this.masterCount+"\n");
+						this.recurringMasterCache[uid].deleteItem();
+						this.recurringMasterCache[uid] = null;
+					}
+					this.masterCount++;
 					this.recurringMasterCache[uid] = item;
-	
+					//dump("   :: MasterCount:"+this.masterCount+"\n");
+
 					if ((loadChildren) || (this.newMasters[uid])) {
 
 						if (this.debug) this.logInfo("We have a master and it was set as new. So we download it's children.title:"+item.title);
@@ -6693,7 +6722,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 					if (this.debug) this.logInfo("This is a master it will not be put into the normal items cache list.");
 					//item.exchangeData = null;
 					//item = null;
-			dump("convertExchangeAppointmentToCalAppointment. The master will not be visible:"+item.title+"\n");
+			//dump("convertExchangeAppointmentToCalAppointment. The master will not be visible:"+item.title+"\n");
 					return null;  // The master will not be visible
 
 					break;
@@ -6702,6 +6731,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 			}
 		}
 
+//		return null;
 		return item;
 
 	},
@@ -6731,7 +6761,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 		if (this.itemCache[item.id]) {
 			if (this.itemCache[item.id].changeKey == aTask.getAttributeByTag("t:ItemId", "ChangeKey")) {
 				//if (this.debug) this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
-				item.exchangeData = null;
+				item.deleteItem();
 				item = null;
 				return null;
 			}
@@ -7027,10 +7057,10 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 	updateCalendar: function _updateCalendar(erGetItemsRequest, aItems, doNotify)
 	{
-		this.observers.notify("onStartBatch");
-		this.updateCalendar2(erGetItemsRequest, aItems,doNotify);
-		this.observers.notify("onEndBatch");
-return;
+//		this.observers.notify("onStartBatch");
+//		this.updateCalendar2(erGetItemsRequest, aItems,doNotify);
+//		this.observers.notify("onEndBatch");
+//return;
 		for (var index in aItems) {
 			this.updateCalendarItems.push({ request: erGetItemsRequest,
 							item: aItems[index],
@@ -7042,7 +7072,7 @@ return;
 			this.updateCalendarTimerRunning = true;
 		        let self = this;
 			this.observerService.notifyObservers(this, "onExchangeProgressChange", "2");
-			this.updateCalendarTimer.initWithCallback({ notify: function setTimeout_notify() {self.doUpdateCalendarItem();	}}, 500, this.updateCalendarTimer.TYPE_REPEATING_SLACK);
+			this.updateCalendarTimer.initWithCallback({ notify: function setTimeout_notify() {self.doUpdateCalendarItem();	}}, 5, this.updateCalendarTimer.TYPE_REPEATING_SLACK);
 		}
 	},
 	
@@ -7050,12 +7080,14 @@ return;
 	{
 		if (this.updateCalendarItems.length > 0) {
 			var tmpItems = [];
-//			var updateRecord = this.updateCalendarItems[0];
-			var updateRecord = this.updateCalendarItems.shift();
 
-			tmpItems.push(updateRecord.item);
-			//this.updateCalendarItems.shift();
-//			this.updateCalendar2(updateRecord.request, tmpItems, updateRecord.doNotify);
+			let counter = 5;
+			while ((counter > 0) && (this.updateCalendarItems.length > 0)) {
+				var updateRecord = this.updateCalendarItems.shift();
+				tmpItems.push(updateRecord.item);
+				counter--;
+			}
+
 			this.updateCalendar2(updateRecord.request, tmpItems, true);
 			tmpItems = null;
 			updateRecord.item = null;
@@ -7080,7 +7112,7 @@ return;
 		for (var index in aItems) {
 
 			this.itemsFromExchange++;
-			dump(" ~~Cal:"+this.name+", items from exchange:"+this.itemsFromExchange+"\n");
+			//dump(" ~~Cal:"+this.name+", items from exchange:"+this.itemsFromExchange+"\n");
 
 			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify);
 			if (item) {
@@ -7089,7 +7121,7 @@ return;
 					// This is a new unknown item
 					this.itemCache[item.id] = item;
 					this.itemCount++;
-					dump(" --Cal:"+this.name+", added item:"+this.itemCount+", title:"+item.title+", startDate:"+item.startDate+"\n");
+					//dump(" --Cal:"+this.name+", added item:"+this.itemCount+", title:"+item.title+", startDate:"+item.startDate+"\n");
 
 					if (this.debug) this.logInfo("updateCalendar: onAddItem:"+ item.title);
 					if (doNotify) {
@@ -7119,6 +7151,7 @@ return;
 	getCalendarItemsOK: function _getCalendarItemsOK(erGetItemsRequest, aItems)
 	{
 //		if (this.debug) this.logInfo("getCalendarItemsOK: aItems.length="+aItems.length);
+//dump("  getCalendarItemsOK:"+aItems.length+"\n");
 		this.saveCredentials(erGetItemsRequest.argument);
 		this.notConnected = false;
 
@@ -7306,7 +7339,7 @@ return;
 							if (this.debug) this.logInfo("This is a Occurrence or Exception to delete. THIS SHOULD NEVER HAPPEN.");
 						}
 						this.notifyTheObservers("onDeleteItem", [item]);
-						this.itemCache[item.id].exchangeData = null;
+						this.itemCache[item.id].deleteItem();
 						this.itemCache[item.id] = null;
 						delete this.itemCache[item.id];
 					}
@@ -7737,7 +7770,7 @@ return;
 		for (var index in this.itemCache) {
 			if (this.itemCache[index]) {
 				//this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
-				this.itemCache[index].exchangeData = null;
+				this.itemCache[index].deleteItem();
 				this.itemCache[index] = null;
 				delete this.itemCache[index];
 			}
@@ -7745,6 +7778,15 @@ return;
 
 		// Reset caches.
 		this.itemCache = [];
+
+		for (var index in this.recurringMasterCache) {
+			if (this.recurringMasterCache[index]) {
+				//this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
+				this.recurringMasterCache[index].deleteItem();
+				this.recurringMasterCache[index] = null;
+				delete this.recurringMasterCache[index];
+			}
+		} 
 		this.recurringMasterCache = [];
 
 		this.meetingRequestsCache = [];
