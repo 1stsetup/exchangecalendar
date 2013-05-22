@@ -2556,7 +2556,7 @@ catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
 			var startDate = endDate.clone();
 
 			var offset = cal.createDuration();
-			offset.weeks = -4;
+			offset.weeks = -1;
 			startDate.addDuration(offset);
 			if (startDate.compare(aStartDate) < 1) {
 				startDate = aStartDate.clone();
@@ -2567,7 +2567,7 @@ catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
 			var endDate = startDate.clone();
 
 			var offset = cal.createDuration();
-			offset.weeks = 4;
+			offset.weeks = 1;
 			endDate.addDuration(offset);
 			if (endDate.compare(aEndDate) > -1) {
 				endDate = aEndDate.clone();
@@ -7071,8 +7071,8 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		if ((this.updateCalendarItems.length > 0) && (!this.updateCalendarTimerRunning)) {
 			this.updateCalendarTimerRunning = true;
 		        let self = this;
-			this.observerService.notifyObservers(this, "onExchangeProgressChange", "2");
-			this.updateCalendarTimer.initWithCallback({ notify: function setTimeout_notify() {self.doUpdateCalendarItem();	}}, 5, this.updateCalendarTimer.TYPE_REPEATING_SLACK);
+			//this.observerService.notifyObservers(this, "onExchangeProgressChange", "2");
+			this.updateCalendarTimer.initWithCallback({ notify: function setTimeout_notify() {self.doUpdateCalendarItem();	}}, 2, this.updateCalendarTimer.TYPE_REPEATING_SLACK);
 		}
 	},
 	
@@ -7096,7 +7096,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		}
 
 		if (this.updateCalendarItems.length == 0) {
-			this.observerService.notifyObservers(this, "onExchangeProgressChange", "-2");
+			//this.observerService.notifyObservers(this, "onExchangeProgressChange", "-2");
 			this.updateCalendarTimer.cancel();
 			this.updateCalendarTimerRunning = false;
 		}

@@ -111,10 +111,10 @@ erSyncFolderItemsRequest.prototype = {
 		}
 
 		if (this.getSyncState) {
-			req.addChildTag("MaxChangesReturned", "nsMessages", "512");
+			req.addChildTag("MaxChangesReturned", "nsMessages", "25");
 		}
 		else {
-			req.addChildTag("MaxChangesReturned", "nsMessages", "15");
+			req.addChildTag("MaxChangesReturned", "nsMessages", "25");
 		}
 		
 		this.parent.xml2jxon = true;
@@ -184,6 +184,12 @@ erSyncFolderItemsRequest.prototype = {
 			rm = null;
 
 			if (lastItemInRange == "false") {
+				if (this.mCbOk) {
+					this.mCbOk(this, this.creations, this.updates, this.deletions, syncState);
+				}
+				this.creations = [];
+				this.updates = [];
+				this.deletions = [];
 				this.execute(syncState);
 				return;
 			}

@@ -74,7 +74,7 @@ function erFindOccurrencesRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.currentSearchIndex = 1;
 	this.currentRealIndex = 0;
-	this.idGroupSize = 50; // We will request in pages of 50 occurrences of the list at once
+	this.idGroupSize = 25; // We will request in pages of 50 occurrences of the list at once
 	this.items = [];
 
 	var self = this;
