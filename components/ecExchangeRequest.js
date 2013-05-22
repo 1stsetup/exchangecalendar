@@ -616,16 +616,14 @@ catch(err){
 		this.mAuthFail = 0;
 		this.mRunning  = false;
 
-		var resp;
-		resp = newXML;
-
 		if (this.mCbOk) {
 			// Try to get server version and store it.
 			try {
-				var serverVersion = resp.XPath("/s:Header/t:ServerVersionInfo");
+				let serverVersion = newXML.XPath("/s:Header/t:ServerVersionInfo");
 				if ((serverVersion.length > 0) && (serverVersion[0].getAttribute("Version") != "")) {
 					this.exchangeStatistics.setServerVersion(this.currentUrl, serverVersion[0].getAttribute("Version"));
 				}
+				serverVersion[0] = null;
 				serverVersion = null;
 			}
 			catch(err) { }
@@ -636,11 +634,10 @@ catch(err){
 				exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount = 0;
 			}
 
-			this.mCbOk(this, resp);
+			this.mCbOk(this, newXML);
 			this.originalReq = null;
 		}
 
-		resp = null;
 		newXML = null;
 
 		this.observerService.notifyObservers(this._notificationCallbacks, "onExchangeConnectionOk", this.currentUrl);
