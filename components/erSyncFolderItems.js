@@ -213,13 +213,14 @@ erSyncFolderItemsRequest.prototype = {
 				return;
 			}
 		}
-
+		this.parent = null;
 	},
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)
 	{
 //exchWebService.commonFunctions.LOG("onSendError aMsg:"+aMsg+"\n");
 		this.isRunning = false;
+		this.parent = null;
 		if (this.mCbError) {
 			this.mCbError(this, aCode, aMsg);
 		}

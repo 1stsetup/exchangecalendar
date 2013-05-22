@@ -137,7 +137,7 @@ erFindCalendarItemsRequest.prototype = {
 		else {
 			view.setAttribute("EndDate", "2300-01-01T00:00:00-00:00");
 		}
-		view.setAttribute("MaxEntriesReturned", "10");
+		//view.setAttribute("MaxEntriesReturned", "10");
 
 		req.addChildTagObject(view);
 		view = null;

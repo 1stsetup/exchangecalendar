@@ -292,18 +292,13 @@ erGetItemsRequest.prototype = {
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
 		//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.onSendOk: "+String(aResp)+"\n");
-		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
+		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']/m:Items/*");
 
 		var items = [];
 		
-		for each (var e in rm) {
-			var item = e.XPath("/m:Items/*");
-			if (item.length > 0)
-			{
-				//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.item: "+item[0]+"\n");
-				items.push(item[0]);
-			}
-			item = null;
+		for (var index in rm) {
+			items.push(rm[index].clone());
+			rm[index] = null;
 		}
 
 		rm = null;
@@ -314,12 +309,15 @@ erGetItemsRequest.prototype = {
 
 		items= null;
 		this.isRunning = false;
+		aResp = null;
+		this.parent = null;
 	},
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)
 	{
-		exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.onSendError: "+String(aMsg)+"\n");
+		//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.onSendError: "+String(aMsg)+"\n");
 		this.isRunning = false;
+		this.parent = null;
 		if (this.mCbError) {
 			this.mCbError(this, aCode, aMsg);
 		}

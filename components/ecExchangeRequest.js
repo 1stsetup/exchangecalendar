@@ -616,16 +616,14 @@ catch(err){
 		this.mAuthFail = 0;
 		this.mRunning  = false;
 
-		var resp;
-		resp = newXML;
-
 		if (this.mCbOk) {
 			// Try to get server version and store it.
 			try {
-				var serverVersion = resp.XPath("/s:Header/t:ServerVersionInfo");
+				let serverVersion = newXML.XPath("/s:Header/t:ServerVersionInfo");
 				if ((serverVersion.length > 0) && (serverVersion[0].getAttribute("Version") != "")) {
 					this.exchangeStatistics.setServerVersion(this.currentUrl, serverVersion[0].getAttribute("Version"));
 				}
+				serverVersion[0] = null;
 				serverVersion = null;
 			}
 			catch(err) { }
@@ -636,16 +634,10 @@ catch(err){
 				exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount = 0;
 			}
 
-			try {
-				this.mCbOk(this, resp);
-			}
-			catch(err) {
-				dump(" !! ecExchangeRequest error on calling ok function:"+err+"\n");
-			}
+			this.mCbOk(this, newXML);
 			this.originalReq = null;
 		}
 
-		resp = null;
 		newXML = null;
 
 		this.observerService.notifyObservers(this._notificationCallbacks, "onExchangeConnectionOk", this.currentUrl);
@@ -917,12 +909,7 @@ catch(err){
 	{
 		if (this.debug) this.logInfo("ecExchangeRequest.fail: aCode:"+aCode+", aMsg:"+aMsg);
 		if (this.mCbError) {
-			try {
-				this.mCbError(this, aCode, aMsg);
-			}
-			catch(err) {
-				dump(" !! ecExchangeRequest error on calling Error function:"+err+"\n");
-			}
+			this.mCbError(this, aCode, aMsg);
 		}
 		this.originalReq = null;
 	},
