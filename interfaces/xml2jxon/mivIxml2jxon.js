@@ -238,6 +238,9 @@ const cId = "@1st-setup.nl/conversion/xml2jxon;1";
 var EXPORTED_SYMBOLS = ["mivIxml2jxon"];
 
 function mivIxml2jxon(aXMLString, aSP, aParent) {
+	var statisticsMgr = Cc["@1st-setup.nl/exchange/statistics;1"]
+				.getService(Ci.mivExchangeStatistics);
+	statisticsMgr.addXML2JXONObject();
 	this.content = {};
 	this.itemCount = 0;
 	this.messageLength = 0;
@@ -384,6 +387,7 @@ mivIxml2jxon.prototype = {
 	},
 
 	addChildTagObject: function _addChildTagObject(a){
+dump("addChildTagObject:\n");
 		if (!a) {return;}
 		if (a.uuid != this.uuid) {a.addParentNameSpaces(this);}
 		var ntn = a.nameSpace+tsep+a.tagName;

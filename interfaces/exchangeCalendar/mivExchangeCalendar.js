@@ -394,6 +394,9 @@ function calExchangeCalendar() {
 	this._connectionStateDescription = "";
 	//this.globalFunctions.LOG("Our offline status is:"+this.mIsOffline+".");
 
+	this.itemCount = 0;
+	this.itemUpdates = 0;
+	this.itemsFromExchange = 0;
 }
 
 var calExchangeCalendarGUID = "720a458e-b6cd-4883-8a4d-5be27ec454d8";
@@ -1229,8 +1232,11 @@ dump("Calendar is set to disabled\n");
 	singleModified: function _singleModified(aModifiedSingle, doNotify)
 	{
 		if (this.itemCache[aModifiedSingle.id]) {
+			this.itemUpdates++;
+			dump(" ==Cal:"+this.name+", item updated:"+this.itemUpdates+", title:"+aModifiedSingle.title+", startDate:"+aModifiedSingle.startDate+"\n");
+
 			if (doNotify) {
-if (this.debug) this.logInfo("singleModified doNotify");
+				if (this.debug) this.logInfo("singleModified doNotify");
 				this.notifyTheObservers("onModifyItem", [aModifiedSingle, this.itemCache[aModifiedSingle.id]]);
 			}
 			this.itemCache[aModifiedSingle.id].exchangeData = null;
@@ -2506,8 +2512,8 @@ try{
 			}
 }
 catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
-
 		}
+
 
 		if (this.debug) this.logInfo("We got '"+events.length+"' events and  '"+tasks.length+"'  tasks from memory cache.");
 		if (aListener) {
@@ -3745,11 +3751,15 @@ catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
 
 		if (this.getProperty("disabled")) {
 			// Remove all items in cache from calendar.
-dump("Calendar is set to disabled. We are going to release the memory.\n");
+//dump("Calendar is set to disabled. We are going to release the memory.\n");
 			if (this.debug) this.logInfo("Calendar is disabled. So we are done resetting.");
-			this.observers.notify("onStartBatch");
+/*			this.observers.notify("onStartBatch");
+			var counter1 = 0;
+			var counter2 = 0;
 			for (var index in this.itemCache) {
+				counter1++;
 				if (this.itemCache[index]) {
+					counter2++;
 					this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
 					this.itemCache[index].exchangeData = null;
 					this.itemCache[index] = null;
@@ -3759,8 +3769,11 @@ dump("Calendar is set to disabled. We are going to release the memory.\n");
 			this.observers.notify("onEndBatch");
 			this.itemCache = [];
 			this.recurringMasterCache = [];
+			this.itemCount = 0;
+			this.itemUpdates = 0;
+			this.itemsFromExchange = 0;*/
 			this.doReset = false;
-dump("Calendar is set to disabled. Released memory.\n");
+//dump("Calendar is set to disabled. Released memory."+counter1+"/"+counter2+"\n");
 		}
 		else {
 			this.performReset();
@@ -5698,17 +5711,39 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			return;
 		}
 
+		// Removed Single/Master items in the lists which we already have in memory
+		var newIdList = new Array();
+dump("     findCalendarItemsOK: aIds.length:"+aIds.length+"\n");
+		for each(var item in aIds) {
+			var inItemCache = ((this.itemCache[item.Id]) && (this.itemCache[item.Id].changeKey == item.ChangeKey));
+			var inMasterCache = ((item.type == "RecurringMaster") && (this.recurringMasterCache[item.uid]) && (this.recurringMasterCache[item.uid].changeKey == item.ChangeKey));
+			if ((!inItemCache) && (!inMasterCache)) {
+				newIdList.push(item);
+			}
+		}
+dump("     findCalendarItemsOK: newIdList.length:"+newIdList.length+"\n");
+
+		// Remove Occurrence/Exception items in the lists which we already have in memory
+		var newOccurrenceList = new Array();
+dump("     findCalendarItemsOK: aOccurrences.length:"+aOccurrences.length+"\n");
+		for each(var item in aOccurrences) {
+			if (!this.recurringMasterCache[item.uid]) {
+				newOccurrenceList.push(item);
+			}
+		}
+dump("     findCalendarItemsOK: newOccurrenceList.length:"+newOccurrenceList.length+"\n");
+
        		var self = this;
 
 		// If we have occurrences and/or exceptions. Find the masters. followed by the occurrences.
-		if (aOccurrences.length > 0) {
+		if (newOccurrenceList.length > 0) {
 			if (this.debug) this.logInfo("findCalendarItemsOK: aOccurrences.length="+aOccurrences.length);
 			this.addToQueue( erFindMasterOccurrencesRequest, 
 			{user: this.user, 
 			 mailbox: this.mailbox,
 			 folderBase: this.folderBase,
 			 serverUrl: this.serverUrl,
-			 occurrences: aOccurrences,
+			 occurrences: newOccurrenceList,
 			 folderID: this.folderID,
 			 changeKey: this.changeKey,
 			 folderClass: this.folderClass,
@@ -5720,16 +5755,16 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		// We have single and/or master items. Get full details and cache them.
-		if (aIds.length > 0) {
+		if (newIdList.length > 0) {
 			this.addToQueue( erGetItemsRequest, 
 			{user: this.user, 
 			 mailbox: this.mailbox,
 			 folderBase: this.folderBase,
 			 serverUrl: this.serverUrl,
-			 ids: aIds,
+			 ids: newIdList,
 			 folderID: this.folderID,
 			 changeKey: this.changeKey,
-			 occurrences: aOccurrences,
+			 occurrences: newOccurrenceList,
 			 folderClass: this.folderClass,
 			 GUID: calExchangeCalendarGUID}, 
 			function(erGetItemsRequest, aIds) { self.getCalendarItemsOK(erGetItemsRequest, aIds);}, 
@@ -6465,6 +6500,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 			if (this.debug) this.logInfo("Item.id is missing. this is a required field.");
 			item.exchangeData = null;
 			item = null;
+			dump("convertExchangeAppointmentToCalAppointment. Item.id is missing. this is a required field.\n");
 			return null;
 		}
 
@@ -6480,6 +6516,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 		if (this.itemCache[item.id]) {
 			if (this.itemCache[item.id].changeKey == item.changeKey) {
 				//if (this.debug) this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
+			dump("convertExchangeAppointmentToCalAppointment. Item is allready in cache and the id and changeKey are the same. Skipping it:"+item.title+", startDate"+item.startDate+"\n");
 				this.itemCache[item.id].occurrenceIndex = item.occurrenceIndex
 				item.exchangeData = null;
 				item = null;
@@ -6490,6 +6527,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 			if (this.recurringMasterCache[uid]) {
 				if ( (this.recurringMasterCache[uid].changeKey == aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey")) && (this.recurringMasterCache[uid].id == item.id)) {
 					//if (this.debug) this.logInfo("Master item is allready in cache and the id and changeKey are the same. Skipping it.");
+			dump("convertExchangeAppointmentToCalAppointment. Master item is allready in cache and the id and changeKey are the same. Skipping it:"+item.title+", item.calendarItemType:"+item.calendarItemType+"\n");
 					item.exchangeData = null;
 					item = null;
 					return null;
@@ -6502,6 +6540,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 			if (this.debug) this.logInfo("We have an empty startdate. Skipping this item.");
 			item.exchangeData = null;
 			item = null;
+			dump("convertExchangeAppointmentToCalAppointment. We have an empty startdate. Skipping this item.\n");
 			return null;
 		}
 
@@ -6509,6 +6548,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 			if (this.debug) this.logInfo("We have an empty enddate. Skipping this item.");
 			item.exchangeData = null;
 			item = null;
+			dump("convertExchangeAppointmentToCalAppointment. We have an empty enddate. Skipping this item.\n");
 			return null;
 		}
 
@@ -6653,6 +6693,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 					if (this.debug) this.logInfo("This is a master it will not be put into the normal items cache list.");
 					//item.exchangeData = null;
 					//item = null;
+			dump("convertExchangeAppointmentToCalAppointment. The master will not be visible:"+item.title+"\n");
 					return null;  // The master will not be visible
 
 					break;
@@ -6947,7 +6988,10 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 	convertExchangeToCal: function _convertExchangeToCal(aExchangeItem, erGetItemsRequest, doNotify)
 	{
 		if (this.debug) this.logInfo("convertExchangeToCal:"+aExchangeItem, 2);
-		if (!aExchangeItem) { return; }
+		if (!aExchangeItem) { 
+			dump("convertExchangeToCal. !aExchangeItem\n");
+			return;
+		}
 
 		var switchValue = aExchangeItem.getTagValue("t:ItemClass", "");
 		if (switchValue.indexOf(".{") > -1) {
@@ -6983,10 +7027,10 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 	updateCalendar: function _updateCalendar(erGetItemsRequest, aItems, doNotify)
 	{
-//		this.observers.notify("onStartBatch");
-//		this.updateCalendar2(erGetItemsRequest, aItems,doNotify);
-//		this.observers.notify("onEndBatch");
-//return;
+		this.observers.notify("onStartBatch");
+		this.updateCalendar2(erGetItemsRequest, aItems,doNotify);
+		this.observers.notify("onEndBatch");
+return;
 		for (var index in aItems) {
 			this.updateCalendarItems.push({ request: erGetItemsRequest,
 							item: aItems[index],
@@ -6998,7 +7042,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			this.updateCalendarTimerRunning = true;
 		        let self = this;
 			this.observerService.notifyObservers(this, "onExchangeProgressChange", "2");
-			this.updateCalendarTimer.initWithCallback({ notify: function setTimeout_notify() {self.doUpdateCalendarItem();	}}, 50, this.updateCalendarTimer.TYPE_REPEATING_SLACK);
+			this.updateCalendarTimer.initWithCallback({ notify: function setTimeout_notify() {self.doUpdateCalendarItem();	}}, 500, this.updateCalendarTimer.TYPE_REPEATING_SLACK);
 		}
 	},
 	
@@ -7035,12 +7079,17 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 		for (var index in aItems) {
 
+			this.itemsFromExchange++;
+			dump(" ~~Cal:"+this.name+", items from exchange:"+this.itemsFromExchange+"\n");
+
 			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify);
 			if (item) {
 				//convertedItems.push(item);
 				if (!this.itemCache[item.id]) {
 					// This is a new unknown item
 					this.itemCache[item.id] = item;
+					this.itemCount++;
+					dump(" --Cal:"+this.name+", added item:"+this.itemCount+", title:"+item.title+", startDate:"+item.startDate+"\n");
 
 					if (this.debug) this.logInfo("updateCalendar: onAddItem:"+ item.title);
 					if (doNotify) {

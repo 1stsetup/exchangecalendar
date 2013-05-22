@@ -63,6 +63,8 @@ exchXML2JXonTestDialog.prototype = {
 			var xmlDoc = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
 				.createInstance(Ci.mivIxml2jxon);
 			xmlDoc.processXMLString('<test><pasta>hallo</pasta></test>', 0, null);
+//			xmlDoc.processXMLString(xmltest1, 0, null);
+			dump("..done..\n");
 //			xmlDoc.processXMLString('', 0, null);
 			this.items.push(xmlDoc);
 		}

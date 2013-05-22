@@ -35,6 +35,8 @@ function mivExchangeStatistics() {
 
 	this.dataRead = {};
 	this.dataSend = {};
+
+	this._xml2jxonCount = 0;
 }
 
 var PREF_MAINPART = 'extensions.1st-setup.exchangecalendar.statistics.';
@@ -135,6 +137,16 @@ mivExchangeStatistics.prototype = {
 		}
 	},
 
+	addXML2JXONObject: function _addXML2JXONObject()
+	{
+		this._xml2jxonCount++;
+		dump(" xml2xjonCount:"+this._xml2jxonCount+"\n");
+	},
+
+	get xml2jxonCount()
+	{
+		return this._xml2jxonCount;
+	},
 }
 
 function NSGetFactory(cid) {

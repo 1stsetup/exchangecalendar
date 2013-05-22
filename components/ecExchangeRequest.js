@@ -636,7 +636,12 @@ catch(err){
 				exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount = 0;
 			}
 
-			this.mCbOk(this, resp);
+			try {
+				this.mCbOk(this, resp);
+			}
+			catch(err) {
+				dump(" !! ecExchangeRequest error on calling ok function:"+err+"\n");
+			}
 			this.originalReq = null;
 		}
 
@@ -912,7 +917,12 @@ catch(err){
 	{
 		if (this.debug) this.logInfo("ecExchangeRequest.fail: aCode:"+aCode+", aMsg:"+aMsg);
 		if (this.mCbError) {
-			this.mCbError(this, aCode, aMsg);
+			try {
+				this.mCbError(this, aCode, aMsg);
+			}
+			catch(err) {
+				dump(" !! ecExchangeRequest error on calling Error function:"+err+"\n");
+			}
 		}
 		this.originalReq = null;
 	},
