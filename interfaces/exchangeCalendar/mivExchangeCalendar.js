@@ -1601,11 +1601,15 @@ dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:
 							if (this.debug) this.logInfo("modifyItem: changed:"+String(changes));
 
 							this.removeChildrenFromMaster(this.recurringMasterCache[aOldItem.uid]);
-							this.itemCache[aOldItem.id].deleteItem();
-							this.itemCache[aOldItem.id] = null;
-							delete this.itemCache[aOldItem.id];
-							this.recurringMasterCache[aOldItem.uid].deleteItem();
-							delete this.recurringMasterCache[aOldItem.uid];
+							if (this.itemCache[aOldItem.id]) {
+								this.itemCache[aOldItem.id].deleteItem();
+								this.itemCache[aOldItem.id] = null;
+								delete this.itemCache[aOldItem.id];
+							}
+							if (this.recurringMasterCache[aOldItem.uid]) {
+								this.recurringMasterCache[aOldItem.uid].deleteItem();
+								delete this.recurringMasterCache[aOldItem.uid];
+							}
 
 							if (this.debug) this.logInfo(" When CHANGED master arrives for '"+aNewItem.title+"' then it's children we all be downloaded.");
 							this.newMasters[aOldItem.uid] = true;
