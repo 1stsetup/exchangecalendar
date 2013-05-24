@@ -409,7 +409,7 @@ var d=new Date();var time4=d.getTime();
 			this.originalReq = null;
 		}
 
-dump(" stat: time1:"+(time2-time1)+", time2:"+(time4-time3)+"\n");
+//dump(" stat: time1:"+(time2-time1)+", time2:"+(time4-time3)+"\n");
 		newXML = null;
 
 		this.observerService.notifyObservers(this._notificationCallbacks, "onExchangeConnectionOk", this.currentUrl);

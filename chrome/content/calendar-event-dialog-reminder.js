@@ -51,11 +51,12 @@ exchChangeCalendarPropertiesReminder.prototype = {
 		if ((!cal.isEvent(this._argument.item)) && (this._argument.calendar.type == "exchangecalendar")) {
 			this._document.getElementById("reminder-relative-box").hidden = true;
 
-			this._document.getElementById("reminder-relative-radio").selected = false;
+			//this._document.getElementById("reminder-relative-radio").checked = false;
 			this._document.getElementById("reminder-relative-radio").disabled = true;
 
-			this._document.getElementById("reminder-absolute-radio").selected = true;
+			//this._document.getElementById("reminder-absolute-radio").checked = true;
 			this._document.getElementById("reminder-absolute-radio").hidden = true;
+			this._document.getElementById("reminder-relation-radiogroup").selectedElement = this._document.getElementById("reminder-absolute-radio");
 		}
 
 		if ((cal.isEvent(this._argument.item)) && (this._argument.calendar.type == "exchangecalendar")) {

@@ -127,6 +127,8 @@ exchEventDialog.prototype = {
 				this._document.getElementById("exchWebService-companies-count").value = item.companies;
 			}
 
+			this._document.getElementById("event-grid-location-row").hidden = true;
+
 			// Clear reminder select list for todo
 			this._document.getElementById("reminder-none-separator").hidden = true;
 			this._document.getElementById("reminder-0minutes-menuitem").hidden = true;
@@ -183,6 +185,8 @@ exchEventDialog.prototype = {
 
 			this._document.getElementById("exchWebService-owner-hbox").hidden = true;
 			this._document.getElementById("exchWebService-details-separator").hidden = true;
+
+			this._document.getElementById("event-grid-location-row").hidden = false;
 
 			// Clear reminder select list for todo
 			this._document.getElementById("reminder-none-separator").hidden = false;

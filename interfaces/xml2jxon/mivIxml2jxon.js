@@ -204,7 +204,7 @@ var replaceToXML = function _replaceToXML(str, r1)
 
 function convertSpecialCharatersToXML(aStr)
 {
-	if (!aStr) return aStr;
+	if ((aStr === null) || (aStr === undefined)) return aStr;
 
 	var result = aStr.toString();
 	// Convert special characters
@@ -268,7 +268,6 @@ mivIxml2jxon.prototype = {
 	get closed(){return this._c1;},
 	set closed(a){this._c1 = a;},
 	addToContent: function _addToContent(a){
-//dump("addToContent:"+a+".\n");
 		if ((this.itemCount > 0) && (trim(a) == "")) {return;}
 		this.content[this.itemCount] = a;
 		this.itemCount++;
@@ -381,6 +380,7 @@ mivIxml2jxon.prototype = {
 	},
 
 	addParentNameSpaces: function _addParentNameSpaces(a){
+		if (!a.nameSpaces) return;
 		if (!this.nameSpaces) {this.nameSpaces = {};}
 		for (let index in a.nameSpaces) {
 			if (!this.nameSpaces[index]) {this.nameSpaces[index] = a.nameSpaces[index];}
@@ -410,6 +410,7 @@ mivIxml2jxon.prototype = {
 			else {ns = "_default_";}
 		}
 		if (c === false) {c = "false";}
+		if (c === 0) { c = "0";}
 		if ((c !== undefined) && (c !== null) && (c != "")) {var xml = "<"+ns+tsep+a+">"+convertSpecialCharatersToXML(c)+"</"+ns+tsep+a+">"}
 		else {var xml = "<"+ns+tsep+a+"/>"}
 		var r = new mivIxml2jxon(xml,0, this);

@@ -39,7 +39,7 @@ function jobObject(aJob, aServer, aLoadBalancer)
 
 jobObject.prototype = {
 	notify: function setTimeout_notify(aTimer) {
-dump(this.server+":loadBalancer: starting Job\n");
+//dump(this.server+":loadBalancer: starting Job\n");
 
 		var self = this;
 		this.exchangeRequest = new this.job.ecRequest(this.job.arguments, 
@@ -50,7 +50,7 @@ dump(this.server+":loadBalancer: starting Job\n");
 
 	onRequestOk: function _onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job)
 	{
-dump(this.server+":jobObject.onRequestOk\n");
+//dump(this.server+":jobObject.onRequestOk\n");
 		try{
 			arg1.argument.cbOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 		}
@@ -61,7 +61,7 @@ dump(this.server+":jobObject.onRequestOk\n");
 
 	onRequestError: function _onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job)
 	{
-dump(this.server+":jobObject.onRequestError\n");
+//dump(this.server+":jobObject.onRequestError\n");
 		try{
 			arg1.argument.cbError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 		}
@@ -197,7 +197,7 @@ mivExchangeLoadBalancer.prototype = {
 					// Running job stopped.
 					this.jobsRunning--;
 					oldList[runningJob].exchangeRequest = undefined;
-					dump(server+":running job stopped:"+this.jobsRunning+"\n");
+					//dump(server+":running job stopped:"+this.jobsRunning+"\n");
 				}
 			}
 
@@ -246,7 +246,7 @@ mivExchangeLoadBalancer.prototype = {
 					this.jobsRunning++;
 					this.logInfo("this.jobsRunning:"+this.jobsRunning,1);
 
-dump(server+":loadBalancer: starting timeout for Job\n");
+//dump(server+":loadBalancer: starting timeout for Job\n");
 					newJob.timer.initWithCallback(newJob, this.sleepBetweenJobs, Ci.nsITimer.TYPE_ONE_SHOT);
 				}				
 			}

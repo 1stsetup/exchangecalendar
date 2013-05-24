@@ -235,7 +235,7 @@ mivExchangeEvent.prototype = {
 		}
 		else {
 
-			if (this._newTitle) {
+			if (this._newTitle !== undefined) {
 				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "Subject", this._newTitle);
 			}
@@ -435,7 +435,7 @@ mivExchangeEvent.prototype = {
 				this.addSetItemField(updates, "LegacyFreeBusyStatus", this._newLegacyFreeBusyStatus);
 			}
 
-			if (this._newLocation) {
+			if (this._newLocation !== undefined) {
 				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "Location", this._newLocation);
 			}

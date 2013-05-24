@@ -381,7 +381,7 @@ mivExchangeBaseItem.prototype = {
 	clone: function _clone()
 	{
 try {
-		this.logInfo("clone: title:"+this.title+", contractId:"+this.contractID);
+		dump("clone 1: title:"+this.title+", contractId:"+this.contractID+"\n");
 
 		if (this.contractID == "@1st-setup.nl/exchange/calendarevent;1") {
 			var result = Cc[this.contractID]
@@ -401,8 +401,10 @@ try {
 		if (this._newId !== undefined) result.id = this._newId;
 		result.calendar = this.calendar;
 
-		if (this._newStartDate !== undefined) result.startDate = this.startDate.clone();
-		if (this._newEndDate !== undefined) result.endDate = this.endDate.clone();
+		if (this.contractID == "@1st-setup.nl/exchange/calendarevent;1") {
+			if (this._newStartDate !== undefined) result.startDate = this.startDate.clone();
+			if (this._newEndDate !== undefined) result.endDate = this.endDate.clone();
+		}
 
 		// We are going to replay all changes to clone
 		if (this._newBody === null) result.deleteProperty("DESCRIPTION");
@@ -414,7 +416,14 @@ try {
 		if (this._newTitle) result.title = this.title;
 		if (this._newPriority) result.priority = this.priority;
 		if (this._newPrivacy) result.privacy = this.privacy;
-		if (this._newStatus) result.status = this.status;
+		if (this._newStatus) {
+			if (this.contractID == "@1st-setup.nl/exchange/calendarevent;1") {
+				result.status = this.status;
+			}
+			else {
+				result.setProperty("STATUS", this.status);
+			}
+		}
 		if (this._newAlarm !== undefined) {
 			if (this._newAlarm) {
 				result.addAlarm(this._newAlarm);
@@ -505,9 +514,9 @@ try {
 		if (this._newAlarmLastAck) result.alarmLastAck = this.alarmLastAck;
 
 		if (this.contractID == "@1st-setup.nl/exchange/calendartodo;1") {
-			if (this._newEntryDate !== undefined) result.entryDate = this._newEntryDate;
-			if (this._newDueDate !== undefined) result.dueDate = this._newDueDate;
-			if (this._newCompletedDate !== undefined) result.completedDate = this._newCompletedDate;
+			if (this._newEntryDate !== undefined) result.entryDate = this.entryDate.clone();
+			if (this._newDueDate !== undefined) result.dueDate = this.dueDate.clone();
+			if (this._newCompletedDate !== undefined) result.completedDate = this.completedDate.clone();
 			if (this._newPercentComplete) result.percentComplete = this._newPercentComplete;
 			if (this._newDuration) result.duration = this._newDuration;
 			if (this._newTotalWork) result.totalWork = this._newTotalWork;
@@ -515,6 +524,7 @@ try {
 			if (this._newMileage) result.mileage = this._newMileage;
 			if (this._newBillingInformation) result.billingInformation = this._newBillingInformation;
 			if (this._newCompanies) result.companies = this.companies;
+			if (this._newIsCompleted !== null) result.isCompleted = this._newIsCompleted;
 		}
 
 		if (this._occurrenceIndex) {
@@ -525,6 +535,7 @@ try {
 catch(err){
   this.logInfo("Clone: error:"+err);
 }
+		dump("clone 2: title:"+this.title+", contractId:"+this.contractID+"\n");
 		return result;
 	},
 
@@ -995,21 +1006,23 @@ catch(err){
 			switch (this.calendarItemType) {
 			case "Exception":
 			case "Occurrence":
-				if (this.reminderDueBy) {
-					switch (this.reminderDueBy.compare(this.startDate)) {
-					case -1:
-						this._alarmLastAck = null;
-						break;					
-					case 0:
-						this._alarmLastAck.addDuration(cal.createDuration('-PT1S'));
-						break;					
-					case 1:
-						this._alarmLastAck = this.startDate.clone();
-						break;					
+				if (this.startDate) {
+					if (this.reminderDueBy) {
+						switch (this.reminderDueBy.compare(this.startDate)) {
+						case -1:
+							this._alarmLastAck = null;
+							break;					
+						case 0:
+							this._alarmLastAck.addDuration(cal.createDuration('-PT1S'));
+							break;					
+						case 1:
+							this._alarmLastAck = this.startDate.clone();
+							break;					
+						}
 					}
-				}
-				else {
-					this._alarmLastAck = null;
+					else {
+						this._alarmLastAck = null;
+					}
 				}
 				break;
 			case "Single":
@@ -1396,7 +1409,7 @@ try {
 			break;
 		case "STATUS": 
 			//this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
-			//dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
+			dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
 			if (this.className == "mivExchangeEvent") {
 				if (value != this.getProperty(name)) {
 					switch (value) {
@@ -1943,31 +1956,48 @@ try {
 	getOccurrencesBetween: function _getOccurrencesBetween(aStartDate, aEndDate, aCount)
 	{
 		if (aStartDate === null) {
-			if (this.startDate) aStartDate = this.startDate.clone();
+			if (this.startDate) {
+				aStartDate = this.startDate.clone();
+			}
+			else {
+				if (this.entryDate) aStartDate = this.entryDate.clone();
+			}
 		}
 		if (aEndDate === null) {
-			if (this.endDate) aEndDate = this.endDate.clone();
+			if (this.endDate) {
+				aEndDate = this.endDate.clone();
+			}
+			else {
+				if (this.dueDate) aEndDate = this.dueDate.clone();
+			}
 		}
 
 		var occurrences = [];
+
 		switch (this.calendarItemType) {
 		case "Single":
 		case "Occurrence":
 		case "Exception":
-			if ( ((aStartDate === null) || (this.startDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (this.endDate.compare(aEndDate) < 0)) ) {
+			var tmpStartDate = this.startDate || this.entryDate;
+			var tmpEndDate = this.endDate || this.entryDate;
+			if ( ((aStartDate === null) || (!tmpStartDate) || (tmpStartDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (!tmpEndDate) || (tmpEndDate.compare(aEndDate) < 0)) ) {
 				//this.logInfo("getOccurrencesBetween 0a: inserting myself into list.");
 				occurrences.push(this);
 			}
 			break;
 		case "RecurringMaster":
+			var tmpStartDate = exception.startDate || exception.entryDate;
+			var tmpEndDate = exception.endDate || exception.entryDate;
 			for each(var exception in this._exceptions) {
-				if ( ((aStartDate === null) || (exception.startDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (exception.endDate.compare(aEndDate) < 0)) ) {
+				if ( ((aStartDate === null) || (!tmpStartDate) || (tmpStartDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (!tmpEndDate) || (tmpEndDate.compare(aEndDate) < 0)) ) {
 					//this.logInfo("getOccurrencesBetween 0d: inserting myself into list.");
 					occurrences.push(exception);
 				}
 			}
+			var tmpStartDate = occurrence.startDate || occurrence.entryDate;
+			var tmpEndDate = occurrence.endDate || occurrence.entryDate;
 			for each(var occurrence in this._occurrences) {
-				if ( ((aStartDate === null) || (occurrence.startDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (occurrence.endDate.compare(aEndDate) < 0)) ) {
+				if ( ((aStartDate === null) || (!tmpStartDate) || (tmpStartDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (!tmpEndDate) || (tmpEndDate.compare(aEndDate) < 0)) ) {
 					//this.logInfo("getOccurrencesBetween 0e: inserting myself into list.");
 					occurrences.push(occurrence);
 				}
@@ -2513,7 +2543,8 @@ try {
 
 			var itemAlarms = aItem.getAlarms({});
 //dump("addException:"+this.title+"| itemAlarms.length:"+itemAlarms.length+", aItem.reminderSignalTime:"+aItem.reminderSignalTime+"\n");
-			if ((itemAlarms.length > 0) && (aItem.reminderSignalTime) && (aItem.startDate.compare(aItem.reminderSignalTime) >= 0)) {
+			var tmpStartDate = aItem.startDate || aItem.entryDate;
+			if ((itemAlarms.length > 0) && (aItem.reminderSignalTime) && ((!tmpStartDate) || (tmpStartDate.compare(aItem.reminderSignalTime) >= 0))) {
 				this.setProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime, aItem.reminderSignalTime.getInTimezone(cal.UTC()).icalString);
 			}
 		}
@@ -2545,7 +2576,8 @@ try {
 //			this._exceptions[aItem.id] = aItem;
 
 			var itemAlarms = aItem.getAlarms({});
-			if ((itemAlarms.length > 0) && (aItem.reminderSignalTime) && (aItem.startDate.compare(aItem.reminderSignalTime) >= 0)) {
+			var tmpStartDate = aItem.startDate || aItem.entryDate;
+			if ((itemAlarms.length > 0) && (aItem.reminderSignalTime) && ((!tmpStartDate) || (tmpStartDate.compare(aItem.reminderSignalTime) >= 0))) {
 				this.setProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime, this.reminderSignalTime.getInTimezone(cal.UTC()).icalString);
 			}
 		}
@@ -2602,7 +2634,7 @@ try {
 	//void addOccurrence(in mivExchangeBaseItem aItem);
 	addOccurrence: function _addOccurrence(aItem)
 	{
-		this.logInfo("addOccurrence: aItem.title:"+aItem.title+", startDate:"+aItem.startDate.toString()+"\n");
+		this.logInfo("addOccurrence: aItem.title:"+aItem.title+", startDate:"+aItem.startDate+"\n");
 		if ((aItem.calendarItemType == "Occurrence") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
 			aItem.parentItem = this;
 
@@ -2616,7 +2648,8 @@ try {
 
 			var itemAlarms = aItem.getAlarms({});
 			//this.logInfo("AddOccurrence: itemAlarms.length:"+itemAlarms.length+", X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
-			if ((itemAlarms.length > 0) && (aItem.startDate.compare(this.reminderDueBy) == 0)) {
+			var tmpStartDate = aItem.startDate || aItem.entryDate;
+			if ((itemAlarms.length > 0) && ((!tmpStartDate) || (tmpStartDate.compare(this.reminderDueBy) == 0))) {
 				this.setProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime, this.reminderSignalTime.getInTimezone(cal.UTC()).icalString);
 			}
 		}
@@ -2711,7 +2744,7 @@ try {
 				fieldURI.setAttribute("FieldURI", fieldPathMap[aField]+":"+aField);
 			}
 
-			if (aValue) {
+			if ((aValue !== null) && (aValue !== undefined)) {
 				try {
 					if (aValue.QueryInterface(Ci.mivIxml2jxon)) {
 						if (aValueIsComplete) {
@@ -2756,7 +2789,7 @@ try {
 				}
 			}
 
-			extProp = setItemField.addChildTag(this._mainTag, "t", null).addChildTag("ExtendedProperty", "t", null);
+			var extProp = setItemField.addChildTag(this._mainTag, "t", null).addChildTag("ExtendedProperty", "t", null);
 			extProp.addChildTagObject(extFieldURI);
 			extProp.addChildTag("Value", "t", aValue);
 		}
@@ -3116,7 +3149,13 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 							//dump("Dismissed an occurrence with startDate:"+dismissedItem.startDate+"\n");
 						}
 
-						var nextOccurrence = this.recurrenceInfo.getNextOccurrence(dismissedItem.endDate);
+						var tmpDate = dismissedItem.endDate || dismissedItem.dueDate;
+						if (tmpDate) {
+							var nextOccurrence = this.recurrenceInfo.getNextOccurrence(tmpDate);
+						}
+						else {
+							var nextOccurrence = null;
+						}
 						do {
 							if (nextOccurrence) {
 								// We have a next occurrence. Set newSnoozeTime.
@@ -3143,7 +3182,13 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 								}
 								else {
 									//dump("Reminder not active on item:"+nextOccurrence.startDate+". Going to look for next.\n");
-									var nextOccurrence = this.recurrenceInfo.getNextOccurrence(nextOccurrence.endDate);
+									var tmpDate = dismissedItem.endDate || dismissedItem.dueDate;
+									if (tmpDate) {
+										var nextOccurrence = this.recurrenceInfo.getNextOccurrence(nextOccurrence.endDate);
+									}
+									else {
+										var nextOccurrence =  null;
+									}
 								}
 							}
 

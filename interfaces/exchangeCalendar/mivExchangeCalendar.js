@@ -7112,6 +7112,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		//if (this.debug) this.logInfo("updateCalendar");
 //		var items = [];
 //		var convertedItems = [];
+try{
 		if (this.debug) this.logInfo("updateCalendar: We have '"+aItems.length+"' items to update in calendar.");
 
 		for (var index in aItems) {
@@ -7147,7 +7148,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			aItems[index] = null;
 
 		}
-
+}catch(err){dump("conversion err:"+err+"\n");}
 		//return convertedItems;
 
 	},
