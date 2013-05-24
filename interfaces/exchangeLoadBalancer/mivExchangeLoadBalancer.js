@@ -95,16 +95,10 @@ var mivExchangeLoadBalancerGUID = "2db8c940-1927-11e2-892e-0800200c9a55";
 mivExchangeLoadBalancer.prototype = {
 
 	// methods from nsISupport
-
-	/* void QueryInterface(
-	  in nsIIDRef uuid,
-	  [iid_is(uuid),retval] out nsQIResult result
-	);	 */
 	QueryInterface: XPCOMUtils.generateQI([Ci.mivExchangeLoadBalancer,
 			Ci.nsISupports]),
 
 	// Attributes from nsIClassInfo
-
 	classDescription: "Load balancer for requests to Exchange server.",
 	classID: components.ID("{"+mivExchangeLoadBalancerGUID+"}"),
 	contractID: "@1st-setup.nl/exchange/loadbalancer;1",
@@ -122,7 +116,7 @@ mivExchangeLoadBalancer.prototype = {
 
 	get sleepBetweenJobs()
 	{
-		return 5;  // Currently going for default zero because it works.
+		return 150;  // Currently going for default zero because it works.
 		//return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"sleepBetweenJobs", 2, true);
 	},
 
@@ -172,8 +166,7 @@ mivExchangeLoadBalancer.prototype = {
 		if (!this.timer) {
 			this.logInfo("Start timer");
 			this.timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
-			var self = this;
-			this.timer.initWithCallback(this, this.sleepBetweenJobs, this.timer.TYPE_REPEATING_SLACK);
+			this.timer.initWithCallback(this, 10, this.timer.TYPE_REPEATING_SLACK);
 		}
 	},
 
@@ -184,8 +177,6 @@ mivExchangeLoadBalancer.prototype = {
 
 	processQueue: function _processQueue()
 	{
-		//var jobCount = 0;
-
 		for (var server in this.serverQueue) {
 
 			// Cleanup jobs wich have finished
@@ -233,8 +224,6 @@ mivExchangeLoadBalancer.prototype = {
 
 				}
 				if ((!noJobsLeft) && (this.serverQueue[server].currentCalendar < this.serverQueue[server].calendarList.length) && (this.serverQueue[server].jobs[this.serverQueue[server].calendarList[this.serverQueue[server].currentCalendar]].length > 0)) {
-					//jobCount += this.serverQueue[server].jobs[this.serverQueue[server].calendarList[this.serverQueue[server].currentCalendar]].length;
-
 					var job = this.serverQueue[server].jobs[this.serverQueue[server].calendarList[this.serverQueue[server].currentCalendar]].shift();
 
 					this.serverQueue[server].currentCalendar++;
@@ -249,11 +238,6 @@ mivExchangeLoadBalancer.prototype = {
 					job.arguments["job"] = job;
 					job.arguments["calendar"] = job.calendar;
 				
-/*					var newJob = { job: job,
-							startTime: new Date().getTime(),
-							exchangeRequest: null,
-									};
-*/
 					var newJob = new jobObject(job, server, this);
 
 					this.serverQueue[server].runningJobs.push(newJob);
@@ -263,20 +247,7 @@ mivExchangeLoadBalancer.prototype = {
 					this.logInfo("this.jobsRunning:"+this.jobsRunning,1);
 
 dump(server+":loadBalancer: starting timeout for Job\n");
-/*					var self = this;
-
-					let timerCallback = {
-						notify: function setTimeout_notify(aTimer) {
-dump(newJob.server+":loadBalancer: starting Job\n");
-
-							newJob.exchangeRequest = new newJob.job.ecRequest(newJob.job.arguments, 
-							function myOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) { self.onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job);}, 
-							function myError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {self.onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job);}
-							, newJob.job.listener);
-						}
-					};
-*/
-					newJob.timer.initWithCallback(newJob, 250, Ci.nsITimer.TYPE_ONE_SHOT);
+					newJob.timer.initWithCallback(newJob, this.sleepBetweenJobs, Ci.nsITimer.TYPE_ONE_SHOT);
 				}				
 			}
 		}
@@ -285,12 +256,11 @@ dump(newJob.server+":loadBalancer: starting Job\n");
 			this.logInfo("No more jobs left. Stop Timer.",2);
 			this.timer.cancel();
 			delete this.timer;
-			this.timer = null;
 		}
 
 	},
 
-	onRequestOk: function _onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job)
+/*	onRequestOk: function _onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job)
 	{
 
 		try{
@@ -314,7 +284,7 @@ dump(newJob.server+":loadBalancer: starting Job\n");
 			this.globalFunctions.LOG("onRequestError Error:"+err + " ("+this.globalFunctions.STACK()+")", -1);
 		}
 	},
-
+*/
 	clearQueueForCalendar: function _clearQueueForCalendar(aServer, aCalendar)
 	{
 		if (this.serverQueue[aServer]) {
