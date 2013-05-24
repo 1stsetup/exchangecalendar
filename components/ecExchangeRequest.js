@@ -337,6 +337,78 @@ catch(err) {
 	loadend: function _loadend(evt)
 	{
 		if (this.debug) this.logInfo(": ExchangeRequest.loadend");
+
+		let xmlReq = this.mXmlReq;
+
+		if (this.debug) this.logInfo(": ExchangeRequest.loadend :"+evt.type+", readyState:"+xmlReq.readyState+", status:"+xmlReq.status);
+		if (this.debug) this.logInfo(": ExchangeRequest.loadend :"+xmlReq.responseText,2);
+
+		//this.exchangeStatistics.addDataRead(this.currentUrl, xmlReq.responseText.length);
+
+		if (xmlReq.readyState != 4) {
+			if (this.debug) this.logInfo("readyState < 4. THIS SHOULD NEVER HAPPEN. PLEASE REPORT.");
+			return;
+		}
+
+		if (this.isHTTPRedirect(evt)) {
+			return;
+		}
+
+		if (this.isHTTPError()) {
+			return;
+		}
+
+		var xml = xmlReq.responseText; // bug 270553
+
+// Removed following as this is no longer a problem as we are not using E4X anymore.
+//		xml = xml.replace(/&#x10;/g, ""); // BUG 61 remove hexadecimal code 0x10. It will fail in xml conversion.
+
+		try {
+			var newXML = new mivIxml2jxon('', 0, null);
+		}
+		catch(exc) { if (this.debug) this.logInfo("createInstance error:"+exc);}
+
+		try {
+			newXML.addNameSpace("s", nsSoapStr);
+			newXML.addNameSpace("m", nsMessagesStr);
+			newXML.addNameSpace("t", nsTypesStr);
+			newXML.addNameSpace("a1", nsAutodiscoverResponseStr1);
+			newXML.addNameSpace("a2", nsAutodiscoverResponseStr2);
+			newXML.processXMLString(xml, 0, null);
+		}
+		catch(exc) { if (this.debug) this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
+
+//		dump("StringSize:"+xml.length+", xmlSize:"+newXML.getSize()+"\n");
+
+		this.mAuthFail = 0;
+		this.mRunning  = false;
+
+		if (this.mCbOk) {
+			// Try to get server version and store it.
+			try {
+				let serverVersion = newXML.XPath("/s:Header/t:ServerVersionInfo");
+				if ((serverVersion.length > 0) && (serverVersion[0].getAttribute("Version") != "")) {
+					this.exchangeStatistics.setServerVersion(this.currentUrl, serverVersion[0].getAttribute("Version"));
+				}
+				serverVersion[0] = null;
+				serverVersion = null;
+			}
+			catch(err) { }
+
+			this.retryCount = 0;
+
+			if (exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl]) {
+				exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount = 0;
+			}
+
+			this.mCbOk(this, newXML);
+			this.originalReq = null;
+		}
+
+		newXML = null;
+
+		this.observerService.notifyObservers(this._notificationCallbacks, "onExchangeConnectionOk", this.currentUrl);
+
 	},
 
 	progress: function _progress(evt)
@@ -574,11 +646,11 @@ catch(err){
 		let xmlReq = this.mXmlReq;
 
 		if (this.debug) this.logInfo(": ExchangeRequest.onLoad :"+evt.type+", readyState:"+xmlReq.readyState+", status:"+xmlReq.status);
-		if (this.debug) this.logInfo(": ExchangeRequest.onLoad :"+xmlReq.responseText,2);
+//		if (this.debug) this.logInfo(": ExchangeRequest.onLoad :"+xmlReq.responseText,2);
 
 		//this.exchangeStatistics.addDataRead(this.currentUrl, xmlReq.responseText.length);
 
-		if (xmlReq.readyState != 4) {
+/*		if (xmlReq.readyState != 4) {
 			if (this.debug) this.logInfo("readyState < 4. THIS SHOULD NEVER HAPPEN. PLEASE REPORT.");
 			return;
 		}
@@ -641,7 +713,7 @@ catch(err){
 		newXML = null;
 
 		this.observerService.notifyObservers(this._notificationCallbacks, "onExchangeConnectionOk", this.currentUrl);
-
+*/
 	},
 
 	retryCurrentUrl: function()
