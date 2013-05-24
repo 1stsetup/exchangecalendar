@@ -374,7 +374,9 @@ catch(err) {
 			newXML.addNameSpace("t", nsTypesStr);
 			newXML.addNameSpace("a1", nsAutodiscoverResponseStr1);
 			newXML.addNameSpace("a2", nsAutodiscoverResponseStr2);
+var d=new Date();var time1=d.getTime();
 			newXML.processXMLString(xml, 0, null);
+var d=new Date();var time2=d.getTime();
 		}
 		catch(exc) { if (this.debug) this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
 
@@ -401,10 +403,13 @@ catch(err) {
 				exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount = 0;
 			}
 
+var d=new Date();var time3=d.getTime();
 			this.mCbOk(this, newXML);
+var d=new Date();var time4=d.getTime();
 			this.originalReq = null;
 		}
 
+dump(" stat: time1:"+(time2-time1)+", time2:"+(time4-time3)+"\n");
 		newXML = null;
 
 		this.observerService.notifyObservers(this._notificationCallbacks, "onExchangeConnectionOk", this.currentUrl);
