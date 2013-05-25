@@ -31,6 +31,8 @@ var Cu = Components.utils;
 var Ci = Components.interfaces;
 var Cc = Components.classes;
 
+Cu.import("resource://interfaces/xml2jxon/mivIxml2jxon.js");
+
 function testObject()
 {
 }
@@ -60,11 +62,12 @@ exchXML2JXonTestDialog.prototype = {
 		this._document.getElementById("xml2jxon_test_result_label").value = "Start generating memory.";
 		for (var i=0; i< 30000; i++) {
 //			var xmlDoc = new testObject();
-			var xmlDoc = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
-				.createInstance(Ci.mivIxml2jxon);
+//			var xmlDoc = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
+//				.createInstance(Ci.mivIxml2jxon);
+			var xmlDoc = new mivIxml2jxon('', 0, null);
 //			xmlDoc.processXMLString('<test><pasta naam="Jantje">hallo</pasta></test>', 0, null);
 //			xmlDoc.processXMLString(xmltest1, 0, null);
-			xmlDoc.processXMLString('', 0, null);
+			//xmlDoc.processXMLString('', 0, null);
 			this.items.push(xmlDoc);
 		}
 			dump("..done..\n");

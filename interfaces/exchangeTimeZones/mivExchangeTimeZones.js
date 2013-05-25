@@ -51,7 +51,7 @@ function mivExchangeTimeZones() {
 	this.exchangeToLightningMemory = {};
 
 	// load timezone file from resource. This is for Exchange server version before 2010.
-//	this.load_timezonedefinitions_file();
+	this.load_timezonedefinitions_file();
 }
 
 var PREF_MAINPART = 'extensions.1st-setup.exchangecalendar.timezones.';
