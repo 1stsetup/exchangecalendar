@@ -62,12 +62,12 @@ exchXML2JXonTestDialog.prototype = {
 //			var xmlDoc = new testObject();
 			var xmlDoc = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
 				.createInstance(Ci.mivIxml2jxon);
-//			xmlDoc.processXMLString('<test><pasta>hallo</pasta></test>', 0, null);
-			xmlDoc.processXMLString(xmltest1, 0, null);
-			dump("..done..\n");
+			xmlDoc.processXMLString('<test><pasta naam="Jantje">hallo</pasta></test>', 0, null);
+//			xmlDoc.processXMLString(xmltest1, 0, null);
 //			xmlDoc.processXMLString('', 0, null);
 			this.items.push(xmlDoc);
 		}
+			dump("..done..\n");
 		this._document.getElementById("xml2jxon_test_result_label").value = "Done generating memory.";
 	},
 
@@ -82,6 +82,7 @@ exchXML2JXonTestDialog.prototype = {
 			dump(" Removing:"+xmlDoc.toString()+"\n");
 			xmlDoc = null;
 		}
+		this._document.getElementById("xml2jxon_test_result_label").value = "Cleared memory.";
 	},
 	onClose: function _onClose()
 	{
