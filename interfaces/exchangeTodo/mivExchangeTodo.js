@@ -444,7 +444,7 @@ mivExchangeTodo.prototype = {
 	//attribute AUTF8String status;
 	get status()
 	{
-		dump("get status: title 1:"+this.title+", this._calEvent.getProperty('STATUS'):"+this._calEvent.getProperty("STATUS")+", this._status:"+this._status+", this._newStatus"+this._newStatus+"\n");
+		//dump("get status: title 1:"+this.title+", this._calEvent.getProperty('STATUS'):"+this._calEvent.getProperty("STATUS")+", this._status:"+this._status+", this._newStatus"+this._newStatus+"\n");
 		if ((!this._status) && (this._newStatus === undefined)) {
 			this._status = this.getTagValue("t:Status", "NotStarted");
 
@@ -460,13 +460,13 @@ mivExchangeTodo.prototype = {
 			//this._calEvent.status = statusMap[this._status];
 			this._calEvent.setProperty("STATUS", statusMap[this._status]);
 		}
-		dump("get status: title 2:"+this.title+", this._calEvent.getProperty('STATUS'):"+this._calEvent.getProperty("STATUS")+", this._status:"+this._status+"\n");
+		//dump("get status: title 2:"+this.title+", this._calEvent.getProperty('STATUS'):"+this._calEvent.getProperty("STATUS")+", this._status:"+this._status+"\n");
 		return this._calEvent.getProperty("STATUS");
 	},
 
 	set status(aValue)
 	{
-dump("event set status 1:"+aValue+", this.status:"+this.status+"\n");
+//dump("event set status 1:"+aValue+", this.status:"+this.status+"\n");
 		if (aValue != this.status) {
 
 			const statuses = { "NONE": "NotStarted",
@@ -480,7 +480,7 @@ dump("event set status 1:"+aValue+", this.status:"+this.status+"\n");
 			//this._calEvent.status = aValue;
 			this._calEvent.setProperty("STATUS", aValue);
 		}
-dump("event set status 2:"+aValue+", this._newStatus:"+this._newStatus+", this._calEvent.getProperty('STATUS')"+this._calEvent.getProperty("STATUS")+"\n");
+//dump("event set status 2:"+aValue+", this._newStatus:"+this._newStatus+", this._calEvent.getProperty('STATUS')"+this._calEvent.getProperty("STATUS")+"\n");
 	},
 
 	//readonly attribute AUTF8String owner;

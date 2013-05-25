@@ -381,7 +381,7 @@ mivExchangeBaseItem.prototype = {
 	clone: function _clone()
 	{
 try {
-		dump("clone 1: title:"+this.title+", contractId:"+this.contractID+"\n");
+		//dump("clone 1: title:"+this.title+", contractId:"+this.contractID+"\n");
 
 		if (this.contractID == "@1st-setup.nl/exchange/calendarevent;1") {
 			var result = Cc[this.contractID]
@@ -535,7 +535,7 @@ try {
 catch(err){
   this.logInfo("Clone: error:"+err);
 }
-		dump("clone 2: title:"+this.title+", contractId:"+this.contractID+"\n");
+		//dump("clone 2: title:"+this.title+", contractId:"+this.contractID+"\n");
 		return result;
 	},
 
@@ -1409,7 +1409,7 @@ try {
 			break;
 		case "STATUS": 
 			//this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
-			dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
+			//dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
 			if (this.className == "mivExchangeEvent") {
 				if (value != this.getProperty(name)) {
 					switch (value) {
