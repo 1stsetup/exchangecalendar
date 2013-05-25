@@ -75,7 +75,7 @@ mivExchangeTimeZones.prototype = {
 	classDescription: "Keeps the Exchange TimeZones retreived from server in memory.",
 	classID: components.ID("{"+mivExchangeTimeZonesGUID+"}"),
 	contractID: "@1st-setup.nl/exchange/timezones;1",
-	flags: Ci.nsIClassInfo.SINGLETON || Ci.nsIClassInfo.THREADSAFE,
+	flags: Ci.nsIClassInfo.SINGLETON,
 	implementationLanguage: Ci.nsIProgrammingLanguage.JAVASCRIPT,
 
 	// void getInterfaces(out PRUint32 count, [array, size_is(count), retval] out nsIIDPtr array);
@@ -98,7 +98,8 @@ mivExchangeTimeZones.prototype = {
 	{
 		var version = this.exchangeStatistics.getServerVersion(aURL);
 
-		if (!this._timeZones[version]) {
+		if (this._timeZones[version] === undefined) {
+			this._timeZones[version] = null;
 			var self = this;
 			this.loadBalancer.addToQueue({ calendar: aCalendar,
 					 ecRequest:erGetTimeZonesRequest,

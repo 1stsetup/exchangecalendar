@@ -238,11 +238,11 @@ mivExchangeBaseItem.prototype = {
 		this.updatedItem = {};
 		this.newItem = {};
 
-		this._changesAttendees = new Array();
-		this._changesAttachments = new Array();
-		this._changesAlarm = new Array();
-		this._changedProperties = new Array();
-		this.mailboxAliases = new Array();
+		this._changesAttendees = [];
+		this._changesAttachments = [];
+		this._changesAlarm = [];
+		this._changedProperties = [];
+		this.mailboxAliases = [];
 
 		this._newBody = undefined;
 		this._newLocation = undefined;
@@ -284,7 +284,7 @@ mivExchangeBaseItem.prototype = {
 	classDescription: "Exchange calendar BaseItem.",
 	classID: components.ID("{"+mivExchangeBaseItemGUID+"}"),
 	contractID: "@1st-setup.nl/exchange/calendarbaseitem;1",
-	flags: Ci.nsIClassInfo.THREADSAFE,
+	flags: 0,
 	implementationLanguage: Ci.nsIProgrammingLanguage.JAVASCRIPT,
 
 	// methods from nsIClassInfo
@@ -1632,7 +1632,7 @@ try {
 	{
 		//this.logInfo("getAttendees: title:"+this.title);
 		if ((!this._attendees) && (this._exchangeData)) {
-			this._attendees = new Array();
+			this._attendees = [];
 			var tmpAttendee;
 
 			this._calEvent.removeAllAttendees();
@@ -1695,7 +1695,7 @@ try {
 
 	removeAttendeeFromChangesList: function _removeAttendeeFromChangesList(attendee)
 	{
-		var newChangesList = new Array();
+		var newChangesList = [];
 
 		for each(var tmpAttendee in this._changesAttendees) {
 			if ((tmpAttendee.attendee) && (tmpAttendee.attendee.id != attendee.id)) {
@@ -1803,7 +1803,7 @@ try {
 	{
 		//this.logInfo("getAttachments: title:"+this.title);
 		if ((!this._attachments) && (this._exchangeData)) {
-			this._attachments = new Array();
+			this._attachments = [];
 			if (this.hasAttachments) {
 	//			if (this.debug) this.logInfo("Title:"+aItem.title+"Attachments:"+aExchangeItem.getTagValue("Attachments"));
 				var fileAttachments = this._exchangeData.XPath("/t:Attachments/t:FileAttachment");
@@ -1829,7 +1829,7 @@ try {
 	{
 		//dump("addAttachment: title:"+this.title+"\n");
 		this.getAttachments({});
-		if (!this._changesAttachments) this._changesAttachments = new Array();
+		if (!this._changesAttachments) this._changesAttachments = [];
 		this._changesAttachments.push({ action: "add", attachment: attachment.clone()});
 		this._calEvent.addAttachment(attachment);
 	},
@@ -1840,7 +1840,7 @@ try {
 		//dump("removeAttachment: title:"+this.title+"\n");
 		//this.logInfo("removeAttachment: title:"+this.title);
 		this.getAttachments({});
-		if (!this._changesAttachments) this._changesAttachments = new Array();
+		if (!this._changesAttachments) this._changesAttachments = [];
 		this._changesAttachments.push({ action: "remove", attachment: attachment.clone()});
 		this._calEvent.removeAttachment(attachment);
 	},
@@ -1853,7 +1853,7 @@ try {
 //		var allAttachments = this._calEvent.getAttachments({});
 		var allAttachments = this.getAttachments({});
 		for each(var attachment in allAttachments) {
-			if (!this._changesAttachments) this._changesAttachments = new Array();
+			if (!this._changesAttachments) this._changesAttachments = [];
 			this._changesAttachments.push({ action: "remove", attachment: attachment.clone()});
 		}
 		allAttachments = null;			
@@ -1873,7 +1873,7 @@ try {
 	{
 		//this.logInfo("getCategories: title:"+this.title+"\n");
 		if ((!this._categories) && (this._exchangeData)) {
-			this._categories = new Array();
+			this._categories = [];
 			var strings = this._exchangeData.XPath("/t:Categories/t:String");
 			for each (var cat in strings) {
 				this._categories.push(cat.value);

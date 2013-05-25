@@ -66,7 +66,7 @@ mivExchangeTodo.prototype = {
 
 	classID : components.ID("{"+mivExchangeTodoGUID+"}"),
 	contractID : "@1st-setup.nl/exchange/calendartodo;1",
-	flags : Ci.nsIClassInfo.THREADSAFE,
+	flags : 0,
 	implementationLanguage : Ci.nsIProgrammingLanguage.JAVASCRIPT,
 
 	getInterfaces : function _getInterfaces(count) 
@@ -384,7 +384,7 @@ mivExchangeTodo.prototype = {
 	getCompanies: function _getCompanies(aCount)
 	{
 		if (!this._companies) {
-			this._companies = new Array();
+			this._companies = [];
 			if (this._exchangeData) {
 				var tmpStr = this._exchangeData.XPath("/t:Companies/t:String");
 				for each(var string in tmpStr) {
@@ -407,7 +407,7 @@ mivExchangeTodo.prototype = {
 	addCompany: function _addCompany(aCompany)
 	{
 		if (!this._newCompanies) {
-			this._newCompanies = new Array();
+			this._newCompanies = [];
 		}
 
 		this._newCompanies.push(aCompany);
@@ -416,7 +416,7 @@ mivExchangeTodo.prototype = {
 	//void clearCompanies();
 	clearCompanies: function _clearCompanies()
 	{
-		this._newCompanies = new Array();
+		this._newCompanies = [];
 	},
 
 	get duration()
