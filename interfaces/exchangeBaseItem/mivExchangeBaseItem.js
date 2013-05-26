@@ -421,7 +421,16 @@ try {
 				result.status = this.status;
 			}
 			else {
-				result.setProperty("STATUS", this.status);
+				const statusMap = {
+					"NotStarted"	: "NONE",
+					"InProgress" : "IN-PROCESS",
+					"Completed"	: "COMPLETED",
+					"WaitingOnOthers"	: "NEEDS-ACTION",
+					"Deferred"	: "CANCELLED",
+					null: "NONE"
+				};
+
+				result.setProperty("STATUS", statusMap[this._newStatus]);
 			}
 		}
 		if (this._newAlarm !== undefined) {
@@ -817,6 +826,7 @@ catch(err){
 
 	set status(aValue)
 	{
+dump("DIT ZOUDEN WE NIET MOETEN ZIEN\n");
 		this._newStatus = aValue;
 		this._calEvent.status = aValue;
 	},
@@ -889,6 +899,11 @@ catch(err){
 	{
 
 		//dump("getAlarms 1: title:"+this.title+"("+this.calendarItemType+")\n");
+		if (!this.canModify) {
+			count.value = 0;
+			return [];
+		}
+
 		if (this._alarm === undefined) {
 			this._alarm = null;
 			switch (this._className) {
@@ -1325,7 +1340,7 @@ try {
 				}
 			}
 			else {
-				this._calEvent.setProperty(name, this.status);
+				return this.status;
 			}
 			break;
 		case "X-MOZ-SEND-INVITATIONS": 
@@ -1409,7 +1424,7 @@ try {
 			break;
 		case "STATUS": 
 			//this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
-			//dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
+			dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
 			if (this.className == "mivExchangeEvent") {
 				if (value != this.getProperty(name)) {
 					switch (value) {
@@ -1474,7 +1489,7 @@ try {
 	//void deleteProperty(in AString name);
 	deleteProperty: function _deleteProperty(name)
 	{
-		//this.logInfo("deleteProperty: title:"+this.title+", name:"+name);
+		dump("deleteProperty: title:"+this.title+", name:"+name+"\n");
 		switch (name) {
 		case "DESCRIPTION": 
 			this._newBody = null;
@@ -1486,7 +1501,12 @@ try {
 			this._newLegacyFreeBusyStatus = null;
 			break;
 		case "STATUS": 
-			this._newMyResponseType = null;
+			if (this.className == "mivExchangeEvent") {
+				this._newMyResponseType = null;
+			}
+			else {
+				this.status = null;
+			}
 			break;
 		case "X-MOZ-SEND-INVITATIONS": 
 			this._newIsInvitation = null;
@@ -3525,8 +3545,14 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	initialize: function _initialize()
 	{
 		this._calEvent = null;
-		this._calEvent = Cc["@mozilla.org/calendar/event;1"]
-					.createInstance(Ci.calIEvent);
+		if (this.className == "mivExchangeTodo") {
+			this._calEvent = Cc["@mozilla.org/calendar/todo;1"]
+						.createInstance(Ci.calITodo);
+		}
+		else {
+			this._calEvent = Cc["@mozilla.org/calendar/event;1"]
+						.createInstance(Ci.calIEvent);
+		}
 	},
 
 	logInfo: function _logInfo(aMsg, aDebugLevel, aDepth) 

@@ -116,7 +116,7 @@ exchEventDialog.prototype = {
 			}
 			catch (ex) {}
 
-			this._document.getElementById("exchWebService-owner-hbox").hidden = false;
+			this._document.getElementById("exchWebService-owner-row").setAttribute("collapsed", "false");
 			this._document.getElementById("exchWebService-details-separator").hidden = false;
 
 			if (item.className) {
@@ -144,35 +144,13 @@ exchEventDialog.prototype = {
 			this._document.getElementById("reminder-2days-menuitem").hidden = true;
 			this._document.getElementById("reminder-1week-menuitem").hidden = true;
 			
-			var tmpDatePicker = this._document.createElement("datepicker");
-			tmpDatePicker.setAttribute("type","popup");
-			tmpDatePicker.setAttribute("id","todo-entrydate");
-			tmpDatePicker.setAttribute("value",this._document.getElementById("todo-entrydate").value);
-			tmpDatePicker.setAttribute("onchange","dateTimeControls2State(true);");
-			tmpDatePicker.addEventListener("change", function() { self.updateTime(); }, false);
-			if (!this._document.getElementById("todo-has-entrydate").checked) {
-				tmpDatePicker.setAttribute("disabled","true");
-			}
-			this._document.getElementById("event-grid-startdate-picker-box").replaceChild(tmpDatePicker, this._document.getElementById("todo-entrydate"));
-
-			var tmpDatePicker = this._document.createElement("datepicker");
-			tmpDatePicker.setAttribute("type","popup");
-			tmpDatePicker.setAttribute("id","todo-duedate");
-			tmpDatePicker.setAttribute("value",this._document.getElementById("todo-duedate").value);
-			tmpDatePicker.setAttribute("onchange","dateTimeControls2State(false);");
-			tmpDatePicker.addEventListener("change", function() { self.updateTime(); }, false);
-			if (!this._document.getElementById("todo-has-duedate").checked) {
-				tmpDatePicker.setAttribute("disabled","true");
-			}
-			this._document.getElementById("event-grid-enddate-picker-box").replaceChild(tmpDatePicker, this._document.getElementById("todo-duedate"));
-
 			this._document.getElementById("timezone-starttime").hidden = true;
 			this._document.getElementById("timezone-endtime").hidden = true;
 
 			if (this._document.getElementById("item-repeat")) {
 				this._document.getElementById("item-repeat").addEventListener("command", function() { self.updateRepeat(); }, false);
 			}
-			this.updateTime();
+			//this.updateTime();
 			this.updateRepeat();
 		}
 		else {
@@ -183,7 +161,7 @@ exchEventDialog.prototype = {
 			}
 			catch (ex) {}
 
-			this._document.getElementById("exchWebService-owner-hbox").hidden = true;
+			this._document.getElementById("exchWebService-owner-row").setAttribute("collapsed", "true");
 			this._document.getElementById("exchWebService-details-separator").hidden = true;
 
 			this._document.getElementById("event-grid-location-row").hidden = false;
@@ -206,22 +184,6 @@ exchEventDialog.prototype = {
 			this._document.getElementById("timezone-starttime").hidden = false;
 			this._document.getElementById("timezone-endtime").hidden = false;
 
-		}
-	},
-
-	setRealEndtime: function _setRealEndTime()
-	{
-		this._document.getElementById("event-endtime").value = this._document.getElementById("todo-duedate").value; 
-	},
-
-	updateTime: function _updateTime()
-	{
-		//dump(" ===++ calendar-event-dialog.js\n");
-		if (this._document.getElementById("todo-entrydate").dateValue) {
-			this._document.getElementById("todo-entrydate").dateValue.setHours(12);
-		}
-		if (this._document.getElementById("todo-duedate").dateValue) {
-			this._document.getElementById("todo-duedate").dateValue.setHours(13);
 		}
 	},
 

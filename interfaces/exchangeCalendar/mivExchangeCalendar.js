@@ -1678,7 +1678,6 @@ dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:
 				if (changesObj) {
 					changes = changesObj.changes;
 				}
-//				var changes = this.makeUpdateOneItem(aNewItem, aOldItem);
 				if (changes) {
 					if (this.debug) this.logInfo("modifyItem: changed:"+String(changes));
 					var self = this;
@@ -2582,9 +2581,9 @@ catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
 			var exchangeItem = aItem.QueryInterface(Ci.mivExchangeEvent);
 
 			if (exchangeItem) {
-				//if (aItem.canModify) {
+				if (aItem.canModify) {
 					return aItem.isInvitation;
-				//}
+				}
 			}
 		}
 		catch(err){
@@ -6679,141 +6678,24 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 		if (this.debug) this.logInfo("convertExchangeTaskToCalTask:"+String(aTask), 2);
 		//var item = createTodo();
 		var item = Cc["@1st-setup.nl/exchange/calendartodo;1"]
-				.createInstance(Ci.mivExchangeTodo);
+				.createInstance(Ci.mivExchangeTodo, this);
 
 		item.addMailboxAlias(this.mailbox);
 		item.exchangeData = aTask;
 
 		item.calendar = this.superCalendar;
 
-		//item.entryDate = this.tryToSetDateValue(aTask.getTagValue("t:StartDate"), null);
-
-		//item.dueDate = this.tryToSetDateValue(aTask.getTagValue("t:DueDate"), item.dueDate);
-		//item.completedDate = this.tryToSetDateValue(aTask.getTagValue("t:CompleteDate"), item.completedDate);
-		//item.percentComplete = this.tryToSetValue(aTask.getTagValue("t:PercentComplete"), item.percentComplete);
-		//item.calendar = this.superCalendar;
-
-		//item.id = this.tryToSetValue(aTask.getAttributeByTag("t:ItemId", "Id"), item.id);
-		//item.setProperty("X-ChangeKey", aTask.getAttributeByTag("t:ItemId", "ChangeKey"));
-
 		if (this.itemCache[item.id]) {
-			if (this.itemCache[item.id].changeKey == aTask.getAttributeByTag("t:ItemId", "ChangeKey")) {
-				//if (this.debug) this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
+			if (this.itemCache[item.id].changeKey == item.changeKey) {
+				if (this.debug) this.logInfo("Task item is allready in cache and the id and changeKey are the same. Skipping it.");
 				item.deleteItem();
 				item = null;
 				return null;
 			}
 		}
 
-
-		//item.setProperty("X-UID", "dummy");
-
-		//item.title = this.tryToSetValue(aTask.getTagValue("t:Subject"), item.title);
-
-		//??? this.setCommonValues(item, aTask);
-
-/*		var cats = [];
-		var strings = aTask.XPath("/t:Categories/t:String");
-		for each (var cat in strings) {
-			cats.push(cat.value);
-		}
-		strings = null;
-		item.setCategories(cats.length, cats);
-
-		switch(aTask.getTagValue("t:Status")) {
-			case "NotStarted" : 
-				item.status = "NONE";
-				break;
-			case "InProgress" : 
-				item.status = "IN-PROCESS";
-				break;
-			case "Completed" : 
-				item.status = "COMPLETED";
-				break;
-			case "WaitingOnOthers" : 
-				item.status = "NEEDS-ACTION";
-				break;
-			case "Deferred" : 
-				item.status = "CANCELLED";
-				break;
-		}
-
-		// Check if our custom fields are set
-		var extendedProperties = aTask.getTagValue("t:ExtendedProperty");
-		var doNotHandleOldAddon = false; 
-		var pidLidReminderSet = false;
-		var pidLidReminderSignalTime = "";
-		for each(var extendedProperty in extendedProperties) {
-
-			var propertyName = extendedProperty.getAttributeByTag("t:ExtendedFieldURI","PropertyName");
-			switch (propertyName) {
-				case "lastLightningModified":
-					var lastLightningModified = this.tryToSetDateValue(extendedProperty.getTagValue("t:Value"), null);
-					var lastModifiedTime = this.tryToSetDateValue(aCalendarItem.getTagValue("t:LastModifiedTime"), null);
-
-					if ((lastLightningModified) && (lastModifiedTime)) {
-						if (lastModifiedTime.compare(lastLightningModified) == 1) {
-							if (this.debug) this.logInfo("  -- Item has been modified on the Exchange server with another client.");
-							item.setProperty("X-ChangedByOtherClient", true);
-						}
-					}
-
-					break;
-				default:
-					if (propertyName != "") if (this.debug) this.logInfo("ODD propertyName:"+propertyName);
-			}
-
-			var propertyId = extendedProperty.getAttributeByTag("t:ExtendedFieldURI","PropertyId");
-			switch (propertyId) {
-				case MAPI_PidLidReminderSignalTime: // This is the next alarm time. Could be set by a snooze command.
-					pidLidReminderSignalTime = extendedProperty.getTagValue("t:Value");
-					item.setProperty("X-PidLidReminderSignalTime", pidLidReminderSignalTime);
-					if (item.title == "Nieuwe gebeurtenis2") if (this.debug) this.logInfo("@1:ODD propertyId:"+propertyId+"|"+pidLidReminderSignalTime);
-					break;
-				case MAPI_PidLidReminderSet: // A snooze time is active/set.
-					pidLidReminderSet = (extendedProperty.getTagValue("t:Value") == "true");
-					item.setProperty("X-PidLidReminderSet", pidLidReminderSet);
-					break;
-				default:
-					if (propertyId != "") {
-						if (item.title == "Nieuwe gebeurtenis2") if (this.debug) this.logInfo("@1:ODD propertyId:"+propertyId+"|"+extendedProperty.getTagValue("t:Value"));
-					}
-			}
-
-		}
-
-		// Check for Attachments
-		this.addExchangeAttachmentToCal(aTask, item);
-
-		item.setProperty("X-IsRecurring", aTask.getTagValue("t:IsRecurring"));
-
-		if (aTask.getTagValue("t:IsRecurring") == "true") {
-			item.parentItem = item;
-			// This is a master so create recurrenceInfo.
-			item.recurrenceInfo = this.readRecurrence(item, aTask);
-			if (this.syncBusy) {
-				this.readDeletedOccurrences(item, aTask);
-			}
-		}
-
-		var tmpDate;
-
-		tmpDate = this.tryToSetDateValue(aTask.getTagValue("t:DateTimeCreated"));
-		if (tmpDate) {
-            		item.setProperty("CREATED", tmpDate);
-		}
-
-		tmpDate = this.tryToSetDateValue(aTask.getTagValue("t:LastModifiedTime"));
-		if (tmpDate) {
-//			item.setProperty("LAST-MODIFIED", tmpDate);
-		}
-
-		item.setProperty("DESCRIPTION", aTask.getTagValue("t:Body"));
-*/
-		//item.parentItem = item;
-
 		// See if this is a delegated task.
-		var isNotAccepted = 0;
+/*		var isNotAccepted = 0;
 
 		for each (var extendedProperty in aTask.getTagValue("t:ExtendedProperty")) {
 
@@ -6855,14 +6737,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 			item.setProperty("X-exchWebService-Owner",aTask.getTagValue("t:Owner"));
 			item.setProperty("X-exchWebService-IsTeamTask",aTask.getTagValue("t:IsTeamTask"));
 		}
-		
-//		this.setAlarm(item, aTask);  
-//		this.setSnoozeTime(item, null);
-
-/*		if (isNotAccepted == 3) {
-			item.makeImmutable();
-		}*/
-
+*/		
 		return item;
 	},
 
@@ -7042,16 +6917,11 @@ return;
 
 	updateCalendar2: function _updateCalendar2(erGetItemsRequest, aItems, doNotify)
 	{
-		//if (this.debug) this.logInfo("updateCalendar");
-//		var items = [];
-//		var convertedItems = [];
-//try{
 		if (this.debug) this.logInfo("updateCalendar: We have '"+aItems.length+"' items to update in calendar.");
 
 		for (var index in aItems) {
 
 			this.itemsFromExchange++;
-			//dump(" ~~Cal:"+this.name+", items from exchange:"+this.itemsFromExchange+"\n");
 
 			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify);
 			if (item) {
@@ -7060,7 +6930,6 @@ return;
 					// This is a new unknown item
 					this.itemCache[item.id] = item;
 					this.itemCount++;
-					//dump(" --Cal:"+this.name+", added item:"+this.itemCount+", title:"+item.title+", startDate:"+item.startDate+"\n");
 
 					if (this.debug) this.logInfo("updateCalendar: onAddItem:"+ item.title);
 					if (doNotify) {
@@ -7072,6 +6941,7 @@ return;
 				else {
 					// I Allready known this one.
 					if (this.debug) this.logInfo("updateCalendar: onModifyItem:"+ item.title);
+					//dump("updateCalendar: onModifyItem:"+ item.title);
 
 					this.singleModified(item, doNotify);
 					this.addToOfflineCache(item, aItems[index]);
@@ -7081,9 +6951,6 @@ return;
 			aItems[index] = null;
 
 		}
-//}catch(err){dump("conversion err:"+err+"\n");}
-		//return convertedItems;
-
 	},
 
 

@@ -39,8 +39,6 @@ function mivExchangeTodo() {
 
 	this.initExchangeBaseItem();
 
-	this.miv = this.globalFunctions.getUUID();
-
 	//this.logInfo("mivExchangeTodo: init");
 
 }
@@ -97,10 +95,19 @@ mivExchangeTodo.prototype = {
 		if (!this._entryDate) {
 			this._entryDate = this.tryToSetDateValue(this.getTagValue("t:StartDate", null), this._calEvent.entryDate);
 			if (this._entryDate) {
-				this._entryDate.hour = 0;
+/*				this._entryDate.hour = 0;
 				this._entryDate.minute = 0;
 				this._entryDate.second = 0;
 				this._entryDate.isDate = false;
+*/
+				if ((this._entryDate.hour === 0) && (this._entryDate.minute === 0) && (this.dueDate) && (this.dueDate.hour === 0) && (this.dueDate.minute === 0)) {
+					// When a new task is created in outlook it will have entryDate en dueDate times set to 00:00.
+					// We change this to the start of the working day..
+					var dayStart = this.globalFunctions.safeGetIntPref(null,"calendar.view.daystarthour", 8);
+					this._entryDate.hour = dayStart;
+					this._dueDate.hour = dayStart;
+					this._calEvent.dueDate = this._dueDate.clone();
+				}
 
 				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._entryDate);
 				if (timezone) {
@@ -120,11 +127,11 @@ mivExchangeTodo.prototype = {
 			if ((!this._newEntryDate) || (aValue.compare(this._newEntryDate) != 0)) {
 		//dump("set entryDate 2: title:"+this.title+", aValue:"+aValue+"\n");
 				this._newEntryDate = aValue.clone();
-				this._newEntryDate.hour = 0;
+/*				this._newEntryDate.hour = 0;
 				this._newEntryDate.minute = 0;
 				this._newEntryDate.second = 0;
 				this._newEntryDate.isDate = false;
-				this._calEvent.entryDate = this._newEntryDate.clone();
+*/				this._calEvent.entryDate = aValue.clone();
 			}
 		}
 		else {
@@ -142,11 +149,11 @@ mivExchangeTodo.prototype = {
 		if (!this._dueDate) {
 			this._dueDate = this.tryToSetDateValue(this.getTagValue("t:DueDate", null), this._calEvent.dueDate);
 			if (this._dueDate) {
-				this._dueDate.hour = 23;
+/*				this._dueDate.hour = 23;
 				this._dueDate.minute = 59;
 				this._dueDate.second = 0;
 				this._dueDate.isDate = false;
-
+*/
 				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._dueDate);
 				if (timezone) {
 					this._dueDate = this._dueDate.getInTimezone(timezone);
@@ -160,16 +167,16 @@ mivExchangeTodo.prototype = {
 
 	set dueDate(aValue)
 	{
-		//dump("set dueDate 1: title:"+this.title+", aValue:"+aValue+"\n");
+		dump("set dueDate 1: title:"+this.title+", aValue:"+aValue+"\n");
 		if (aValue) {
 			if ((!this._newDueDate) || (aValue.compare(this._newDueDate) != 0)) {
 		//dump("set dueDate 2: title:"+this.title+", aValue:"+aValue+"\n");
 				this._newDueDate = aValue.clone();
-				this._newDueDate.hour = 23;
+/*				this._newDueDate.hour = 23;
 				this._newDueDate.minute = 59;
 				this._newDueDate.second = 0;
 				this._newDueDate.isDate = false;
-				this._calEvent.dueDate = this._newDueDate.clone();
+*/				this._calEvent.dueDate = aValue.clone();
 			}
 		}
 		else {
@@ -178,6 +185,7 @@ mivExchangeTodo.prototype = {
 				this._calEvent.dueDate = aValue;
 			}
 		}
+		dump("set dueDate 2: title:"+this.title+", this._newDueDate:"+this._newDueDate+", this._calEvent.dueDate:"+this._calEvent.dueDate+"\n");
 	},
 
 	//attribute calIDateTime completedDate;
@@ -208,12 +216,12 @@ mivExchangeTodo.prototype = {
 		//dump("set completedDate: title:"+this.title+", aValue:"+aValue+"\n");
 		if (aValue) {
 			if ((!this._newCompletedDate) || (aValue.compare(this._newCompletedDate) != 0)) {
-				this._newCompletedDate = aValue.clone();
+				//this._newCompletedDate = aValue.clone();
 				//this._newCompletedDate.hour = 0;
 				//this._newCompletedDate.minute = 0;
 				//this._newCompletedDate.second = 0;
 				//this._newCompletedDate.isDate = true;
-				this._calEvent.completedDate = this._newCompletedDate.clone();
+				this._calEvent.completedDate = aValue.clone();
 			}
 		}
 		else {
@@ -444,30 +452,38 @@ mivExchangeTodo.prototype = {
 	//attribute AUTF8String status;
 	get status()
 	{
-		//dump("get status: title 1:"+this.title+", this._calEvent.getProperty('STATUS'):"+this._calEvent.getProperty("STATUS")+", this._status:"+this._status+", this._newStatus"+this._newStatus+"\n");
-		if ((!this._status) && (this._newStatus === undefined)) {
-			this._status = this.getTagValue("t:Status", "NotStarted");
+//dump("get status: title 1:"+this.title+", this._calEvent.getProperty('STATUS'):"+this._calEvent.getProperty("STATUS")+", this._status:"+this._status+", this._newStatus"+this._newStatus+"\n");
+		const statusMap = {
+			"NotStarted"	: "NONE",
+			"InProgress" : "IN-PROCESS",
+			"Completed"	: "COMPLETED",
+			"WaitingOnOthers"	: "NEEDS-ACTION",
+			"Deferred"	: "CANCELLED",
+			null: "NONE"
+		};
 
-			const statusMap = {
-				"NotStarted"	: "NONE",
-				"InProgress" : "IN-PROCESS",
-				"Completed"	: "COMPLETED",
-				"WaitingOnOthers"	: "NEEDS-ACTION",
-				"Deferred"	: "CANCELLED",
-				null: "NONE"
-			};
+		if ((!this._status) && (this._newStatus === undefined)) {
+//dump("get status: title 2:"+this.title+", this._calEvent.getProperty('STATUS'):"+this._calEvent.getProperty("STATUS")+", this._status:"+this._status+", this._newStatus"+this._newStatus+"\n");
+			this._status = this.getTagValue("t:Status", "NotStarted");
 
 			//this._calEvent.status = statusMap[this._status];
 			this._calEvent.setProperty("STATUS", statusMap[this._status]);
 		}
-		//dump("get status: title 2:"+this.title+", this._calEvent.getProperty('STATUS'):"+this._calEvent.getProperty("STATUS")+", this._status:"+this._status+"\n");
-		return this._calEvent.getProperty("STATUS");
+//dump("get status: title 3:"+this.title+", this._calEvent.getProperty('STATUS'):"+this._calEvent.getProperty("STATUS")+", this._status:"+this._status+"\n");
+		if (this._newStatus === undefined) {
+			return statusMap[this._status];
+		}
+		else {
+			return statusMap[this._newStatus];
+		}
+//		return this._calEvent.getProperty("STATUS");
 	},
 
 	set status(aValue)
 	{
-//dump("event set status 1:"+aValue+", this.status:"+this.status+"\n");
+dump("task set status 1:"+aValue+", this.status:"+this.status+"\n");
 		if (aValue != this.status) {
+dump("task set status 2:"+aValue+", this.status:"+this.status+"\n");
 
 			const statuses = { "NONE": "NotStarted",
 					"IN-PROCESS": "InProgress", 
@@ -480,7 +496,7 @@ mivExchangeTodo.prototype = {
 			//this._calEvent.status = aValue;
 			this._calEvent.setProperty("STATUS", aValue);
 		}
-//dump("event set status 2:"+aValue+", this._newStatus:"+this._newStatus+", this._calEvent.getProperty('STATUS')"+this._calEvent.getProperty("STATUS")+"\n");
+dump("event set status 3:"+aValue+", this._newStatus:"+this._newStatus+", this._calEvent.getProperty('STATUS'):"+this._calEvent.getProperty("STATUS")+"\n");
 	},
 
 	//readonly attribute AUTF8String owner;
@@ -511,7 +527,7 @@ mivExchangeTodo.prototype = {
 			this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
 		}
 
-		if ((this._newPercentComplete) || (this._newIsCompleted === true)) {
+		if ((this._newPercentComplete) || ((this._newIsCompleted) && (this._newIsCompleted === true))) {
 			this._nonPersonalDataChanged = true;
 			this.addSetItemField(updates, "PercentComplete", this.percentComplete);
 		}
@@ -519,14 +535,17 @@ mivExchangeTodo.prototype = {
 		if ((this._newStatus) || (this._newIsCompleted !== undefined)) {
 			this._nonPersonalDataChanged = true;
 
-			const statuses = { "NONE": "NotStarted",
-					"IN-PROCESS": "InProgress", 
-					"COMPLETED" : "Completed",
-					"NEEDS-ACTION" : "WaitingOnOthers",
-					"CANCELLED" : "Deferred",
-					null: "NotStarted" };
-
-			this.addSetItemField(updates, "Status", statuses[this.status]);
+			if (this._newStatus) {
+				this.addSetItemField(updates, "Status", this._newStatus);
+			}
+			else {
+				if (this._newIsCompleted === false) {
+					this.addSetItemField(updates, "Status", "NotStarted");
+				}
+				else {
+					this.addSetItemField(updates, "Status", "Completed");
+				}
+			}
 		}
 
 		if (this._newTotalWork) {
@@ -550,6 +569,7 @@ mivExchangeTodo.prototype = {
 		}
 
 		// Categories
+		this.getCategories({});
 		if (this._changesCategories) {
 			var categoriesXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
 						.createInstance(Ci.mivIxml2jxon);
@@ -706,7 +726,7 @@ mivExchangeTodo.prototype = {
 		}
 
 		this.completedDate;
-		if ((this._newCompletedDate) && (this._newIsCompleted === true)) {
+		if ((this._newCompletedDate) && ((this._newIsCompleted) && (this._newIsCompleted === true))) {
 //			var tmpEnd = this._newCompletedDate.clone();
 			var tmpEnd = this.completedDate.clone();
 
@@ -730,7 +750,7 @@ mivExchangeTodo.prototype = {
 			this.addSetItemField(updates, "CompleteDate", exchEnd);
 		}
 		else {
-			if (((this._completedDate) && (this._newCompletedDate === null)) || (this._completedDate === undefined) || (this._newIsCompleted === false)) {
+			if (((this._completedDate) && (this._newCompletedDate === null)) || (this._completedDate === undefined) || ((this._newIsCompleted) && (this._newIsCompleted === false))) {
 				this._nonPersonalDataChanged = true;
 				this.addDeleteItemField(updates, "CompleteDate");
 			}
