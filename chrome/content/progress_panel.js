@@ -125,11 +125,12 @@ exchProgressPanel.prototype = {
 						}
 					}
 				}
-				var tmpStr = running + "/" + waiting + " (r/w job";
+//				var tmpStr = running + "/" + waiting + " (r/w job";
+				var tmpStr = running + " running & " + waiting + " queued job";
 				if ((waiting+running) > 1) {
 					tmpStr = tmpStr + "s";
 				}
-				tmpStr = tmpStr + ")";
+//				tmpStr = tmpStr + ")";
 				this._document.getElementById("exchWebService-progress-label").value = tmpStr;
 			}
 
