@@ -269,7 +269,9 @@ erGetItemsRequest.prototype = {
 		for each (var item in this.ids) {
 			var itemId = itemids.addChildTag("ItemId", "nsTypes", null);
 			itemId.setAttribute("Id", item.Id);
-			itemId.setAttribute("ChangeKey", item.ChangeKey);
+			if (item.ChangeKey) {
+				itemId.setAttribute("ChangeKey", item.ChangeKey);
+			}
 			if (item.index) {
 				//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute. We have an index.");
 				this.argument.occurrenceIndexes[item.Id] = item.index;

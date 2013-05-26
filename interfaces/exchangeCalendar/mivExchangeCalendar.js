@@ -58,6 +58,7 @@ Cu.import("resource://exchangecalendar/erGetFolder.js");
 Cu.import("resource://exchangecalendar/erFindCalendarItems.js");
 Cu.import("resource://exchangecalendar/erFindTaskItems.js");
 Cu.import("resource://exchangecalendar/erGetItems.js");
+Cu.import("resource://exchangecalendar/erGetMasterOccurrenceId.js");
 Cu.import("resource://exchangecalendar/erGetMeetingRequestByUID.js");
 Cu.import("resource://exchangecalendar/erGetOccurrenceIndex.js");
 Cu.import("resource://exchangecalendar/erDeleteItem.js");
@@ -319,9 +320,10 @@ function calExchangeCalendar() {
 
 	this.mPrefs = null;
 
-	this.itemCache = new Array;
-	this.recurringMasterCache = new Array;
-	this.newMasters = new Array;
+	this.itemCache = {};
+	this.recurringMasterCache = {};
+	this.newMasters = {};
+	this.parentLessItems = {};
 
 	this.startDate = null;
 	this.endDate = null;
@@ -5730,7 +5732,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 	{
 		if (this.debug) this.logInfo("findCalendarItemsOK: aIds.length="+aIds.length+", aOccurrences.length="+aOccurrences.length);
 
-		this.saveCredentials(erFindCalendarItemsRequest.argument);
+		if (erFindCalendarItemsRequest) this.saveCredentials(erFindCalendarItemsRequest.argument);
 		this.notConnected = false;
 
 		if ((aIds.length == 0) && (aOccurrences.length)) {
@@ -5762,7 +5764,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
        		var self = this;
 
 		// If we have occurrences and/or exceptions. Find the masters. followed by the occurrences.
-		if (newOccurrenceList.length > 0) {
+/*		if (newOccurrenceList.length > 0) {
 			if (this.debug) this.logInfo("findCalendarItemsOK: aOccurrences.length="+aOccurrences.length);
 			this.addToQueue( erFindMasterOccurrencesRequest, 
 			{user: this.user, 
@@ -5778,7 +5780,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			function(erGetItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erGetItemsRequest, aCode, aMsg);},
 			null);
 
-		}
+		}*/
 
 		// We have single and/or master items. Get full details and cache them.
 		if (newIdList.length > 0) {
@@ -6501,6 +6503,41 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 		}
 	},
 
+	getMasterByItem: function _getMasterByItem(aItem)
+	{
+		if (this.debug) this.logInfo("getMasterByItem for item:"+aItem.title+", startdate:"+aItem.startDate+", uid:"+aItem.uid);
+		var self = this;
+		this.addToQueue( erGetMasterOccurrenceIdRequest, 
+			{user: this.user, 
+			 serverUrl: this.serverUrl,
+			 item: aItem,
+			 folderID: this.folderID,
+			 changeKey: this.changeKey,
+			 getType: "lightning" }, 
+			function(erGetMasterOccurrenceIdRequest, aId, aChangeKey) { self.getMasterOk(erGetMasterOccurrenceIdRequest, aId, aChangeKey, aItem.uid);}, 
+			function(erGetMasterOccurrenceIdRequest, aCode, aMsg) { self.getMasterError(erGetMasterOccurrenceIdRequest, aCode, aMsg);},
+			null);
+	},
+
+	getMasterOk: function _getMasterOk(erGetMasterOccurrenceIdRequest, aId, aChangeKey, aUID)
+	{
+		if (this.debug) this.logInfo("getMasterOk aId:"+aId+", aChangeKey:"+aChangeKey+", uid:"+aUID);
+		var ids = [{Id: aId,
+				  ChangeKey: aChangeKey,
+				  type: "RecurringMaster",
+				  uid: aUID,
+				  start: null,
+				  end: null}];
+
+		this.findCalendarItemsOK(erGetMasterOccurrenceIdRequest, ids, [])
+	},
+
+	getMasterError: function _getMasterError(erGetMasterOccurrenceIdRequest, aCode, aMsg)
+	{
+		if (this.debug) this.logInfo("getMasterError aCode:"+aCode+", aMsg:"+aMsg);
+		this.saveCredentials(erGetMasterOccurrenceIdRequest.argument);
+	},
+
 	convertExchangeAppointmentToCalAppointment: function _convertExchangeAppointmentToCalAppointment(aCalendarItem, isMeetingRequest, erGetItemsRequest, doNotify)
 	{
 		if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment:"+String(aCalendarItem), 2);
@@ -6591,12 +6628,17 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 						// We allready have a master in Cache.
 						if (this.debug) this.logInfo("Found master for exception:"+master.title+", date:"+master.startDate.toString());
 						master.addException(item);
-						//item.parentItem = master;
-						//master.recurrenceInfo.modifyException(item, true);
-						//this.setSnoozeTime(item, master);
 					}
 					else {
 						if (this.debug) this.logInfo("HAS NO MASTER: STRANGE: Exception:"+item.title);
+						// We do not have a master yet so we are going to request it and put this in itemcache but do not show it.
+						this.parentLessItems[item.id] = item;
+						if (!this.newMasters[item.uid]) {
+							this.newMasters[item.uid] = true;
+							this.getMasterByItem(item);
+						}
+						this.itemCache[item.id] = item;
+						return null;
 					}
 
 					break;
@@ -6610,18 +6652,48 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 						if (this.debug) this.logInfo("Found master for occurrence:"+master.title+", date:"+master.startDate.toString());
 
 						master.addOccurrence(item);
-						//item.parentItem = master;
-
-						//this.setSnoozeTime(item, master);
 					}
 					else {
 						if (this.debug) this.logInfo("HAS NO MASTER: STRANGE: Occurrence:"+item.title);
+						// We do not have a master yet so we are going to request it and put this in itemcache but do not show it.
+						this.parentLessItems[item.id] = item;
+						if (!this.newMasters[item.uid]) {
+							this.newMasters[item.uid] = true;
+							this.getMasterByItem(item);
+						}
+						this.itemCache[item.id] = item;
+						return null;
 					}
 					
 					break;
 				case "RecurringMaster" :
 	
-					if (this.debug) this.logInfo("@1:"+item.startDate.toString()+":IsMaster");
+					if (this.debug) this.logInfo(item.title+":"+item.startDate.toString()+":IsMaster");
+
+					if ((this.recurringMasterCache[item.uid]) && (this.recurringMasterCache[item.uid].changeKey != item.changeKey)) {
+						if (this.debug) this.logInfo("We allready have this master in cache but the changeKey changed.");
+
+						var ids = [];
+						var myExceptions = this.recurringMasterCache[item.uid].getExceptions({});
+						for each(var tmpException in myExceptions) {
+							ids.push({Id: tmpException.id,
+									  type: "Exception",
+									  uid: item.uid,
+									  start: null,
+									  end: null});
+						}
+						var myOccurrences = this.recurringMasterCache[item.uid].getOccurrences({});
+						for each(var tmpOccurrence in myOccurrences) {
+							ids.push({Id: tmpOccurrence.id,
+									  type: "Occurrence",
+									  uid: item.uid,
+									  start: null,
+									  end: null});
+						}
+
+						if (this.debug) this.logInfo("Going to request '"+ids.length+"' children to see if they are updated.");
+						this.findCalendarItemsOK(null, ids, [])
+					}
 
 					if (this.itemCache[item.id]) {
 						if (this.debug) this.logInfo("This master also existed as an normal item. Probably an upgrade from single to master.");
@@ -6631,54 +6703,31 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 						delete this.itemCache[item.id];
 					}
 
-					// Try to find occurrences of this master which have their parentItem not
-					// yet set to this one. Also set right recurrenceinfo for exceptions.
-					// !!! This should not happen. Masters are allways cached before occurrence or exception.
-					// 24-10-2011 I never have seen the below mentioned line in my logs. That is OK
-					var loadChildren = false;
-					var childCount = 0;
-
-					for (var index in this.itemCache) {
-
-						if ( (this.itemCache[index]) &&
-						     (isEvent(this.itemCache[index])) &&
-						     ( (this.itemCache[index].calendarItemType == "Occurrence") ||
-						       (this.itemCache[index].calendarItemType == "Exception") ) &&
-						     (this.itemCache[index].uid == item.uid) &&
-						     (this.itemCache[index].parentItem.id == item.id) ) {
-							childCount++;
-						}
-
-						if ( (this.itemCache[index]) &&
-						     (isEvent(this.itemCache[index])) &&
-						     ( (this.itemCache[index].calendarItemType == "Occurrence") ||
-						       (this.itemCache[index].calendarItemType == "Exception") ) &&
-						     (this.itemCache[index].uid == item.uid) &&
-						     (this.itemCache[index].parentItem.id != item.id) ) {
-							if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment: WE SEE THIS LINE. SOLVE IT subject:"+item.title);
+					if (this.debug) this.logInfo("Trying to see if there are parentless items for this master:"+item.title+".");
+					this.observers.notify("onStartBatch");
+					for (var itemId in this.parentLessItems) {
+						if ( (this.parentLessItems[itemId]) &&
+						     (isEvent(this.parentLessItems[itemId])) &&
+						     ( (this.parentLessItems[itemId].calendarItemType == "Occurrence") ||
+						       (this.parentLessItems[itemId].calendarItemType == "Exception") ) &&
+						     (this.parentLessItems[itemId].uid == item.uid) &&
+						     (this.parentLessItems[itemId].parentItem.id != item.id) ) {
+							if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment: Found item without parent:"+this.parentLessItems[itemId]+", going to set parent.");
 							//this.itemCache[index].parentItem = item;
-							if (this.itemCache[index].calendarItemType == "Exception") {
-								item.addException(this.itemCache[index]);
-								//item.recurrenceInfo.modifyException(this.itemCache[index], true);
+							if (this.parentLessItems[itemId].calendarItemType == "Exception") {
+								item.addException(this.parentLessItems[itemId]);
 							}
-							if (this.itemCache[index].calendarItemType == "Occurrence") {
-								item.addOccurrence(this.itemCache[index]);
-								//item.recurrenceInfo.modifyException(this.itemCache[index], true);
+							if (this.parentLessItems[itemId].calendarItemType == "Occurrence") {
+								item.addOccurrence(this.parentLessItems[itemId]);
 							}
+
+							this.notifyTheObservers("onAddItem", [this.parentLessItems[itemId]]);
+							this.parentLessItems[itemId] = null;
+							delete this.parentLessItems[itemId];
 						}
 
 					}
-
-					if (this.debug) this.logInfo("title:"+item.title+", childCount:"+childCount+", firstSyncDone:"+this.firstSyncDone);
-
-					if ((this.firstSyncDone)) {
-						if (this.debug) this.logInfo("We have a master and the sync is done. We will download it's children.");
-						if (childCount > 0) {
-							if (this.debug) this.logInfo("  It also has children so we first remove them.");
-							this.removeChildrenFromMaster(item);
-						}
-						loadChildren = true;
-					}
+					this.observers.notify("onEndBatch");
 
 					this.addToOfflineCache(item, aCalendarItem);
 
@@ -6692,41 +6741,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 					this.recurringMasterCache[uid] = item;
 					//dump("   :: MasterCount:"+this.masterCount+"\n");
 
-					if ((loadChildren) || (this.newMasters[uid])) {
-
-						if (this.debug) this.logInfo("We have a master and it was set as new. So we download it's children.title:"+item.title);
-						delete this.newMasters[uid];
-
-						if (doNotify) {
-							var self = this;
-							// Request children from EWS server.
-							var childRequestItem = {Id: item.id,
-								  ChangeKey: item.changeKey,
-								  type: item.calendarItemType,
-								  uid: item.uid,
-								  start: aCalendarItem.getTagValue("t:Start"),
-								  end: aCalendarItem.getTagValue("t:End")};
-					
-							this.addToQueue( erFindOccurrencesRequest, 
-							{user: this.user, 
-							 mailbox: this.mailbox,
-							 folderBase: this.folderBase,
-							 serverUrl: this.serverUrl,
-							 masterItem: childRequestItem,
-							 folderID: this.folderID,
-							 changeKey: this.changeKey,
-							 startDate: this.startDate,
-							 endDate: this.endDate,
-					 		 GUID: calExchangeCalendarGUID}, 
-							function(erGetItemsRequest, aIds) { self.findOccurrencesOK(erGetItemsRequest, aIds);}, 
-							function(erGetItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erGetItemsRequest, aCode, aMsg);},
-							null);
-						}
-					}
-
 					if (this.debug) this.logInfo("This is a master it will not be put into the normal items cache list.");
-					//item.exchangeData = null;
-					//item = null;
 			//dump("convertExchangeAppointmentToCalAppointment. The master will not be visible:"+item.title+"\n");
 					return null;  // The master will not be visible
 
@@ -7112,7 +7127,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		//if (this.debug) this.logInfo("updateCalendar");
 //		var items = [];
 //		var convertedItems = [];
-try{
+//try{
 		if (this.debug) this.logInfo("updateCalendar: We have '"+aItems.length+"' items to update in calendar.");
 
 		for (var index in aItems) {
@@ -7148,7 +7163,7 @@ try{
 			aItems[index] = null;
 
 		}
-}catch(err){dump("conversion err:"+err+"\n");}
+//}catch(err){dump("conversion err:"+err+"\n");}
 		//return convertedItems;
 
 	},
