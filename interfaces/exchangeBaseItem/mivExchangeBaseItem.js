@@ -434,6 +434,7 @@ try {
 			}
 		}
 		if (this._newAlarm !== undefined) {
+dump("clone: We have alarm changes.\n");
 			if (this._newAlarm) {
 				result.addAlarm(this._newAlarm);
 			}
@@ -585,20 +586,26 @@ catch(err){
 
 	get canDelete()
 	{
-		this.aclEntry;
-		return this._canDelete;
+		if (this.aclEntry) {
+			return this._canDelete;
+		}
+		return true;
 	},
 
 	get canModify()
 	{
-		this.aclEntry;
-		return this._canModify;
+		if (this.aclEntry) {
+			return this._canModify;
+		}
+		return true;
 	},
 
 	get canRead()
 	{
-		this.aclEntry;
-		return this._canRead;
+		if (this.aclEntry) {
+			return this._canRead;
+		}
+		return true;
 	},
 
 	/**
@@ -607,7 +614,6 @@ catch(err){
 	//readonly attribute calIItemACLEntry aclEntry;
 	get aclEntry()
 	{
-//dump("aclEntry:"+this.title+".\n");
 		if (!this._effectiveRights) {
 
 			this._effectiveRights = this.getTag("t:EffectiveRights", null);
@@ -617,18 +623,19 @@ catch(err){
 				this._canModify = (this._effectiveRights.getTagValue("t:Modify", "false") == "true");
 				this._canRead = (this._effectiveRights.getTagValue("t:Read", "false") == "true");
 			}
+			else {
+				this._canDelete = this.calendar.canCreateContent;
+				this._canModify = this.calendar.canCreateContent;
+				this._canRead = this.calendar.canRead;
+			}
 		}
 
-		var result = this._calEvent.aclEntry;
-		if (this._effectiveRights) {
-//dump("aclEntry:"+this.title+". Has effectiveRights: Delete="+this._canDelete+", Modify="+this._canModify+", Read="+this._canRead+"\n");
-			result = {
+		var result = {
 					calendarEntry : this.calendar.aclEntry,
 					userCanModify : ((this._canModify) || (this._canDelete)),
 					userCanRespond : this._canModify,
 					userCanViewAll : this._canRead,
 					userCanViewDateAndTime: true,};
-		} 
 		return result;
 	},
 
@@ -826,7 +833,6 @@ catch(err){
 
 	set status(aValue)
 	{
-dump("DIT ZOUDEN WE NIET MOETEN ZIEN\n");
 		this._newStatus = aValue;
 		this._calEvent.status = aValue;
 	},
@@ -898,7 +904,6 @@ dump("DIT ZOUDEN WE NIET MOETEN ZIEN\n");
 	getAlarms: function _getAlarms(count)
 	{
 
-		//dump("getAlarms 1: title:"+this.title+"("+this.calendarItemType+")\n");
 		if (!this.canModify) {
 			count.value = 0;
 			return [];
@@ -925,8 +930,9 @@ dump("DIT ZOUDEN WE NIET MOETEN ZIEN\n");
 				}
 				break;
 			case "mivExchangeEvent":
-				if ((this.reminderIsSet) && (this.reminderDueBy.compare(this.startDate) < 1) && (this.calendarItemType != "RecurringMaster")) {
-					this.logInfo("Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType);
+			//	if ((this.reminderIsSet) && (this.reminderDueBy.compare(this.startDate) < 1) && (this.calendarItemType != "RecurringMaster")) {
+				if (this.reminderIsSet) {
+ 					//dump("getAlarms: Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType+"\n");
 					var alarm = cal.createAlarm();
 					alarm.action = "DISPLAY";
 					alarm.repeat = 0;
@@ -948,6 +954,9 @@ dump("DIT ZOUDEN WE NIET MOETEN ZIEN\n");
 					this._alarm = alarm.clone();
 					this._calEvent.addAlarm(alarm);
 				}
+				else {
+					//dump("getAlarms: no alarm info in exchangeData.\n");
+				}
 				break;
 			}
 		}
@@ -967,7 +976,7 @@ dump("DIT ZOUDEN WE NIET MOETEN ZIEN\n");
 
 		// As exchange can only handle one alarm. We make sure there is only one.
 
-		dump("addAlarm 1: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"("+this.calendarItemType+")\n");
+		//dump("addAlarm 1: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"("+this.calendarItemType+")\n");
 		this.getAlarms({}); // Preload
 
 		if (((this._alarm) && (!this.alarmsAreEqual(this._alarm, aAlarm))) || (!this._alarm)) {
@@ -986,7 +995,7 @@ dump("DIT ZOUDEN WE NIET MOETEN ZIEN\n");
 	//void deleteAlarm(in calIAlarm aAlarm);
 	deleteAlarm: function _deleteAlarm(aAlarm)
 	{
-		dump("deleteAlarm: title:"+this.title+"("+this.calendarItemType+")\n");
+		//dump("deleteAlarm: title:"+this.title+"("+this.calendarItemType+")\n");
 		this._newAlarm = null;
 		this._calEvent.clearAlarms();
 	},
@@ -997,7 +1006,7 @@ dump("DIT ZOUDEN WE NIET MOETEN ZIEN\n");
 	//void clearAlarms();
 	clearAlarms: function _clearAlarms()
 	{
-		dump("clearAlarms: title:"+this.title+"("+this.calendarItemType+")\n");
+		//dump("clearAlarms: title:"+this.title+"("+this.calendarItemType+")\n");
 		this._newAlarm = null;
 		this._calEvent.clearAlarms();
 	},
@@ -1424,7 +1433,7 @@ try {
 			break;
 		case "STATUS": 
 			//this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
-			dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
+			//dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
 			if (this.className == "mivExchangeEvent") {
 				if (value != this.getProperty(name)) {
 					switch (value) {
@@ -1489,7 +1498,7 @@ try {
 	//void deleteProperty(in AString name);
 	deleteProperty: function _deleteProperty(name)
 	{
-		dump("deleteProperty: title:"+this.title+", name:"+name+"\n");
+		//dump("deleteProperty: title:"+this.title+", name:"+name+"\n");
 		switch (name) {
 		case "DESCRIPTION": 
 			this._newBody = null;

@@ -495,7 +495,7 @@ calExchangeCalendar.prototype = {
 	//	          in calIOperationListener aListener);
 	getCalendarEntry: function _getCalendarEntry(aCalendar, aListener)
 	{
-		dump("getCalendarEntry: aCalendar.name:"+aCalendar.name+", aLsitener:"+aListener+"\n");
+		//dump("getCalendarEntry: aCalendar.name:"+aCalendar.name+", aLsitener:"+aListener+"\n");
 	},
 
 	/* Gets the calIItemACLEntry of the current user for the specified
@@ -505,7 +505,7 @@ calExchangeCalendar.prototype = {
 	//calIItemACLEntry getItemEntry(in calIItemBase aItem);
 	getItemEntry: function _getItemEntry(aItem)
 	{
-		dump("getItemEntry: aCalendar.name:"+this.name+", aItem:"+aItem.title+"\n");
+		//dump("getItemEntry: aCalendar.name:"+this.name+", aItem:"+aItem.title+"\n");
 		if (this.itemCache[aItem.id]) {
 			return this.itemCache[aItem.id].aclEntry;
 		}
@@ -3648,40 +3648,13 @@ catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
 
 		if (this.getProperty("disabled")) {
 			// Remove all items in cache from calendar.
-/*dump("Calendar is set to disabled. We are going to release the items cache memory.\n");
 			if (this.debug) this.logInfo("Calendar is disabled. So we are done resetting.");
-			this.observers.notify("onStartBatch");
-			var counter1 = 0;
-			var counter2 = 0;
 			for (var index in this.itemCache) {
-				counter1++;
 				if (this.itemCache[index]) {
-					counter2++;
 					this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
-					this.itemCache[index].deleteItem();
-					this.itemCache[index] = null;
-					delete this.itemCache[index];
 				}
 			}
-			this.observers.notify("onEndBatch");
-			this.itemCache = [];
-dump("Calendar is set to disabled. We are going to release the master cache memory.\n");
-			var counter3 = 0;
-			for (var index in this.recurringMasterCache) {
-				if (this.recurringMasterCache[index]) {
-					counter3++;
-					this.recurringMasterCache[index].deleteItem();
-					this.recurringMasterCache[index] = null;
-					delete this.recurringMasterCache[index];
-				}
-			}
-
-			this.recurringMasterCache = [];
-			this.itemCount = 0;
-			this.itemUpdates = 0;
-			this.itemsFromExchange = 0;*/
 			this.doReset = false;
-//dump("Calendar is set to disabled. Released memory."+counter1+"/"+counter2+"/"+counter3+"\n");
 		}
 		else {
 			this.performReset();
@@ -4290,13 +4263,6 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 		e.addChildTag("Importance", "nsTypes", importance);
 
-		if (aItem.alarmLastAck) {
-			if (this.debug) this.logInfo("[[[[[[[[[[[ alarmLastAck:"+aItem.alarmLastAck.icalString+"]]]]]]]]]]]]]]]]]]]");
-		}
-		else {
-			if (this.debug) this.logInfo("[[[[[[[[[[[ alarmLastAck:null]]]]]]]]]]]]]]]]]]]");
-		}
-
 		// Precalculate right start and end time for exchange.
 		// If not timezone specified set them to the lightning preference.
 //		if ((aItem.startDate.timezone.isFloating) && (!aItem.startDate.isDate)) {
@@ -4330,187 +4296,34 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			var exchEnd = cal.toRFC3339(tmpEnd.getInTimezone(cal.UTC()));
 		}
 
-		var masterAlarmOn = true;
-		if ((aItem.id == aItem.parentItem.id) && (aItem.recurrenceInfo)) {
-			// This is a master we need the alarm date for the active child
-			// We get this by analyzing the X-MOZ-SNOOZE-STATE or the alarmLastAck date.
-			if (this.debug) this.logInfo("We are converting a Cal master to an Exchange master");
-
-			if (this.debug) this.logInfo("We are going to find for which child an alarm might have been snoozed (X-MOZ-SNOOZE-TIME- is set).");
-			var childEvent = null;
-			var props = aItem.propertyEnumerator;
-			while (props.hasMoreElements()) {
-				var prop = props.getNext().QueryInterface(Components.interfaces.nsIProperty);
-				if (prop.name.indexOf("X-MOZ-SNOOZE-TIME-") == 0) {
-					if (this.debug) this.logInfo("Cal Master has a X-MOZ-SNOOZE-TIME- value. "+prop.name+":"+prop.value);
-
-					// We are going to find the child with specified recurrenId.nativeTime.
-					if (this.debug) this.logInfo("We are going to find the child with specified recurrenId.nativeTime.");
-					for (var index in this.itemCache) {
-						if ((this.itemCache[index]) && (this.itemCache[index].uid == aItem.uid) &&
-						    (this.itemCache[index].recurrenceId.nativeTime == prop.name.substr(18))) {
-							if (this.debug) this.logInfo("Found child event for which the X-MOZ-SNOOZE-TIME- is set on the master.");
-							childEvent = this.itemCache[index];
-							break;
-						}
-					}
-
-					break;
-				}
-			}
-
-			if (! childEvent) {
-				if (this.debug) this.logInfo("We did not find a childEvent by using the X-MOZ-SNOOZE-TIME-. We are going to find the child by the alarmLastAck of the Master. alarmLastAck:"+aItem.alarmLastAck);
-				if (aItem.alarmLastAck) {
-					if (this.debug) this.logInfo("Master has an alarmLastAck. We set the alarm to the first child with an alarm after alarmLastAck.");
-					var prevTime = aItem.alarmLastAck.clone();
-				}
-				else {
-					if (this.debug) this.logInfo("Master has no alarmLastAck. We set the alarm to the first child with an alarm in the future.");
-					var prevTime = cal.createDateTime().getInTimezone(cal.UTC());
-				}
-
-				if (this.debug) this.logInfo("Trying to find a child event with an alarmdate after '"+prevTime.icalString+"'");
-				var childAlarm = cal.createDateTime("4501-01-01T00:00:00Z");
-				for (var index in this.itemCache) {
-					if ((this.itemCache[index]) && (this.itemCache[index].uid == aItem.uid)) {
-						var newChildAlarm = this.getAlarmTime(this.itemCache[index]);
-						if ((newChildAlarm) && (newChildAlarm.compare(prevTime) == 1)) {
-							if (childAlarm.compare(newChildAlarm) == 1) {
-								childAlarm = newChildAlarm.clone();
-								childEvent = this.itemCache[index];
-								if (this.debug) this.logInfo("Found child event for which the alarmdate ("+childAlarm.icalString+") is set after '"+prevTime.icalString+"'");
-							}
-						}
-					}
-				}
-			}
- 
-			if (childEvent) {
-				if (this.debug) this.logInfo("We found a child event and we are going to use it's alarm settings for the master.");
-				var alarmTime = this.getAlarmTime(childEvent);
-				var childStart = childEvent.startDate.clone();
-				masterAlarmOn = true;
-				var alarmEvent = childEvent;
-				if (childEvent.startDate.isDate) {
-					
-					childStart.isDate = false;
-					// We make a non-UTC datetime value for this.globalFunctions.
-					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
-					var exchAlarmStart = cal.toRFC3339(childStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
-				}
-				else {
-					// We set in bias advanced to UCT datetime values for this.globalFunctions.
-					var exchAlarmStart = cal.toRFC3339(childStart);
-				}
-			}
-			else {
-				// We did not find an child with an alarm active...!!!
-				if (this.debug) this.logInfo("We did not find an child with an alarm active. Trying to find last child event with an alarmdate.");
-				// We need to get the last child in line. Use that alarm and set alarmLastAck way into the futur...
-				var childAlarm = cal.createDateTime("1970-01-01T00:00:00Z");
-				for (var index in this.itemCache) {
-					if ((this.itemCache[index]) && (this.itemCache[index].uid == aItem.uid)) {
-
-							if (this.debug) this.logInfo(" !!!! this.getAlarmTime(this.itemCache[index])="+this.getAlarmTime(this.itemCache[index]));
-
-						var newChildAlarm = this.getAlarmTime(this.itemCache[index]);
-						if ((newChildAlarm) && (newChildAlarm.compare(childAlarm) == 1)) {
-							childAlarm = newChildAlarm.clone();
-							childEvent = this.itemCache[index];
-							if (this.debug) this.logInfo("Found child event with an alarm date. ("+childAlarm.icalString+")");
-						}
-					}
-				}
-
-				if (childEvent) {
-					if (this.debug) this.logInfo("We found the last child in line which has an alarm.");
-					var alarmTime = this.getAlarmTime(childEvent);
-					var childStart = childEvent.startDate.clone();
-					masterAlarmOn = true;
-					var alarmEvent = childEvent;
-					if (childEvent.startDate.isDate) {
-					
-						childStart.isDate = false;
-						// We make a non-UTC datetime value for this.globalFunctions.
-						// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
-						var exchAlarmStart = cal.toRFC3339(childStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
-					}
-					else {
-						// We set in bias advanced to UCT datetime values for this.globalFunctions.
-						var exchAlarmStart = cal.toRFC3339(childStart);
-					}
-				}
-				else {
-					if (this.debug) this.logInfo("We did not find a child event with an alarm. This is odd. We are going to see if the master has the alarm set on and use that.");
-					var masterAlarm = this.getAlarmTime(aItem);
-					if (masterAlarm) {
-						if (this.debug) this.logInfo("The master has an alarm. We are going to use this one.");
-						var alarmTime = this.getAlarmTime(aItem);
-						var childStart = aItem.startDate.clone();
-						masterAlarmOn = true;
-						var alarmEvent = aItem;
-						if (aItem.startDate.isDate) {
-					
-							childStart.isDate = false;
-							// We make a non-UTC datetime value for this.globalFunctions.
-							// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
-							var exchAlarmStart = cal.toRFC3339(childStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
-						}
-						else {
-							// We set in bias advanced to UCT datetime values for this.globalFunctions.
-							var exchAlarmStart = cal.toRFC3339(childStart);
-						}
-					}
-					else {
-						if (this.debug) this.logInfo("The master does not have an alarm. We are going to turn it off.");
-						masterAlarmOn = false; 
-					}
-				}
-			}
-		}
-		else {
-			if (this.debug) this.logInfo("We are converting a Cal single/occurrence/exception to an Exchange single/occurrence/exception");
-			var exchAlarmStart = exchStart;
-			var alarmTime = this.getAlarmTime(aItem);
-			masterAlarmOn = true;
-			var alarmEvent = aItem;
-		}
-
-		if ((alarmTime) && (masterAlarmOn)) {
-			if (this.debug) this.logInfo("alarmTime = "+alarmTime.toString());
-
-			if (this.debug) this.logInfo("length="+alarmEvent.getAlarms({}).length);
-
-			// Lightning event can have multiple alarms. Exchange only one.
-			for each(var alarm in alarmEvent.getAlarms({})) {
-				break;
-			}
+		var alarms = aItem.getAlarms({});
+		if (this.debug) this.logInfo("We have '"+alarms.length+"' alarms.");
+		if (alarms.length > 0) {
 
 			// Exchange alarm is always an offset to the start.
-			switch (alarm.related) {
+			switch (alarms[0].related) {
 			case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
 				if (this.debug) this.logInfo("ALARM_RELATED_ABSOLUTE we are going to calculate a offset from the start.");
-				var newAlarmTime = alarm.alarmDate.clone();
+				var newAlarmTime = alarms[0].alarmDate.clone();
 
 				// Calculate offset from start of item.
-				var offset = newAlarmTime.subtractDate(alarmEvent.startDate);
+				var offset = newAlarmTime.subtractDate(aItem.startDate);
 				break;
 			case Ci.calIAlarm.ALARM_RELATED_START:
 				if (this.debug) this.logInfo("ALARM_RELATED_START this is easy exchange does the same.");
-				var newAlarmTime = alarmEvent.startDate.clone();
-				var offset = alarm.offset.clone();
+				var newAlarmTime = aItem.startDate.clone();
+				var offset = alarms[0].offset.clone();
 				break;
 			case Ci.calIAlarm.ALARM_RELATED_END:
 				if (this.debug) this.logInfo("ALARM_RELATED_END we are going to calculate the offset from the start.");
 				var newAlarmTime = aItem.endDate.clone();
-				newAlarmTime.addDuration(alarm.offset);
+				newAlarmTime.addDuration(alarms[0].offset);
 
-				var offset = newAlarmTime.subtractDate(alarmEvent.startDate);
+				var offset = newAlarmTime.subtractDate(aItem.startDate);
 				break;
 			}
 	
-			e.addChildTag("ReminderDueBy", "nsTypes", exchAlarmStart);
+			//e.addChildTag("ReminderDueBy", "nsTypes", exchAlarmStart);
 			e.addChildTag("ReminderIsSet", "nsTypes", "true");
 			if (offset.inSeconds != 0) {
 				e.addChildTag("ReminderMinutesBeforeStart", "nsTypes", String((offset.inSeconds / 60) * -1));
@@ -4523,9 +4336,6 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		else {
 			e.addChildTag("ReminderIsSet", "nsTypes", "false");
 		}
-
-		// Save snooze/dismiss state
-		this.addSnoozeDismissState(e, aItem, alarmTime);
 
 		if (aItem.uid) {
 			e.addChildTag("UID", "nsTypes", aItem.uid);
@@ -4708,42 +4518,21 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 		e.addChildTag("Importance", "nsTypes", importance);
 		 
+		var alarms = aItem.getAlarms({});
+		if (this.debug) this.logInfo("We have '"+alarms.length+"' alarms.");
+		if (alarms.length > 0) {
 
-		var alarmTime = this.getAlarmTime(aItem);
-		if (alarmTime) {
-			if (this.debug) this.logInfo("alarmTime = "+alarmTime.toString());
+			// Exchange alarm for todo is always related absolute
+			var newAlarmTime = alarms[0].alarmDate.clone().getInTimezone(cal.UTC());
 
-			// For tasks in exchange we set the remindeminutebforestart always to 0 and reminderdueby to the alarm time.
-			var alarm = aItem.getAlarms({})[0];
-			switch (alarm.related) {
-			case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
-				var newAlarmTime = alarm.alarmDate.clone();
-				break;
-			case Ci.calIAlarm.ALARM_RELATED_START:
-				var newAlarmTime = aItem.entryDate.clone();
-				newAlarmTime.addDuration(alarm.offset);
-				break;
-			case Ci.calIAlarm.ALARM_RELATED_END:
-				var newAlarmTime = aItem.dueDate.clone();
-				newAlarmTime.addDuration(alarm.offset);
-				break;
-			}
-	
-			if (newAlarmTime) {
-				e.addChildTag("ReminderDueBy", "nsTypes", cal.toRFC3339(newAlarmTime.getInTimezone(cal.UTC())));
-			}
-
+			e.addChildTag("ReminderDueBy", "nsTypes", cal.toRFC3339(newAlarmTime));
 			e.addChildTag("ReminderIsSet", "nsTypes", "true");
-			e.addChildTag("ReminderMinutesBeforeStart", "nsTypes", "0");
 		}
 		else {
 			e.addChildTag("ReminderIsSet", "nsTypes", "false");
 		}
 
-		// Save snooze/dismiss state
-		this.addSnoozeDismissState(e, aItem, alarmTime);
-
-		// Delegation changes
+/*		// Delegation changes
 		if (aItem.hasProperty("X-exchWebService-PidLidTaskLastUpdate")) {
 			var eprop = e.addChildTag("ExtendedProperty", "nsTypes", null);
 			var extField = eprop.addChildTag("ExtendedFieldURI", "nsTypes", null);
@@ -4770,7 +4559,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			extField.setAttribute("PropertyType", "Boolean");
 			eprop.addChildTag("Value", "nsTypes", aItem.getProperty("X-exchWebService-PidLidTaskAccepted"));
 		}
-
+*/
 
 		if (aItem.actualWork) {
 			e.addChildTag("ActualWork", "nsTypes", aItem.actualWork);
@@ -7340,6 +7129,38 @@ return;
 		
 	},
 
+	get canCreateContent()
+	{
+		if ((this.OnlyShowAvailability) || (this.folderIsNotAvailable)) {
+			return false;
+		}
+		return this._canCreateContent;
+	},
+ 
+	get canDelete()
+	{
+		if ((this.OnlyShowAvailability) || (this.folderIsNotAvailable)) {
+			return false;
+		}
+		return this._canDelete;
+	},
+ 
+	get canRead()
+	{
+		if ((this.OnlyShowAvailability) || (this.folderIsNotAvailable)) {
+			return true;
+		}
+		return this._canRead;
+	},
+ 
+	get canModify()
+	{
+		if ((this.OnlyShowAvailability) || (this.folderIsNotAvailable)) {
+			return false;
+		}
+		return this._canModify;
+	},
+ 
 	setFolderProperties: function _setFolderProperties(aFolderProperties, aFolderClass)
 	{
 		//BUG 111
@@ -7429,9 +7250,14 @@ return;
 		}
 		else {
 
+			if (this.debug) this.logInfo("Going to check if we should show free/busy data.");
 			if (!this.OnlyShowAvailability) {
+				if (this.debug) this.logInfo("Turning on the showing of only free/busy data.");
 				this.OnlyShowAvailability = true;
 				this.folderIsNotAvailable = true;
+				this.folderProperties = null;
+				this.prefs.deleteBranch("folderProperties");
+				this.readOnly = true;
 				this.getOnlyFreeBusyInformation(this.lastValidRangeStart, this.lastValidRangeEnd);
 				this.startCalendarPoller();
 			}		

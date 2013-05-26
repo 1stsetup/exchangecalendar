@@ -205,6 +205,7 @@ erSyncFolderItemsRequest.prototype = {
 				// We retry without a known syncstate.
 				this.getSyncState = true;
 				this.execute(null);
+				return;
 			}
 			else {
 				var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage");

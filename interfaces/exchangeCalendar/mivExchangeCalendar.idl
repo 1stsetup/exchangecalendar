@@ -64,4 +64,9 @@ interface mivExchangeCalendar : calICalendar
 	readonly attribute AUTF8String connectionStateDescription;
 
 	readonly attribute jsval notifyObservers;
+
+	readonly attribute boolean canCreateContent;
+	readonly attribute boolean canDelete;
+	readonly attribute boolean canRead;
+	readonly attribute boolean canModify;
 };

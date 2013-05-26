@@ -59,6 +59,8 @@ exchChangeCalendarPropertiesReminder.prototype = {
 			this._document.getElementById("reminder-relation-radiogroup").selectedElement = this._document.getElementById("reminder-absolute-radio");
 		}
 
+dump(" WHAT is this:"+this._argument.calendar.type+"\n");
+
 		if ((cal.isEvent(this._argument.item)) && (this._argument.calendar.type == "exchangecalendar")) {
 			this._document.getElementById("reminder-relation-origin").hidden = true;
 			this._document.getElementById("exchWebService-reminder-relation-origin").hidden = false;

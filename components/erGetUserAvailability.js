@@ -123,12 +123,11 @@ erGetUserAvailabilityRequest.prototype = {
 	{
 		//exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: "+String(aResp)+"\n");
 
-		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetUserAvailabilityResponse/m:FreeBusyResponseArray/m:FreeBusyResponse/m:ResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
-
+		var rm = aResp.XPath("/s:Envelope/s:Body/GetUserAvailabilityResponse/FreeBusyResponseArray/FreeBusyResponse/ResponseMessage[@ResponseClass='Success' and ResponseCode='NoError']");
 
 		if (rm.length == 0) {
 			rm = null;
-			var rm = aResp.XPath("/s:Envelope/s:Body/m:GetUserAvailabilityResponse/m:FreeBusyResponseArray/m:FreeBusyResponse/m:ResponseMessage[@ResponseClass='Error']");
+			var rm = aResp.XPath("/s:Envelope/s:Body/GetUserAvailabilityResponse/FreeBusyResponseArray/FreeBusyResponse/ResponseMessage[@ResponseClass='Error']");
 			if (rm.length == 0) {
 				exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: Respons does not contain expected field");
 				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
@@ -151,10 +150,10 @@ erGetUserAvailabilityRequest.prototype = {
 		}
 		rm = null;
 
-		var items = aResp.XPath("/s:Envelope/s:Body/m:GetUserAvailabilityResponse/m:FreeBusyResponseArray/m:FreeBusyResponse/m:FreeBusyView/t:CalendarEventArray/t:CalendarEvent");
+		var items = aResp.XPath("/s:Envelope/s:Body/GetUserAvailabilityResponse/FreeBusyResponseArray/FreeBusyResponse/FreeBusyView/CalendarEventArray/CalendarEvent");
 
 		// We also need to get the working hour period. But lightning cannot handle this.
-		//exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk 2: We have '"+items.length+"' items.");
+		//dump("erGetUserAvailabilityRequest.onSendOk 2: We have '"+items.length+"' items.\n");
 	
 		if (this.mCbOk) {
 			this.mCbOk(this, items);

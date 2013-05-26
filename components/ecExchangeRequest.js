@@ -404,7 +404,9 @@ var d=new Date();var time2=d.getTime();
 			}
 
 var d=new Date();var time3=d.getTime();
+try {
 			this.mCbOk(this, newXML);
+}catch(err) { dump("onloadend: err:"+err+"\n");}
 var d=new Date();var time4=d.getTime();
 			this.originalReq = null;
 		}
