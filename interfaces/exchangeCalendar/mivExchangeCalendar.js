@@ -1245,7 +1245,9 @@ calExchangeCalendar.prototype = {
 				if (this.debug) this.logInfo("singleModified doNotify");
 				this.notifyTheObservers("onModifyItem", [aModifiedSingle, this.itemCache[aModifiedSingle.id]], aFastNotify);
 			}
-			this.itemCache[aModifiedSingle.id].deleteItem();
+			if (this.itemCache[aModifiedSingle.id].className) {
+				this.itemCache[aModifiedSingle.id].deleteItem();
+			}
 			this.itemCache[aModifiedSingle.id] = null;
 			delete this.itemCache[aModifiedSingle.id];
 			this.itemCache[aModifiedSingle.id] = aModifiedSingle;
@@ -3689,7 +3691,9 @@ catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
 		for (var index in this.itemCache) {
 			if (this.itemCache[index]) {
 				this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
-				this.itemCache[index].deleteItem();
+				if (this.itemCache[index].className) {
+					this.itemCache[index].deleteItem();
+				}
 				this.itemCache[index] = null;
 				delete this.itemCache[index];
 			}
@@ -7402,7 +7406,9 @@ return;
 		for (var index in this.itemCache) {
 			if (this.itemCache[index]) {
 				//this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
-				this.itemCache[index].deleteItem();
+				if (this.itemCache[index].className) {
+					this.itemCache[index].deleteItem();
+				}
 				this.itemCache[index] = null;
 				delete this.itemCache[index];
 			}
