@@ -62,4 +62,6 @@ interface mivExchangeCalendar : calICalendar
 	readonly attribute calIDateTime offlineEndDate;
 
 	readonly attribute AUTF8String connectionStateDescription;
+
+	readonly attribute jsval notifyObservers;
 };

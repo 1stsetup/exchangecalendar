@@ -359,6 +359,9 @@ function calExchangeCalendar() {
 	this.observerService = Cc["@mozilla.org/observer-service;1"]  
 	                          .getService(Ci.nsIObserverService);  
 
+	this.lightningNotifier = Cc["@1st-setup.nl/exchange/lightningnotifier;1"]  
+	                          .getService(Ci.mivExchangeLightningNotifier); 
+
 	this.loadBalancer = Cc["@1st-setup.nl/exchange/loadbalancer;1"]  
 	                          .getService(Ci.mivExchangeLoadBalancer); 
 
@@ -1232,7 +1235,7 @@ calExchangeCalendar.prototype = {
 		promptService.alert(null, "Error", aMsg+" ("+aCode+")");
 	},
 
-	singleModified: function _singleModified(aModifiedSingle, doNotify)
+	singleModified: function _singleModified(aModifiedSingle, doNotify, aFastNotify)
 	{
 		if (this.itemCache[aModifiedSingle.id]) {
 			this.itemUpdates++;
@@ -1240,7 +1243,7 @@ calExchangeCalendar.prototype = {
 
 			if (doNotify) {
 				if (this.debug) this.logInfo("singleModified doNotify");
-				this.notifyTheObservers("onModifyItem", [aModifiedSingle, this.itemCache[aModifiedSingle.id]]);
+				this.notifyTheObservers("onModifyItem", [aModifiedSingle, this.itemCache[aModifiedSingle.id]], aFastNotify);
 			}
 			this.itemCache[aModifiedSingle.id].deleteItem();
 			this.itemCache[aModifiedSingle.id] = null;
@@ -1314,11 +1317,6 @@ calExchangeCalendar.prototype = {
                         	             Ci.calIOperationListener.MODIFY,
         	                             aNewItem.id,
         	                             aNewItem);
-/*	            this.notifyOperationComplete(aListener,
-	                                         Ci.calIErrors.CAL_IS_READONLY,
-	                                         Ci.calIOperationListener.MODIFY,
-	                                         null,
-	                                         "Calendar is readonly");*/
 			return null;
 	        }
 
@@ -1345,14 +1343,15 @@ dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:
 			return null;
 		}
 
-		if ((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) {
-			dump("item was changed from single into recurring.\n");
-			if (this.debug) this.logInfo("modifyItem item was changed from single into recurring.");
+		if (((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) ||
+			((aOldItem.recurrenceInfo) && (!aNewItem.recurrenceInfo))) {
+			if (this.debug) this.logInfo("modifyItem item was changed from single into recurring or from recurring into single.");
 	        	this.notifyOperationComplete(aListener,
 	        	                             Cr.NS_OK,
 	        	                             Ci.calIOperationListener.MODIFY,
 	        	                             aOldItem.id,
 	        	                             aOldItem);
+			aNewItem.id = null;  // This needs to be null otherwise additem does not see it as a new item.
 			this.addItem(aNewItem, null);
 			this.deleteItem(aOldItem, null);
 			return null;
@@ -1377,8 +1376,6 @@ dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:
 	            return reportError("ID for modifyItem item is null");
 	        }
 
-		var isMaster = false;
-
 		// See if attachments changed.
 		var newAttachments = aNewItem.getAttachments({});
 		var attachments = {};
@@ -1396,16 +1393,15 @@ dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:
 				}
 			}
 		}
-			// Check which have been removed.
-			var oldAttachments = aOldItem.getAttachments({});
-			for (var index in oldAttachments) {
-				if (! attachments[oldAttachments[index].getParameter("X-AttachmentId")]) {
-					attachmentsUpdates.delete.push(oldAttachments[index]);
-					if (this.debug) this.logInfo("removedAttachment:"+oldAttachments[index].uri.spec);
-				}
-			}			
-			
-		//}
+		// Check which have been removed.
+		var oldAttachments = aOldItem.getAttachments({});
+		for (var index in oldAttachments) {
+			if (! attachments[oldAttachments[index].getParameter("X-AttachmentId")]) {
+				attachmentsUpdates.delete.push(oldAttachments[index]);
+				if (this.debug) this.logInfo("removedAttachment:"+oldAttachments[index].uri.spec);
+			}
+		}			
+		
 
 		if (isEvent(aNewItem)) {
 			if (this.debug) this.logInfo("ModifyItem: it is an event.");
@@ -1577,206 +1573,99 @@ dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:
 
 				if (this.debug) this.logInfo("modifyItem: it is a event. aOldItem.CalendarItemType=:"+aOldItem.calendarItemType);
 
-				if (aOldItem.parentItem.id == aOldItem.id) {
-					// We have a Single or master
-					var master = this.recurringMasterCache[aOldItem.uid];
-					if (master) {
-						isMaster = true;
-						// See if the aNewItem is also the master record.
-						var masterChanged = (aNewItem.parentItem.id == aNewItem.id);
+				// We have a Single or master
+				if (aOldItem.calendarItemType == "RecurringMaster") {
+					if (this.debug) this.logInfo(" Master changed:"+aNewItem.title);
+					// See if the aNewItem is also the master record.
+					var masterChanged = (aNewItem.parentItem.id == aNewItem.id);
 
-				if (this.debug) this.logInfo(" == aNewItem.id:"+aNewItem.id);
-				if (this.debug) this.logInfo(" == aNewItem.parentItem.id:"+aNewItem.parentItem.id);
-				if (this.debug) this.logInfo(" == aOldItem.id:"+aOldItem.id);
-				if (this.debug) this.logInfo(" == aOldItem.parentItem.id:"+aOldItem.parentItem.id);
-	
-						// We need to find out wat has changed;
-						if (this.debug) this.logInfo(" ==1 invite="+aOldItem.isInvitation);
+					// We need to find out wat has changed;
+					if (this.debug) this.logInfo(" ==1 invite="+aOldItem.isInvitation);
 
-/*						var changesObj = this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, aOldItem.isInvitation);
-						var changes;
-						if (changesObj) {
-							changes = changesObj.changes;
-						}*/
+					if (changes) {
+						if (this.debug) this.logInfo("modifyItem: changed:"+String(changes));
 
-						if (changes) {
-							if (this.debug) this.logInfo("modifyItem: changed:"+String(changes));
+						var self = this;
+						this.addToQueue( erUpdateItemRequest,
+							{user: this.user, 
+							 mailbox: this.mailbox,
+							 folderBase: this.folderBase,
+							 serverUrl: this.serverUrl,
+							 item: aOldItem,
+							 folderID: this.folderID,
+							 changeKey: this.changeKey,
+							 updateReq: changes,
+							 newItem: aNewItem,
+					 		 actionStart: Date.now(),
+							 attachmentsUpdates: attachmentsUpdates,
+							 sendto: input.response}, 
+							function(erUpdateItemRequest, aId, aChangeKey) { self.updateItemOk(erUpdateItemRequest, aId, aChangeKey);}, 
+							function(erUpdateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erUpdateItemRequest, aCode, aMsg);},
+							aListener);
+						return;
+					}
+					else {
+						if (this.debug) this.logInfo("modifyItem: No changes for master.");
+						// No changes to a master could means that one of the occurrences
+						// was deleted. 
+						var removedOccurrence = this.getRemovedOccurrence(aOldItem, aNewItem);
+						if (removedOccurrence) {
+							// Delete this occurrence; multi
+							this.notifyTheObservers("onDeleteItem", [removedOccurrence], true);
+							this.deleteItem(removedOccurrence);
+							result = Cr.NS_OK;
+						}
+						else {
+							// Could be an alarm dismiss or snooze
+							dump("IF YOU SEE THIS PLEASE REPORT..(CODE1)\n");
+							this.masterModified(aNewItem);
+						}
+						result = Cr.NS_OK;
+					}
+				}
+				else {
+					if (this.debug) this.logInfo("modifyItem: '"+aOldItem.calendarItemType+"' event modification");
+					// We need to find out wat has changed;
+					if (this.debug) this.logInfo(" ==1 invite="+aOldItem.isInvitation);
 
-							this.removeChildrenFromMaster(this.recurringMasterCache[aOldItem.uid]);
-							if (this.itemCache[aOldItem.id]) {
-								this.itemCache[aOldItem.id].deleteItem();
-								this.itemCache[aOldItem.id] = null;
-								delete this.itemCache[aOldItem.id];
-							}
-							if (this.recurringMasterCache[aOldItem.uid]) {
-								this.recurringMasterCache[aOldItem.uid].deleteItem();
-								delete this.recurringMasterCache[aOldItem.uid];
-							}
+					if (changes) {
+						if (this.debug) this.logInfo("modifyItem: changed:"+String(changes));
 
-							if (this.debug) this.logInfo(" When CHANGED master arrives for '"+aNewItem.title+"' then it's children we all be downloaded.");
-							this.newMasters[aOldItem.uid] = true;
-
-							var self = this;
-							this.addToQueue( erUpdateItemRequest,
-								{user: this.user, 
-								 mailbox: this.mailbox,
-								 folderBase: this.folderBase,
-								 serverUrl: this.serverUrl,
-								 item: aOldItem,
-								 folderID: this.folderID,
-								 changeKey: this.changeKey,
-								 updateReq: changes,
-								 newItem: aNewItem,
-						 		 actionStart: Date.now(),
-								 attachmentsUpdates: attachmentsUpdates,
-								 sendto: input.response}, 
-								function(erUpdateItemRequest, aId, aChangeKey) { self.updateItemOk(erUpdateItemRequest, aId, aChangeKey);}, 
-								function(erUpdateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erUpdateItemRequest, aCode, aMsg);},
-								aListener);
+						var self = this;
+						this.addToQueue( erUpdateItemRequest,
+							{user: this.user, 
+							 mailbox: this.mailbox,
+							 folderBase: this.folderBase,
+							 serverUrl: this.serverUrl,
+							 item: aOldItem,
+							 folderID: this.folderID,
+							 changeKey: this.changeKey,
+							 updateReq: changes,
+							 newItem: aNewItem,
+					 		 actionStart: Date.now(),
+							 attachmentsUpdates: attachmentsUpdates,
+							 sendto: input.response}, 
+							function(erUpdateItemRequest, aId, aChangeKey) { self.updateItemOk(erUpdateItemRequest, aId, aChangeKey);}, 
+							function(erUpdateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erUpdateItemRequest, aCode, aMsg);},
+							aListener);
+						this.singleModified(aNewItem, true, true);
+						return;
+					}
+					else {
+						if (this.doAttachmentUpdates(attachmentsUpdates, aOldItem, input.response, aListener)) {
+							// We are done
+							if (this.debug) this.logInfo("modifyItem: No only attachment changes no other fields.");
 							return;
 						}
 						else {
-							if (this.debug) this.logInfo("modifyItem: No changes for master.");
-							// No changes to a master could means that one of the occurrences
-							// was deleted. 
-							var removedOccurrence = this.getRemovedOccurrence(aOldItem, aNewItem);
-							if (removedOccurrence) {
-								// Delete this occurrence; multi
-								this.notifyTheObservers("onDeleteItem", [removedOccurrence]);
-								this.deleteItem(removedOccurrence);
-								result = Cr.NS_OK;
-
-/*								var self = this;
-								this.addToQueue( erGetOccurrenceIndexRequest,
-									{user: this.user, 
-									 mailbox: this.mailbox,
-									 folderBase: this.folderBase,
-									 serverUrl: this.serverUrl,
-									 masterItem: removedOccurrence,
-									 item: removedOccurrence,
-									 folderID: this.folderID,
-									 changeKey: this.changeKey,
-									 action: "deleteItem",
-									 itemType: "occurrence",
-									 whichOccurrence: "single_occurence" },//dialogArg.answer}, 
-									function(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey) { self.getOccurrenceIndexOk(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey);}, 
-									function(erGetOccurrenceIndexRequest, aCode, aMsg) { self.getOccurrenceIndexError(erGetOccurrenceIndexRequest, aCode, aMsg);},
-									null); */
-							}
-							else {
-								// Could be an alarm dismiss or snooze
-								this.masterModified(aNewItem);
+							if (this.debug) this.logInfo("modifyItem: No changes 1.");
+							if (!aOldItem.isInvitation) {
+								//aNewItem.parentItem = aNewItem; move to storagecalendar
+								this.singleModified(aNewItem, true, true);
 							}
 							result = Cr.NS_OK;
 						}
 					}
-					else {
-						if (this.debug) this.logInfo("modifyItem: Single event modification");
-						// We need to find out wat has changed;
-						if (this.debug) this.logInfo(" ==1 invite="+aOldItem.isInvitation);
-
-						var changesObj = this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, aOldItem.isInvitation);
-						var changes;
-						if (changesObj) {
-							changes = changesObj.changes;
-						}
-//						var changes = this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, aOldItem.isInvitation);
-						if (changes) {
-							if (this.debug) this.logInfo("modifyItem: changed:"+String(changes));
-
-							// We remove the item from cache and calendar because the update request will add
-							// it again.
-							// This is not true when we changed a single to a recurring item.
-							if ((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) {
-								// We need to request the children when the new master arrives.
-								if (this.debug) this.logInfo(" When master arrives for '"+aNewItem.title+"' then it's children we all be downloaded.");
-								this.newMasters[aOldItem.uid] = true;
-							}
-
-//							this.notifyTheObservers("onDeleteItem", [aOldItem]);
-// removed this because item should not be removed.							delete this.itemCache[aOldItem.id];
-
-							var self = this;
-							this.addToQueue( erUpdateItemRequest,
-								{user: this.user, 
-								 mailbox: this.mailbox,
-								 folderBase: this.folderBase,
-								 serverUrl: this.serverUrl,
-								 item: aOldItem,
-								 folderID: this.folderID,
-								 changeKey: this.changeKey,
-								 updateReq: changes,
-								 newItem: aNewItem,
-						 		 actionStart: Date.now(),
-								 attachmentsUpdates: attachmentsUpdates,
-								 sendto: input.response}, 
-								function(erUpdateItemRequest, aId, aChangeKey) { self.updateItemOk(erUpdateItemRequest, aId, aChangeKey);}, 
-								function(erUpdateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erUpdateItemRequest, aCode, aMsg);},
-								aListener);
-							//this.singleModified(aNewItem);
-							return;
-						}
-						else {
-							if (this.doAttachmentUpdates(attachmentsUpdates, aOldItem, input.response, aListener)) {
-								// We are done
-								if (this.debug) this.logInfo("modifyItem: No only attachment changes no other fields.");
-								return;
-							}
-							else {
-								if (this.debug) this.logInfo("modifyItem: No changes 1.");
-								if (!aOldItem.isInvitation) {
-									//aNewItem.parentItem = aNewItem; move to storagecalendar
-									this.singleModified(aNewItem, true);
-								}
-								result = Cr.NS_OK;
-							}
-						}
-					}
-				}
-				else {
-					if (this.debug) this.logInfo("modifyItem: Occurrence or exception modification");
-					
-					// We need to find the Index of this item.
-					var self = this;
-					if (aOldItem.occurrenceIndex > -1) {
-						if (this.debug) this.logInfo(" [[[[[[[[[[[[ We allready have an index for this occurrence ]]]]]]]]]]]]");
-						var tmpRequest = {};
-						tmpRequest.argument = {user: this.user, 
-						 mailbox: this.mailbox,
-						 folderBase: this.folderBase,
-						 serverUrl: this.serverUrl,
-						 masterItem: aOldItem.parentItem,
-						 item: aOldItem,
-						 folderID: this.folderID,
-						 changeKey: this.changeKey,
-						 newItem: aNewItem,
-						 actionStart: Date.now(),
-						 attachmentsUpdates: attachmentsUpdates,
-						 sendto: input.response};
-						this.modifyItemgetOccurrenceIndexOk(tmpRequest, aOldItem.occurrenceIndex, aOldItem.parentItem.id, aOldItem.parentItem.changeKey);
-					}
-					else {
-						if (this.debug) this.logInfo(" [[[[[[[[[[[[ Index:"+aOldItem.occurrenceIndex+" | "+aOldItem.title+" | "+aOldItem.startDate.toString()+" ]]]]]]]]]]]]");
-
-					this.addToQueue( erGetOccurrenceIndexRequest,
-						{user: this.user, 
-						 mailbox: this.mailbox,
-						 folderBase: this.folderBase,
-						 serverUrl: this.serverUrl,
-						 masterItem: aOldItem.parentItem,
-						 item: aOldItem,
-						 folderID: this.folderID,
-						 changeKey: this.changeKey,
-						 newItem: aNewItem,
-						 actionStart: Date.now(),
-						 attachmentsUpdates: attachmentsUpdates,
-						 sendto: input.response}, 
-						function(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey) { self.modifyItemgetOccurrenceIndexOk(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey);}, 
-						function(erGetOccurrenceIndexRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erGetOccurrenceIndexRequest, aCode, aMsg);},
-						aListener);
-					}
-					//this.singleModified(aNewItem);
-					return;
 				}
 			}
 		}
@@ -1808,7 +1697,7 @@ dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:
 						function(erUpdateItemRequest, aId, aChangeKey) { self.updateItemOk(erUpdateItemRequest, aId, aChangeKey);}, 
 						function(erUpdateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erUpdateItemRequest, aCode, aMsg);},
 						aListener);
-					this.singleModified(aNewItem, true);
+					this.singleModified(aNewItem, true, true);
 					return;
 				}
 				else {
@@ -1820,7 +1709,7 @@ dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:
 					else {
 						if (this.debug) this.logInfo("modifyItem: No changes 2.");
 						//aNewItem.parentItem = aNewItem;
-						this.singleModified(aNewItem, true);
+						this.singleModified(aNewItem, true, true);
 						result = Cr.NS_OK;
 					}
 				}
@@ -3824,7 +3713,7 @@ dump("Calendar is set to disabled. We are going to release the master cache memo
 		this.firstSyncDone = false;
 		
 		// Remove all items in cache from calendar.
-		this.observers.notify("onStartBatch");
+		//this.observers.notify("onStartBatch");
 		for (var index in this.itemCache) {
 			if (this.itemCache[index]) {
 				this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
@@ -3833,7 +3722,7 @@ dump("Calendar is set to disabled. We are going to release the master cache memo
 				delete this.itemCache[index];
 			}
 		}
-		this.observers.notify("onEndBatch");
+		//this.observers.notify("onEndBatch");
 
 		// Reset caches.
 		this.itemCache = [];
@@ -6251,15 +6140,19 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 		deletedOccurrences = null;
 	},
 
-	notifyTheObservers: function _notifyTheObservers(aCommand, aArray)
+	get notifyObservers()
 	{
-		try {
-			if (aArray[0].title == "Lange test2") {
-				if (this.debug) this.logInfo(" notifyTheObservers: aCommand:"+aCommand+", item.title:"+aArray[0].title);
-			}
-		} catch(err) {}
+		return this.observers;
+	},
 
-		this.observers.notify(aCommand, aArray);
+	notifyTheObservers: function _notifyTheObservers(aCommand, aArray, aFastNotify)
+	{
+		if (aFastNotify) {
+			this.observers.notify(aCommand, aArray);
+		}
+		else {
+			this.lightningNotifier.addToNotifyQueue(this, aCommand, aArray);
+		}
 
 		switch (aCommand) {
 			case "onDeleteItem": 
@@ -6692,20 +6585,22 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 						}
 
 						if (this.debug) this.logInfo("Going to request '"+ids.length+"' children to see if they are updated.");
-						this.findCalendarItemsOK(null, ids, [])
-					}
 
-					if (this.itemCache[item.id]) {
-						if (this.debug) this.logInfo("This master also existed as an normal item. Probably an upgrade from single to master.");
-						this.notifyTheObservers("onDeleteItem", [this.itemCache[item.id]]);
-						this.itemCache[item.id].deleteItem();
-						this.itemCache[item.id] = null;
-						delete this.itemCache[item.id];
+						// Devide the whole in smaller request otherwise on the return answer we will flood the cpu and memory.
+						while (ids.length > 0) {
+							let req = [];
+							for (var counter=0; ((counter < 10) && (ids.length > 0)); counter++) {
+								req.push(ids.pop());
+							}
+							this.findCalendarItemsOK(null, req, []);
+						}
 					}
 
 					if (this.debug) this.logInfo("Trying to see if there are parentless items for this master:"+item.title+".");
-					this.observers.notify("onStartBatch");
+					//this.observers.notify("onStartBatch");
+					var parentLessCounter = 0;
 					for (var itemId in this.parentLessItems) {
+						parentLessCounter++;
 						if ( (this.parentLessItems[itemId]) &&
 						     (isEvent(this.parentLessItems[itemId])) &&
 						     ( (this.parentLessItems[itemId].calendarItemType == "Occurrence") ||
@@ -6727,7 +6622,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 						}
 
 					}
-					this.observers.notify("onEndBatch");
+					//this.observers.notify("onEndBatch");
 
 					this.addToOfflineCache(item, aCalendarItem);
 
@@ -6737,6 +6632,29 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 						this.recurringMasterCache[uid].deleteItem();
 						this.recurringMasterCache[uid] = null;
 					}
+					else {
+						if (parentLessCounter == 0) {
+							if (this.debug) this.logInfo("We have a new master without children. Most of the times this means we nead to request the children separately.");
+							var self = this;
+							var tmpItem = { Id: item.id, ChangeKey: item.changeKey, type:"RecurringMaster"};
+							this.addToQueue( erFindOccurrencesRequest, 
+								{user: this.user, 
+								 mailbox: this.mailbox,
+								 folderBase: this.folderBase,
+								 serverUrl: this.serverUrl,
+								 masterItem: tmpItem,
+								 folderID: this.folderID,
+								 changeKey: this.changeKey,
+								 startDate: this.startDate,
+								 endDate: this.endDate,
+						 		 GUID: calExchangeCalendarGUID}, 
+								function(erGetItemsRequest, aIds) { self.findOccurrencesOK(erGetItemsRequest, aIds);}, 
+								function(erGetItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erGetItemsRequest, aCode, aMsg);},
+								null);	
+
+						}
+					}
+
 					this.masterCount++;
 					this.recurringMasterCache[uid] = item;
 					//dump("   :: MasterCount:"+this.masterCount+"\n");
@@ -7078,9 +6996,9 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 	updateCalendar: function _updateCalendar(erGetItemsRequest, aItems, doNotify)
 	{
 //		this.observers.notify("onStartBatch");
-//		this.updateCalendar2(erGetItemsRequest, aItems,doNotify);
+		this.updateCalendar2(erGetItemsRequest, aItems,doNotify);
 //		this.observers.notify("onEndBatch");
-//return;
+return;
 		for (var index in aItems) {
 			this.updateCalendarItems.push({ request: erGetItemsRequest,
 							item: aItems[index],

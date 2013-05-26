@@ -132,14 +132,14 @@ erFindOccurrencesRequest.prototype = {
 
 		this.parent.xml2jxon = true;
 
-		//exchWebService.commonFunctions.LOG("erFindOccurrencesRequest.execute>"+String(this.parent.makeSoapMessage(req))+"\n");
+		//dump("erFindOccurrencesRequest.execute>"+String(this.parent.makeSoapMessage(req))+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erFindOccurrencesRequest.onSendOk>"+String(aResp)+"\n");
+		//dump("erFindOccurrencesRequest.onSendOk>"+String(aResp)+"\n");
 		var finished = false;
 		var found = false;
 

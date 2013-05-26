@@ -1,0 +1,5 @@
+interfaces mivExchangeLightningNotifier.xpt
+component {3b2d58f7-9528-44cf-8cd7-865dc209590c} mivExchangeLightningNotifier.js
+contract @1st-setup.nl/exchange/lightningnotifier;1 {3b2d58f7-9528-44cf-8cd7-865dc209590c}
+
+
