@@ -425,10 +425,12 @@ mivIxml2jxon.prototype = {
 			}
 			
 		}
-		for (let index in this.content) {
-			cc++;
-			if ((typeof this.content[index] === "string") || (this.content[index] instanceof String)) {
-				r += this.content[index];
+		if (this.content) {
+			for (let index in this.content) {
+				cc++;
+				if ((typeof this.content[index] === "string") || (this.content[index] instanceof String)) {
+					r += this.content[index];
+				}
 			}
 		}
 		if ((a) && (nss == a)) {nss = "";}
