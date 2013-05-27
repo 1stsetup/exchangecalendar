@@ -1287,6 +1287,14 @@ calExchangeCalendar.prototype = {
 	//readonly attribute calICalendarACLEntry aclEntry;
 	get aclEntry()
 	{
+		var accountMgr = Cc["@mozilla.org/messenger/account-manager;1"].getService(Ci.nsIMsgAccountManager);
+		var identities = accountMgr.allIdentities;
+		var idList = [];
+		for (var index=0; index < identities.Count(); index++) {
+			var identity = identities.QueryElementAt(index, Ci.nsIMsgIdentity);
+			idList.push(identity);
+			//dump("aclEntry: index:"+index+", identitie:"+identity+"\n");
+		}
 		var self = this;
 		return {
 			aclManager: this,
@@ -1294,11 +1302,12 @@ calExchangeCalendar.prototype = {
 			userIsOwner: (this.canDelete || this.canModify),
 			userCanAddItems: this._canCreateContent,
 			userCanDeleteItems: this._canDelete,
-			getUserAddresses: function(aCount) { dump("calICalendarACLEntry getUserAddresses:"+self.name+"\n"); aCount.value = 0; return []; },
-			getUserIdentities: function(aCount) { dump("calICalendarACLEntry getUserIdentities:"+self.name+"\n"); aCount.value = 0; return []; },
-			getOwnerIdentities: function(aCount) { dump("calICalendarACLEntry getOwnerIdentities:"+self.name+"\n"); aCount.value = 0; return []; },
+			getUserAddresses: function(aCount) { dump("calICalendarACLEntry getUserAddresses:"+self.name+"\n"); aCount.value = 1; return ["babe"]; },
+			getUserIdentities: function(aCount) { dump("calICalendarACLEntry getUserIdentities:"+self.name+"\n"); aCount.value = idList.length; return idList; },
+			getOwnerIdentities: function(aCount) { dump("calICalendarACLEntry getOwnerIdentities:"+self.name+"\n"); aCount.value = idList.length; return idList; },
 			refresh: function() { dump("calICalendarACLEntry refresh:"+self.name+"\n");  },
 			};
+
 	},
 
 
