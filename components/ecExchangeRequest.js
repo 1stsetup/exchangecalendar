@@ -388,10 +388,19 @@ var d=new Date();var time2=d.getTime();
 		if (this.mCbOk) {
 			// Try to get server version and store it.
 			try {
-				let serverVersion = newXML.XPath("/s:Header/t:ServerVersionInfo");
+				let serverVersion = newXML.XPath("/s:Header/ServerVersionInfo");
 				if ((serverVersion.length > 0) && (serverVersion[0].getAttribute("Version") != "")) {
 					this.exchangeStatistics.setServerVersion(this.currentUrl, serverVersion[0].getAttribute("Version"));
 				}
+/*				else {
+					var header = newXML.XPath("/s:Header");
+					if (header.length > 0) {
+						dump(" @@@ We have not found serverVersion:"+header[0]+"\n");
+					}
+					else {
+						dump(" !!! Could not find header.\n");
+					}
+				}*/
 				serverVersion[0] = null;
 				serverVersion = null;
 			}
