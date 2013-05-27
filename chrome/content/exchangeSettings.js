@@ -209,8 +209,10 @@ exchExchangeSettings.prototype = {
 
 	showFolderProprties: function _showFolderProprties(aProperties)
 	{
+dump("showFolderProprties:"+aProperties.toString()+"\n");
+
 		this.globalFunctions.LOG("showFolderProprties:"+aProperties.toString());
-		var serverVersionInfo = aProperties.XPath('/s:Header/t:ServerVersionInfo')[0];
+		var serverVersionInfo = aProperties.XPath('/s:Header/ServerVersionInfo')[0];
 		this._document.getElementById("exchWebServices-ServerVersionInfo").value = serverVersionInfo.getAttribute('Version') + " ("+serverVersionInfo.getAttribute('MajorVersion')+"."+serverVersionInfo.getAttribute('MinorVersion')+"."+serverVersionInfo.getAttribute('MajorBuildNumber')+"."+serverVersionInfo.getAttribute('MinorBuildNumber')+")";
 
 		var propType = "calendar";
