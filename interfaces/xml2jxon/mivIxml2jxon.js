@@ -278,13 +278,14 @@ mivIxml2jxon.prototype = {
 		if (an.toLowerCase().indexOf("xmlns") == 0) {
 			let xp = an.indexOf(":");
 			if (xp > -1) {this.addNameSpace(an.substr(xp+1), av);}
-			else {this.addNameSpace("" , av);}
+			else {this.addNameSpace("_default_" , av);}
 		}
 		else {this.attr[an] = av;}
 	},
 	getNameSpace: function _getNameSpace(a){
-		if (a === undefined) {return null;}
+		if ((a === undefined) || (a === null)) {return null;}
 		if (a == "") {a = "_default_";}
+		if (!this.nameSpaces[a]) {return null;}
 		return nameSpaceMgr.getNameSpace(this.nameSpaces[a]);
 	},
 	addNameSpace: function _addNameSpace(a, b){
@@ -360,6 +361,7 @@ mivIxml2jxon.prototype = {
 	},
 	addChildTagObject: function _addChildTagObject(a){
 		if (!a) {return;}
+		a.addParentNameSpaces(this);
 		var ntn = a.nameSpace+tsep+a.tagName;
 		if (!this.tags[ntn]) {this.tags[ntn] = a;}
 		else { if (!isArray(this.tags[ntn])) {
