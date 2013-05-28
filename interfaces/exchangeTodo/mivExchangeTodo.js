@@ -116,16 +116,18 @@ mivExchangeTodo.prototype = {
 				this._calEvent.entryDate = this._entryDate.clone();
 			}
 		}
-		//this.logInfo("get entryDate 2: title:"+this.title+", startdate=="+this._calEvent.entryDate);
+		//dump("get entryDate 2: title:"+this.title+", this._calEvent.entryDate:"+this._calEvent.entryDate+"\n");
 		return this._calEvent.entryDate;
 	},
 
 	set entryDate(aValue)
 	{
 		//dump("set entryDate 1: title:"+this.title+", aValue:"+aValue+"\n");
+		//dump("set entryDate x:"+this.globalFunctions.STACK()+"\n");
 		if (aValue) {
-			if ((!this._newEntryDate) || (aValue.compare(this._newEntryDate) != 0)) {
-		//dump("set entryDate 2: title:"+this.title+", aValue:"+aValue+"\n");
+			if ((!this.entryDate) || (aValue.compare(this.entryDate) != 0)) {
+//			if ((!this._newEntryDate) || (aValue.compare(this._newEntryDate) != 0)) {
+				//dump("set entryDate 2: title:"+this.title+", aValue:"+aValue+"\n");
 				this._newEntryDate = aValue.clone();
 				this._calEvent.entryDate = aValue.clone();
 			}
@@ -136,6 +138,7 @@ mivExchangeTodo.prototype = {
 				this._calEvent.entryDate = aValue;
 			}
 		}
+		//dump("set entryDate 3: title:"+this.title+", this._newEntryDate:"+this._newEntryDate+", this._calEvent.entryDate:"+this._calEvent.entryDate+"\n");
 	},
 
 	//attribute calIDateTime dueDate;
@@ -152,7 +155,7 @@ mivExchangeTodo.prototype = {
 				this._calEvent.dueDate = this._dueDate.clone();
 			}
 		}
-		//this.logInfo("get dueDate 2: title:"+this.title+", startdate=="+this._calEvent.dueDate);
+		//dump("get dueDate 2: title:"+this.title+", this._calEvent.dueDate:"+this._calEvent.dueDate+"\n");
 		return this._calEvent.dueDate;
 	},
 
@@ -160,8 +163,9 @@ mivExchangeTodo.prototype = {
 	{
 		//dump("set dueDate 1: title:"+this.title+", aValue:"+aValue+"\n");
 		if (aValue) {
-			if ((!this._newDueDate) || (aValue.compare(this._newDueDate) != 0)) {
-		//dump("set dueDate 2: title:"+this.title+", aValue:"+aValue+"\n");
+			if ((!this.dueDate) || (aValue.compare(this.dueDate) != 0)) {
+//			if ((!this._newDueDate) || (aValue.compare(this._newDueDate) != 0)) {
+				//dump("set dueDate 2: title:"+this.title+", aValue:"+aValue+"\n");
 				this._newDueDate = aValue.clone();
 				this._calEvent.dueDate = aValue.clone();
 			}
@@ -172,7 +176,7 @@ mivExchangeTodo.prototype = {
 				this._calEvent.dueDate = aValue;
 			}
 		}
-		//dump("set dueDate 2: title:"+this.title+", this._newDueDate:"+this._newDueDate+", this._calEvent.dueDate:"+this._calEvent.dueDate+"\n");
+		//dump("set dueDate 3: title:"+this.title+", this._newDueDate:"+this._newDueDate+", this._calEvent.dueDate:"+this._calEvent.dueDate+"\n");
 	},
 
 	//attribute calIDateTime completedDate;
@@ -197,7 +201,9 @@ mivExchangeTodo.prototype = {
 	{
 		//dump("set completedDate: title:"+this.title+", aValue:"+aValue+"\n");
 		if (aValue) {
-			if ((!this._newCompletedDate) || (aValue.compare(this._newCompletedDate) != 0)) {
+//			if ((!this._newCompletedDate) || (aValue.compare(this._newCompletedDate) != 0)) {
+			if ((!this.completedDate) || (aValue.compare(this.completedDate) != 0)) {
+				this._newCompletedDate = aValue.clone();
 				this._calEvent.completedDate = aValue.clone();
 			}
 		}
