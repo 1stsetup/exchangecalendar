@@ -4535,15 +4535,31 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		if (this.debug) this.logInfo("We have '"+alarms.length+"' alarms.");
 		if (alarms.length > 0) {
 
-			// Exchange alarm for todo is always related absolute
-			var newAlarmTime = alarms[0].alarmDate.clone().getInTimezone(cal.UTC());
-
+			// Exchange alarm for task is always an absolute date and time.
+			switch (alarms[0].related) {
+			case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
+				if (this.debug) this.logInfo("ALARM_RELATED_ABSOLUTE.");
+				var newAlarmTime = alarms[0].alarmDate.clone().getInTimezone(cal.UTC());
+				break;
+			case Ci.calIAlarm.ALARM_RELATED_START:
+				if (this.debug) this.logInfo("ALARM_RELATED_START we are going to calculate the absolute.");
+				var newAlarmTime = aItem.entryDate.clone();
+				newAlarmTime.addDuration(alarms[0].offset);
+				break;
+			case Ci.calIAlarm.ALARM_RELATED_END:
+				if (this.debug) this.logInfo("ALARM_RELATED_END we are going to calculate the absolute.");
+				var newAlarmTime = aItem.dueDate.clone();
+				newAlarmTime.addDuration(alarms[0].offset);
+				break;
+			}
+	
 			e.addChildTag("ReminderDueBy", "nsTypes", cal.toRFC3339(newAlarmTime));
 			e.addChildTag("ReminderIsSet", "nsTypes", "true");
 		}
 		else {
 			e.addChildTag("ReminderIsSet", "nsTypes", "false");
 		}
+
 
 /*		// Delegation changes
 		if (aItem.hasProperty("X-exchWebService-PidLidTaskLastUpdate")) {
