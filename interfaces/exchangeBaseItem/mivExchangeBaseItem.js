@@ -1271,7 +1271,7 @@ try {
 	//nsIVariant getProperty(in AString name);
 	getProperty: function _getProperty(name)
 	{
-		//this.logInfo("get property 1: title:"+this.title+", name:"+name);
+		//dump("get property 1: title:"+this.title+", name:"+name+" == "+this._calEvent.getProperty(name)+"\n");
 		switch (name) {
 		case "X-MOZ-SNOOZE-TIME":
 				this.reminderSignalTime;
@@ -2002,8 +2002,8 @@ try {
 		}
 
 		var occurrences = [];
-
 		switch (this.calendarItemType) {
+		case "Task":
 		case "Single":
 		case "Occurrence":
 		case "Exception":
@@ -2300,7 +2300,12 @@ try {
 	get calendarItemType()
 	{
 		if (!this._calendarItemType) {
-			this._calendarItemType = this.getTagValue("t:CalendarItemType", null);
+			if (this.className == "mivExchangeEvent") {
+				this._calendarItemType = this.getTagValue("t:CalendarItemType", null);
+			}
+			else {
+				this._calendarItemType = "Task";
+			}
 		}
 		//dump("get calendarItemType: title:"+this.title+", this._calendarItemType:"+this._calendarItemType+", startdate="+this.startDate.toString()+"\n");
 		return this._calendarItemType;
