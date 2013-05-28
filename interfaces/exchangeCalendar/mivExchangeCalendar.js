@@ -1290,10 +1290,12 @@ calExchangeCalendar.prototype = {
 		var accountMgr = Cc["@mozilla.org/messenger/account-manager;1"].getService(Ci.nsIMsgAccountManager);
 		var identities = accountMgr.allIdentities;
 		var idList = [];
-		for (var index=0; index < identities.Count(); index++) {
-			var identity = identities.QueryElementAt(index, Ci.nsIMsgIdentity);
-			idList.push(identity);
-			//dump("aclEntry: index:"+index+", identitie:"+identity+"\n");
+		if ((identities["Count"]) && (identities["QueryElementAt"])) {
+			for (var index=0; index < identities.Count(); index++) {
+				var identity = identities.QueryElementAt(index, Ci.nsIMsgIdentity);
+				idList.push(identity);
+				//dump("aclEntry: index:"+index+", identitie:"+identity+"\n");
+			}
 		}
 		var self = this;
 		return {
