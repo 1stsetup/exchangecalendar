@@ -112,6 +112,17 @@ mivNameSpaces.prototype = {
 		return (this.nameSpaces.length-1);
 	},
 
+	findNameSpaceByAlias: function _findNameSpaceByAlias(aAlias)
+	{
+		for each(var record in this.nameSpaces) {
+			if (record.alias == aAlias) {
+				return record.value;
+			}
+		}
+		// When not found return null;
+		return null;
+	},
+
 }
 
 function NSGetFactory(cid) {

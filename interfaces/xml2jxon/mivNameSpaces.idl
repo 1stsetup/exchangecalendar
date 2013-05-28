@@ -27,5 +27,6 @@ interface mivNameSpaces : nsISupports
 
   AUTF8String getNameSpace(in unsigned long aAlias);
   unsigned long addNameSpace(in AUTF8String aAlias, in AUTF8String aValue);
+  AUTF8String findNameSpaceByAlias(in AUTF8String aAlias);
 
 };

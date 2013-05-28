@@ -144,7 +144,6 @@ erFindOccurrencesRequest.prototype = {
 		var found = false;
 
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage");
-
 		for each (var e in rm) {
 			var responseCode = e.getTagValue("m:ResponseCode");
 			switch (responseCode) {

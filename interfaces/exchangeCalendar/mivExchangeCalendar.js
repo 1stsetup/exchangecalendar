@@ -7220,7 +7220,6 @@ return;
 		rm = null;
 
 		var rm = aFolderProperties.XPath("/s:Envelope/s:Body/m:GetFolderResponse/m:ResponseMessages/m:GetFolderResponseMessage/m:Folders/*/t:EffectiveRights[t:Read='true']");
-
 		this.folderIsNotAvailable = false;
 
 		if (rm.length == 0) {

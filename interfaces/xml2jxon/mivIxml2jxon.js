@@ -285,13 +285,13 @@ mivIxml2jxon.prototype = {
 	getNameSpace: function _getNameSpace(a){
 		if ((a === undefined) || (a === null)) {return null;}
 		if (a == "") {a = "_default_";}
-		if (!this.nameSpaces[a]) {return null;}
-		return nameSpaceMgr.getNameSpace(this.nameSpaces[a]);
+		if (!this.nameSpaces[a]) {return nameSpaceMgr.findNameSpaceByAlias(a);}
+		else {return nameSpaceMgr.getNameSpace(this.nameSpaces[a]);}
 	},
 	addNameSpace: function _addNameSpace(a, b){
 		var index = a;
 		if ((a == "") || (a === undefined)) {index = "_default_";}
-		this.nameSpaces[index] = nameSpaceMgr.addNameSpace(a, b);
+		this.nameSpaces[index] = nameSpaceMgr.addNameSpace(index, b);
 		for each(var child in this.tags) {child.addNameSpace(index, b);}
 	},
 	setAttribute: function _setAttribute(a, b){this.attr[a] = convertSpecialCharatersToXML(b);},

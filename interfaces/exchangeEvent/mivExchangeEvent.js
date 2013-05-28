@@ -120,7 +120,7 @@ mivExchangeEvent.prototype = {
 
 	set startDate(aValue)
 	{
-		dump("set startdate: title:"+this.title+", aValue:"+aValue+"\n");
+		//dump("set startdate: title:"+this.title+", aValue:"+aValue+"\n");
 		if (aValue.toString() != this.startDate.toString()) {
 			this._newStartDate = aValue;
 			this._calEvent.startDate = aValue;
@@ -519,7 +519,7 @@ mivExchangeEvent.prototype = {
 			this.checkAlarmChange(updates);
 		}
 
-		dump("updates:"+updates.toString()+"\n");
+		//dump("updates:"+updates.toString()+"\n");
 		return updates;
 	},
 
