@@ -1357,7 +1357,7 @@ dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:
 		}
 
 		if (((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) ||
-			((aOldItem.recurrenceInfo) && (!aNewItem.recurrenceInfo))) {
+			((aOldItem.recurrenceInfo) && (aOldItem.calendarItemType == "RecurringMaster") && (!aNewItem.recurrenceInfo))) {
 			if (this.debug) this.logInfo("modifyItem item was changed from single into recurring or from recurring into single.");
 	        	this.notifyOperationComplete(aListener,
 	        	                             Cr.NS_OK,
@@ -1515,8 +1515,8 @@ dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:
 				}
 
 				if (this.sendMeetingRespons(requestResponseItem, null, "exisiting", aResponse)) {
-					return;
-					//result = Cr.NS_OK;
+					//return;
+					result = Cr.NS_OK;
 				}
 				else {
 					if (this.debug) this.logInfo("modifyItem: canceled by user.");
@@ -5989,7 +5989,9 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 		for each(var child in aMaster.getExceptions({})) {
 			aMaster.removeException(child);
 			this.notifyTheObservers("onDeleteItem", [child]);
-			this.itemCache[child.id].deleteItem();
+			if (this.itemCache[child.id]) {
+				this.itemCache[child.id].deleteItem();
+			}
 			this.itemCache[child.id] = null;
 			delete this.itemCache[child.id];
 		}
@@ -5997,7 +5999,9 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 		for each(var child in aMaster.getOccurrences({})) {
 			aMaster.removeOccurrence(child);
 			this.notifyTheObservers("onDeleteItem", [child]);
-			this.itemCache[child.id].deleteItem();
+			if (this.itemCache[child.id]) {
+				this.itemCache[child.id].deleteItem();
+			}
 			this.itemCache[child.id] = null;
 			delete this.itemCache[child.id];
 		}
