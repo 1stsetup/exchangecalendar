@@ -6584,12 +6584,6 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 //				.createInstance(Ci.mivExchangeEvent);
 		item.calendar = this.superCalendar;
 
-		item.id = this.md5(aCalendarEvent.toString());
-		if (this.itemCache[item.id]) {
-			item = null;
-			return null;
-		}
-
 		if (aCalendarEvent.getTagValue("t:BusyType") == "Free") {
 			item.setProperty("TRANSP", "TRANSPARENT");
 		}
@@ -6636,6 +6630,14 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			return null;
 		}
 
+
+		var startDateStr = aCalendarEvent.getTagValue("t:StartTime", "");
+		var endDateStr = aCalendarEvent.getTagValue("t:EndTime", "");
+		item.id = this.md5(startDateStr+endDateStr);
+		if (this.itemCache[item.id]) {
+			item = null;
+			return null;
+		}
 
 		// Try to see if it is an all day event. Only to see if all hours, minutes and seconds are 0 (zero)
 		if ( (item.startDate.hour == 0) && (item.startDate.minute == 0) && (item.startDate.second == 0) &&
