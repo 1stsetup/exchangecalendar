@@ -710,7 +710,9 @@ catch(err){
 	set id(aValue) 
 	{
 		//this.logInfo("set id: title:"+this.title);
+		return; // We do not allow this.
 		if (aValue != this.id) {
+			dump("Setting new id: title:"+this.title+", oldId:"+this.id+", newId:"+aValue+"\n"+this.globalFunctions.STACK()+"\n");
 			this._newId = aValue;
 			this._calEvent.id = aValue;
 		}
@@ -1757,7 +1759,7 @@ try {
 			if (attendeeExists.action == "remove") {
 				// We have a remove change in the list and we now want to re-add it. We just remove the remove change.
 				this.removeAttendeeFromChangesList(attendee);
-				this._calEvent.addAttendee(attendee);
+				this._calEvent.addAttendee(attendee.clone());
 				//this.logInfo("addAttendee1b: title:"+this.title+", attendee.id:"+attendee.id+", removed from changes list.");
 			}
 			// If the action was "add" we do not do anything as we do not have to duplicate it.
@@ -1765,7 +1767,7 @@ try {
 			return;
 		}
 		this._changesAttendees.push({ action: "add", attendee: attendee.clone()});
-		this._calEvent.addAttendee(attendee);
+		this._calEvent.addAttendee(attendee.clone());
 		//this.logInfo("addAttendee2: title:"+this.title+", attendee.id:"+attendee.id);
 	},
 

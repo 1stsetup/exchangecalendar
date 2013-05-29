@@ -981,6 +981,7 @@ calExchangeCalendar.prototype = {
 					//aNewItem.setProperty("X-ChangeKey", cachedItem.changeKey);
 					aNewItem.setProperty("X-MEETINGREQUEST", cachedItem.getProperty("X-MEETINGREQUEST"));
 					//aNewItem.setProperty("X-IsInvitation" , cachedItem.isInvitation);
+dump("%%% BLIEP %%%\n");
 					aNewItem.id = cachedItem.id;
 
 
@@ -1245,12 +1246,15 @@ calExchangeCalendar.prototype = {
 				if (this.debug) this.logInfo("singleModified doNotify");
 				this.notifyTheObservers("onModifyItem", [aModifiedSingle, this.itemCache[aModifiedSingle.id]], aFastNotify);
 			}
-			if (this.itemCache[aModifiedSingle.id].className) {
+			/*if (this.itemCache[aModifiedSingle.id].className) {
 				this.itemCache[aModifiedSingle.id].deleteItem();
 			}
 			this.itemCache[aModifiedSingle.id] = null;
-			delete this.itemCache[aModifiedSingle.id];
-			this.itemCache[aModifiedSingle.id] = aModifiedSingle;
+			delete this.itemCache[aModifiedSingle.id];*/
+			this.removeItemFromCache(aModifiedSingle);
+
+			//this.itemCache[aModifiedSingle.id] = aModifiedSingle;
+			this.addItemToCache(aModifiedSingle);
 		}
 	},
 
@@ -1496,6 +1500,7 @@ dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:
 					var tmpItem = cachedItem;
 					var tmpUID = aNewItem.id;
 					requestResponseItem = this.cloneItem(aNewItem);
+dump("!!! BLIEP !!!\n");
 					requestResponseItem.id = tmpItem.id;
 					//requestResponseItem.setProperty("X-UID",  tmpItem.uid);
 					//requestResponseItem.setProperty("X-ChangeKey",  tmpItem.changeKey);
@@ -3702,11 +3707,13 @@ catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
 		for (var index in this.itemCache) {
 			if (this.itemCache[index]) {
 				this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
-				if (this.itemCache[index].className) {
+				/*if (this.itemCache[index].className) {
 					this.itemCache[index].deleteItem();
 				}
 				this.itemCache[index] = null;
-				delete this.itemCache[index];
+				delete this.itemCache[index];*/
+				this.removeItemFromCache(this.itemCache[index]);
+
 			}
 		}
 		//this.observers.notify("onEndBatch");
@@ -4983,7 +4990,8 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		
 		if ( !erSendMeetingResponsRequest.argument.item.getProperty("X-MEETINGREQUEST")) {
 			//this.notifyTheObservers("onModifyItem", [erSendMeetingResponsRequest.argument.item, this.itemCache[erSendMeetingResponsRequest.argument.item.id]]);
-			this.itemCache[erSendMeetingResponsRequest.argument.item.id] = erSendMeetingResponsRequest.argument.item;
+			//this.itemCache[erSendMeetingResponsRequest.argument.item.id] = erSendMeetingResponsRequest.argument.item;
+			this.addItemToCache(erSendMeetingResponsRequest.argument.item);
 		}
 		else {
 			// From meetingrequest cache. Do not remove meetingrequest from cache this will be done when invitation is removed
@@ -5015,7 +5023,8 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		//	this.notifyTheObservers("onDeleteItem", [this.itemCache[erGetOccurrenceIndexRequest.argument.newItem.id]]);
 		//	delete this.itemCache[erGetOccurrenceIndexRequest.argument.newItem.id];
 			this.notifyTheObservers("onModifyItem", [erGetOccurrenceIndexRequest.argument.newItem, this.itemCache[erGetOccurrenceIndexRequest.argument.newItem.id]]);
-			this.itemCache[erGetOccurrenceIndexRequest.argument.newItem.id] = erGetOccurrenceIndexRequest.argument.newItem;
+			//this.itemCache[erGetOccurrenceIndexRequest.argument.newItem.id] = erGetOccurrenceIndexRequest.argument.newItem;
+			this.addItemToCache(erGetOccurrenceIndexRequest.argument.newItem);
 
 
 			var self = this;
@@ -5263,7 +5272,8 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		this.saveCredentials(erGetOccurrenceIndexRequest.argument);
 
 		this.notifyTheObservers("onDeleteItem", [erGetOccurrenceIndexRequest.argument.masterItem]);
-		this.itemCache[erGetOccurrenceIndexRequest.argument.masterItem.id]= null;
+		//this.itemCache[erGetOccurrenceIndexRequest.argument.masterItem.id]= null;
+		this.removeItemFromCache(erGetOccurrenceIndexRequest.argument.masterItem);
 
 		this.notConnected = false;
 		var self = this;
@@ -5989,21 +5999,26 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 		for each(var child in aMaster.getExceptions({})) {
 			aMaster.removeException(child);
 			this.notifyTheObservers("onDeleteItem", [child]);
-			if (this.itemCache[child.id]) {
+			/*if (this.itemCache[child.id]) {
 				this.itemCache[child.id].deleteItem();
 			}
+else { dump("Exception does not exist in cache anymore.\n");}
 			this.itemCache[child.id] = null;
-			delete this.itemCache[child.id];
+			delete this.itemCache[child.id];*/
+			this.removeItemFromCache(child);
+
 		}
 
 		for each(var child in aMaster.getOccurrences({})) {
 			aMaster.removeOccurrence(child);
 			this.notifyTheObservers("onDeleteItem", [child]);
-			if (this.itemCache[child.id]) {
+			/*if (this.itemCache[child.id]) {
 				this.itemCache[child.id].deleteItem();
 			}
+else { dump("Occurrence does not exist in cache anymore.\n");}
 			this.itemCache[child.id] = null;
-			delete this.itemCache[child.id];
+			delete this.itemCache[child.id];*/
+			this.removeItemFromCache(child);
 		}
 
 		if (this.debug) this.logInfo("removeChildrenFromMaster end.:"+aMaster.title);
@@ -6353,7 +6368,8 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 							this.newMasters[item.uid] = true;
 							this.getMasterByItem(item);
 						}
-						this.itemCache[item.id] = item;
+						//this.itemCache[item.id] = item;
+						this.addItemToCache(item);
 						return null;
 					}
 
@@ -6377,7 +6393,8 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 							this.newMasters[item.uid] = true;
 							this.getMasterByItem(item);
 						}
-						this.itemCache[item.id] = item;
+						//this.itemCache[item.id] = item;
+						this.addItemToCache(item);
 						return null;
 					}
 					
@@ -6754,7 +6771,8 @@ return;
 				//convertedItems.push(item);
 				if (!this.itemCache[item.id]) {
 					// This is a new unknown item
-					this.itemCache[item.id] = item;
+					//this.itemCache[item.id] = item;
+					this.addItemToCache(item);
 					this.itemCount++;
 
 					if (this.debug) this.logInfo("updateCalendar: onAddItem:"+ item.title);
@@ -6971,9 +6989,11 @@ return;
 							if (this.debug) this.logInfo("This is a Occurrence or Exception to delete. THIS SHOULD NEVER HAPPEN.");
 						}
 						this.notifyTheObservers("onDeleteItem", [item]);
-						this.itemCache[item.id].deleteItem();
+						/*this.itemCache[item.id].deleteItem();
 						this.itemCache[item.id] = null;
-						delete this.itemCache[item.id];
+						delete this.itemCache[item.id];*/
+						this.removeItemFromCache(item);
+
 					}
 					else {
 						// Find matching master record.
@@ -7408,6 +7428,46 @@ return;
 		}
 	},
 
+	addItemToCache: function _addItemToCache(item)
+	{
+		if (!item) {
+			dump("addItemToCache: item is null.\n");
+			return;
+		}
+
+			var itemDate = item.startDate || item.entryDate;
+/*if (this.itemCache[item.id]) { 
+	dump("addItemToCache: item.title:"+item.title+", startDate:"+itemDate+". IS AL READY IN CACHE.\n");
+}
+else {
+	dump("addItemToCache: item.title:"+item.title+", startDate:"+itemDate+" | "+item.id+".\n");
+}*/
+
+		this.itemCache[item.id] = item;
+	},
+
+	removeItemFromCache: function _removeItemFromCache(item)
+	{
+		if (!item) {
+			dump("removeItemFromCache: item is null.\n");
+			return;
+		}
+
+		if (this.itemCache[item.id]) {
+			if (this.itemCache[item.id].className) {
+				this.itemCache[item.id].deleteItem();
+			}
+			this.itemCache[item.id] = null;
+			delete this.itemCache[item.id];
+			var itemDate = item.startDate || item.entryDate;
+//dump("removeItemFromCache: item.title:"+item.title+", startDate:"+itemDate+" | "+item.id+".\n");
+		}
+		else {
+			var itemDate = item.startDate || item.entryDate;
+			dump("removeItemFromCache: item.title:"+item.title+", startDate:"+itemDate+". is not in itemCache. | "+item.id+"\n");
+		}
+	},
+
 	doShutdown: function _doShutdown()
 	{
 		if (this.shutdown) {
@@ -7438,11 +7498,12 @@ return;
 		for (var index in this.itemCache) {
 			if (this.itemCache[index]) {
 				//this.notifyTheObservers("onDeleteItem", [this.itemCache[index]]);
-				if (this.itemCache[index].className) {
+				/*if (this.itemCache[index].className) {
 					this.itemCache[index].deleteItem();
 				}
 				this.itemCache[index] = null;
-				delete this.itemCache[index];
+				delete this.itemCache[index];*/
+				this.removeItemFromCache(this.itemCache[index]);
 			}
 		} 
 
