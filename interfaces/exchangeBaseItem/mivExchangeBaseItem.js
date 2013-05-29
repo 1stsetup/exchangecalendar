@@ -561,12 +561,17 @@ catch(err){
 	//readonly attribute AUTF8String hashId;
 	get hashId()
 	{
-		 this._hashId = [encodeURIComponent(this.id),
+		this.id;
+		this.recurrenceId;
+		this.calendar;
+		return this._calEvent.hashId;
+
+/*		 this._hashId = [encodeURIComponent(this.id),
 			this.recurrenceId ? this.recurrenceId.getInTimezone(this.globalFunctions.ecUTC()).icalString : "",
 			this.calendar ? encodeURIComponent(this.calendar.id) : ""].join("#");
 
 		//this.logInfo("get hashId: title:"+this.title+", value:"+this._hashId);
-		return this._hashId;
+		return this._hashId;*/
 	},
 
 	/**
@@ -913,7 +918,7 @@ catch(err){
 
 		if (this._alarm === undefined) {
 			this._alarm = null;
-			switch (this._className) {
+			switch (this.className) {
 			case "mivExchangeTodo":
 				if ((this.reminderIsSet) && (this.calendarItemType != "RecurringMaster")) {
 					this.logInfo("Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType);
@@ -979,14 +984,14 @@ catch(err){
 		// As exchange can only handle one alarm. We make sure there is only one.
 
 		//dump("addAlarm 1: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"("+this.calendarItemType+")\n");
-		this.getAlarms({}); // Preload
+		var alarms = this.getAlarms({}); // Preload
+		this._calEvent.clearAlarms();
 
 		if (((this._alarm) && (!this.alarmsAreEqual(this._alarm, aAlarm))) || (!this._alarm)) {
 			//dump("addAlarm 2: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"("+this.calendarItemType+")\n");
-			this._calEvent.clearAlarms();
 			this._newAlarm = aAlarm.clone();
 		}
-		this._calEvent.addAlarm(aAlarm);
+		this._calEvent.addAlarm(aAlarm.clone());
 	},
 
 	/**
