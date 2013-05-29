@@ -2015,17 +2015,17 @@ try {
 			}
 			break;
 		case "RecurringMaster":
-			var tmpStartDate = exception.startDate || exception.entryDate;
-			var tmpEndDate = exception.endDate || exception.entryDate;
 			for each(var exception in this._exceptions) {
+				var tmpStartDate = exception.startDate || exception.entryDate;
+				var tmpEndDate = exception.endDate || exception.entryDate;
 				if ( ((aStartDate === null) || (!tmpStartDate) || (tmpStartDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (!tmpEndDate) || (tmpEndDate.compare(aEndDate) < 0)) ) {
 					//this.logInfo("getOccurrencesBetween 0d: inserting myself into list.");
 					occurrences.push(exception);
 				}
 			}
-			var tmpStartDate = occurrence.startDate || occurrence.entryDate;
-			var tmpEndDate = occurrence.endDate || occurrence.entryDate;
 			for each(var occurrence in this._occurrences) {
+				var tmpStartDate = occurrence.startDate || occurrence.entryDate;
+				var tmpEndDate = occurrence.endDate || occurrence.entryDate;
 				if ( ((aStartDate === null) || (!tmpStartDate) || (tmpStartDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (!tmpEndDate) || (tmpEndDate.compare(aEndDate) < 0)) ) {
 					//this.logInfo("getOccurrencesBetween 0e: inserting myself into list.");
 					occurrences.push(occurrence);
