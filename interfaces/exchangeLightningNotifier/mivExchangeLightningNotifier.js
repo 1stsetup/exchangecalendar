@@ -77,7 +77,7 @@ mivExchangeLightningNotifier.prototype = {
 		if (!this.timerRunning) {
 			this.timerRunning = true;
 			//dump("mivExchangeLightningNotifier: Start timer\n");
-			this.timer.initWithCallback(this, 1000, this.timer.TYPE_REPEATING_SLACK);
+			this.timer.initWithCallback(this, 500, this.timer.TYPE_REPEATING_SLACK);
 		}
 	},
 
