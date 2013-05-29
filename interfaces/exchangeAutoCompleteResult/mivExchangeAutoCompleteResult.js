@@ -180,7 +180,7 @@ mivExchangeAutoCompleteResult.prototype = {
 					var tmpCard = childNodes.getNext().QueryInterface(Ci.mivExchangeAbCard);
 //dump(" || "+tmpCard+"\n");
 //					emailList = emailList + tmpCard.displayName + " <" + tmpCard.primaryEmail + ">" ;
-					emailList = emailList + tmpCard.firstName + " " tmpCard.lastName + " <" + tmpCard.primaryEmail + ">" ;
+					emailList = emailList + tmpCard.firstName + " " + tmpCard.lastName + " <" + tmpCard.primaryEmail + ">" ;
 				}
 			//dump("  ++ addr:"+emailList+"\n");
 				return emailList;
