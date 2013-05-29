@@ -6342,7 +6342,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 						master.addException(item);
 					}
 					else {
-						if (this.debug) this.logInfo("HAS NO MASTER: STRANGE: Exception:"+item.title);
+						//if (this.debug) this.logInfo("HAS NO MASTER: STRANGE: Exception:"+item.title);
 						// We do not have a master yet so we are going to request it and put this in itemcache but do not show it.
 						this.parentLessItems[item.id] = item;
 						if (!this.newMasters[item.uid]) {
@@ -6366,7 +6366,7 @@ catch(err){ dump("readDeletedOccurrences error:"+err+"\n");}
 						master.addOccurrence(item);
 					}
 					else {
-						if (this.debug) this.logInfo("HAS NO MASTER: STRANGE: Occurrence:"+item.title);
+						//if (this.debug) this.logInfo("HAS NO MASTER: STRANGE: Occurrence:"+item.title);
 						// We do not have a master yet so we are going to request it and put this in itemcache but do not show it.
 						this.parentLessItems[item.id] = item;
 						if (!this.newMasters[item.uid]) {

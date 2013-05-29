@@ -149,6 +149,7 @@ ExchangeRequest.prototype = {
 	ER_ERROR_SPECIFIED_SMTP_NOTFOUND: -212, // Specified SMTP address does not exist.
 	ER_ERROR_CONVERTID: -214, // Specified SMTP address does not exist.
 	ER_ERROR_NOACCESSTOFREEBUSY: -215, // Specified user has no access to free/busy information of specified mailbox.
+	ER_ERROR_FINDOCCURRENCES_UNKNOWN: -216, // We received an unkown error while trying to get the occurrences. 
 
 	ERR_PASSWORD_ERROR: -300, // To many password errors.
 

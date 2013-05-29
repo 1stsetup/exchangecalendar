@@ -176,11 +176,15 @@ erFindOccurrencesRequest.prototype = {
 					}
 					tmpItems = null;
 					break;
+				case "ErrorItemNotFound":
 				case "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange" :
 					finished = true;
 					break;
 				case "ErrorInvalidIdMalformed" :
 					this.onSendError(aExchangeRequest, this.parent.ER_ERROR_FINDOCCURRENCES_INVALIDIDMALFORMED, responseCode);
+					return;
+				default:
+					this.onSendError(aExchangeRequest, this.parent.ER_ERROR_FINDOCCURRENCES_UNKNOWN, responseCode);
 					return;
 			}
 
