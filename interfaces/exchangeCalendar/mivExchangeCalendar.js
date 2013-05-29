@@ -1349,7 +1349,6 @@ dump("%%% BLIEP %%%\n");
 			return null;
 	        }
 
-dump("modifyItem: aOldItem.className:"+aOldItem.className+", aOldItem.canModify:"+aOldItem.canModify+"\n");
 		if ((aOldItem.className) && (!aOldItem.canModify)) {
 			if (this.debug) this.logInfo("modifyItem and this item is ReadOnly for this user.");
 	        	this.notifyOperationComplete(aListener,
