@@ -918,6 +918,7 @@ catch(err){
 
 		if (this._alarm === undefined) {
 			this._alarm = null;
+			this._calEvent.clearAlarms();
 			switch (this.className) {
 			case "mivExchangeTodo":
 				if ((this.reminderIsSet) && (this.calendarItemType != "RecurringMaster")) {
