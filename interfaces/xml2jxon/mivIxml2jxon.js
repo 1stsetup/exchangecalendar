@@ -584,150 +584,178 @@ mivIxml2jxon.prototype = {
 	processXMLString: function _processXMLString(aStr, aSP, aParent){processXMLStringEXT(aStr, aSP, aParent, this);},
 }
 
-function processXMLStringEXT(aStr, aSP, aParent, aXMLObject)
+function checkClosingElement(aStr, aPos, aXMLObject, aParent)
 {
-	if (!aStr) return;
-try{
+	var strLength = aStr.length;
+	var tmpStartPos = aPos;
+	if (aPos < strLength) {
+		var tmpPos = findCharacter(aStr, aPos, ">");
+		if (tmpPos > -1) {
+			var closingTag = aStr.substr(tmpStartPos, tmpPos-tmpStartPos);
+			var xmlnsPos = closingTag.indexOf(tsep);
+			if (xmlnsPos > -1) {
+				var nameSpace = closingTag.substr(0, xmlnsPos);
+				closingTag = closingTag.substr(xmlnsPos+1);
+			}
+			else {var nameSpace = "_default_";}
+
+			if ((aParent) && (closingTag == aParent.tagName) && (nameSpace == aParent.nameSpace)) {
+				aXMLObject.lastPos = tmpPos;
+				aXMLObject.closed = true;
+				return true;
+			}
+			else {throw Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG;}
+		}
+		else {throw Ci.mivIxml2jxon.ERR_INVALID_TAG;}
+	}
+	else {throw Ci.mivIxml2jxon.ERR_INVALID_TAG;}
+}
+
+function hasXMLHeader(aStr, aSP)
+{
+	if (!aStr) return 0;
+
 	var pos = findCharacter(aStr, aSP, "<");
 	var strLength = aStr.length;
 	if (pos > -1) {
-		aXMLObject.startPos = pos;
-		let skipped = pos - aSP;
-		if ((skipped > 0) && (aParent)) {
-			aParent.addToContent(aStr.substr(aSP, skipped));
-		}
 		pos++;
 		var tc = aStr[pos];
+
 		if ( (pos < strLength) && (tc == "?")) {
 			pos++;
 			if (aStr.substr(pos, 4) == "xml ") {
 				var tmpPos = findString(aStr, pos, "?>");
 				if (tmpPos == -1) {throw Ci.mivIxml2jxon.ERR_INVALID_SPECIAL_TAG;}
 				else {
-					aXMLObject.processXMLString(aStr, tmpPos+2, null);
-					aXMLObject.closed = true; 
-					return;						
+					return (tmpPos+2);						
 				}
 			}
 			else {throw Ci.mivIxml2jxon.ERR_MISSING_SPECIAL_TAG;}
 		}
-		else {
-			if ( (pos < strLength) && (tc == "/")) {
-				pos++;
-				var tmpStartPos = pos;
-				if (pos < strLength) {
-					var tmpPos = findCharacter(aStr, pos, ">");
-					if (tmpPos > -1) {
-						var closingTag = aStr.substr(tmpStartPos, tmpPos-tmpStartPos);
-						var xmlnsPos = closingTag.indexOf(tsep);
-						if (xmlnsPos > -1) {
-							var nameSpace = closingTag.substr(0, xmlnsPos);
-							closingTag = closingTag.substr(xmlnsPos+1);
-						}
-						else {var nameSpace = "_default_";}
+	}
+	return 0;
+}
 
-						if ((aParent) && (closingTag == aParent.tagName) && (nameSpace == aParent.nameSpace)) {
-							aXMLObject.lastPos = tmpPos;
-							aXMLObject.closed = true;
-							return;
-						}
-						else {throw Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG;}
-					}
-					else {throw Ci.mivIxml2jxon.ERR_INVALID_TAG;}
-				}
-				else {throw Ci.mivIxml2jxon.ERR_INVALID_TAG;}
-			}
-			else {if (pos < strLength) {
-					var tmpPos = findCharacter(aStr, pos, ">");
-					if (tmpPos > -1) {
-						var tmpStart = aXMLObject.startPos + 1;
-						let tmpTagName = "";
+function processXMLStringEXT(aStr, aSP, aParent, aXMLObject)
+{
+	if (!aStr) return;
+try{
+	var tmpSP = aSP;
+	var xmlHeaderPos = hasXMLHeader(aStr, aSP);
+	if (xmlHeaderPos > 0) {
+		//dump("We have an XML header. Going to strip it.\n");
+		tmpSP = xmlHeaderPos;
+	}
+
+	var pos = findCharacter(aStr, tmpSP, "<");
+	var strLength = aStr.length;
+	if (pos > -1) {
+		aXMLObject.startPos = pos;
+		let skipped = pos - tmpSP;
+		if ((skipped > 0) && (aParent)) {
+			aParent.addToContent(aStr.substr(tmpSP, skipped));
+		}
+		pos++;
+		var tc = aStr[pos];
+
+		if ( (pos < strLength) && (tc == "/")) {
+			pos++;
+			checkClosingElement(aStr, pos, aXMLObject, aParent);
+			return;
+		}
+		else {if (pos < strLength) {
+				var tmpPos = findCharacter(aStr, pos, ">");
+				if (tmpPos > -1) {
+					var tmpStart = aXMLObject.startPos + 1;
+					let tmpTagName = "";
+					tc = aStr[tmpStart];
+					while ((tmpStart < strLength) && (tc != ">") && 
+						(tc != "/") && (!(isInList(specialChars1,tc)))) {
+						tmpTagName = tmpTagName + tc;
+						tmpStart++;
 						tc = aStr[tmpStart];
-						while ((tmpStart < strLength) && (tc != ">") && 
-							(tc != "/") && (!(isInList(specialChars1,tc)))) {
-							tmpTagName = tmpTagName + tc;
+					}
+					var xmlnsPos = tmpTagName.indexOf(tsep);
+					if (xmlnsPos > -1) {
+						aXMLObject.nameSpace = tmpTagName.substr(0, xmlnsPos);
+						tmpTagName = tmpTagName.substr(xmlnsPos+1);
+					}
+					else {aXMLObject.nameSpace = "_default_";}
+					aXMLObject.tagName = tmpTagName;
+					if (aParent) {aParent.addChildTagObject(aXMLObject);}
+					if ((tmpStart < strLength) && (tc == "/")) {
+						aXMLObject.lastPos = tmpStart+1;
+						return;
+					}
+					else {if ((tmpStart < strLength) && (isInList(specialChars1,tc))) {
+							var attribute = "";
 							tmpStart++;
 							tc = aStr[tmpStart];
-						}
-						var xmlnsPos = tmpTagName.indexOf(tsep);
-						if (xmlnsPos > -1) {
-							aXMLObject.nameSpace = tmpTagName.substr(0, xmlnsPos);
-							tmpTagName = tmpTagName.substr(xmlnsPos+1);
-						}
-						else {aXMLObject.nameSpace = "_default_";}
-						aXMLObject.tagName = tmpTagName;
-						if (aParent) {aParent.addChildTagObject(aXMLObject);}
-						if ((tmpStart < strLength) && (tc == "/")) {
-							//aXMLObject.messageLength = tmpStart - aXMLObject.startPos + 2;
-							aXMLObject.lastPos = tmpStart+1;
-							return;
-						}
-						else {if ((tmpStart < strLength) && (isInList(specialChars1,tc))) {
-								var attribute = "";
-								tmpStart++;
-								tc = aStr[tmpStart];
-								var quoteOpen = false;
-								var seenAttributeSeparator = false;
-								var quoteChar = "";
-								while ((tmpStart < strLength) && 
-									(((tc != ">") && (tc != "/")) || (quoteOpen)) ) {
-									attribute = attribute + tc;
-									if ((!seenAttributeSeparator) && (tc == "=") && (!quoteOpen)){seenAttributeSeparator = true;}
-									else {if (seenAttributeSeparator) {
-											if ((tc == '"') || (tc == "'")) {
-												if ((!quoteOpen) || ((quoteOpen) && (quoteChar == tc))) {
-													quoteOpen = !quoteOpen;
-													if (quoteOpen) {quoteChar = tc;}
-												}
+							var quoteOpen = false;
+							var seenAttributeSeparator = false;
+							var quoteChar = "";
+							while ((tmpStart < strLength) && 
+								(((tc != ">") && (tc != "/")) || (quoteOpen)) ) {
+								attribute = attribute + tc;
+								if ((!seenAttributeSeparator) && (tc == "=") && (!quoteOpen)){seenAttributeSeparator = true;}
+								else {if (seenAttributeSeparator) {
+										if ((tc == '"') || (tc == "'")) {
+											if ((!quoteOpen) || ((quoteOpen) && (quoteChar == tc))) {
+												quoteOpen = !quoteOpen;
+												if (quoteOpen) {quoteChar = tc;}
 											}
 										}
 									}
+								}
+								tmpStart++;
+								tc = aStr[tmpStart];
+								if ((seenAttributeSeparator) && (tmpStart < strLength) && (isInList(specialChars1,tc)) && (!quoteOpen)) {
+									aXMLObject.explodeAttribute(attribute);
+									attribute = "";
+									seenAttributeSeparator = false;
 									tmpStart++;
 									tc = aStr[tmpStart];
-									if ((seenAttributeSeparator) && (tmpStart < strLength) && (isInList(specialChars1,tc)) && (!quoteOpen)) {
-										aXMLObject.explodeAttribute(attribute);
-										attribute = "";
-										seenAttributeSeparator = false;
-										tmpStart++;
-										tc = aStr[tmpStart];
-									}
 								}
-								if ((seenAttributeSeparator) && (!quoteOpen) && (tmpStart < strLength) && (attribute.length > 0)) {
-									aXMLObject.explodeAttribute(attribute);
-									seenAttributeSeparator = false;
-									attribute = "";
-								}
-								if ((tmpStart < strLength) && (tc == "/")) {
-									// Found opening tag with attributes which is also closed.
-									//aXMLObject.messageLength = tmpStart - aXMLObject.startPos + 2;
-									aXMLObject.lastPos = tmpStart+1;
-									return;
-								}
-								else {if (!((tmpStart < strLength) && (tc == ">"))) {throw Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG;}}
-
+							}
+							if ((seenAttributeSeparator) && (!quoteOpen) && (tmpStart < strLength) && (attribute.length > 0)) {
+								aXMLObject.explodeAttribute(attribute);
+								seenAttributeSeparator = false;
+								attribute = "";
+							}
+							if ((tmpStart < strLength) && (tc == "/")) {
+								// Found opening tag with attributes which is also closed.
+								aXMLObject.lastPos = tmpStart+1;
+								return;
 							}
 							else {if (!((tmpStart < strLength) && (tc == ">"))) {throw Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG;}}
+
 						}
-						var tmpChild = null;
-						while (((!tmpChild) || (!tmpChild.closed)) && (tmpPos)) {
-							tmpChild = new mivIxml2jxon(aStr,tmpPos+1, aXMLObject);
-							//aXMLObject.messageLength = tmpChild.lastPos - aXMLObject.startPos + 1;
-							tmpPos = tmpChild.lastPos;
-						}
-						tmpChild = null;
-						aXMLObject.lastPos = tmpPos;
+						else {if (!((tmpStart < strLength) && (tc == ">"))) {throw Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG;}}
 					}
-					else {throw Ci.mivIxml2jxon.ERR_INVALID_TAG;}
+					var tmpChild = null;
+					while (((!tmpChild) || (!tmpChild.closed)) && (tmpPos)) {
+						tmpChild = new mivIxml2jxon(aStr,tmpPos+1, aXMLObject);
+						tmpPos = tmpChild.lastPos;
+
+						if ((tmpChild) && (!tmpChild.closed)) {
+							if (aStr.substr(tmpPos+1, 2) == "</") {
+								checkClosingElement(aStr, tmpPos+3, tmpChild, aXMLObject);									
+								tmpPos = tmpChild.lastPos;
+							}
+						}
+					}
+					tmpChild = null;
+					aXMLObject.lastPos = tmpPos;
 				}
 				else {throw Ci.mivIxml2jxon.ERR_INVALID_TAG;}
 			}
+			else {throw Ci.mivIxml2jxon.ERR_INVALID_TAG;}
 		}
 	}
 	else {
 //dump("nothing left.\n");
 		if (aParent) {
 			aParent.addToContent(aStr);
-			//aParent.messageLength = aParent.messageLength+aStr.length; 
 		}
 		aXMLObject.lastPos = aStr.length - 1;
 		aXMLObject.closed = true;
