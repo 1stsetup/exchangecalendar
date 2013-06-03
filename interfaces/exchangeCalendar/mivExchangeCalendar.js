@@ -579,6 +579,7 @@ calExchangeCalendar.prototype = {
 
 	startupLoadFromOfflineCache: function _startupLoadFromOfflineCache()
 	{
+		if (this.debug) this.logInfo("startupLoadFromOfflineCache: Starting load from offline cache.");
 
 		if (this.loadingFromCache) return;
 
@@ -6710,10 +6711,10 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		}
 	},
 
-	updateCalendar: function _updateCalendar(erGetItemsRequest, aItems, doNotify)
+	updateCalendar: function _updateCalendar(erGetItemsRequest, aItems, doNotify, fromOfflineCache)
 	{
 //		this.observers.notify("onStartBatch");
-		this.updateCalendar2(erGetItemsRequest, aItems,doNotify);
+		this.updateCalendar2(erGetItemsRequest, aItems,doNotify, fromOfflineCache);
 //		this.observers.notify("onEndBatch");
 return;
 		for (var index in aItems) {
@@ -6757,7 +6758,7 @@ return;
 		}
 	},
 
-	updateCalendar2: function _updateCalendar2(erGetItemsRequest, aItems, doNotify)
+	updateCalendar2: function _updateCalendar2(erGetItemsRequest, aItems, doNotify, fromOfflineCache)
 	{
 		if (this.debug) this.logInfo("updateCalendar: We have '"+aItems.length+"' items to update in calendar.");
 
@@ -6778,7 +6779,10 @@ return;
 					if (doNotify) {
 						this.notifyTheObservers("onAddItem", [item]);
 					}
-					this.addToOfflineCache(item, aItems[index]);
+
+					if (!fromOfflineCache) {
+						this.addToOfflineCache(item, aItems[index]);
+					}
 
 				}
 				else {
@@ -6787,7 +6791,10 @@ return;
 					//dump("updateCalendar: onModifyItem:"+ item.title);
 
 					this.singleModified(item, doNotify);
-					this.addToOfflineCache(item, aItems[index]);
+
+					if (!fromOfflineCache) {
+						this.addToOfflineCache(item, aItems[index]);
+					}
 				}
 			}
 
@@ -6808,7 +6815,7 @@ return;
 			return;
 		}
 
-		this.updateCalendar(erGetItemsRequest, aItems, true, true);
+		this.updateCalendar(erGetItemsRequest, aItems, true);
 		aItems = null;
 		erGetItemsRequest = null;
 	},
@@ -8402,7 +8409,7 @@ else {
 			if (result.length > 0) {
 				this.executeQuery("UPDATE items set event=(event || '_')"+whereStr);
 
-				return this.updateCalendar(null, result, false);
+				return this.updateCalendar(null, result, true, true);
 			}
 		}
 		else {
