@@ -100,4 +100,6 @@ interface mivExchangeBaseItem : calIItemBase
 
 	void deleteItem();
 
+	void clearId([optional] in AUTF8String newId);
+
 };

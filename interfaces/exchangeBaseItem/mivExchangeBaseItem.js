@@ -708,8 +708,9 @@ catch(err){
 				this._calEvent.id = this._id;
 			}
 		}
-		//this.logInfo("get id: title:"+this.title+", id:"+this._calEvent.id);
-		return this._calEvent.id;
+		//dump("get id: title:"+this.title+", _id:"+this._id+", id:"+this._calEvent.id+"\n");
+		//return this._calEvent.id;
+		return this._id;
 	},
 
 	set id(aValue) 
@@ -720,6 +721,20 @@ catch(err){
 			dump("Setting new id: title:"+this.title+", oldId:"+this.id+", newId:"+aValue+"\n"+this.globalFunctions.STACK()+"\n");
 			this._newId = aValue;
 			this._calEvent.id = aValue;
+		}
+	},
+
+	clearId: function _clearId(newId)
+	{
+		if (newId) {
+dump("clearId newId:"+newId+"\n");
+			this._id = newId;
+			this._calEvent.id = newId;
+		}
+		else {
+dump("clearId newId:undefined\n");
+			this._id = undefined;
+			this._calEvent.id = undefined;
 		}
 	},
 
@@ -1631,7 +1646,8 @@ try {
 	get organizer()
 	{
 		if (!this._organizer) {
-			this._organizer = this.createAttendee(this.getTag("t:Organizer"), "CHAIR");
+//			this._organizer = this.createAttendee(this.getTag("t:Organizer"), "CHAIR");
+			this._organizer = this.createAttendee(this.getTag("t:Organizer"), null);
 			if (this._organizer) {
 				this._organizer.isOrganizer = true;
 				this._calEvent.organizer = this._organizer;

@@ -959,7 +959,7 @@ calExchangeCalendar.prototype = {
 				if (this.debug) this.logInfo("adoptItem 2 Copy/pasted item. item.id:"+tmpItem.id);
 			}
 
-			if (tmpItem.id) {
+			if ((tmpItem.id) && (tmpItem.id != "not a valid id")) {
 				// This is and item create through an iTIP response.
 
 				var cachedItem = null;
@@ -1069,7 +1069,7 @@ dump("%%% BLIEP %%%\n");
 			if (this.debug) this.logInfo(" >>>>>>> 1 We have a organizer and SCHEDULE-AGENT="+erGetMeetingRequestByUIDRequest.argument.item.organizer.getProperty("SCHEDULE-AGENT"));
 		}
 		else {
-			if (this.debug) this.logInfo("item has not oranizer!!!!!!!!!!!!");
+			if (this.debug) this.logInfo("item has no oranizer!!!!!!!!!!!!");
 		}
 
 		if (aMeetingRequests.length > 0) {
@@ -1171,7 +1171,7 @@ dump("%%% BLIEP %%%\n");
 					
 					if (this.debug) this.logInfo(" !!!>>  We are going to treat this as a copy/paste for a new event.");
 					var tmpItem = erGetMeetingRequestByUIDRequest.argument.item.clone();
-					tmpItem.id = "xxxx-xxxx-xxx-xxxx";
+					tmpItem.clearId("xxxx-xxxx-xxx-xxxx");
 					//tmpItem.setProperty("X-IsInvitation", "true");
 					tmpItem.setProperty("X-exchangeITIP1", "true");
 					tmpItem.setProperty("X-IsMeeting", true);
@@ -1188,7 +1188,7 @@ dump("%%% BLIEP %%%\n");
 				else {
 					if (this.debug) this.logInfo("SCHEDULE-AGENT not set. We are going add the item. At a later stage we will want to have a proper restore.");
 					var tmpItem = erGetMeetingRequestByUIDRequest.argument.item.clone();
-					tmpItem.id = "xxxx-xxxx-xxx-xxxx";
+					tmpItem.clearId("xxxx-xxxx-xxx-xxxx");
 					tmpItem.setProperty("X-exchangeITIP2", "true");
 					tmpItem.removeAllAttendees();
 					this.addItem(tmpItem, erGetMeetingRequestByUIDRequest.listener);
@@ -1198,12 +1198,15 @@ dump("%%% BLIEP %%%\n");
 
 			if (!doStop) {
 				if (erGetMeetingRequestByUIDRequest.argument.item.isMutable) {
-					erGetMeetingRequestByUIDRequest.argument.item.id = undefined;
+					if (this.debug) this.logInfo("item is Mutable.");
+					erGetMeetingRequestByUIDRequest.argument.item.clearId("not a valid id");
+					if (this.debug) this.logInfo("item is Mutable. item.id set to '"+erGetMeetingRequestByUIDRequest.argument.item.id+"'");
 					this.adoptItem(erGetMeetingRequestByUIDRequest.argument.item, erGetMeetingRequestByUIDRequest.listener);
 				}
 				else {
+					if (this.debug) this.logInfo("item is NOT Mutable. Going to create clone.");
 					var tmpItem = erGetMeetingRequestByUIDRequest.argument.item.clone();
-					tmpItem.id = undefined;
+					tmpItem.clearId("not a valid id");
 					this.adoptItem(tmpItem, erGetMeetingRequestByUIDRequest.listener);
 				}
 				return;
