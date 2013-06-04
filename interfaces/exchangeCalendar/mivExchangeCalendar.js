@@ -614,7 +614,7 @@ calExchangeCalendar.prototype = {
 		}
 
 		// Load from offline Cache into memory cache.
-		if (this.useOfflineCache) {
+/*		if (this.useOfflineCache) {
 			if (this.debug) this.logInfo("Getting items from offlineCache.");
 
 			let self = this;
@@ -622,7 +622,7 @@ calExchangeCalendar.prototype = {
 			this.cacheLoader.initWithCallback({ notify: function setTimeout_notify() {self.startupLoadFromOfflineCache();	}}, 0, this.cacheLoader.TYPE_ONE_SHOT);
 
 		}
-
+*/
 		if (!this.isOffline) {
 			// Start online processes.
 			// 1. Check folder.
@@ -2087,6 +2087,7 @@ dump("!!! BLIEP !!!\n");
 	getItems: function _getItems(aItemFilter, aCount,
                                     aRangeStart, aRangeEnd, aListener) 
 	{
+		if (this.debug) this.logInfo("getItems 0: aListener:"+aListener);
 		if (this.debug) this.logInfo("getItems 1: aCount:"+aCount);
 
 		if (aRangeStart)  { 
@@ -2186,25 +2187,6 @@ dump("!!! BLIEP !!!\n");
 			this.lastValidRangeStart = aRangeStart.clone();
 			this.lastValidRangeEnd = aRangeEnd.clone();
 		}
-
-/*		if (this.OnlyShowAvailability) {
-			var first = true;
-			for (var index in this.itemCache) {
-				if (first) {
-					this.startDate = this.itemCache[index].startDate.clone();
-					this.endDate = this.itemCache[index].endDate.clone();
-					first = false;
-				}
-				else {
-					if (this.itemCache[index].startDate.compare(this.startDate) < 0) {
-						this.startDate = this.itemCache[index].startDate.clone();
-					}
-					if (this.itemCache[index].endDate.compare(this.endDate) > 0) {
-						this.endDate = this.itemCache[index].endDate.clone();
-					}
-				}
-			}
-		}*/
 
 		this.exporting = false;
 		if ((aItemFilter == Ci.calICalendar.ITEM_FILTER_ALL_ITEMS) &&
@@ -2315,9 +2297,49 @@ dump("!!! BLIEP !!!\n");
 		if (!this.lastValidRangeStart) this.lastValidRangeStart = aRangeStart.clone();
 		if (!this.lastValidRangeEnd) this.lastValidRangeEnd = aRangeEnd.clone();
 
-		//if (!this.OnlyShowAvailability) {
-			this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
-		//}
+		if ((this.useOfflineCache) && (dateChanged)) {
+			if ((wantEvents) && (this.supportsEvents)) {
+				if (this.debug) this.logInfo("Requesting events from offline cache.");
+				if ((startChanged) || (endChanged)) {
+
+					if (startChanged) {
+						if (this.debug) this.logInfo("Startdate has changed to an earlier date. Requesting difference.");
+						this.getItemsFromOfflineCache(aRangeStart, oldStartDate);
+					}
+					if (endChanged) {
+						if (this.debug) this.logInfo("Enddate has changed to a later date. Requesting difference.");
+						this.getItemsFromOfflineCache(oldEndDate, aRangeEnd, aListener);
+					}
+
+					// We need to get the period which did not change from memorycache.
+				}
+				else {
+					if (this.debug) this.logInfo("New time period. Requesting items in period.");
+					this.getItemsFromOfflineCache(aRangeStart, aRangeEnd, aListener);
+				}
+			}
+
+			if ((this.offlineStartDate) && (aRangeStart.compare(this.offlineStartDate) < 0)) {
+				oldStartDate = this.offlineStartDate.clone();
+			}
+			else {
+				startChanged = false;
+			}
+
+
+			if ((this.offlineEndDate) && (aRangeEnd.compare(this.offlineEndDate) > 0)) {
+				oldEndDate = this.offlineEndDate.clone();
+			}
+			else {
+				endChanged = false;
+			}
+
+			if ((!startChanged) && (!endChanged)) {
+				dateChanged = false;
+			}
+		}
+
+		this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
 
  		if (this.OnlyShowAvailability) {
 			if ((startChanged) || (endChanged)) {
@@ -2398,6 +2420,7 @@ dump("!!! BLIEP !!!\n");
 
 	getItemsFromMemoryCache: function _getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, aExporting)
 	{
+		if (this.debug) this.logInfo("getItemsFromMemoryCache startDate:"+aRangeStart+", endDate:"+aRangeEnd+", aListener:"+aListener+", aExporting:"+aExporting);
 		var events = [];
 		var tasks = [];
 
@@ -2408,7 +2431,6 @@ dump("!!! BLIEP !!!\n");
 			.ITEM_FILTER_TYPE_TODO) != 0);
 
 		for (var index in this.itemCache) {
-try{
 			if (isEvent(this.itemCache[index])) {
 				if ( ( (this.itemCache[index].startDate.compare(aRangeEnd) < 1) &&
 				      (this.itemCache[index].endDate.compare(aRangeStart) > -1) ) ||
@@ -2424,8 +2446,6 @@ try{
 					}
 				}
 			}
-}
-catch(err){ dump("getItemsFromMemoryCache error:"+err+"\n");}
 		}
 
 
@@ -6269,7 +6289,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 		this.saveCredentials(erGetMasterOccurrenceIdRequest.argument);
 	},
 
-	convertExchangeAppointmentToCalAppointment: function _convertExchangeAppointmentToCalAppointment(aCalendarItem, isMeetingRequest, erGetItemsRequest, doNotify)
+	convertExchangeAppointmentToCalAppointment: function _convertExchangeAppointmentToCalAppointment(aCalendarItem, isMeetingRequest, erGetItemsRequest, doNotify, fromOfflineCache)
 	{
 		if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment:"+String(aCalendarItem), 2);
 
@@ -6401,7 +6421,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 					break;
 				case "RecurringMaster" :
 	
-					if (this.debug) this.logInfo(item.title+":"+item.startDate.toString()+":IsMaster");
+					if (this.debug) this.logInfo(item.title+":"+item.startDate.toString()+":IsMaster, fromOfflineCache:"+fromOfflineCache);
 
 					if ((this.recurringMasterCache[item.uid]) && (this.recurringMasterCache[item.uid].changeKey != item.changeKey)) {
 						if (this.debug) this.logInfo("We allready have this master in cache but the changeKey changed.");
@@ -6464,7 +6484,9 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 					}
 					//this.observers.notify("onEndBatch");
 
-					this.addToOfflineCache(item, aCalendarItem);
+					if (!fromOfflineCache) {
+						this.addToOfflineCache(item, aCalendarItem, false);
+					}
 
 					if (this.recurringMasterCache[uid]) {
 						this.masterCount--;
@@ -6473,7 +6495,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 						this.recurringMasterCache[uid] = null;
 					}
 					else {
-						if (parentLessCounter == 0) {
+						if ((parentLessCounter == 0) && (!fromOfflineCache)) {
 							if (this.debug) this.logInfo("We have a new master without children. Most of the times this means we nead to request the children separately.");
 							var self = this;
 							var tmpItem = { Id: item.id, ChangeKey: item.changeKey, type:"RecurringMaster"};
@@ -6671,7 +6693,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		return item;
 	},
 
-	convertExchangeToCal: function _convertExchangeToCal(aExchangeItem, erGetItemsRequest, doNotify)
+	convertExchangeToCal: function _convertExchangeToCal(aExchangeItem, erGetItemsRequest, doNotify, fromOfflineCache)
 	{
 		if (this.debug) this.logInfo("convertExchangeToCal:"+aExchangeItem, 2);
 		if (!aExchangeItem) { 
@@ -6698,7 +6720,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			case "IPM.OLE.CLASS" :
 			case "IPM.Schedule.Meeting.Request":
 			case "IPM.Schedule.Meeting.Canceled":
-				return this.convertExchangeAppointmentToCalAppointment(aExchangeItem, false, erGetItemsRequest, doNotify);
+				return this.convertExchangeAppointmentToCalAppointment(aExchangeItem, false, erGetItemsRequest, doNotify, fromOfflineCache);
 				break;
 			case "IPM.Task" :
 				return this.convertExchangeTaskToCalTask(aExchangeItem, erGetItemsRequest);
@@ -6760,13 +6782,13 @@ return;
 
 	updateCalendar2: function _updateCalendar2(erGetItemsRequest, aItems, doNotify, fromOfflineCache)
 	{
-		if (this.debug) this.logInfo("updateCalendar: We have '"+aItems.length+"' items to update in calendar.");
+		if (this.debug) this.logInfo("updateCalendar: We have '"+aItems.length+"' items to update in calendar. fromOfflineCache:"+fromOfflineCache);
 
 		for (var index in aItems) {
 
 			this.itemsFromExchange++;
 
-			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify);
+			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify, fromOfflineCache);
 			if (item) {
 				//convertedItems.push(item);
 				if (!this.itemCache[item.id]) {
@@ -8409,7 +8431,7 @@ else {
 			if (result.length > 0) {
 				this.executeQuery("UPDATE items set event=(event || '_')"+whereStr);
 
-				return this.updateCalendar(null, result, true, true);
+				return this.updateCalendar(null, result, false, true);
 			}
 		}
 		else {
@@ -8454,7 +8476,7 @@ else {
 
 	get offlineStartDate()
 	{
-		if (this.noDB) return;
+		if (this.noDB) return null;
 		var tmpStartDate = this.executeQueryWithResults("SELECT min(endDate) as newStartDate FROM items", ["newStartDate"]);
 		if ((tmpStartDate) && (tmpStartDate.length > 0)) {
 			var newStartDate = tmpStartDate[0].newStartDate;
@@ -8472,7 +8494,7 @@ else {
 
 	get offlineEndDate()
 	{
-		if (this.noDB) return;
+		if (this.noDB) return null;
 		var tmpEndDate = this.executeQueryWithResults("SELECT max(endDate) as newEndDate FROM items", ["newEndDate"]);
 		if ((tmpEndDate) && (tmpEndDate.length > 0)) {
 			var newEndDate = tmpEndDate[0].newEndDate;
@@ -8488,6 +8510,28 @@ else {
 		return null;
 	},
 	
+	get offlineEventItemCount()
+	{
+		if (this.noDB) return 0;
+		var tmpEventCount = this.executeQueryWithResults("SELECT COUNT() as eventCount FROM items where event like '%y'", ["eventCount"]);
+		if ((tmpEventCount) && (tmpEventCount.length > 0)) {
+			return tmpEventCount[0].eventCount;
+		}
+
+		return 0;
+	},
+
+	get offlineToDoItemCount()
+	{
+		if (this.noDB) return 0;
+		var tmpToDoCount = this.executeQueryWithResults("SELECT COUNT() as toDoCount FROM items where event like '%n'", ["toDoCount"]);
+		if ((tmpToDoCount) && (tmpToDoCount.length > 0)) {
+			return tmpToDoCount[0].toDoCount;
+		}
+
+		return 0;
+	},
+
     /**
      * Internal logging function that should be called on any database error,
      * it will log as much info as possible about the database context and
