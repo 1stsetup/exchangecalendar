@@ -194,6 +194,11 @@ erFindOccurrencesRequest.prototype = {
 		}
 		rm = null;
 
+		// This is so we do not get in an infinite loop
+		If (this.currentSearchIndex > 20000) {
+			finished = true;
+		}
+
 		if (finished) {
 			// We found our occurrence.
 			if (this.mCbOk) {
