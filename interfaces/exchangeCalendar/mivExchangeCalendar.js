@@ -630,9 +630,9 @@ calExchangeCalendar.prototype = {
 			// 3. Start pollers.
 			if (this.debug) this.logInfo("Initialized:"+this.isInitialized);
 
-			if (this.useOfflineCache) {
+/*			if (this.useOfflineCache) {
 				this.syncExchangeToOfflineCache();
-			}
+			}*/ // Not necessary anymore as it will follow the cache by default.
 		}
 
 	},
@@ -2564,7 +2564,10 @@ dump("!!! BLIEP !!!\n");
 		if ((!this.syncState) || (this.weAreSyncing)) {
 			if (this.weAreSyncing) {
 				if (this.debug) this.logInfo("weAreSyncing. So no refresh.");
-			}
+			}	
+	
+	
+	
 			else {
 				if (this.debug) this.logInfo("No syncState yet. So no refresh.");
 			}
@@ -8312,13 +8315,38 @@ else {
 		startDate.addDuration(monthsBeforeDurarion);
 		endDate.addDuration(monthAfterDurarion);
 
+		// Store what we have in memory cache to offline cache.
+		if (this.debug) this.logInfo("Store what we have in memory cache to offline cache.");
+		for each(var item in this.itemCache) {
+			this.addToOfflineCache(item, item.exchangeData);
+		}
+
+		for each(var item in this.recurringMasterCache) {
+			this.addToOfflineCache(item, item.exchangeData);
+		}
+
+		// Check what is missing for minimal time period.
 		var filter = 0;
 		if (this.supportsEvents) filter |= Ci.calICalendar.ITEM_FILTER_TYPE_EVENT;
 		if (this.supportsTasks) filter |= Ci.calICalendar.ITEM_FILTER_TYPE_TODO;
 
-		if (this.debug) this.logInfo("Going to request events in the period of '"+startDate.toString()+"' until '"+endDate.toString()+"' from the exchange server to fill offlinecache.");
+		if ((!this.startDate) && (!this.endDate)) {
+			if (this.debug) this.logInfo("Going to request events in the period of '"+startDate.toString()+"' until '"+endDate.toString()+"' from the exchange server to fill offlinecache.");
+			this.getItems(filter, 0, startDate, endDate, null);
+		}
+		else {
+			if ((this.startDate) && (startDate.compare(this.startDate)) < 0) {
+				if (this.debug) this.logInfo("Going to request events in the period of '"+startDate.toString()+"' until '"+this.startDate.toString()+"' from the exchange server to fill offlinecache.");
+				this.getItems(filter, 0, startDate, this.startDate, null);
+			}
+			if ((this.endDate) && (endDate.compare(this.endDate) > 0)) {
+				if (this.debug) this.logInfo("Going to request events in the period of '"+this.endDate.toString()+"' until '"+endDate.toString()+"' from the exchange server to fill offlinecache.");
+				this.getItems(filter, 0, this.endDate, endDate, null);
+			}
+		}
+
 		//this.requestPeriod(startDate, endDate, filter, null, false);
-		this.getItems(filter, 0, startDate, endDate, null);
+		//this.getItems(filter, 0, startDate, endDate, null);
 
 	},
 
