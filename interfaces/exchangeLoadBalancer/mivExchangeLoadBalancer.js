@@ -34,6 +34,7 @@ function jobObject(aJob, aServer, aLoadBalancer)
 	this.startTime = new Date().getTime();
 	this.exchangeRequest = null;
 	this.loadBalancer = aLoadBalancer;
+	this.state = "queued";
 	this.timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
 }
 
@@ -42,6 +43,7 @@ jobObject.prototype = {
 //dump(this.server+":loadBalancer: starting Job\n");
 
 		var self = this;
+		this.state = "running";
 		this.exchangeRequest = new this.job.ecRequest(this.job.arguments, 
 		function myOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) { self.onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, this.job);}, 
 		function myError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {self.onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, this.job);}
@@ -187,11 +189,13 @@ mivExchangeLoadBalancer.prototype = {
 					//this.logInfo("this.jobsRunning:"+this.jobsRunning);
 					this.serverQueue[server].runningJobs.push(oldList[runningJob]);
 					// Check how long this job is running
-					var timeNow = new Date().getTime();
-					var timeDiff = timeNow - oldList[runningJob].startTime;
-					if (timeDiff > 300000) {
-						dump("We have a job which is running longer than 5 minutes:"+oldList[runningJob].job.ecRequest+"\n"); 
-					} 
+					if (oldList[runningJob].state = "running") {
+						var timeNow = new Date().getTime();
+						var timeDiff = timeNow - oldList[runningJob].startTime;
+						if (timeDiff > 300000) {
+							dump("We have a job which is running longer than 5 minutes:"+oldList[runningJob].job.ecRequest+"\n"); 
+						}
+					}
 				}
 				else {
 					// Running job stopped.
