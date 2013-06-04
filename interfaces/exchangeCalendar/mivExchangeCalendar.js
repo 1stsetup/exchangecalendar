@@ -5726,6 +5726,13 @@ if (this.debug) this.logInfo("getTaskItemsOK 2");
 
 if (this.debug) this.logInfo("getTaskItemsOK 3");
 		this.updateCalendar(erGetItemsRequest, aItems, true);
+
+		if ((erGetItemsRequest.argument) && (erGetItemsRequest.argument.syncState)) {
+				if (this.debug) this.logInfo("getTaskItemsOK: We have a syncState to save.");
+				this.syncState = erGetItemsRequest.argument.syncState;
+				this.prefs.setCharPref("syncState", erGetItemsRequest.argument.syncState);
+		}
+
 		aItems  = null;
 		erGetItemsRequest = null;
 
@@ -6973,11 +6980,36 @@ return;
 				this.logError("Same syncState received.");
 			}
 
-			this.syncState = syncState;
-			this.prefs.setCharPref("syncState", syncState);
+//			this.syncState = syncState;
+//			this.prefs.setCharPref("syncState", syncState);
 
 			var self = this;
-			if (creations.length > 0) {
+
+			var changes = [];
+			for each(var creation in creations) { changes.push(creation); }
+			for each(var update in updates) { changes.push(update); }
+			if (changes.length > 0) {
+				this.addToQueue( erGetItemsRequest, 
+					{user: this.user, 
+					 mailbox: this.mailbox,
+					 folderBase: this.folderBase,
+					 serverUrl: this.serverUrl,
+					 ids: changes,
+					 folderID: this.folderID,
+					 changeKey: this.changeKey,
+					 folderClass: this.folderClass,
+					 GUID: calExchangeCalendarGUID,
+					 syncState: syncState }, 
+					function(erGetItemsRequest, aIds) { self.getTaskItemsOK(erGetItemsRequest, aIds);}, 
+					function(erGetItemsRequest, aCode, aMsg) { self.getTaskItemsError(erGetItemsRequest, aCode, aMsg);},
+					null);
+			}
+			else {
+				this.syncState = syncState;
+				this.prefs.setCharPref("syncState", syncState);
+			}
+
+/*			if (creations.length > 0) {
 				this.addToQueue( erGetItemsRequest, 
 					{user: this.user, 
 					 mailbox: this.mailbox,
@@ -7008,7 +7040,7 @@ return;
 					function(erGetItemsRequest, aCode, aMsg) { self.getTaskItemsError(erGetItemsRequest, aCode, aMsg);},
 					null);
 			}
-
+*/
 			if (deletions.length > 0) {
 				for each (var deleted in deletions) {
 					var item = this.itemCache[deleted.Id];
