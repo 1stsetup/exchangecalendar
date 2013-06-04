@@ -8512,24 +8512,24 @@ else {
 	
 	get offlineEventItemCount()
 	{
-		if (this.noDB) return 0;
-		var tmpEventCount = this.executeQueryWithResults("SELECT COUNT() as eventCount FROM items where event like '%y'", ["eventCount"]);
+		if (this.noDB) return "-";
+		var tmpEventCount = this.executeQueryWithResults("SELECT COUNT() as eventCount FROM items where event = 'y'", ["eventCount"]);
 		if ((tmpEventCount) && (tmpEventCount.length > 0)) {
 			return tmpEventCount[0].eventCount;
 		}
 
-		return 0;
+		return "--";
 	},
 
 	get offlineToDoItemCount()
 	{
-		if (this.noDB) return 0;
-		var tmpToDoCount = this.executeQueryWithResults("SELECT COUNT() as toDoCount FROM items where event like '%n'", ["toDoCount"]);
+		if (this.noDB) return "-";
+		var tmpToDoCount = this.executeQueryWithResults("SELECT COUNT() as toDoCount FROM items where event = 'n'", ["toDoCount"]);
 		if ((tmpToDoCount) && (tmpToDoCount.length > 0)) {
 			return tmpToDoCount[0].toDoCount;
 		}
 
-		return 0;
+		return "--";
 	},
 
     /**
