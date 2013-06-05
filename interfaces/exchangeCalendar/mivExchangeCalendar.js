@@ -3576,12 +3576,22 @@ dump("!!! BLIEP !!!\n");
 
 		var start = null;
 		if (aCi.getTagValue("t:StartTime", null)) {
-			start = cal.fromRFC3339(aCi.getTagValue("t:StartTime", null), this.globalFunctions.ecDefaultTimeZone());
+			if (this.isVersion2007) {
+				start = cal.fromRFC3339(aCi.getTagValue("t:StartTime", null), this.globalFunctions.ecUTC());
+			}
+			else {
+				start = cal.fromRFC3339(aCi.getTagValue("t:StartTime", null), this.globalFunctions.ecDefaultTimeZone());
+			}
 		}
 
 		var end = null;
 		if (aCi.getTagValue("t:EndTime", null)) {
-			end = cal.fromRFC3339(aCi.getTagValue("t:EndTime", null), this.globalFunctions.ecDefaultTimeZone());
+			if (this.isVersion2007) {
+				end = cal.fromRFC3339(aCi.getTagValue("t:EndTime", null), this.globalFunctions.ecUTC());
+			}
+			else {
+				end = cal.fromRFC3339(aCi.getTagValue("t:EndTime", null), this.globalFunctions.ecDefaultTimeZone());
+			}
 		}
 
 //		var start = this.tryToSetDateValue(aCi.getTagValue("t:StartTime"));
@@ -6665,7 +6675,12 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 		item.startDate = null;
 		if (aCalendarEvent.getTagValue("t:StartTime", null)) {
-			item.startDate = cal.fromRFC3339(aCalendarEvent.getTagValue("t:StartTime", null), this.globalFunctions.ecDefaultTimeZone());
+			if (this.isVersion2007) {
+				item.startDate = cal.fromRFC3339(aCalendarEvent.getTagValue("t:StartTime", null), this.globalFunctions.ecUTC());
+			}
+			else {
+				item.startDate = cal.fromRFC3339(aCalendarEvent.getTagValue("t:StartTime", null), this.globalFunctions.ecDefaultTimeZone());
+			}
 		}
 
 //		item.startDate = this.tryToSetDateValue(aCalendarEvent.getTagValue("t:StartTime"), null);
@@ -6677,7 +6692,12 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 		item.endDate = null;
 		if (aCalendarEvent.getTagValue("t:EndTime", null)) {
-			item.endDate = cal.fromRFC3339(aCalendarEvent.getTagValue("t:EndTime", null), this.globalFunctions.ecDefaultTimeZone());
+			if (this.isVersion2007) {
+				item.endDate = cal.fromRFC3339(aCalendarEvent.getTagValue("t:EndTime", null), this.globalFunctions.ecUTC());
+			}
+			else {
+				item.endDate = cal.fromRFC3339(aCalendarEvent.getTagValue("t:EndTime", null), this.globalFunctions.ecDefaultTimeZone());
+			}
 		}
 
 		//item.endDate = this.tryToSetDateValue(aCalendarEvent.getTagValue("t:EndTime"), null);
