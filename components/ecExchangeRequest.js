@@ -73,8 +73,8 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 {
 	this.mData = "";
 	this.mArgument = aArgument;
-	this.mCbOk   = aCbOk;
-	this.mCbError   = aCbError;
+	this.mCbOk = aCbOk;
+	this.mCbError = aCbError;
 	this.retries = 0;
 	this.urllist = [];
 	this.currentUrl = "";
@@ -296,6 +296,7 @@ ExchangeRequest.prototype = {
 			}
 
 			this.fail(this.ER_ERROR_OPEN_FAILED,"Could not connect to specified host:"+err);
+			return;
 		}
 
 		this.xmlReq.overrideMimeType('text/xml');
@@ -348,6 +349,7 @@ catch(err) {
 
 		if (xmlReq.readyState != 4) {
 			if (this.debug) this.logInfo("readyState < 4. THIS SHOULD NEVER HAPPEN. PLEASE REPORT.");
+			this.fail(this.ER_ERROR_OPEN_FAILED,"Ready state != 4, readyState:"+xmlReq.readyState);
 			return;
 		}
 
@@ -512,6 +514,7 @@ catch(err){
 		if (evt.type != "abort") {
 			if (this.debug) this.logInfo("ecExchangeRequest.abort: "+evt.type);
 		}
+		dump("Abort!\n");
 //		this.fail(-3, "User aborted data transfer.");
 	},
 

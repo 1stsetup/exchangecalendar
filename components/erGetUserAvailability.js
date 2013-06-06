@@ -66,6 +66,7 @@ function erGetUserAvailabilityRequest(aArgument, aCbOk, aCbError, aListener)
 	this.serverUrl = aArgument.serverUrl;
 	this.listener = aListener;
 	this.email = aArgument.email;
+dump("!! this.email:"+this.email+"\n");
 	this.attendeeType = aArgument.attendeeType;
 	this.start = aArgument.start;
 	this.end = aArgument.end;
@@ -129,14 +130,20 @@ erGetUserAvailabilityRequest.prototype = {
 			rm = null;
 			var rm = aResp.XPath("/s:Envelope/s:Body/GetUserAvailabilityResponse/FreeBusyResponseArray/FreeBusyResponse/ResponseMessage[@ResponseClass='Error']");
 			if (rm.length == 0) {
-				exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: Respons does not contain expected field");
-				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
-				rm = null;
-				return;
+				//Check if we only have a /s:Envelope/s:Body/GetUserAvailabilityResponse
+				var rm = aResp.XPath("/s:Envelope/s:Body/GetUserAvailabilityResponse");
+				if (rm.length == 0) {
+					exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: Respons does not contain expected field");
+					this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
+					rm = null;
+					this.isRunning = false;
+					return;
+				}
 			}
 			else {
 				var responseCode = rm[0].getTagValue("m:ResponseCode", "");
 				var messageText = rm[0].getTagValue("m:MessageText", "");
+dump("messageText:"+messageText+".\n");
 				if (responseCode.indexOf("ErrorMailRecipientNotFound") > -1) {
 					exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: "+messageText);
 				}
@@ -144,6 +151,7 @@ erGetUserAvailabilityRequest.prototype = {
 					exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: "+messageText);
 					this.onSendError(aExchangeRequest, this.parent.ER_ERROR_NOACCESSTOFREEBUSY, messageText);
 					rm = null;
+					this.isRunning = false;
 					return;
 				}
 			}
