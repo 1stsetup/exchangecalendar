@@ -2353,9 +2353,9 @@ dump("!!! BLIEP !!!\n");
 				}
 			}
 
-			if ((!startChanged) && (!endChanged)) {
+/*			if ((!startChanged) && (!endChanged)) {
 				dateChanged = false;
-			}
+			}*/
 		}
 
 		this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
