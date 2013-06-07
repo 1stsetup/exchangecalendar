@@ -2301,8 +2301,8 @@ dump("!!! BLIEP !!!\n");
 		if (!this.lastValidRangeEnd) this.lastValidRangeEnd = aRangeEnd.clone();
 
 		if ((this.useOfflineCache) && (dateChanged)) {
-			if ((wantEvents) && (this.supportsEvents)) {
-				if (this.debug) this.logInfo("Requesting events from offline cache.");
+			if (((wantEvents) && (this.supportsEvents)) || ((wantTodos) && (this.supportsTasks))) {
+				if (this.debug) this.logInfo("Requesting events/tasks from offline cache.");
 				if ((startChanged) || (endChanged)) {
 
 					if (startChanged) {
