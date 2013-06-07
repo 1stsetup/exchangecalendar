@@ -2323,18 +2323,34 @@ dump("!!! BLIEP !!!\n");
 			}
 
 			if ((this.offlineStartDate) && (aRangeStart.compare(this.offlineStartDate) < 0)) {
+				if (this.debug) this.logInfo("Rangestart is before offlineCache start.");
 				oldStartDate = this.offlineStartDate.clone();
+				startChanged = true;
 			}
 			else {
-				startChanged = false;
+				if (this.offlineStartDate) {
+					if (this.debug) this.logInfo("Rangestart is after offlineCache start.");
+					startChanged = false;
+				}
+				else {
+					startChanged = true;
+				}
 			}
 
 
 			if ((this.offlineEndDate) && (aRangeEnd.compare(this.offlineEndDate) > 0)) {
+				if (this.debug) this.logInfo("RangeEnd is after offlineCache end.");
 				oldEndDate = this.offlineEndDate.clone();
+				endChanged = true;
 			}
 			else {
-				endChanged = false;
+				if (this.offlineEndDate) {
+					if (this.debug) this.logInfo("RangeEnd is before offlineCache end.");
+					endChanged = false;
+				}
+				else {
+					endChanged = true;
+				}
 			}
 
 			if ((!startChanged) && (!endChanged)) {

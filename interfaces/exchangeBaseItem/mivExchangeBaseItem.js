@@ -942,11 +942,27 @@ dump("clearId newId:undefined\n");
 					var alarm = cal.createAlarm();
 					alarm.action = "DISPLAY";
 					alarm.repeat = 0;
-					alarm.alarmDate = this.reminderDueBy.clone().getInTimezone(this.globalFunctions.ecDefaultTimeZone());
+					if (this.reminderDueBy) {
+						alarm.alarmDate = this.reminderDueBy.clone().getInTimezone(this.globalFunctions.ecDefaultTimeZone());
+						alarm.related = Ci.calIAlarm.ALARM_RELATED_ABSOLUTE;
 
-					alarm.related = Ci.calIAlarm.ALARM_RELATED_ABSOLUTE;
+						this.logInfo("Alarm set with an alarmDate of "+alarm.alarmDate+".");
+					}
+					else {
+						var alarmOffset = cal.createDuration();
+						alarmOffset.minutes = -1 * this.reminderMinutesBeforeStart;
 
-					this.logInfo("Alarm set with an alarmDate of "+alarm.alarmDate+".");
+						// This is a bug fix for when the offset is more than a year)
+						if (alarmOffset.minutes < (-60*24*365)) {
+							alarmOffset.minutes = -5;
+						}
+						alarmOffset.normalize();
+
+						alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
+						alarm.offset = alarmOffset;
+
+						this.logInfo("Alarm set with an offset of "+alarmOffset.minutes+" minutes from the start");
+					}
 
 					this._alarm = alarm.clone();
 					this._calEvent.addAlarm(alarm);
@@ -971,8 +987,6 @@ dump("clearId newId:undefined\n");
 
 					alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
 					alarm.offset = alarmOffset;
-
-					this.logInfo("Alarm set with an offset of "+alarmOffset.minutes+" minutes from the start");
 
 					this._alarm = alarm.clone();
 					this._calEvent.addAlarm(alarm);
