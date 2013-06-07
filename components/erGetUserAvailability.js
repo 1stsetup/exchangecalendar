@@ -66,7 +66,6 @@ function erGetUserAvailabilityRequest(aArgument, aCbOk, aCbError, aListener)
 	this.serverUrl = aArgument.serverUrl;
 	this.listener = aListener;
 	this.email = aArgument.email;
-dump("!! this.email:"+this.email+"\n");
 	this.attendeeType = aArgument.attendeeType;
 	this.start = aArgument.start;
 	this.end = aArgument.end;
@@ -143,7 +142,6 @@ erGetUserAvailabilityRequest.prototype = {
 			else {
 				var responseCode = rm[0].getTagValue("m:ResponseCode", "");
 				var messageText = rm[0].getTagValue("m:MessageText", "");
-dump("messageText:"+messageText+".\n");
 				if (responseCode.indexOf("ErrorMailRecipientNotFound") > -1) {
 					exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: "+messageText);
 				}
