@@ -8317,7 +8317,7 @@ else {
 		this.addAttachmentsToOfflineCache(aCalItem);
 	},
 
-	updateMasterInOfflineCache: function _updateParentInOfflineCache(aCalItem)
+	updateMasterInOfflineCache: function _updateMasterInOfflineCache(aCalItem)
 	{
 		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
@@ -8338,7 +8338,7 @@ else {
 		}
 		else {
 			if ((this.getItemType(aCalItem) == "RO") || (this.getItemType(aCalItem) == "RE")) {
-				this.updateParentInOfflineCache(aCalItem.parentItem);
+				this.updateMasterInOfflineCache(aCalItem.parentItem);
 			}
 		}
 		
@@ -8576,7 +8576,7 @@ else {
 	get offlineStartDate()
 	{
 		if (this.noDB) return null;
-		var tmpStartDate = this.executeQueryWithResults("SELECT min(endDate) as newStartDate FROM items", ["newStartDate"]);
+		var tmpStartDate = this.executeQueryWithResults("SELECT min(endDate) as newStartDate FROM items where type <> 'M'", ["newStartDate"]);
 		if ((tmpStartDate) && (tmpStartDate.length > 0)) {
 			var newStartDate = tmpStartDate[0].newStartDate;
 			if (newStartDate) {
@@ -8594,7 +8594,7 @@ else {
 	get offlineEndDate()
 	{
 		if (this.noDB) return null;
-		var tmpEndDate = this.executeQueryWithResults("SELECT max(endDate) as newEndDate FROM items", ["newEndDate"]);
+		var tmpEndDate = this.executeQueryWithResults("SELECT max(endDate) as newEndDate FROM items where type <> 'M'", ["newEndDate"]);
 		if ((tmpEndDate) && (tmpEndDate.length > 0)) {
 			var newEndDate = tmpEndDate[0].newEndDate;
 			if (newEndDate) {
