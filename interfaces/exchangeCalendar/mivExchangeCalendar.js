@@ -850,6 +850,8 @@ calExchangeCalendar.prototype = {
 			var property = itemEnum.getNext().QueryInterface(Components.interfaces.nsIProperty);
 			dump(property.name+":"+property.value+"\n");
 		}
+		var invite = aItem.getAttendees({});
+		dump("a. Attendee count:"+invite.length+"\n");
 
 		// if aItem.id == null then it is a newly created item in Lightning.
 		// if aItem.id == "040000008200E00074C5B7101A82E008000000005D721F845633CD0100000000000000001000000006CC9AC20EA39441B863D6E454306174" it is from iTIP
@@ -887,6 +889,13 @@ calExchangeCalendar.prototype = {
 			newItem.cloneToCalEvent(aItem);
 		}
 
+		if (aItem.calendar === null) {
+			if (this.debug) this.logInfo("addItem Calendar is null for item going add me '"+this.name+"' as calendar.\n");
+			newItem.calendar = this.superCalendar;
+		}
+
+		var invite = newItem.getAttendees({});
+		dump("b. Attendee count:"+invite.length+"\n");
 	        //let newItem = aItem.clone();
 	
 		// We check if we not allready have this item in Cache. If so we modify.
@@ -914,7 +923,7 @@ calExchangeCalendar.prototype = {
 
 			// If I am invited. Remove myself.
 			var attendees = newItem.getAttendees({});
-			newItem.removeAllAttendees();
+			newItem.removeAllAttendees(); // Need to have this. When we add attendees when we create a new calendaritem we become organizer.
 			for each (var attendee in attendees) {
 				if ((attendee.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) ||
 					(attendee.id.replace(/^exchangecalendar:/, '').toLowerCase() == this.mailbox.toLowerCase()) ) {
@@ -924,6 +933,8 @@ calExchangeCalendar.prototype = {
 			}
 		}
 
+		var invite = newItem.getAttendees({});
+		dump("c. Attendee count:"+invite.length+"\n");
 	        return this.adoptItem(newItem, aListener);
 	},
 
@@ -968,8 +979,11 @@ calExchangeCalendar.prototype = {
 				if (this.debug) this.logInfo("adoptItem 2 Copy/pasted item. item.id:"+tmpItem.id);
 			}
 
+		var invite = tmpItem.getAttendees({});
+		dump("d. Attendee count:"+invite.length+"\n");
+
 //			if ((tmpItem.id) && (tmpItem.id != "not a valid id")) {
-			if ((tmpItem.hasProperty("UID")) && (!tmpItem.id)) {
+			if ((tmpItem.hasProperty("UID")) && (!aItem.id)) {
 				// This is and item create through an iTIP response.
 
 				var cachedItem = null;
@@ -4456,6 +4470,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		};
 
 		if (!this.isInvitation(aItem, true)) {
+			if (this.debug) this.logInfo("convertCalAppointmentToExchangeAppointment: Item is not an invitation.\n");
 			e.addChildTag("Start", "nsTypes", exchStart);
 			e.addChildTag("End", "nsTypes", exchEnd);
 
@@ -4469,6 +4484,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			var ae;
 			
 			for each (var attendee in attendees) {
+dump("attendee.role:"+attendee.role+"\n");
 				switch (attendee.role) {
 				case "REQ-PARTICIPANT":
 					if (!reqAttendees) {
@@ -4482,18 +4498,31 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 					}
 					ae = optAttendees.addChildTag("Attendee", "nsTypes", null);
 					break;
+				case "CHAIR":
+/*					if (!tmpOrganizer) {
+						var tmpOrganizer = e.addChildTag("Organizer", "nsTypes", null);
+					}
+					ae = tmpOrganizer;
+					break;*/ // Sadly this is not posible when we create a new item.
+				default:
+					ae = null;
 				}
-				var mailbox = ae.addChildTag("Mailbox", "nsTypes", null);
-				mailbox.addChildTag("Name", "nsTypes", attendee.commonName);
 
-				var tmpEmailAddress = attendee.id.replace(/^mailto:/, '');
-				if (tmpEmailAddress.indexOf("@") > 0) {
-					mailbox.addChildTag("EmailAddress", "nsTypes", tmpEmailAddress);
+				if (ae) {
+					var mailbox = ae.addChildTag("Mailbox", "nsTypes", null);
+					mailbox.addChildTag("Name", "nsTypes", attendee.commonName);
+
+					var tmpEmailAddress = attendee.id.replace(/^mailto:/, '');
+					if (tmpEmailAddress.indexOf("@") > 0) {
+						mailbox.addChildTag("EmailAddress", "nsTypes", tmpEmailAddress);
+					}
+					else {
+						mailbox.addChildTag("EmailAddress", "nsTypes", "unknown@somewhere.com");
+					}
+					if (attendee.role != "CHAIR") {
+						ae.addChildTag("ResponseType", "nsTypes", attendeeStatus[attendee.participationStatus]);
+					}
 				}
-				else {
-					mailbox.addChildTag("EmailAddress", "nsTypes", "unknown@somewhere.com");
-				}
-				ae.addChildTag("ResponseType", "nsTypes", attendeeStatus[attendee.participationStatus]);
 			}
 
 			this.makeRecurrenceRule(aItem, e);
@@ -4508,7 +4537,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 		}
 		else {
-			//if (this.debug) this.logInfo("convertCalAppointmentToExchangeAppointment: "+String(e));
+			if (this.debug) this.logInfo("convertCalAppointmentToExchangeAppointment: Item is an invitation.\n");
 
 			//return e;
 			
