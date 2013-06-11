@@ -431,6 +431,7 @@ calExchangeCalendar.prototype = {
 			Ci.calICalendar,
 			Ci.calICalendarProvider,
 			Ci.calIFreeBusyService,
+			Ci.calIItipTransport,
 			Ci.calISchedulingSupport,
 			Ci.calICalendarProvider,
 			Ci.nsIClassInfo,
