@@ -1088,9 +1088,7 @@ dump("%%% BLIEP %%%\n");
 			// Convert list to CalAppointment and try to find the matching one
 			var tmpList = [];
 			for (var i=0; i<aMeetingRequests.length; i++) {
-dump("++++++++++++++\n");
 				var tmpItem = this.convertExchangeAppointmentToCalAppointment(aMeetingRequests[i], true);
-dump("----------------- tmpItem:"+tmpItem+"\n");
 				if (tmpItem) {
 					tmpList.push(tmpItem);
 				}
