@@ -761,6 +761,7 @@ calExchangeCalendar.prototype = {
 			return true;
 		case "itip.transport":
 			if (this.debug) this.logInfo("getProperty: itip.transport");
+			return this.QueryInterface(Ci.calIItipTransport);
 			break;
 			//return true;
             	case "capabilities.autoschedule.supported":
