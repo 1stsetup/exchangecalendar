@@ -844,6 +844,13 @@ calExchangeCalendar.prototype = {
 	{
 		if (this.debug) this.logInfo("addItem id="+aItem.id+", aItem.calendar:"+aItem.calendar);
 
+		var itemEnum = aItem.propertyEnumerator;
+		dump("Properties of:"+aItem.title+"\n");
+		while (itemEnum.hasMoreElements()) {
+			var property = itemEnum.getNext().QueryInterface(Components.interfaces.nsIProperty);
+			dump(property.name+":"+property.value+"\n");
+		}
+
 		// if aItem.id == null then it is a newly created item in Lightning.
 		// if aItem.id == "040000008200E00074C5B7101A82E008000000005D721F845633CD0100000000000000001000000006CC9AC20EA39441B863D6E454306174" it is from iTIP
 		// if aItem.id == "31d9835f-1c29-4d18-ab39-7587c56e3982" paste in lightning after a copy in lightning.
@@ -903,7 +910,7 @@ calExchangeCalendar.prototype = {
 			newItem.id = null;
 			if (this.debug) this.logInfo("addItem Copy/pasted item. item.id:"+newItem.id);
 			//newItem.resetId();
-			newItem.deleteProperty("X-UID");
+			//newItem.deleteProperty("X-UID");
 
 			// If I am invited. Remove myself.
 			var attendees = newItem.getAttendees({});
@@ -961,13 +968,15 @@ calExchangeCalendar.prototype = {
 				if (this.debug) this.logInfo("adoptItem 2 Copy/pasted item. item.id:"+tmpItem.id);
 			}
 
-			if ((tmpItem.id) && (tmpItem.id != "not a valid id")) {
+//			if ((tmpItem.id) && (tmpItem.id != "not a valid id")) {
+			if ((tmpItem.hasProperty("UID")) && (!tmpItem.id)) {
 				// This is and item create through an iTIP response.
 
 				var cachedItem = null;
 				for (var index in this.meetingRequestsCache) {
 					if (this.meetingRequestsCache[index]) {
-						if (this.meetingRequestsCache[index].uid == tmpItem.id) {
+//						if (this.meetingRequestsCache[index].uid == tmpItem.id) {
+						if (this.meetingRequestsCache[index].uid == tmpItem.getProperty("UID")) {
 							cachedItem = this.meetingRequestsCache[index];
 							break;
 						}
@@ -980,7 +989,7 @@ calExchangeCalendar.prototype = {
 					if (this.debug) this.logInfo("BOA: iTIP action item with STATUS:"+tmpItem.getProperty("STATUS"));
 
 					var aNewItem = this.cloneItem(tmpItem);
-					aNewItem.setProperty("X-UID", cachedItem.uid);
+					//aNewItem.setProperty("X-UID", cachedItem.uid);
 					//aNewItem.setProperty("X-ChangeKey", cachedItem.changeKey);
 					aNewItem.setProperty("X-MEETINGREQUEST", cachedItem.getProperty("X-MEETINGREQUEST"));
 					//aNewItem.setProperty("X-IsInvitation" , cachedItem.isInvitation);
@@ -992,7 +1001,7 @@ dump("%%% BLIEP %%%\n");
 						this.notifyOperationComplete(aListener,
 			        	                             Cr.NS_OK,
 			                        	             Ci.calIOperationListener.ADD,
-			                        	             tmpItem.id,
+			                        	             tmpItem.getProperty("UID"),
 			                        	             aNewItem);
 					}
 					else {
@@ -1000,14 +1009,15 @@ dump("%%% BLIEP %%%\n");
 						this.notifyOperationComplete(aListener,
 			        	                             Ci.calIErrors.OPERATION_CANCELLED,
 			                        	             Ci.calIOperationListener.ADD,
-			                        	             tmpItem.id,
-			                        	             tmpItem);
+			                        	             tmpItem.getProperty("UID"),
+			                        	             aNewItem);
 					}
 					return;
 				}
 				else {
 					if (this.debug) this.logInfo("getMeetingRequestFromServer:"+tmpItem.title);
-					this.getMeetingRequestFromServer(tmpItem, tmpItem.id, Ci.calIOperationListener.ADD, aListener);
+//					this.getMeetingRequestFromServer(tmpItem, tmpItem.id, Ci.calIOperationListener.ADD, aListener);
+					this.getMeetingRequestFromServer(tmpItem, tmpItem.getProperty("UID"), Ci.calIOperationListener.ADD, aListener);
 					return;
 
 				}
@@ -1078,7 +1088,9 @@ dump("%%% BLIEP %%%\n");
 			// Convert list to CalAppointment and try to find the matching one
 			var tmpList = [];
 			for (var i=0; i<aMeetingRequests.length; i++) {
+dump("++++++++++++++\n");
 				var tmpItem = this.convertExchangeAppointmentToCalAppointment(aMeetingRequests[i], true);
+dump("----------------- tmpItem:"+tmpItem+"\n");
 				if (tmpItem) {
 					tmpList.push(tmpItem);
 				}
@@ -4421,7 +4433,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			if (aItem.id) {
 				// This is when we accept and an iTIP
 				e.addChildTag("UID", "nsTypes", aItem.id);
-				aItem.setProperty("X-UID", aItem.id);
+				//aItem.setProperty("X-UID", aItem.id);
 				if (aItem.currenceInfo) {
 					if (this.debug) this.logInfo("we have recurrence info");
 					//aItem.setProperty("X-CalendarItemType", "RecurringMaster");
@@ -7647,7 +7659,7 @@ else {
 	{
 		var result = null;
 		for each(var listItem in aList) {
-			if ((aItem.id == listItem.uid) &&
+			if ((aItem.getProperty("UID") == listItem.uid) &&
 				(listItem.startDate.compare(aItem.startDate) == 0) &&
 				(listItem.endDate.compare(aItem.endDate) == 0)) {
 				if (this.debug) this.logInfo("Found matching item in list.");
