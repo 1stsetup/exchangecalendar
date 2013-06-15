@@ -1151,7 +1151,7 @@ ecnsIAuthPrompt2.prototype = {
 		} 
 
 		// The next iid is available sine TB 13.
-		if ((Ci.nsILoadContext) && (iid.equals(Ci.nsILoadContext))) {   // iid == 386806c3-c4cb-4b3d-b05d-c08ea10f5585
+		if ((Ci.nsILoadContext) && (iid.equals(Ci.nsILoadContext))) {   // iid == 386806c3-c4cb-4b3d-b05d-c08ea10f5585 also exists as iid == 48b5bf16-e0c7-11e1-b28e-91726188709b
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsILoadContext");
 			return Cr.NS_NOINTERFACE;  // We do not support this.
 		}
@@ -1159,11 +1159,6 @@ ecnsIAuthPrompt2.prototype = {
 		// The next iid is called when the TB goes into offline mode.
 		if ((Ci.nsIApplicationCacheContainer) && (iid.equals(Ci.nsIApplicationCacheContainer))) {   // iid == bbb80700-1f7f-4258-aff4-1743cc5a7d23
 			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsIApplicationCacheContainer");
-			return Cr.NS_NOINTERFACE;  // We do not support this.
-		}
-
-		if ((Ci.nsILoadContext) && (iid.equals(Ci.nsILoadContext))) {   // iid == 48b5bf16-e0c7-11e1-b28e-91726188709b
-			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsILoadContext");
 			return Cr.NS_NOINTERFACE;  // We do not support this.
 		}
 
