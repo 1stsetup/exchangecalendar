@@ -1162,6 +1162,11 @@ ecnsIAuthPrompt2.prototype = {
 			return Cr.NS_NOINTERFACE;  // We do not support this.
 		}
 
+		if ((Ci.nsILoadContext) && (iid.equals(Ci.nsILoadContext))) {   // iid == 48b5bf16-e0c7-11e1-b28e-91726188709b
+			this.logInfo("ecnsIAuthPrompt2.getInterface: Ci.nsILoadContext");
+			return Cr.NS_NOINTERFACE;  // We do not support this.
+		}
+
 		this.globalFunctions.LOG("  >>>>>>>>>>> MAIL THIS LINE TO exchangecalendar@extensions.1st-setup.nl: ecnsIAuthPrompt2.getInterface("+iid+")");
 		throw Cr.NS_NOINTERFACE;
 	},
