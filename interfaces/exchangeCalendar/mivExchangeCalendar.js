@@ -1454,12 +1454,14 @@ dump("%%% BLIEP %%%\n");
 			var doSendMeetingRespons = false;
 			var meOld = this.getInvitedAttendee(aOldItem);
 			if (!meOld) {
+				if (this.debug) this.logInfo("Did not find meOld");
 				meOld = cal.createAttendee();
 				meOld.participationStatus = "NEEDS-ACTION";
 			}
 
 			var meNew = this.getInvitedAttendee(aNewItem);
 			if (!meNew) {
+				if (this.debug) this.logInfo("Did not find meNew");
 				meNew = cal.createAttendee();
 				meNew.participationStatus = "NEEDS-ACTION";
 			}
@@ -1851,6 +1853,7 @@ dump("!!! BLIEP !!!\n");
 			var iAmOrganizer = ((aItem.organizer) && (aItem.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()));
 			var isCancelled = aItem.isCancelled;
 			var isInvitation = this.isInvitation(aItem, true);
+dump("AA X-exchangeITIP2:"+aItem.getProperty("X-exchangeITIP2")+"\n");
 
 			if ((isInvitation) && (!isCancelled)) {
 //			if ((this.folderBase == "calendar") && (!this.folderID) && 
@@ -2668,6 +2671,8 @@ dump("!!! BLIEP !!!\n");
 
 			if (exchangeItem) {
 				if (aItem.canModify) {
+//dump("X-exchangeITIP1:"+aItem.getProperty("X-exchangeITIP1")+"\n");
+//dump("X-exchangeITIP2:"+aItem.getProperty("X-exchangeITIP2")+"\n");
 					return aItem.isInvitation;
 				}
 			}
@@ -2700,9 +2705,12 @@ dump("!!! BLIEP !!!\n");
 			if (this.debug) this.logInfo("getInvitedAttendee 2:"+attendee.id);
 			if ((attendee.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) ||
 				(attendee.id.replace(/^exchangecalendar:/, '').toLowerCase() == this.mailbox.toLowerCase()) ) {
-//				if (this.debug) this.logInfo("getInvitedAttendee FOUND myself:"+aItem.title);
+				if (this.debug) this.logInfo("getInvitedAttendee FOUND myself:"+aItem.title+", attendee.participationStatus:"+attendee.participationStatus+", aItem.myResponseType:"+aItem.myResponseType);
 //				attendee.participationStatus = participationMap[aItem.myResponseType];
 				return attendee; //.clone();
+			}
+			else {
+				if (this.debug) this.logInfo("getInvitedAttendee FOUND someonelse:"+aItem.title+", attendee.id:"+attendee.id+", attendee.participationStatus:"+attendee.participationStatus);
 			}
 		}
 
@@ -4989,7 +4997,7 @@ dump("attendee.role:"+attendee.role+"\n");
 
 		var messageDisposition = null;
 
-		// First ask the user if he wans to send a response.
+		// First ask the user if he wants to send a response.
 		// Get the eventsummarywindow to attach dialog to.
 		let wm = Cc["@mozilla.org/appshell/window-mediator;1"]
 	                          .getService(Ci.nsIWindowMediator);

@@ -31,6 +31,8 @@ Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 
 Cu.import("resource://calendar/modules/calProviderUtils.jsm");
 
+Cu.import("resource://interfaces/exchangeAttendee/mivExchangeAttendee.js");
+
 const participationMap = {
 	"Unknown"	: "NEEDS-ACTION",
 	"NoResponseReceived" : "NEEDS-ACTION",
@@ -1352,7 +1354,7 @@ try {
 			}
 			break;
 		case "STATUS": 
-		        this.logInfo("get property STATUS: title:"+this.title+", name:"+name+", value:"+this._calEvent.getProperty(name)+", startDate:"+this.startDate);
+		        dump("get property STATUS: title:"+this.title+", name:"+name+", value:"+this._calEvent.getProperty(name)+", startDate:"+this.startDate+"\n");
 			if (this._className == "mivExchangeEvent") {
 				if (!this._myResponseType) {
 					if (this.isCancelled) {
@@ -1470,7 +1472,7 @@ try {
 			break;
 		case "STATUS": 
 			//this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
-			//dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
+			dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
 			if (this.className == "mivExchangeEvent") {
 				if (value != this.getProperty(name)) {
 					switch (value) {
@@ -1705,10 +1707,11 @@ try {
 			this._calEvent.removeAllAttendees();
 
 			var attendees = this._exchangeData.XPath("/t:RequiredAttendees/t:Attendee")
+try{
 			for each (var at in attendees) {
 				tmpAttendee = this.createAttendee(at, "REQ-PARTICIPANT");
 				this._calEvent.addAttendee(tmpAttendee);
-				//this.logInfo("getAttendees: title:"+this.title+", adding attendee.id:"+tmpAttendee.id);
+				dump("getAttendees: title:"+this.title+", adding required attendee.id:"+tmpAttendee.id+"\n");
 				this._attendees.push(tmpAttendee.clone());
 				this._reqParticipants = true;
 			}
@@ -1717,10 +1720,12 @@ try {
 			for each (var at in attendees) {
 				tmpAttendee = this.createAttendee(at, "OPT-PARTICIPANT");
 				this._calEvent.addAttendee(tmpAttendee);
-				//this.logInfo("getAttendees: title:"+this.title+", adding attendee.id:"+tmpAttendee.id);
+				dump("getAttendees: title:"+this.title+", adding optional attendee.id:"+tmpAttendee.id+"\n");
 				this._attendees.push(tmpAttendee.clone());
 				this._optParticipants = true;
 			}
+}
+catch(err){dump("gettAttendees: err:"+err+"\n");}
 			attendees = null;
 		}
 		return this._calEvent.getAttendees(count);
@@ -1777,15 +1782,15 @@ try {
 	//void addAttendee(in calIAttendee attendee);
 	addAttendee: function _addAttendee(attendee)
 	{
-		//this.logInfo("addAttendee1: title:"+this.title+", attendee.id:"+attendee.id);
 		if(!attendee) return;
+		dump("addAttendee1: title:"+this.title+", attendee.id:"+attendee.id+"\n");
 
 		if (!this._attendees) this.getAttendees({});
 
 		var attendeeExists = this.attendeeIsInList(attendee);
 		if (attendeeExists != null) {
 			// We are not going to add this attendee as it is already in the list
-			//this.logInfo("addAttendee1a: title:"+this.title+", attendee is already in list. not going to ad change record.");
+			dump("addAttendee1a: title:"+this.title+", attendee is already in list. not going to add change record.\n");
 			return;
 		}
 
@@ -1796,22 +1801,24 @@ try {
 				// We have a remove change in the list and we now want to re-add it. We just remove the remove change.
 				this.removeAttendeeFromChangesList(attendee);
 				this._calEvent.addAttendee(attendee.clone());
-				//this.logInfo("addAttendee1b: title:"+this.title+", attendee.id:"+attendee.id+", removed from changes list.");
+				dump("addAttendee1b: title:"+this.title+", attendee.id:"+attendee.id+", removed from changes list.\n");
 			}
-			// If the action was "add" we do not do anything as we do not have to duplicate it.
-			//this.logInfo("addAttendee1c: title:"+this.title+", attendee.id:"+attendee.id);
+			else {
+				// If the action was "add" we do not do anything as we do not have to duplicate it.
+				dump("addAttendee1c: title:"+this.title+", attendee.id:"+attendee.id+", action:"+attendeeExists.action+"\n");
+			}
 			return;
 		}
 		this._changesAttendees.push({ action: "add", attendee: attendee.clone()});
 		this._calEvent.addAttendee(attendee.clone());
-		//this.logInfo("addAttendee2: title:"+this.title+", attendee.id:"+attendee.id);
+		dump("addAttendee2: title:"+this.title+", attendee.id:"+attendee.id+"\n");
 	},
 
 	//void removeAttendee(in calIAttendee attendee);
 	removeAttendee: function _removeAttendee(attendee)
 	{
-		//this.logInfo("removeAttendee: title:"+this.title);
 		if(!attendee) return;
+		dump("removeAttendee: title:"+this.title+", attendee.id:"+attendee.id+"\n");
 
 		if (!this._attendees) this.getAttendees({});
 
@@ -1825,6 +1832,7 @@ try {
 		if (attendeeExists != null) {
 			if (attendeeExists.action == "add") {
 				// There was already a change for this attendee and it was an addition. We remove this addition
+				dump("removeAttendee: title:"+this.title+", attendee.id:"+attendee.id+" |  There was already a change for this attendee and it was an addition. We remove this addition\n");
 				this.removeAttendeeFromChangesList(attendee);
 				this._calEvent.removeAttendee(attendee);
 			}
@@ -1840,7 +1848,7 @@ try {
 	//void removeAllAttendees();
 	removeAllAttendees: function _removeAllAttendees()
 	{
-		//this.logInfo("removeAllAttendees: title:"+this.title);
+		dump("removeAllAttendees: title:"+this.title+"\n");
 		var allAttendees = this.getAttendees({});
 		for each(var attendee in allAttendees) {
 
@@ -1848,6 +1856,7 @@ try {
 			if (attendeeExists != null) {
 				if (attendeeExists.action == "add") {
 					// There was already a change for this attendee and it was an addition. We remove this addition
+					dump("removeAllAttendees: title:"+this.title+", attendee.id:"+attendee.id+" |  There was already a change for this attendee and it was an addition. We remove this addition\n");
 					this.removeAttendeeFromChangesList(attendee);
 				}
 
@@ -2408,7 +2417,12 @@ try {
 			return true;
 		}
 		else {
-			return false;
+			if (this.getProperty("X-exchangeITIP2") === true) {
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 	},
 
@@ -2434,14 +2448,16 @@ try {
 	//readonly attribute AUTF8String myResponseType;
 	get myResponseType()
 	{
-		if (!this._myResponseType) {
-			this._myResponseType = this.getTagValue("t:MyResponseType", "NoResponseReceived");
-		}
-
 		if (this._newMyResponseType) {
+			dump(" 22 this._newMyResponseType:"+this._newMyResponseType+"\n");
 			return this._newMyResponseType;
 		}
 		
+		if (!this._myResponseType) {
+			this._myResponseType = this.getTagValue("t:MyResponseType", "NoResponseReceived");
+			dump(" 11 myResponseType:"+this._myResponseType+"\n");
+		}
+
 		return this._myResponseType;
 	},
 
@@ -3468,6 +3484,17 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	createAttendee: function _createAttendee(aElement, aType) 
 	{
 		if (!aElement) return null;
+
+		if (!Ci.mivExchangeAttendee) {
+			dump(" !!!!!!!!!!!!!!!! no Ci.mivExchangeAttendee\n");
+			return null;
+		}
+		//var attendee = Cc["@1st-setup.nl/exchange/attendee;1"]
+		//			.createInstance(Ci.mivExchangeAttendee); // This one currently creates an error. Why ??!!
+		var attendee = new mivExchangeAttendee();
+		attendee.convertFromExchange(this, aElement, aType);
+		dump("  -- CreateAttendee:"+attendee+", attendee.id:"+attendee.id+", title:"+this.title+"\n");
+		return attendee;
 
 		let mbox = aElement.getTag("t:Mailbox");
 		let attendee = cal.createAttendee();
