@@ -845,13 +845,13 @@ calExchangeCalendar.prototype = {
 		if (this.debug) this.logInfo("addItem id="+aItem.id+", aItem.calendar:"+aItem.calendar);
 
 		var itemEnum = aItem.propertyEnumerator;
-		dump("Properties of:"+aItem.title+"\n");
+/*		dump("Properties of:"+aItem.title+"\n");
 		while (itemEnum.hasMoreElements()) {
 			var property = itemEnum.getNext().QueryInterface(Components.interfaces.nsIProperty);
 			dump(property.name+":"+property.value+"\n");
-		}
+		}*/
 		var invite = aItem.getAttendees({});
-		dump("a. Attendee count:"+invite.length+"\n");
+		//dump("a. Attendee count:"+invite.length+"\n");
 
 		// if aItem.id == null then it is a newly created item in Lightning.
 		// if aItem.id == "040000008200E00074C5B7101A82E008000000005D721F845633CD0100000000000000001000000006CC9AC20EA39441B863D6E454306174" it is from iTIP
@@ -895,7 +895,7 @@ calExchangeCalendar.prototype = {
 		}
 
 		var invite = newItem.getAttendees({});
-		dump("b. Attendee count:"+invite.length+"\n");
+		//dump("b. Attendee count:"+invite.length+"\n");
 	        //let newItem = aItem.clone();
 	
 		// We check if we not allready have this item in Cache. If so we modify.
@@ -934,7 +934,7 @@ calExchangeCalendar.prototype = {
 		}
 
 		var invite = newItem.getAttendees({});
-		dump("c. Attendee count:"+invite.length+"\n");
+		//dump("c. Attendee count:"+invite.length+"\n");
 	        return this.adoptItem(newItem, aListener);
 	},
 
@@ -980,7 +980,7 @@ calExchangeCalendar.prototype = {
 			}
 
 		var invite = tmpItem.getAttendees({});
-		dump("d. Attendee count:"+invite.length+"\n");
+		//dump("d. Attendee count:"+invite.length+"\n");
 
 //			if ((tmpItem.id) && (tmpItem.id != "not a valid id")) {
 			if ((tmpItem.hasProperty("UID")) && (!aItem.id)) {
@@ -1007,7 +1007,6 @@ calExchangeCalendar.prototype = {
 					//aNewItem.setProperty("X-ChangeKey", cachedItem.changeKey);
 					aNewItem.setProperty("X-MEETINGREQUEST", cachedItem.getProperty("X-MEETINGREQUEST"));
 					//aNewItem.setProperty("X-IsInvitation" , cachedItem.isInvitation);
-dump("%%% BLIEP %%%\n");
 					aNewItem.id = cachedItem.id;
 
 
@@ -1531,7 +1530,6 @@ dump("%%% BLIEP %%%\n");
 					var tmpItem = cachedItem;
 					var tmpUID = aNewItem.id;
 					requestResponseItem = this.cloneItem(aNewItem);
-dump("!!! BLIEP !!!\n");
 					requestResponseItem.id = tmpItem.id;
 					//requestResponseItem.setProperty("X-UID",  tmpItem.uid);
 					//requestResponseItem.setProperty("X-ChangeKey",  tmpItem.changeKey);
@@ -1853,7 +1851,6 @@ dump("!!! BLIEP !!!\n");
 			var iAmOrganizer = ((aItem.organizer) && (aItem.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()));
 			var isCancelled = aItem.isCancelled;
 			var isInvitation = this.isInvitation(aItem, true);
-dump("AA X-exchangeITIP2:"+aItem.getProperty("X-exchangeITIP2")+"\n");
 
 			if ((isInvitation) && (!isCancelled)) {
 //			if ((this.folderBase == "calendar") && (!this.folderID) && 
@@ -4492,7 +4489,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			var ae;
 			
 			for each (var attendee in attendees) {
-dump("attendee.role:"+attendee.role+"\n");
+//dump("attendee.role:"+attendee.role+"\n");
 				switch (attendee.role) {
 				case "REQ-PARTICIPANT":
 					if (!reqAttendees) {
@@ -6795,7 +6792,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 	{
 		if (this.debug) this.logInfo("convertExchangeToCal:"+aExchangeItem, 2);
 		if (!aExchangeItem) { 
-			dump("convertExchangeToCal. !aExchangeItem\n");
+			//dump("convertExchangeToCal. !aExchangeItem\n");
 			return;
 		}
 
@@ -7582,7 +7579,7 @@ return;
 	addItemToCache: function _addItemToCache(item)
 	{
 		if (!item) {
-			dump("addItemToCache: item is null.\n");
+			//dump("addItemToCache: item is null.\n");
 			return;
 		}
 
@@ -7600,7 +7597,7 @@ else {
 	removeItemFromCache: function _removeItemFromCache(item)
 	{
 		if (!item) {
-			dump("removeItemFromCache: item is null.\n");
+			//dump("removeItemFromCache: item is null.\n");
 			return;
 		}
 
@@ -7615,7 +7612,7 @@ else {
 		}
 		else {
 			var itemDate = item.startDate || item.entryDate;
-			dump("removeItemFromCache: item.title:"+item.title+", startDate:"+itemDate+". is not in itemCache. | "+item.id+"\n");
+			//dump("removeItemFromCache: item.title:"+item.title+", startDate:"+itemDate+". is not in itemCache. | "+item.id+"\n");
 		}
 	},
 

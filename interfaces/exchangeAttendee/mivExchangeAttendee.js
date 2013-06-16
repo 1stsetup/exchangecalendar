@@ -195,7 +195,7 @@ mivExchangeAttendee.prototype = {
 
 	set participationStatus(aValue)
 	{
-		dump("attendee: changing participationStatus from '"+this._attendee.participationStatus+"' to '"+aValue+"' for id:"+this.id+"\n");
+		//dump("attendee: changing participationStatus from '"+this._attendee.participationStatus+"' to '"+aValue+"' for id:"+this.id+"\n");
 		this._attendee.participationStatus = aValue;
 	},
 
@@ -303,13 +303,10 @@ mivExchangeAttendee.prototype = {
 			aType = "REQ-PARTICIPANT";
 		}
 
-dump("mivExchangeAttendee: convertFromExchange: aElement:"+aElement+"\n");
-
-		var me = false;
 		for each(var alias in aParent.mailboxAliases) {
 			if (mbox.getTagValue("t:EmailAddress","unknown").toLowerCase() == alias.toLowerCase()) {
 				me = true;
-				dump("convertFromExchange: Title:"+aParent.title+", email:"+mbox.getTagValue("t:EmailAddress","unknown")+". This address is mine ("+alias+").\n");
+				//dump("convertFromExchange: Title:"+aParent.title+", email:"+mbox.getTagValue("t:EmailAddress","unknown")+". This address is mine ("+alias+").\n");
 				break;
 			}
 		}
@@ -324,7 +321,7 @@ dump("mivExchangeAttendee: convertFromExchange: aElement:"+aElement+"\n");
 				this.id = 'ldap:' + mbox.getTagValue("t:EmailAddress","unknown");
 				break;
 			default:
-				dump("convertFromExchange: Unknown RoutingType:'"+mbox.getTagValue("t:RoutingType")+"'\n");
+				//dump("convertFromExchange: Unknown RoutingType:'"+mbox.getTagValue("t:RoutingType")+"'\n");
 				this.id = 'mailto:' + mbox.getTagValue("t:EmailAddress","unknown");
 				break;
 		}
@@ -335,12 +332,12 @@ dump("mivExchangeAttendee: convertFromExchange: aElement:"+aElement+"\n");
 
 		if (me) {
 			this.participationStatus = participationMap[aParent.myResponseType];
-			dump("convertFromExchange A: Title:"+aParent.title+", attendee:"+this.id+", myResponseType:"+aParent.myResponseType+", this.participationStatus:"+this.participationStatus+"\n");
+			//dump("convertFromExchange A: Title:"+aParent.title+", attendee:"+this.id+", myResponseType:"+aParent.myResponseType+", this.participationStatus:"+this.participationStatus+"\n");
 		}
 		else {
 			if (aElement.getTagValue("t:ResponseType", "") != "") {
 				this.participationStatus = participationMap[aElement.getTagValue("t:ResponseType")];
-				dump("convertFromExchange B: Title:"+aParent.title+", attendee:"+this.id+", ResponseType:"+aElement.getTagValue("t:ResponseType")+", this.participationStatus:"+this.participationStatus+"\n");
+				//dump("convertFromExchange B: Title:"+aParent.title+", attendee:"+this.id+", ResponseType:"+aElement.getTagValue("t:ResponseType")+", this.participationStatus:"+this.participationStatus+"\n");
 			}
 		}
 	},
