@@ -303,6 +303,8 @@ mivExchangeAttendee.prototype = {
 			aType = "REQ-PARTICIPANT";
 		}
 
+		var me = false;
+
 		for each(var alias in aParent.mailboxAliases) {
 			if (mbox.getTagValue("t:EmailAddress","unknown").toLowerCase() == alias.toLowerCase()) {
 				me = true;
