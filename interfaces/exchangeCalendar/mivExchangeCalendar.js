@@ -917,8 +917,8 @@ calExchangeCalendar.prototype = {
 		if ((newItem.id) && ((newItem.id.indexOf("-") > 2) || (newItem.id.length == 152))) {
 			// This is added from a copy/paste procedure.
 			newItem.id = null;
+			newItem.resetId(null);
 			if (this.debug) this.logInfo("addItem Copy/pasted item. item.id:"+newItem.id);
-			//newItem.resetId();
 			//newItem.deleteProperty("X-UID");
 
 			// If I am invited. Remove myself.
