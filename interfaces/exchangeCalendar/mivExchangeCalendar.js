@@ -1397,6 +1397,7 @@ calExchangeCalendar.prototype = {
 	        	                             aOldItem.id,
 	        	                             aOldItem);
 			aNewItem.id = null;  // This needs to be null otherwise additem does not see it as a new item.
+			aNewItem.clearId(null);
 			this.addItem(aNewItem, null);
 			this.deleteItem(aOldItem, null);
 			return null;
