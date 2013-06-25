@@ -118,16 +118,16 @@ mivExchangeRecurrenceInfo.prototype = {
   //calIRecurrenceInfo clone();
 	clone: function _clone()
 	{
-		this.logInfo("clone 1.", 1, 2);
+		//this.logInfo("clone 1.", 1, 2);
 		var result = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
 				.createInstance(Ci.mivExchangeRecurrenceInfo);
 
 		result.item = this.item;
 		var count = {};
 		var myItems = this.getRecurrenceItems(count);
-		this.logInfo("clone 1: title:"+this.item.title+", myItems.length:"+myItems.length+", count.value:"+count.value, 1, 3);
+		//this.logInfo("clone 1: title:"+this.item.title+", myItems.length:"+myItems.length+", count.value:"+count.value, 1, 3);
 		result.setRecurrenceItems(count.value, myItems);
-		this.logInfo("clone 2.");
+		//this.logInfo("clone 2.");
 		return result;
 	},
 
@@ -176,17 +176,33 @@ mivExchangeRecurrenceInfo.prototype = {
 	getRecurrenceItems: function _getRecurrenceItems(aReturn)
 	{
 		var result = this._recurrenceInfo.getRecurrenceItems(aReturn);
-		this.logInfo("getRecurrenceItems 1: title:"+this.item.title+", result.length:"+result.length, 1, 3);
+/*		for each(var reitem in result) {
+			//this.logInfo("getRecurrenceItems 1: title:"+this.item.title+", result.length:"+result.length+", reitem.interval:"+reitem.interval, 1, 3);
+			if (reitem.isByCount) {
+				//this.logInfo("getRecurrenceItems 1: title:"+this.item.title+", result.length:"+result.length+", reitem.count:"+reitem.count, 1, 3);
+			}
+			else {
+				//this.logInfo("getRecurrenceItems 1: title:"+this.item.title+", result.length:"+result.length+", reitem.untilDate:"+reitem.untilDate, 1, 3);
+			}
+		}*/
 		return result;
 	},
   //void setRecurrenceItems(in unsigned long aCount, [array,size_is(aCount)] in calIRecurrenceItem aItems);
 	setRecurrenceItems: function _setRecurrenceItems(aCount, aItems)
 	{
-		this.logInfo("setRecurrenceItems 1: title:"+this.item.title+", aItems.length:"+aItems.length, 1, 3);
+/*		for each(var reitem in aItems) {
+			this.logInfo("setRecurrenceItems 1: title:"+this.item.title+", aItems.length:"+aItems.length+", reitem.interval:"+reitem.interval, 1, 3);
+			if (reitem.isByCount) {
+				this.logInfo("setRecurrenceItems 1: title:"+this.item.title+", aItems.length:"+aItems.length+", reitem.count:"+reitem.count, 1, 3);
+			}
+			else {
+				this.logInfo("setRecurrenceItems 1: title:"+this.item.title+", aItems.length:"+aItems.length+", reitem.untilDate:"+reitem.untilDate, 1, 3);
+			}
+		}*/
 		this._recurrenceInfo.setRecurrenceItems(aCount, aItems);
 
 		var recItems = this.getRecurrenceItems({});
-		this.logInfo("setRecurrenceItems 2: title:"+this.item.title+", recItems.length:"+recItems.length);
+		//this.logInfo("setRecurrenceItems 2: title:"+this.item.title+", recItems.length:"+recItems.length);
 	},
 
   //unsigned long countRecurrenceItems();
@@ -204,28 +220,28 @@ mivExchangeRecurrenceInfo.prototype = {
   //void appendRecurrenceItem(in calIRecurrenceItem aItem);
 	appendRecurrenceItem: function _appendRecurrenceItem(aItem)
 	{
-		this.logInfo("appendRecurrenceItem.");
+		//this.logInfo("appendRecurrenceItem.");
 		this._recurrenceInfo.appendRecurrenceItem(aItem);
 	},
 
   //calIRecurrenceItem getRecurrenceItemAt(in unsigned long aIndex);
 	getRecurrenceItemAt: function _getRecurrenceItemAt(aIndex)
 	{
-		this.logInfo("getRecurrenceItemAt: aIndex:"+aIndex);
+		//this.logInfo("getRecurrenceItemAt: aIndex:"+aIndex);
 		return this._recurrenceInfo.getRecurrenceItemAt(aIndex);
 	},
 
   //void deleteRecurrenceItemAt(in unsigned long aIndex);
 	deleteRecurrenceItemAt: function _deleteRecurrenceItemAt(aIndex)
 	{
-		this.logInfo("deleteRecurrenceItemAt: aIndex:"+aIndex);
+		//this.logInfo("deleteRecurrenceItemAt: aIndex:"+aIndex);
 		this._recurrenceInfo.deleteRecurrenceItemAt(aIndex);
 	},
 
   //void deleteRecurrenceItem(in calIRecurrenceItem aItem);
 	deleteRecurrenceItem: function _deleteRecurrenceItem(aItem)
 	{
-		this.logInfo("deleteRecurrenceItem.");
+		//this.logInfo("deleteRecurrenceItem.");
 		this._recurrenceInfo.deleteRecurrenceItem(aItem);
 	},
 
@@ -233,7 +249,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //void insertRecurrenceItemAt(in calIRecurrenceItem aItem, in unsigned long aIndex);
 	insertRecurrenceItemAt: function _insertRecurrenceItemAt(aItem, aIndex)
 	{
-		this.logInfo("insertRecurrenceItemAt: aIndex:"+aIndex);
+		//this.logInfo("insertRecurrenceItemAt: aIndex:"+aIndex);
 		this._recurrenceInfo.insertRecurrenceItemAt(aItem, aIndex);
 	},
 
@@ -256,7 +272,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //void removeOccurrenceAt(in calIDateTime aRecurrenceId);
 	removeOccurrenceAt: function _removeOccurrenceAt(aRecurrenceId)
 	{
-		this.logInfo("removeOccurrenceAt: aRecurrenceId:"+aRecurrenceId);
+		//this.logInfo("removeOccurrenceAt: aRecurrenceId:"+aRecurrenceId);
 		this.item.removeOccurrenceAt(aRecurrenceId);
 		this._recurrenceInfo.removeOccurrenceAt(aRecurrenceId);
 	},
@@ -264,7 +280,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //void restoreOccurrenceAt(in calIDateTime aRecurrenceId);
 	restoreOccurrenceAt: function _restoreOccurrenceAt(aRecurrenceId)
 	{
-		this.logInfo("restoreOccurrenceAt: aRecurrenceId:"+aRecurrenceId);
+		//this.logInfo("restoreOccurrenceAt: aRecurrenceId:"+aRecurrenceId);
 		this._recurrenceInfo.restoreOccurrenceAt(aRecurrenceId);
 	},
 
@@ -289,7 +305,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //void modifyException(in calIItemBase anItem, in boolean aTakeOverOwnership);
 	modifyException: function _modifyException(anItem, aTakeOverOwnership)
 	{
-		this.logInfo("modifyException: anItem:"+anItem.title);
+		//this.logInfo("modifyException: anItem:"+anItem.title);
 		this._recurrenceInfo.modifyException(anItem, aTakeOverOwnership);
 		this.item.modifyException(anItem);
 	},
@@ -301,7 +317,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //calIItemBase getExceptionFor(in calIDateTime aRecurrenceId);
 	getExceptionFor: function _getExceptionFor(aRecurrenceId)
 	{
-		this.logInfo("getExceptionFor: aRecurrenceId:"+aRecurrenceId);
+		//this.logInfo("getExceptionFor: aRecurrenceId:"+aRecurrenceId);
 		return this._recurrenceInfo.getExceptionFor(aRecurrenceId);
 	},
 
@@ -312,7 +328,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //void removeExceptionFor(in calIDateTime aRecurrenceId);
 	removeExceptionFor: function _removeExceptionFor(aRecurrenceId)
 	{
-		this.logInfo("removeExceptionFor: aRecurrenceId:"+aRecurrenceId);
+		//this.logInfo("removeExceptionFor: aRecurrenceId:"+aRecurrenceId);
 		this._recurrenceInfo.removeExceptionFor(aRecurrenceId);
 	},
 
@@ -416,6 +432,28 @@ mivExchangeRecurrenceInfo.prototype = {
 		}
 
 		return this._recurrenceInfo.getOccurrences(aRangeStart, aRangeEnd, aMaxCount, aCount);
+	},
+
+
+	toString: function _toString()
+	{
+		var recurrenceItems = this.getRecurrenceItems({});
+		//this.logInfo("Going to see if we have recurrenceItems:"+recurrenceItems.length);
+		var result = "";
+		for each (var ritem in recurrenceItems) {
+				//this.logInfo(" ||||| ritem:"+ritem);
+			if (ritem instanceof Ci.calIRecurrenceRule) {
+				if (ritem) {
+					dump(" ;;;; ritem:"+ritem.icalProperty.icalString+"\n");
+					result += ritem.icalProperty.icalString;
+				}
+				else {
+					//this.logInfo(" ;;;; ritem: null !!!!!!!!!!!!!!");
+				}
+				break;
+			}
+		}
+		return result;
 	},
 
 	logInfo: function _logInfo(message, aDebugLevel, aDepth) {

@@ -454,7 +454,14 @@ try {
 		}
 */
 		result.recurrenceInfo;
-		if (this._newRecurrenceInfo !== undefined) result.recurrenceInfo = this._newRecurrenceInfo;
+		if (this._newRecurrenceInfo !== undefined) {
+			result.recurrenceInfo = this._newRecurrenceInfo;
+		}
+		else {
+			if (this._recurrenceInfo.toString() != this.recurrenceInfo.toString()) {
+				result.recurrenceInfo = this.recurrenceInfo;
+			}
+		}
 
 		if (this._occurrences) {
 			for each(var occurrence in this._occurrences) {
@@ -3044,7 +3051,8 @@ try{
 		}
 
 		if (cal.isEvent(this)) {
-			var startDateStr = cal.toRFC3339(startDate.getInTimezone(this.globalFunctions.ecUTC()))+"Z";
+//			var startDateStr = cal.toRFC3339(startDate.getInTimezone(this.globalFunctions.ecUTC()))+"Z";
+			var startDateStr = cal.toRFC3339(startDate.getInTimezone(this.globalFunctions.ecUTC()));
 			//var startDateStr = cal.toRFC3339(originalDate.getInTimezone(this.globalFunctions.ecUTC()));
 		}
 		else {
@@ -3397,8 +3405,9 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 				comps['FREQ'] = "DAILY";
 				break;
 			case "NoEndRecurrence":
-			case "EndDateRecurrence":
 			case "NumberedRecurrence":
+				break;
+			case "EndDateRecurrence":
 				break;
 			default:
 				if (this.debug) this.logInfo("skipping " + rec.tagName);

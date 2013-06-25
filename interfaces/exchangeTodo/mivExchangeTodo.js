@@ -621,6 +621,13 @@ mivExchangeTodo.prototype = {
 					recurrenceInfoChanged = true;
 				}
 			}
+			else {
+				// It could be that the content of the recurrenceInfo was changed
+				if (this._recurrenceInfo.toString() != this.recurrenceInfo.toString()) {
+					//dump("We had recurrenceInfo. And it was changed. 2.\n");
+					recurrenceInfoChanged = true;
+				}
+			}
 		}
 		else {
 			// We did not have recurrence info. Check if we have now

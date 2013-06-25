@@ -284,19 +284,26 @@ mivExchangeEvent.prototype = {
 			var recurrenceInfoChanged;
 			if (this._recurrenceInfo) {
 				// We had recurrenceInfo. Lets see if it changed.
-				//this.logInfo("We had recurrenceInfo. Lets see if it changed.");
+				//dump("We had recurrenceInfo. Lets see if it changed.\n");
 				if (this._newRecurrenceInfo !== undefined) {
 					// It was changed or removed
 					if (this._newRecurrenceInfo === null) {
 						// It was removed
-						//this.logInfo("We had recurrenceInfo. And it is removed.");
+						//dump("We had recurrenceInfo. And it is removed.\n");
 						recurrenceInfoChanged = false;
 						this._nonPersonalDataChanged = true;
 						this.addDeleteItemField(updates, "Recurrence");
 					}
 					else {
 						// See if something changed
-						//this.logInfo("We had recurrenceInfo. And it was changed.");
+						//dump("We had recurrenceInfo. And it was changed. 1.\n");
+						recurrenceInfoChanged = true;
+					}
+				}
+				else {
+					// It could be that the content of the recurrenceInfo was changed
+					if (this._recurrenceInfo.toString() != this.recurrenceInfo.toString()) {
+						//dump("We had recurrenceInfo. And it was changed. 2.\n");
 						recurrenceInfoChanged = true;
 					}
 				}

@@ -917,7 +917,7 @@ calExchangeCalendar.prototype = {
 		if ((newItem.id) && ((newItem.id.indexOf("-") > 2) || (newItem.id.length == 152))) {
 			// This is added from a copy/paste procedure.
 			newItem.id = null;
-			newItem.resetId(null);
+			newItem.clearId(null);
 			if (this.debug) this.logInfo("addItem Copy/pasted item. item.id:"+newItem.id);
 			//newItem.deleteProperty("X-UID");
 
@@ -1389,7 +1389,8 @@ calExchangeCalendar.prototype = {
 		}
 
 		if (((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) ||
-			((aOldItem.recurrenceInfo) && (aOldItem.calendarItemType == "RecurringMaster") && (!aNewItem.recurrenceInfo))) {
+			((aOldItem.recurrenceInfo) && (aOldItem.calendarItemType == "RecurringMaster") && (!aNewItem.recurrenceInfo)) ||
+			((aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo) && (aOldItem.recurrenceInfo.toString() != aNewItem.recurrenceInfo.toString())) ) {
 			if (this.debug) this.logInfo("modifyItem item was changed from single into recurring or from recurring into single.");
 	        	this.notifyOperationComplete(aListener,
 	        	                             Cr.NS_OK,
@@ -1402,6 +1403,7 @@ calExchangeCalendar.prototype = {
 			this.deleteItem(aOldItem, null);
 			return null;
 		}
+
 
 	        if (!aNewItem) {
 	            throw Cr.NS_ERROR_INVALID_ARG;
