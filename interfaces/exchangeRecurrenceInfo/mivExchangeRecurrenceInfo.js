@@ -444,7 +444,7 @@ mivExchangeRecurrenceInfo.prototype = {
 				//this.logInfo(" ||||| ritem:"+ritem);
 			if (ritem instanceof Ci.calIRecurrenceRule) {
 				if (ritem) {
-					dump(" ;;;; ritem:"+ritem.icalProperty.icalString+"\n");
+					//dump(" ;;;; ritem:"+ritem.icalProperty.icalString+"\n");
 					result += ritem.icalProperty.icalString;
 				}
 				else {

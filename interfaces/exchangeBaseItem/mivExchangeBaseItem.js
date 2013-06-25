@@ -3445,7 +3445,9 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 					this._recurrenceStartDate.isDate = true;
 					break;
 				case 'EndDate':
-					comps['UNTIL'] = comp.value.replace(/Z$/, '');
+//					comps['UNTIL'] = comp.value.replace(/Z$/, '');
+					// As we only get the date + timezonediff we make a nice date+time from it.
+					comps['UNTIL'] = comp.value.substr(0,10)+"T00:00:00Z";
 					break;
 				case 'NumberOfOccurrences':
 					comps['COUNT'] = comp.value;
