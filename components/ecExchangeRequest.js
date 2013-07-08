@@ -348,6 +348,9 @@ catch(err) {
 		//this.exchangeStatistics.addDataRead(this.currentUrl, xmlReq.responseText.length);
 
 		if (xmlReq.readyState != 4) {
+
+			if (this.tryNextURL()) return;
+
 			if (this.debug) this.logInfo("readyState < 4. THIS SHOULD NEVER HAPPEN. PLEASE REPORT.");
 			this.fail(this.ER_ERROR_OPEN_FAILED,"Ready state != 4, readyState:"+xmlReq.readyState);
 			return;
