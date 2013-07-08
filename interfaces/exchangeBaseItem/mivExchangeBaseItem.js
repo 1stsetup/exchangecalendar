@@ -420,7 +420,7 @@ try {
 		if (this._newPrivacy) result.privacy = this.privacy;
 		if (this._newStatus) {
 			if (this.contractID == "@1st-setup.nl/exchange/calendarevent;1") {
-				result.status = this.status;
+				result.status = this._newStatus;
 			}
 			else {
 				const statusMap = {
@@ -458,7 +458,7 @@ try {
 			result.recurrenceInfo = this._newRecurrenceInfo;
 		}
 		else {
-			if (this._recurrenceInfo.toString() != this.recurrenceInfo.toString()) {
+			if (((this._recurrenceInfo) && (this.recurrenceInfo) && (this._recurrenceInfo.toString() != this.recurrenceInfo.toString())) || (this._recurrenceInfo !== this.recurrenceInfo)) {
 				result.recurrenceInfo = this.recurrenceInfo;
 			}
 		}
