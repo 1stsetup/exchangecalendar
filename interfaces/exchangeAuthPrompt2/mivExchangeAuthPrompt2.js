@@ -135,7 +135,7 @@ mivExchangeAuthPrompt2.prototype = {
 		else {
 			this.logInfo("getPassword: There is no password in the passwordCache["+username+"|"+aURL+"|"+realm+"]");
 		}
-		this.logInfo("getPassword: password(1)="+password);
+		this.logInfo("getPassword: password(1)= *******");
 
 		if (!password) {
 			this.logInfo("getPassword: There is no password in the cache. Going to see if there is one in the passwordManager.");
@@ -148,7 +148,7 @@ mivExchangeAuthPrompt2.prototype = {
 				this.logInfo("getPassword: There is no password stored in the passwordManager.");
 			}
 		}
-		this.logInfo("getPassword: password(2)="+password);
+		this.logInfo("getPassword: password(2)= *******");
 
 		if ((password) && (aChannel) && (aChannel.URI.password) && (decodeURIComponent(aChannel.URI.password) != "")) {
 			this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. Going to see if they are the same.");
@@ -169,7 +169,7 @@ mivExchangeAuthPrompt2.prototype = {
 				else {
 					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And useCached specified.");
 				}
-				this.logInfo("getPassword: cached/store='"+password+"', on channel='"+decodeURIComponent(aChannel.URI.password)+"'.");
+				this.logInfo("getPassword: cached/store='*******', on channel='"+decodeURIComponent(aChannel.URI.password)+"'.");
 			}
 		}
 
@@ -195,7 +195,7 @@ mivExchangeAuthPrompt2.prototype = {
 
 			if (answer.result) {
 				password = answer.password;
-				this.logInfo("getPassword: User specified a password:"+password);
+				this.logInfo("getPassword: User specified a password: *******");
 				if (answer.save) {
 					this.logInfo("getPassword: User requested to store password in passwordmanager.");
 					this.passwordManagerSave(username, password, aURL, realm);
@@ -213,7 +213,7 @@ mivExchangeAuthPrompt2.prototype = {
 			}
 		}
 
-		this.logInfo("getPassword: We have a password:"+password);
+		this.logInfo("getPassword: We have a password: *******");
 
 //} catch(err) { this.logInfo("getPassword: Error:"+err); }
 		return password;
