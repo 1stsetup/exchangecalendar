@@ -11,6 +11,7 @@
 <!ENTITY exchangeWebService.preference.network.debuglevel.label1 "Loggningsnivå">
 <!ENTITY exchangeWebService.preference.network.debuglevel.label2 "1 = Grundläggande information, 2 = All kommunikation">
 <!ENTITY exchangeWebService.preference.authentication.debug.label "Logga kommunikationsförlopp (t.ex. autentisering)">
+<!ENTITY exchangeWebService.preference.authentication.showpassword.label "Visa lösenord i klartext i loggfilen.">
 
 <!ENTITY exchangeWebService.preference.contacts.debug.caption "Adressbok/kontakter:">
 <!ENTITY exchangeWebService.preference.contacts.debuglevel.label1 "Loggningsnivå">

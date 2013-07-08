@@ -11,6 +11,7 @@
 <!ENTITY exchangeWebService.preference.network.debuglevel.label1 "Loglevel">
 <!ENTITY exchangeWebService.preference.network.debuglevel.label2 "1 = Basisinformationen, 2 = Komplette Kommunikation">
 <!ENTITY exchangeWebService.preference.authentication.debug.label "Logge Kommunikationsstatusinformationen (zb. Authentifikation)">
+<!ENTITY exchangeWebService.preference.authentication.showpassword.label "Logge password im Klartext.">
 
 <!ENTITY exchangeWebService.preference.contacts.debug.caption "Addressbuch/Kontakte:">
 <!ENTITY exchangeWebService.preference.contacts.debuglevel.label1 "Loglevel">

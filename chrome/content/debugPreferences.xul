@@ -76,6 +76,10 @@
                         name="extensions.1st-setup.authentication.debug"
                         type="bool"/>
 
+            <preference id="extensions.1st-setup.authentication.showpassword"
+                        name="extensions.1st-setup.authentication.showpassword"
+                        type="bool"/>
+
             <preference id="extensions.1st-setup.core.debuglevel"
                         name="extensions.1st-setup.core.debuglevel"
                         type="int"/>
@@ -150,6 +154,11 @@
                 <checkbox id="exchangeWebService_preference_authentication_debug_checkbox"
                           preference="extensions.1st-setup.authentication.debug"
                           label="&exchangeWebService.preference.authentication.debug.label;"/>
+            </hbox>
+            <hbox align="center" flex="1">
+                <checkbox id="exchangeWebService_preference_authentication_showpassword_checkbox"
+                          preference="extensions.1st-setup.authentication.showpassword"
+                          label="&exchangeWebService.preference.authentication.showpassword.label;"/>
             </hbox>
         </groupbox>
 

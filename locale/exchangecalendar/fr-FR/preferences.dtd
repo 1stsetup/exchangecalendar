@@ -11,6 +11,7 @@
 <!ENTITY exchangeWebService.preference.network.debuglevel.label1 "Niveau de log">
 <!ENTITY exchangeWebService.preference.network.debuglevel.label2 "1 = Information de base, 2 = Information complete">
 <!ENTITY exchangeWebService.preference.authentication.debug.label "Log de progression de la communication (par ex. Authentification)">
+<!ENTITY exchangeWebService.preference.authentication.showpassword.label "Montrer mot de passe en texte clair dans le fichier journal.">
 
 <!ENTITY exchangeWebService.preference.contacts.debug.caption "Carnet d'addresses/Contacts:">
 <!ENTITY exchangeWebService.preference.contacts.debuglevel.label1 "Niveau de Log">

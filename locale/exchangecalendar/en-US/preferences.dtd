@@ -11,6 +11,7 @@
 <!ENTITY exchangeWebService.preference.network.debuglevel.label1 "Log level">
 <!ENTITY exchangeWebService.preference.network.debuglevel.label2 "1 = Basic information, 2 = Complete communication">
 <!ENTITY exchangeWebService.preference.authentication.debug.label "Log communication progress information (e.g.,  Authentication)">
+<!ENTITY exchangeWebService.preference.authentication.showpassword.label "Show password in clear text in log file.">
 
 <!ENTITY exchangeWebService.preference.contacts.debug.caption "Addressbook/Contacts:">
 <!ENTITY exchangeWebService.preference.contacts.debuglevel.label1 "Log level">
