@@ -358,6 +358,7 @@ catch(err) {
 
 		if (this.debug) this.logInfo(": ExchangeRequest.error :"+evt.type+", readyState:"+xmlReq.readyState+", status:"+xmlReq.status+", lastStatus:"+this._notificationCallbacks.lastStatus);
 		if (this.debug) this.logInfo(": ExchangeRequest.error :"+xmlReq.responseText,2);
+		if (this.debug) this.logInfo(': xmlReq.getResponseHeader("Location") :'+xmlReq.getResponseHeader("Location"),2);
 
 		if ((!this.shutdown) && (xmlReq.readyState == 4) && (xmlReq.status == 0)) {
 			this.logInfo(": ExchangeRequest.error : badCert going to check if it is a cert problem.");
