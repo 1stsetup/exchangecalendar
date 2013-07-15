@@ -7213,13 +7213,7 @@ return;
 			}
 		}
 
-		if (!this.prefServerVersion) {
-			this.prefServerVersion = this.globalFunctions.safeGetCharPref(this.prefs,"lastServerVersion", null);
-		}
-		if (this.prefServerVersion) {
-			if (this.debug) this.logInfo("Restored prefServerVersion from prefs.js:"+this.prefServerVersion);
-			this.exchangeStatistics.setServerVersion(this.serverUrl, this.prefServerVersion);
-		}
+		this.setServerVersion();
 
 		if (this.isOffline) return;
 
@@ -7429,6 +7423,8 @@ return;
 		this.prefs.setCharPref("folderProperties", this.folderProperties.toString());
 
 		this.prefs.setCharPref("lastServerVersion", this.exchangeStatistics.getServerVersion(this.serverUrl));
+		this.prefs.setCharPref("lastMajorVersion", this.exchangeStatistics.getMajorVersion(this.serverUrl));
+		this.prefs.setCharPref("lastMinorVersion", this.exchangeStatistics.getMinorVersion(this.serverUrl));
 
 		this.folderIsNotAvailable = true;
 
@@ -7548,15 +7544,20 @@ return;
 			null);
 	},
 
-	getTimeZones: function _getTimeZones()
+	setServerVersion: function _setServerVersion()
 	{
-		if (!this.prefServerVersion) {
-			this.prefServerVersion = this.globalFunctions.safeGetCharPref(this.prefs,"lastServerVersion", null);
-		}
+		this.prefServerVersion = this.globalFunctions.safeGetCharPref(this.prefs,"lastServerVersion", null);
+		this.prefMajorVersion = this.globalFunctions.safeGetCharPref(this.prefs,"lastMajorVersion", null);
+		this.prefMinorVersion = this.globalFunctions.safeGetCharPref(this.prefs,"lastMinorVersion", null);
 		if (this.prefServerVersion) {
 			if (this.debug) this.logInfo("Restored prefServerVersion from prefs.js:"+this.prefServerVersion);
-			this.exchangeStatistics.setServerVersion(this.serverUrl, this.prefServerVersion);
+			this.exchangeStatistics.setServerVersion(this.serverUrl, this.prefServerVersion, this.prefMajorVersion, this.prefMinorVersion);
 		}
+	},
+
+	getTimeZones: function _getTimeZones()
+	{
+		this.setServerVersion();
 
 		this.timeZones.addURL(this.serverUrl, this.user, this);
 	},

@@ -29,6 +29,8 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 function mivExchangeStatistics() {
 	this.serverVersions = {};
+	this.majorVersions = {};
+	this.minorVersions = {};
 
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
@@ -78,9 +80,29 @@ mivExchangeStatistics.prototype = {
 	},
 	// External methods
 
-	setServerVersion: function _setServerVersion(aURL, aVersion)
+	setServerVersion: function _setServerVersion(aURL, aVersion, aMajorVersion, aMinorVersion)
 	{
-		this.serverVersions[aURL] = aVersion;
+		if (aMajorVersion == 15) {
+			this.serverVersions[aURL] = "Exchange2013";
+			if (aMinorVersion > 0) this.serverVersions[aURL] = this.serverVersions[aURL] + "_SP" + aMinorVersion;
+		}
+		else {
+			if (aMajorVersion == 14) {
+				this.serverVersions[aURL] = "Exchange2010";
+				if (aMinorVersion > 0) this.serverVersions[aURL] = this.serverVersions[aURL] + "_SP" + aMinorVersion;
+			}
+			else {
+				if (aMajorVersion == 8) {
+					this.serverVersions[aURL] = "Exchange2007";
+					if (aMinorVersion > 0) this.serverVersions[aURL] = this.serverVersions[aURL] + "_SP" + aMinorVersion;
+				}
+				else {
+					this.serverVersions[aURL] = aVersion;
+				}
+			}
+		}
+		this.majorVersions[aURL] = aMajorVersion;
+		this.minorVersions[aURL] = aMinorVersion;
 	},
 
 	getServerVersion: function _getServerVersion(aURL)
@@ -90,6 +112,24 @@ mivExchangeStatistics.prototype = {
 		}
 	
 		return "Exchange2007_SP1";
+	},
+
+	getMajorVersion: function _getMajorVersion(aURL)
+	{
+		if ((aURL) && (this.majorVersions[aURL])) {
+			return this.majorVersions[aURL];
+		}
+	
+		return 8;
+	},
+
+	getMinorVersion: function _getMinorVersion(aURL)
+	{
+		if ((aURL) && (this.minorVersions[aURL])) {
+			return this.minorVersions[aURL];
+		}
+	
+		return 1;
 	},
 
 	getURLList: function _getURLList(aCount)
