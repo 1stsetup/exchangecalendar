@@ -42,6 +42,7 @@ Some of the icons and images used are from the Fugue Icons Collection made by Yu
     <em:translator>Christian A. Meyer (de)</em:translator>
     <em:translator>Björn Töpper (de)</em:translator>
     <em:translator>Hiroshi Miura (ja-JP)</em:translator>
+    <em:translator>Alexey Sinitsyn (ru)</em:translator>
     <em:homepageURL>http://www.1st-setup.nl/wordpress/?page_id=133</em:homepageURL>
     <em:iconURL>chrome://exchangecalendar/content/lightningexchangecalendar.png</em:iconURL>
     <em:type>2</em:type> <!-- type: extension -->
@@ -91,5 +92,16 @@ Sommige van de iconen en plaatjes komen uit de Fugue Icons collectie gemaakt doo
 使用されている一部のアイコンやイメージは、Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)さんの、the Fugue Icons Collectionから取られました。</em:description>
 		</Description>
 	</em:localized>
-  </Description>
+		<Description>
+			<em:locale>ru</em:locale>
+			<em:name>Exchange EWS Provider</em:name>
+			<em:description>Позволяет вам синхронизировать календарь, задачи и контакты с вашим Microsoft Exchange 2007/2010/2013 EWS сервером из Lightning дополнения.
+
+Вы можете просматривать, удалять, создавать, обновлять элементы календаря и задач. И управлять настройками "Заместителя".
+Вы можете читать и использовать контакты и глобальный список контактов для вставки адресов в письма автозавершением.
+
+Голландский, французский, английский, немецкий, шведский, японский и русский вариант национальных языковых переводов этого приложения присутствуют тут.
+
+Некоторые значки и изображения используются из коллекции Fugue Icons созданной Юсукэ Камияманэ (http://p.yusukekamiyamane.com/)</em:description>
+		</Description>  </Description>
 </RDF>

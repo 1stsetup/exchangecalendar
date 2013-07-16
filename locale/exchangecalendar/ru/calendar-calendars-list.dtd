@@ -1,0 +1,6 @@
+<!ENTITY calendar.context.exchange.convert.label "Конвертировать в Exchange 2007/2010 календарь и задачи дополнение">
+<!ENTITY calendar.context.exchange.properties.label "Свойства Exchange (EWS)">
+<!ENTITY calendar.context.exchange.oof.settings.label "Настройки Заместителя">
+<!ENTITY calendar.context.exchange.clone.settings.label "Клонировать настройки в новый календарь">
+
+

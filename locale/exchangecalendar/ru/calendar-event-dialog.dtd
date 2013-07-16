@@ -1,0 +1,7 @@
+<!ENTITY exchWebService.owner.label "Владелец:">
+<!ENTITY exchWebService.totalWork.label "Всего работ:">
+<!ENTITY exchWebService.actualWork.label "Фактическая работа:">
+<!ENTITY exchWebService.mileage.label "Пробег:">
+<!ENTITY exchWebService.billingInformation.label "Платежная информация:">
+<!ENTITY exchWebService.companies.label "Компания:">
+
