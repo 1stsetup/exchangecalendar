@@ -1,17 +1,16 @@
-<!ENTITY ecautodiscover "Использовать функцию автопоиска Exchange.">
+﻿<!ENTITY ecautodiscover "Использовать функцию автопоиска Exchange.">
 <!ENTITY ecfolderbase.label "Базовая папка:">
 <!ENTITY ecfolderpath.label "Путь ниже базовой папки:">
 <!ENTITY ecfolderidofshare.label "Идентификатор общей папки:">
 <!ENTITY exchWebServices.SharedFolderID.label "Общее отображаемое имя:">
 
-<!ENTITY menuitem.label.ecfolderbase.calendar "Папка календаря">
+<!ENTITY menuitem.label.ecfolderbase.calendar "Календарь">
 <!ENTITY menuitem.label.ecfolderbase.publicfoldersroot "Общие папки">
-<!ENTITY menuitem.label.ecfolderbase.inbox "Входящая почтовая папка">
-<!ENTITY menuitem.label.ecfolderbase.voicemail "Голосовая почтовая папка">
+<!ENTITY menuitem.label.ecfolderbase.inbox "Входящие">
+<!ENTITY menuitem.label.ecfolderbase.voicemail "Голосовая почта">
 <!ENTITY menuitem.label.ecfolderbase.msgfolderroot "Корневая папка сообщений">
 <!ENTITY menuitem.label.ecfolderbase.root "Корень почты">
 <!ENTITY menuitem.label.ecfolderbase.tasks "Задачи">
-
 <!ENTITY menuitem.label.ecfolderbase.contacts "Контакты">
 <!ENTITY menuitem.label.ecfolderbase.deleteditems "Корзина">
 <!ENTITY menuitem.label.ecfolderbase.drafts "Черновики">
@@ -21,18 +20,19 @@
 <!ENTITY menuitem.label.ecfolderbase.sentitems "Отправленные">
 <!ENTITY menuitem.label.ecfolderbase.junkemail "Нежелательная почта">
 <!ENTITY menuitem.label.ecfolderbase.searchfolders "Папки поиска">
+
 <!ENTITY menuitem.label.ecfolderbase.version2010 "-- Параметры ниже только для Exchange2010 --">
-<!ENTITY menuitem.label.ecfolderbase.recoverableitemsroot "Корневая мусорная папка">
-<!ENTITY menuitem.label.ecfolderbase.recoverableitemsdeletions "Папка мусорных удалений">
-<!ENTITY menuitem.label.ecfolderbase.recoverableitemsversion "Папка мусорных версий">
-<!ENTITY menuitem.label.ecfolderbase.recoverableitemspurges "Папка мусорных очисток">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsroot "Корневая папка восстановимых элементов">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsdeletions "Восстановимые элементы удалений">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsversion "Восстановимые элементы версий">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemspurges "Восстановимые элементы очисток">
 <!ENTITY menuitem.label.ecfolderbase.archiveroot "Корневая архивная папка">
-<!ENTITY menuitem.label.ecfolderbase.archivemsgfolderroot "Корневая папка архивных сообщений">
-<!ENTITY menuitem.label.ecfolderbase.archivedeleteditems "Папка удаленных архивных элементов">
-<!ENTITY menuitem.label.ecfolderbase.archiverecoverableitemsroot "Корневая папка архива восстановимых сообщений">
-<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsdeletions "Папка архива восстановимых удаленных сообщений">
-<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsversions "Папка архива восстановимых удаленных версий">
-<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemspurges "Папка архива восстановимых элементов очистки">
+<!ENTITY menuitem.label.ecfolderbase.archivemsgfolderroot "Корневая папка архива сообщений">
+<!ENTITY menuitem.label.ecfolderbase.archivedeleteditems "Архив удаленных элементов">
+<!ENTITY menuitem.label.ecfolderbase.archiverecoverableitemsroot "Корневая папка архива восстановимых элементов">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsdeletions "Архив восстановимых элементов удалений">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsversions "Архив восстановимых элементов версий">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemspurges "Архив восстановимых элементов очисток">
 
 <!ENTITY button.label.autodiscovercheck "Выполнить автообнаружение">
 <!ENTITY button.label.serverandmailboxcheck "Проверить сервер и почтовый ящик">
