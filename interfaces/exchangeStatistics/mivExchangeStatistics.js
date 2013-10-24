@@ -84,7 +84,7 @@ mivExchangeStatistics.prototype = {
 	{
 		if (aMajorVersion == 15) {
 			this.serverVersions[aURL] = "Exchange2013";
-			if (aMinorVersion > 0) this.serverVersions[aURL] = this.serverVersions[aURL] + "_SP" + aMinorVersion;
+			//if (aMinorVersion > 0) this.serverVersions[aURL] = this.serverVersions[aURL] + "_SP" + aMinorVersion;
 		}
 		else {
 			if (aMajorVersion == 14) {
