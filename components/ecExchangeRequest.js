@@ -954,12 +954,12 @@ var d=new Date();var time4=d.getTime();
 		
 		var header = msg.addChildTag("Header", "nsSoap", null);
 
-		if (this.mArgument.ServerVersion) {
+/*		if (this.mArgument.ServerVersion) {
 			header.addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", this.mArgument.ServerVersion);
 		}
-		else {
+		else {*/
 			header.addChildTag("RequestServerVersion", "nsTypes", null).setAttribute("Version", this.version);
-		}
+//		}
 		
 		var exchTimeZone = this.timeZones.getExchangeTimeZoneByCalTimeZone(this.globalFunctions.ecDefaultTimeZone(), this.mArgument.serverUrl, cal.now());
 
