@@ -980,7 +980,6 @@ catch(err){
 			case "mivExchangeEvent":
 			//	if ((this.reminderIsSet) && (this.reminderDueBy.compare(this.startDate) < 1) && (this.calendarItemType != "RecurringMaster")) {
 				if (this.reminderIsSet) {
- 					//dump("getAlarms: Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType+"\n");
 					var alarm = cal.createAlarm();
 					alarm.action = "DISPLAY";
 					alarm.repeat = 0;
@@ -997,11 +996,12 @@ catch(err){
 					alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
 					alarm.offset = alarmOffset;
 
+ 					dump("getAlarms: Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType+", alarm.offset="+alarmOffset.minutes+"\n");
 					this._alarm = alarm.clone();
 					this._calEvent.addAlarm(alarm);
 				}
 				else {
-					//dump("getAlarms: no alarm info in exchangeData.\n");
+					dump("getAlarms: no alarm info in exchangeData.\n");
 				}
 				break;
 			}
@@ -2166,7 +2166,38 @@ try {
 	cloneToCalEvent: function cloneToCalEvent(aCalEvent)
 	{
 		//this.logInfo("cloneToCalEvent: start: this.calendarItemType:"+this.calendarItemType);
-			this._calEvent = aCalEvent.clone();
+		this._calEvent = aCalEvent.clone();
+		var alarms = aCalEvent.getAlarms({});
+		if (alarms.length > 0) {
+			this._alarm = alarms[0].clone();
+			this._reminderIsSet = true;
+			var offset = 0;
+
+			// Exchange alarm is always an offset to the start.
+			switch (alarms[0].related) {
+			case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
+dump("cloneToCalEvent: Ci.calIAlarm.ALARM_RELATED_ABSOLUTE\n");
+				var newAlarmTime = alarms[0].alarmDate.clone();
+
+				// Calculate offset from start of item.
+				offset = newAlarmTime.subtractDate(aCalEvent.startDate);
+				break;
+			case Ci.calIAlarm.ALARM_RELATED_START:
+dump("cloneToCalEvent: Ci.calIAlarm.ALARM_RELATED_START\n");
+				var newAlarmTime = aCalEvent.startDate.clone();
+				offset = alarms[0].offset.clone();
+				break;
+			case Ci.calIAlarm.ALARM_RELATED_END:
+dump("cloneToCalEvent: Ci.calIAlarm.ALARM_RELATED_END\n");
+				var newAlarmTime = aCalEvent.endDate.clone();
+				newAlarmTime.addDuration(alarms[0].offset);
+
+				offset = newAlarmTime.subtractDate(aCalEvent.startDate);
+				break;
+			}
+dump("cloneToCalEvent: offset="+offset.inSeconds+"\n");
+			this.reminderMinutesBeforeStart = (offset.inSeconds / 60) * -1;
+		}
 	},
 
 	//readonly attribute AUTF8String subject;

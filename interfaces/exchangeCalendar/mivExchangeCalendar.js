@@ -979,10 +979,16 @@ calExchangeCalendar.prototype = {
 				if (this.debug) this.logInfo("adoptItem 1 Copy/pasted item. item.id:"+tmpItem.id);
 			}
 			else {
-				var tmpItem = Cc["@1st-setup.nl/exchange/calendarevent;1"]
-						.createInstance(Ci.mivExchangeEvent);
-				tmpItem.addMailboxAlias(this.mailbox);
-				tmpItem.cloneToCalEvent(aItem);
+				if (!aItem.className) {
+					var tmpItem = Cc["@1st-setup.nl/exchange/calendarevent;1"]
+							.createInstance(Ci.mivExchangeEvent);
+					tmpItem.addMailboxAlias(this.mailbox);
+					tmpItem.cloneToCalEvent(aItem);
+				}
+				else {
+					var tmpItem = aItem.clone();
+					tmpItem.addMailboxAlias(this.mailbox);
+				}
 				if (this.debug) this.logInfo("adoptItem 2 Copy/pasted item. item.id:"+tmpItem.id);
 			}
 
