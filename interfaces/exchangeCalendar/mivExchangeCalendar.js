@@ -451,9 +451,16 @@ calExchangeCalendar.prototype = {
 
 // Begin nsISupports
 	// void QueryInterface(in nsIIDRef uuid, [iid_is(uuid),retval] out nsQIResult result);
-	QueryInterface: function _QueryInterface(aIID) {
-		return cal.doQueryInterface(this, calExchangeCalendar.prototype, aIID,null, this);
-	},
+	QueryInterface: XPCOMUtils.generateQI([Ci.mivExchangeCalendar,
+		Ci.calICalendarACLManager,
+		Ci.calICalendar,
+		Ci.calICalendarProvider,
+		Ci.calIFreeBusyService,
+		Ci.calIItipTransport,
+		Ci.calISchedulingSupport,
+		Ci.calICalendarProvider,
+		Ci.nsIClassInfo,
+		Ci.nsISupports]),
 // End nsISupports
 
 // Begin calICalendarProvider
