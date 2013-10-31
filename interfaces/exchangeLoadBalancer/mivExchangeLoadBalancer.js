@@ -192,8 +192,10 @@ mivExchangeLoadBalancer.prototype = {
 					if (oldList[runningJob].state = "running") {
 						var timeNow = new Date().getTime();
 						var timeDiff = timeNow - oldList[runningJob].startTime;
-						if (timeDiff > 300000) {
+						if (timeDiff > 300000)  {
 							dump("We have a job which is running longer than 5 minutes:"+oldList[runningJob].job.ecRequest+"\n"); 
+							//dump("We have a job which is running longer than 5 minutes\n"); 
+							oldList[runningJob].startTime = new Date().getTime();
 						}
 					}
 				}
