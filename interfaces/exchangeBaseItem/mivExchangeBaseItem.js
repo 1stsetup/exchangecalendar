@@ -996,12 +996,12 @@ catch(err){
 					alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
 					alarm.offset = alarmOffset;
 
- 					dump("getAlarms: Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType+", alarm.offset="+alarmOffset.minutes+"\n");
+ 					//dump("getAlarms: Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType+", alarm.offset="+alarmOffset.minutes+"\n");
 					this._alarm = alarm.clone();
 					this._calEvent.addAlarm(alarm);
 				}
 				else {
-					dump("getAlarms: no alarm info in exchangeData.\n");
+					//dump("getAlarms: no alarm info in exchangeData.\n");
 				}
 				break;
 			}
@@ -2177,26 +2177,26 @@ try {
 			// Exchange alarm is always an offset to the start.
 			switch (alarms[0].related) {
 			case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
-dump("cloneToCalEvent: Ci.calIAlarm.ALARM_RELATED_ABSOLUTE\n");
+//dump("cloneToCalEvent: Ci.calIAlarm.ALARM_RELATED_ABSOLUTE\n");
 				var newAlarmTime = alarms[0].alarmDate.clone();
 
 				// Calculate offset from start of item.
 				offset = newAlarmTime.subtractDate(aCalEvent.startDate);
 				break;
 			case Ci.calIAlarm.ALARM_RELATED_START:
-dump("cloneToCalEvent: Ci.calIAlarm.ALARM_RELATED_START\n");
+//dump("cloneToCalEvent: Ci.calIAlarm.ALARM_RELATED_START\n");
 				var newAlarmTime = aCalEvent.startDate.clone();
 				offset = alarms[0].offset.clone();
 				break;
 			case Ci.calIAlarm.ALARM_RELATED_END:
-dump("cloneToCalEvent: Ci.calIAlarm.ALARM_RELATED_END\n");
+//dump("cloneToCalEvent: Ci.calIAlarm.ALARM_RELATED_END\n");
 				var newAlarmTime = aCalEvent.endDate.clone();
 				newAlarmTime.addDuration(alarms[0].offset);
 
 				offset = newAlarmTime.subtractDate(aCalEvent.startDate);
 				break;
 			}
-dump("cloneToCalEvent: offset="+offset.inSeconds+"\n");
+//dump("cloneToCalEvent: offset="+offset.inSeconds+"\n");
 			this.reminderMinutesBeforeStart = (offset.inSeconds / 60) * -1;
 		}
 	},
