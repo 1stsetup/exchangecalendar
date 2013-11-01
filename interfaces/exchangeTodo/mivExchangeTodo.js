@@ -125,8 +125,8 @@ mivExchangeTodo.prototype = {
 		//dump("set entryDate 1: title:"+this.title+", aValue:"+aValue+"\n");
 		//dump("set entryDate x:"+this.globalFunctions.STACK()+"\n");
 		if (aValue) {
-			if ((!this.entryDate) || (aValue.compare(this.entryDate) != 0)) {
-//			if ((!this._newEntryDate) || (aValue.compare(this._newEntryDate) != 0)) {
+			if ((!this.entryDate) || ((aValue.compare(this.entryDate) != 0) || (!this._newEntryDate) || (aValue.compare(this._newEntryDate) != 0))) {
+			//if ((!this.entryDate) || (aValue.compare(this.entryDate) != 0)) {
 				//dump("set entryDate 2: title:"+this.title+", aValue:"+aValue+"\n");
 				this._newEntryDate = aValue.clone();
 				this._calEvent.entryDate = aValue.clone();
@@ -134,6 +134,7 @@ mivExchangeTodo.prototype = {
 		}
 		else {
 			if (this.entryDate !== null) {
+				//dump("this._newEntryDate becomes '"+aValue+"'\n");
 				this._newEntryDate = aValue;
 				this._calEvent.entryDate = aValue;
 			}
@@ -161,10 +162,9 @@ mivExchangeTodo.prototype = {
 
 	set dueDate(aValue)
 	{
-		//dump("set dueDate 1: title:"+this.title+", aValue:"+aValue+"\n");
+		//dump("set dueDate 1: title:"+this.title+", aValue:"+aValue+", this.dueDate="+this.dueDate+", this._newDueDate="+this._newDueDate+"\n");
 		if (aValue) {
-			if ((!this.dueDate) || (aValue.compare(this.dueDate) != 0)) {
-//			if ((!this._newDueDate) || (aValue.compare(this._newDueDate) != 0)) {
+			if ((!this.dueDate) || ((aValue.compare(this.dueDate) != 0) || (!this._newDueDate) || (aValue.compare(this._newDueDate) != 0))) {
 				//dump("set dueDate 2: title:"+this.title+", aValue:"+aValue+"\n");
 				this._newDueDate = aValue.clone();
 				this._calEvent.dueDate = aValue.clone();

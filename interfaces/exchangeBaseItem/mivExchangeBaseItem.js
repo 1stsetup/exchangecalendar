@@ -533,9 +533,30 @@ try {
 		if (this._newAlarmLastAck) result.alarmLastAck = this.alarmLastAck;
 
 		if (this.contractID == "@1st-setup.nl/exchange/calendartodo;1") {
-			if (this._newEntryDate !== undefined) result.entryDate = this.entryDate.clone();
-			if (this._newDueDate !== undefined) result.dueDate = this.dueDate.clone();
-			if (this._newCompletedDate !== undefined) result.completedDate = this.completedDate.clone();
+			if (this._newEntryDate !== undefined) {
+				if (this.entryDate) {
+					result.entryDate = this.entryDate.clone();
+				}
+				else {
+					result.entryDate = null;
+				}
+			}
+			if (this._newDueDate !== undefined) {
+				if (this.dueDate) {
+					result.dueDate = this.dueDate.clone();
+				}
+				else {
+					result.dueDate = null;
+				}
+			}
+			if (this._newCompletedDate !== undefined) {
+				if (this.completedDate) {
+					result.completedDate = this.completedDate.clone();
+				}
+				else {
+					result.completedDate = null;
+				}
+			}
 			if (this._newPercentComplete) result.percentComplete = this._newPercentComplete;
 			if (this._newDuration) result.duration = this._newDuration;
 			if (this._newTotalWork) result.totalWork = this._newTotalWork;
@@ -2174,6 +2195,17 @@ try {
 			this._reminderIsSet = true;
 			var offset = 0;
 
+			var tmpStartDate;
+			var tmpEndDate;
+			if (this.className == "mivExchangeEvent") {
+				tmpStartDate = aCalEvent.startDate;
+				tmpEndDate = aCalEvent.endDate;
+			}
+			if (this.className == "mivExchangeTodo") {
+				tmpStartDate = aCalEvent.entryDate;
+				tmpEndDate = aCalEvent.dueDate;
+			}
+
 			// Exchange alarm is always an offset to the start.
 			switch (alarms[0].related) {
 			case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
@@ -2181,19 +2213,19 @@ try {
 				var newAlarmTime = alarms[0].alarmDate.clone();
 
 				// Calculate offset from start of item.
-				offset = newAlarmTime.subtractDate(aCalEvent.startDate);
+				offset = newAlarmTime.subtractDate(tmpStartDate);
 				break;
 			case Ci.calIAlarm.ALARM_RELATED_START:
 //dump("cloneToCalEvent: Ci.calIAlarm.ALARM_RELATED_START\n");
-				var newAlarmTime = aCalEvent.startDate.clone();
+				var newAlarmTime = tmpStartDate.clone();
 				offset = alarms[0].offset.clone();
 				break;
 			case Ci.calIAlarm.ALARM_RELATED_END:
 //dump("cloneToCalEvent: Ci.calIAlarm.ALARM_RELATED_END\n");
-				var newAlarmTime = aCalEvent.endDate.clone();
+				var newAlarmTime = tmpEndDate.clone();
 				newAlarmTime.addDuration(alarms[0].offset);
 
-				offset = newAlarmTime.subtractDate(aCalEvent.startDate);
+				offset = newAlarmTime.subtractDate(tmpStartDate);
 				break;
 			}
 //dump("cloneToCalEvent: offset="+offset.inSeconds+"\n");
