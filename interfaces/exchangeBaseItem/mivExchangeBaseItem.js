@@ -1511,8 +1511,8 @@ try {
 			}
 			break;
 		case "X-MOZ-SNOOZE-TIME":
-				if (value != this._xMozSnoozetime) {
 //dump("setProperty: title:"+this.title+", X-MOZ-SNOOZE-TIME:"+value+"\n");
+				if (value != this._xMozSnoozetime) {
 					this._newXMozSnoozeTime = value;
 				}
 				else {
@@ -1568,7 +1568,7 @@ try {
 			break;
 
 		case "X-MOZ-SNOOZE-TIME":
-//dump("deleteProperty: title:"+this.title+", "+name+"\n");
+//dump("deleteProperty: title:"+this.title+", "+name+", this._xMozSnoozeTime="+this._xMozSnoozeTime+", this._calEvent.getProperty(X-MOZ-SNOOZE-TIME)="+this._calEvent.getProperty("X-MOZ-SNOOZE-TIME")+", reminderSignalTime="+this.reminderSignalTime+"\n");
 				this._newXMozSnoozeTime = null;
 			break;
 		default:
@@ -2167,6 +2167,7 @@ try {
 	{
 		//this.logInfo("cloneToCalEvent: start: this.calendarItemType:"+this.calendarItemType);
 		this._calEvent = aCalEvent.clone();
+
 		var alarms = aCalEvent.getAlarms({});
 		if (alarms.length > 0) {
 			this._alarm = alarms[0].clone();
@@ -2273,6 +2274,7 @@ dump("cloneToCalEvent: offset="+offset.inSeconds+"\n");
 						this._xMozSnoozeTime = this._reminderSignalTime.icalString;
 						break;
 					case "Single":
+
 						this._calEvent.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
 						//this.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
 						this._xMozSnoozeTime = this._reminderSignalTime.icalString;
@@ -3175,9 +3177,11 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	{
 		//dump("checkAlarmChange:"+this.title+".\n");
 		var reminderIsSetChanged = undefined;
+		var newReminderMinutesBeforeStart = undefined;
+		this.reminderMinutesBeforeStart; // To have is initialized.
 		// Alarm
 		if (this._newAlarm !== undefined) {
-			//dump("Alarm was changed.\n");
+			//dump("checkAlarmChange: Alarm was changed.\n");
 			// Alarm was changed.
 			if (this._newAlarm === null) {
 				// Alarm was removed.
@@ -3236,9 +3240,25 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 					
 						if ((offset) && (offset.inSeconds != 0)) {
 							this.addSetItemField(updates, "ReminderMinutesBeforeStart", String((offset.inSeconds / 60) * -1));
+							if (this._reminderMinutesBeforeStart) {
+								if (this._reminderMinutesBeforeStart != String((offset.inSeconds / 60) * -1)) {
+									newReminderMinutesBeforeStart = true;
+								}
+								else {
+									newReminderMinutesBeforeStart = false;
+								}
+							}
 						}
 						else {
 							this.addSetItemField(updates, "ReminderMinutesBeforeStart", "0");
+							if (this._reminderMinutesBeforeStart) {
+								if (this._reminderMinutesBeforeStart != "0") {
+									newReminderMinutesBeforeStart = true;
+								}
+								else {
+									newReminderMinutesBeforeStart = false;
+								}
+							}
 						}
 					}
 				}
@@ -3249,13 +3269,80 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 			}
 
 		}
+		else {
+			// Check if an exisiting alarm setting changed.
+			//dump("checkAlarmChange: checking is an existing alarm changed.\n");
+			var alarms = this.getAlarms({});
+			if (alarms.length > 0) {
+				//dump("checkAlarmChange: We have an alarm.\n");
+				var alarm = alarms[0];
+
+				// Exchange alarm is always an offset to the start.
+				// A Todo always has an alarm.related of ALARM_RELATED_ABSOLUTE
+				// So referenceDate is set there.
+				if (this.className == "mivExchangeEvent") {
+					var referenceDate = this.startDate.getInTimezone(cal.UTC());
+					referenceDate.isDate = false;
+				}
+
+				switch (alarm.related) {
+				case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
+					//this.logInfo("ALARM_RELATED_ABSOLUTE we are going to calculate a offset from the start.");
+					var newAlarmTime = alarm.alarmDate.clone();
+
+					// Calculate offset from start of item.
+					if (this.className == "mivExchangeEvent") {
+						var offset = newAlarmTime.subtractDate(this.startDate);
+					}
+					else {
+						//var offset = 0;
+						referenceDate = newAlarmTime.getInTimezone(cal.UTC());
+					}
+					break;
+				case Ci.calIAlarm.ALARM_RELATED_START:
+					//this.logInfo("ALARM_RELATED_START this is easy exchange does the same.");
+					var offset = alarm.offset.clone();
+					break;
+				case Ci.calIAlarm.ALARM_RELATED_END:
+					//this.logInfo("ALARM_RELATED_END we are going to calculate the offset from the start.");
+					var newAlarmTime = this.endDate.clone();
+					newAlarmTime.isDate = false;
+					newAlarmTime.addDuration(alarm.offset);
+
+					var offset = newAlarmTime.subtractDate(referenceDate);
+					break;
+				}
+			
+				if ((offset) && (offset.inSeconds != 0)) {
+					if (this._reminderMinutesBeforeStart) {
+						if (this._reminderMinutesBeforeStart != String((offset.inSeconds / 60) * -1)) {
+							newReminderMinutesBeforeStart = true;
+						}
+						else {
+							newReminderMinutesBeforeStart = false;
+						}
+					}
+				}
+				else {
+					if (this._reminderMinutesBeforeStart) {
+						if (this._reminderMinutesBeforeStart != "0") {
+							newReminderMinutesBeforeStart = true;
+						}
+						else {
+							newReminderMinutesBeforeStart = false;
+						}
+					}
+				}
+			}
+		}
 
 		var newSnoozeTime = null;
 		// Alarm snooze or dismiss
 		if (this._newXMozSnoozeTime !== undefined) {
-//dump("this._newXMozSnoozeTime was set to:"+this._newXMozSnoozeTime+"\n");
-			if (this._newXMozSnoozeTime === null) {
+//dump("checkAlarmChange: this._newXMozSnoozeTime was set to:"+this._newXMozSnoozeTime+", newReminderMinutesBeforeStart="+newReminderMinutesBeforeStart+"\n");
+			if ((this._newXMozSnoozeTime === null) && (newReminderMinutesBeforeStart !== true)) {
 				// We have a dismiss
+//dump("checkAlarmChange: We have a change\n");
 				if (this.calendarItemType == "RecurringMaster") {
 					// Find out which occurrence or exception was dismissed
 					var dismissedItem = this.getOccurrenceByNativeId(this._lastXMozSnoozeTimeNativeId);
@@ -3319,7 +3406,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 							if (!nextOccurrence) {
 								// No next occurrence.
 								//dump("No next occurrence so turning alarm of on master.\n");
-								reminderIsSetChanged = false;
+								reminderIsSetChanged = "false";
 							}
 						} 
 						while ((nextOccurrence) && (newSnoozeTime === null));
@@ -3329,7 +3416,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 				else {
 					// Single dismiss. We turn it off.
 					//dump("dismiss Single:"+this.title+", startDate:"+this.startDate+"\n");
-					reminderIsSetChanged = false;
+					reminderIsSetChanged = "false";
 				}
 			}
 			else {
