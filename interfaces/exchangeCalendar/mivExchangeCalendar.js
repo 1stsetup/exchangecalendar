@@ -1337,10 +1337,23 @@ calExchangeCalendar.prototype = {
 		var identities = accountMgr.allIdentities;
 		var idList = [];
 		if ((identities["Count"]) && (identities["QueryElementAt"])) {
-			for (var index=0; index < identities.Count(); index++) {
+			dump("Pre TB 24\n");
+			for (var index=0; index < identities.Count; index++) {
 				var identity = identities.QueryElementAt(index, Ci.nsIMsgIdentity);
 				idList.push(identity);
-				//dump("aclEntry: index:"+index+", identitie:"+identity+"\n");
+				/*if (!this.name) {
+					dump("aclEntry: index:"+index+", identitie:"+identity+"\n");
+				}*/
+			}
+		}
+		else {
+			dump("after TB 23\n");
+			for (var index=0; index < identities.length; index++) {
+				var identity = identities.queryElementAt(index, Ci.nsIMsgIdentity);
+				idList.push(identity);
+				/*if (!this.name) {
+					dump("aclEntry: index:"+index+", identitie:"+identity+"\n");
+				}*/
 			}
 		}
 		var self = this;
