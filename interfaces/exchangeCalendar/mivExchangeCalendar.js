@@ -1337,7 +1337,6 @@ calExchangeCalendar.prototype = {
 		var identities = accountMgr.allIdentities;
 		var idList = [];
 		if ((identities["Count"]) && (identities["QueryElementAt"])) {
-			dump("Pre TB 24\n");
 			for (var index=0; index < identities.Count; index++) {
 				var identity = identities.QueryElementAt(index, Ci.nsIMsgIdentity);
 				idList.push(identity);
@@ -1347,7 +1346,6 @@ calExchangeCalendar.prototype = {
 			}
 		}
 		else {
-			dump("after TB 23\n");
 			for (var index=0; index < identities.length; index++) {
 				var identity = identities.queryElementAt(index, Ci.nsIMsgIdentity);
 				idList.push(identity);
