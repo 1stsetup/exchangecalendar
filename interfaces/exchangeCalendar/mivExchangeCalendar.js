@@ -2562,7 +2562,7 @@ calExchangeCalendar.prototype = {
 			var offset = cal.createDuration();
 			offset.weeks = -1;
 			startDate.addDuration(offset);
-			if (startDate.compare(aStartDate) < 1) {
+			if ((aStartDate) && (startDate.compare(aStartDate) < 1)) {
 				startDate = aStartDate.clone();
 			}
 		}
@@ -2573,7 +2573,7 @@ calExchangeCalendar.prototype = {
 			var offset = cal.createDuration();
 			offset.weeks = 1;
 			endDate.addDuration(offset);
-			if (endDate.compare(aEndDate) > -1) {
+			if ((aEndDate) && (endDate.compare(aEndDate) > -1)) {
 				endDate = aEndDate.clone();
 			}
 		}
