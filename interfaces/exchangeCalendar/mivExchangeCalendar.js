@@ -4014,8 +4014,20 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			wr.addChildTag("DaysOfWeek", "nsTypes", days.join(' '));
 			break;
 		case 'DAILY':
-			var dr = r.addChildTag("DailyRecurrence", "nsTypes", null);
-			dr.addChildTag("Interval", "nsTypes", rrule.interval);
+			if (prop["BYDAY"]) {
+				var wr = r.addChildTag("WeeklyRecurrence", "nsTypes", null);
+				wr.addChildTag("Interval", "nsTypes", rrule.interval);
+				var days = [];
+				var daystr = prop["BYDAY"];
+				for each (let day in daystr.split(",")) {
+					days.push(dayRevMap[day]);
+				}
+				wr.addChildTag("DaysOfWeek", "nsTypes", days.join(' '));
+			}
+			else {
+				var dr = r.addChildTag("DailyRecurrence", "nsTypes", null);
+				dr.addChildTag("Interval", "nsTypes", rrule.interval);
+			}
 			break;
 		}
 
@@ -4455,7 +4467,6 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				break;
 			}
 	
-			//e.addChildTag("ReminderDueBy", "nsTypes", exchAlarmStart);
 			e.addChildTag("ReminderIsSet", "nsTypes", "true");
 			if (offset.inSeconds != 0) {
 				e.addChildTag("ReminderMinutesBeforeStart", "nsTypes", String((offset.inSeconds / 60) * -1));
