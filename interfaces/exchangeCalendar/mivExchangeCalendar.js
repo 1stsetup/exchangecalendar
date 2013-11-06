@@ -4480,6 +4480,22 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			e.addChildTag("ReminderIsSet", "nsTypes", "false");
 		}
 
+		// An imported item alreay could have a snooze time set.
+		if (aItem.hasProperty("X-MOZ-SNOOZE-TIME")) {
+			//dump("Item is snoozed. Going to set the snooze time\n");
+			var newSnoozeTime = cal.createDateTime(aItem.getProperty("X-MOZ-SNOOZE-TIME"));
+			newSnoozeTime = newSnoozeTime.getInTimezone(cal.UTC());
+			const MAPI_PidLidReminderSignalTime = "34144";
+
+			var eprop = e.addChildTag("ExtendedProperty", "nsTypes", null);
+			var extField = eprop.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extField.setAttribute("DistinguishedPropertySetId", "Common");
+			extField.setAttribute("PropertyId", MAPI_PidLidReminderSignalTime);
+			extField.setAttribute("PropertyType", "SystemTime");
+			eprop.addChildTag("Value", "nsTypes", cal.toRFC3339(newSnoozeTime));
+
+		}
+
 		if (aItem.uid) {
 			e.addChildTag("UID", "nsTypes", aItem.uid);
 		}
@@ -4734,6 +4750,22 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			eprop.addChildTag("Value", "nsTypes", aItem.getProperty("X-exchWebService-PidLidTaskAccepted"));
 		}
 */
+
+		// An imported item alreay could have a snooze time set.
+		if (aItem.hasProperty("X-MOZ-SNOOZE-TIME")) {
+			//dump("Item is snoozed. Going to set the snooze time\n");
+			var newSnoozeTime = cal.createDateTime(aItem.getProperty("X-MOZ-SNOOZE-TIME"));
+			newSnoozeTime = newSnoozeTime.getInTimezone(cal.UTC());
+			const MAPI_PidLidReminderSignalTime = "34144";
+
+			var eprop = e.addChildTag("ExtendedProperty", "nsTypes", null);
+			var extField = eprop.addChildTag("ExtendedFieldURI", "nsTypes", null);
+			extField.setAttribute("DistinguishedPropertySetId", "Common");
+			extField.setAttribute("PropertyId", MAPI_PidLidReminderSignalTime);
+			extField.setAttribute("PropertyType", "SystemTime");
+			eprop.addChildTag("Value", "nsTypes", cal.toRFC3339(newSnoozeTime));
+
+		}
 
 		if (aItem.actualWork) {
 			e.addChildTag("ActualWork", "nsTypes", aItem.actualWork);
