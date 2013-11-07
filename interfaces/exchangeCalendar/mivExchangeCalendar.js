@@ -2553,7 +2553,7 @@ calExchangeCalendar.prototype = {
 
 	requestPeriod: function _requestPeriod(aStartDate, aEndDate, aItemFilter, aCount, findReverse)
 	{
-		if (this.debug) this.logInfo("Getting period from: "+aStartDate.toString()+" until "+aEndDate.toString());
+		if (this.debug) this.logInfo("Getting period from: "+aStartDate+" until "+aEndDate);
 
 		if (findReverse) {
 			var endDate = aEndDate.clone();
@@ -7111,7 +7111,6 @@ return;
 			this.prefs.setCharPref("syncState", syncState);
 			this.weAreSyncing = false;
 			this.processItemSyncQueue();
-
 		}
 		else {
 			this.weAreSyncing = false;
