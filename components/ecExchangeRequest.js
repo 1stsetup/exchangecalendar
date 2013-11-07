@@ -791,19 +791,19 @@ var d=new Date();var time4=d.getTime();
 							var tryAgain = false;
 							switch(this.version) {
 							case "Exchange2010":
-								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2007_SP1");
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2007_SP1", null, null);
 								tryAgain = true;
 								break;
 							case "Exchange2010_SP1":
-								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010");
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010", null, null);
 								tryAgain = true;
 								break;
 							case "Exchange2010_SP2":
-								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010_SP1");
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010_SP1", null, null);
 								tryAgain = true;
 								break;
 							case "Exchange2013":
-								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010_SP2");
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010_SP2", null, null);
 								tryAgain = true;
 								break;
 							default:
@@ -824,19 +824,19 @@ var d=new Date();var time4=d.getTime();
 							var tryAgain = false;
 							switch(this.version) {
 							case "Exchange2007_SP1":
-								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010");
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010", null, null);
 								tryAgain = true;
 								break;
 							case "Exchange2010":
-								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010_SP1");
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010_SP1", null, null);
 								tryAgain = true;
 								break;
 							case "Exchange2010_SP1":
-								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010_SP2");
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2010_SP2", null, null);
 								tryAgain = true;
 								break;
 							case "Exchange2010_SP2":
-								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2013");
+								this.exchangeStatistics.setServerVersion(this.mArgument.serverUrl, "Exchange2013", null, null);
 								tryAgain = true;
 								break;
 							default:

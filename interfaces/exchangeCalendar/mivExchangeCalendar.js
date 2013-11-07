@@ -7617,7 +7617,7 @@ return;
 		this.prefMajorVersion = this.globalFunctions.safeGetCharPref(this.prefs,"lastMajorVersion", null);
 		this.prefMinorVersion = this.globalFunctions.safeGetCharPref(this.prefs,"lastMinorVersion", null);
 		if (this.prefServerVersion) {
-			if (this.debug) this.logInfo("Restored prefServerVersion from prefs.js:"+this.prefServerVersion);
+			if (this.debug) this.logInfo("Restored prefServerVersion from prefs.js:"+this.prefServerVersion+" ("+this.prefMajorVersion+"."+this.prefMinorVersion+")");
 			this.exchangeStatistics.setServerVersion(this.serverUrl, this.prefServerVersion, this.prefMajorVersion, this.prefMinorVersion);
 		}
 	},
