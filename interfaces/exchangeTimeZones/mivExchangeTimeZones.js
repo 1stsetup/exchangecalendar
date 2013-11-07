@@ -289,10 +289,10 @@ mivExchangeTimeZones.prototype = {
 
 				var tmpScore = 0;
 				for each(var zonePart in tmpArray) {
-					if (exchangeTimeZone.id.indexOf(zonePart) > -1) {
+					if ((exchangeTimeZone.id) && (exchangeTimeZone.id.indexOf(zonePart) > -1)) {
 						tmpScore = tmpScore + 1;
 					}
-					if (exchangeTimeZone.name.indexOf(zonePart) > -1) {
+					if ((exchangeTimeZone.name) && (exchangeTimeZone.name.indexOf(zonePart) > -1)) {
 						tmpScore = tmpScore + 1;
 					}
 				}
