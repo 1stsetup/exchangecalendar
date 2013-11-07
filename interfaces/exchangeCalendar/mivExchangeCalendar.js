@@ -2603,18 +2603,28 @@ calExchangeCalendar.prototype = {
 			if (findReverse) {
 				endDate = startDate.clone();
 				startDate.addDuration(offset);
-				if (startDate.compare(aStartDate) < 1) {
+				if ((aStartDate) && (startDate.compare(aStartDate) < 1)) {
 					startDate = aStartDate.clone();
 				}
-				doStop = (endDate.compare(aStartDate) == 0);
+				if (aStartDate) {
+					doStop = (endDate.compare(aStartDate) == 0);
+				}
+				else {
+					doStop = true;
+				}
 			}
 			else {
 				startDate = endDate.clone();
 				endDate.addDuration(offset);
-				if (endDate.compare(aEndDate) > -1) {
+				if ((aEndDate) && (endDate.compare(aEndDate) > -1)) {
 					endDate = aEndDate.clone();
 				}
-				doStop = (startDate.compare(aEndDate) == 0);
+				if (aEndDate) {
+					doStop = (endDate.compare(aEndDate) == 0);
+				}
+				else {
+					doStop = true;
+				}
 			}
 			
 		}
