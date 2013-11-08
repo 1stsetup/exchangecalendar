@@ -130,7 +130,7 @@ erSyncFolderItemsRequest.prototype = {
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
 		//exchWebService.commonFunctions.LOG("erSyncFolderItemsRequest.onSendOk:"+String(aResp));
-
+try{
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
 		if (rm.length > 0) {
@@ -138,7 +138,7 @@ erSyncFolderItemsRequest.prototype = {
 
 			var lastItemInRange = rm[0].getTagValue("m:IncludesLastItemInRange");
 
-			if (!this.getSyncState) {
+			//if (!this.getSyncState) {
 				var createItems = rm[0].XPath("/m:Changes/t:Create");
 				for each (var creation in createItems) {
 					var calendarItems = creation.XPath("/t:CalendarItem/t:ItemId");
@@ -179,17 +179,19 @@ erSyncFolderItemsRequest.prototype = {
 					  ChangeKey: deleted.getAttribute("ChangeKey").toString()});
 				}
 				deleteItems = null;
-			}
+			//}
 
 			rm = null;
 
 			if (lastItemInRange == "false") {
-				if (this.mCbOk) {
-					this.mCbOk(this, this.creations, this.updates, this.deletions, syncState);
+				if (!this.getSyncState) {
+					if (this.mCbOk) {
+						this.mCbOk(this, this.creations, this.updates, this.deletions, syncState);
+					}
+					this.creations = [];
+					this.updates = [];
+					this.deletions = [];
 				}
-				this.creations = [];
-				this.updates = [];
-				this.deletions = [];
 				this.execute(syncState);
 				return;
 			}
@@ -221,6 +223,10 @@ erSyncFolderItemsRequest.prototype = {
 			}
 		}
 		this.parent = null;
+}
+catch(tmpErr) {
+	dump("erSyncFolderItemsRequest.onSendOk: try error '"+tmpErr+"'.\n");
+}
 	},
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)
