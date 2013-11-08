@@ -75,6 +75,7 @@ Cu.import("resource://exchangecalendar/erDeleteAttachment.js");
 //Cu.import("resource://interfaces/xml.js");
 
 //Cu.import("resource://interfaces/exchangeEvent/mivExchangeEvent.js");
+//Cu.import("resource://interfaces/exchangeBaseItem/mivExchangeBaseItem.js");
 
 var globalStart = new Date().getTime();
 
@@ -8290,7 +8291,7 @@ else {
 		if (isEvent(aCalItem)) {
 			var startDate = cal.toRFC3339(aCalItem.startDate.getInTimezone(this.globalFunctions.ecUTC()));
 			var endDate = cal.toRFC3339(aCalItem.endDate.getInTimezone(this.globalFunctions.ecUTC()));
-			var eventField = "y";
+			var eventField = "y_";
 		}
 		else {
 			if (aCalItem.entryDate) {
@@ -8311,7 +8312,7 @@ else {
 					var endDate = "";
 				}
 			}
-			var eventField = "n";
+			var eventField = "n_";
 		}
 
 		if (isEvent(aCalItem)) {
@@ -8659,7 +8660,7 @@ else {
 	get offlineEventItemCount()
 	{
 		if (this.noDB) return "-";
-		var tmpEventCount = this.executeQueryWithResults("SELECT COUNT() as eventCount FROM items where event = 'y'", ["eventCount"]);
+		var tmpEventCount = this.executeQueryWithResults("SELECT COUNT() as eventCount FROM items where event = 'y' or event = 'y_'", ["eventCount"]);
 		if ((tmpEventCount) && (tmpEventCount.length > 0)) {
 			return tmpEventCount[0].eventCount;
 		}
@@ -8670,7 +8671,7 @@ else {
 	get offlineToDoItemCount()
 	{
 		if (this.noDB) return "-";
-		var tmpToDoCount = this.executeQueryWithResults("SELECT COUNT() as toDoCount FROM items where event = 'n'", ["toDoCount"]);
+		var tmpToDoCount = this.executeQueryWithResults("SELECT COUNT() as toDoCount FROM items where event = 'n' or event = 'n_'", ["toDoCount"]);
 		if ((tmpToDoCount) && (tmpToDoCount.length > 0)) {
 			return tmpToDoCount[0].toDoCount;
 		}

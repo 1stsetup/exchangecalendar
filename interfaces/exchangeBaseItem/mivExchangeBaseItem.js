@@ -33,6 +33,8 @@ Cu.import("resource://calendar/modules/calProviderUtils.jsm");
 
 Cu.import("resource://interfaces/exchangeAttendee/mivExchangeAttendee.js");
 
+Cu.import("resource://interfaces/xml2jxon/mivIxml2jxon.js");
+
 const participationMap = {
 	"Unknown"	: "NEEDS-ACTION",
 	"NoResponseReceived" : "NEEDS-ACTION",
@@ -265,6 +267,9 @@ mivExchangeBaseItem.prototype = {
 		this.timeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
 					.getService(Ci.mivExchangeTimeZones);
 
+		this._movingToLowMemory = false;
+		this._movingToHighMemory = false;
+
 		this.logInfo("initExchangeBaseItem: done.");
 
 	},
@@ -397,7 +402,8 @@ try {
 		for each(var alias in this.mailboxAliases) {
 			result.addMailboxAlias(alias);
 		}
-		result.exchangeData = this._exchangeData;
+//		result.exchangeData = this._exchangeData;
+		result.exchangeData = this.exchangeData;
 
 		result.cloneToCalEvent(this._calEvent);
 		if (this._newId !== undefined) result.id = this._newId;
@@ -2696,7 +2702,13 @@ try {
 			}
 			this._exceptions[aItem.id] = aItem.clone();
 //			this._exceptions[aItem.id] = aItem;
-			this.recurrenceInfo.modifyException(aItem, true);
+
+			if (this.recurrenceInfo) {
+				this.recurrenceInfo.modifyException(aItem, true);
+			}
+			else {
+dump("What not recurrenceinfo\n");
+			}
 
 			var itemAlarms = aItem.getAlarms({});
 //dump("addException:"+this.title+"| itemAlarms.length:"+itemAlarms.length+", aItem.reminderSignalTime:"+aItem.reminderSignalTime+"\n");
@@ -2853,9 +2865,55 @@ try {
 
 	},
 
+	// Used by lowMemoryTimer;
+	notify: function _notify() 
+	{
+		if (!this._exchangeData) {
+			return;
+		}
+
+		this._movingToLowMemory = true;
+
+		this._lowMemoryExchangeData = this._exchangeData.toString();
+		this._exchangeData = null;
+
+		this._movingToLowMemory = false;
+dump("L");
+	},
+
+	startLowMemoryTimer: function _startLowMemoryTimer()
+	{
+		if (this._lowMemoryTimer) {
+			this._lowMemoryTimer.cancel();
+			this._lowMemoryTimer = null;
+		}
+		this._lowMemoryTimer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
+		this._lowMemoryTimer.initWithCallback(this, 1000, this._lowMemoryTimer.TYPE_ONE_SHOT);
+	},
+
 	//attribute mivIxml2jxon exchangeData;
 	get exchangeData()
 	{
+		var a;
+		while (this._movingToLowMemory) { a = 1;}
+		while (this._movingToHighMemory) { a = 1;}
+
+		if (this._lowMemoryExchangeData) {
+dump("H");
+			this._movingToHighMemory = true;
+			try {
+				this._exchangeData = new mivIxml2jxon(this._lowMemoryExchangeData, 0, null);
+			}
+			catch(err) {
+				dump("ERROR: Cannot convert lowMemory ExchangeBaseItem back to full memory.: err="+err+"\n");
+			}
+			this._lowMemoryExchangeData = null;
+			this._movingToHighMemory = false;
+		}
+
+		if (this._exchangeData) {
+			this.startLowMemoryTimer();
+		}
 		return this._exchangeData;
 	},
 
@@ -2863,8 +2921,15 @@ try {
 	{
 		//this.logInfo("exchangeData:"+aValue.toString());
 		//dump("exchangeData:"+aValue.toString()+"\n\n");
+if (!aValue) { dump("N "+this.globalFunctions.STACKshort()+"\n");}
+
 		this.initialize();
 		this._exchangeData = aValue;
+		this._lowMemoryExchangeData = null;
+
+		if (this._exchangeData) {
+			this.startLowMemoryTimer();
+		}
 	},
 
 	convertToExchange: function _convertToExchange() 
@@ -3738,7 +3803,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	getTag: function _getTag(aTagName)
 	{
 		if (this._exchangeData) {
-			return this._exchangeData.getTag(aTagName);
+			return this.exchangeData.getTag(aTagName);
 		}
 
 		return null;
@@ -3747,7 +3812,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	getTags: function _getTags(aTagName)
 	{
 		if (this._exchangeData) {
-			return this._exchangeData.getTags(aTagName);
+			return this.exchangeData.getTags(aTagName);
 		}
 
 		return null;
@@ -3756,7 +3821,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	getTagValue: function _getTagValue(aTagName, aDefaultValue)
 	{
 		if (this._exchangeData) {
-			return this._exchangeData.getTagValue(aTagName, aDefaultValue);
+			return this.exchangeData.getTagValue(aTagName, aDefaultValue);
 		}
 
 		return aDefaultValue;
@@ -3767,7 +3832,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		//this.logInfo("getAttributeByTag 1: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
 		if (this._exchangeData) {
 		//this.logInfo("getAttributeByTag 2: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
-			return this._exchangeData.getAttributeByTag(aTagName, aAttribute, aDefaultValue);
+			return this.exchangeData.getAttributeByTag(aTagName, aAttribute, aDefaultValue);
 		}
 		//this.logInfo("getAttributeByTag 3: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
 
