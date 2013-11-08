@@ -5659,25 +5659,6 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
        		var self = this;
 
-		// If we have occurrences and/or exceptions. Find the masters. followed by the occurrences.
-/*		if (newOccurrenceList.length > 0) {
-			if (this.debug) this.logInfo("findCalendarItemsOK: aOccurrences.length="+aOccurrences.length);
-			this.addToQueue( erFindMasterOccurrencesRequest, 
-			{user: this.user, 
-			 mailbox: this.mailbox,
-			 folderBase: this.folderBase,
-			 serverUrl: this.serverUrl,
-			 occurrences: newOccurrenceList,
-			 folderID: this.folderID,
-			 changeKey: this.changeKey,
-			 folderClass: this.folderClass,
-			 GUID: calExchangeCalendarGUID}, 
-			function(erGetItemsRequest, aIds) { self.findMasterOccurrencesOk(erGetItemsRequest, aIds);}, 
-			function(erGetItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erGetItemsRequest, aCode, aMsg);},
-			null);
-
-		}*/
-
 		// We have single and/or master items. Get full details and cache them.
 		if (newIdList.length > 0) {
 			this.addToQueue( erGetItemsRequest, 
@@ -5697,20 +5678,6 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		this.startCalendarPoller();
-/*		if (!this.calendarPoller) {
-
-			// start the calendar poller
-			this.calendarPoller = Cc["@mozilla.org/timer;1"]
-					.createInstance(Ci.nsITimer);
-		        var self = this;
-			var timerCallback = {
-				notify: function setTimeout_notify() {
-					self.refresh();
-				}
-			};
-
-			this.calendarPoller.initWithCallback(timerCallback, this.globalFunctions.safeGetIntPref(this.prefs, "ecCalendarPollInterval", 60) * 1000, this.calendarPoller.TYPE_REPEATING_SLACK);
-		}*/
 	},
 
 	startCalendarPoller: function _startCalendarPoller()
@@ -5801,20 +5768,6 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			null);
 
 		this.startCalendarPoller();
-/*		if (!this.calendarPoller) {
-
-			// start the calendar poller
-			this.calendarPoller = Cc["@mozilla.org/timer;1"]
-					.createInstance(Ci.nsITimer);
-		        var self = this;
-			var timerCallback = {
-				notify: function setTimeout_notify() {
-					self.refresh();
-				}
-			};
-
-			this.calendarPoller.initWithCallback(timerCallback, this.globalFunctions.safeGetIntPref(this.prefs, "ecCalendarPollInterval", 60) * 1000, this.calendarPoller.TYPE_REPEATING_SLACK);
-		}*/
 	},
 
 	findTaskItemsError: function _findTaskItemsError(erFindTaskItemsRequest, aCode, aMsg)
@@ -7170,38 +7123,6 @@ return;
 				this.prefs.setCharPref("syncState", syncState);
 			}
 
-/*			if (creations.length > 0) {
-				this.addToQueue( erGetItemsRequest, 
-					{user: this.user, 
-					 mailbox: this.mailbox,
-					 folderBase: this.folderBase,
-					 serverUrl: this.serverUrl,
-					 ids: creations,
-					 folderID: this.folderID,
-					 changeKey: this.changeKey,
-					 folderClass: this.folderClass,
-					 GUID: calExchangeCalendarGUID }, 
-					function(erGetItemsRequest, aIds) { self.getTaskItemsOK(erGetItemsRequest, aIds);}, 
-					function(erGetItemsRequest, aCode, aMsg) { self.getTaskItemsError(erGetItemsRequest, aCode, aMsg);},
-					null);
-			}
-
-			if (updates.length > 0) {
-				this.addToQueue( erGetItemsRequest, 
-					{user: this.user, 
-					 mailbox: this.mailbox,
-					 folderBase: this.folderBase,
-					 serverUrl: this.serverUrl,
-					 ids: updates,
-					 folderID: this.folderID,
-					 changeKey: this.changeKey,
-					 folderClass: this.folderClass,
-					 GUID: calExchangeCalendarGUID }, 
-					function(erGetItemsRequest, aIds) { self.getTaskItemsOK(erGetItemsRequest, aIds);}, 
-					function(erGetItemsRequest, aCode, aMsg) { self.getTaskItemsError(erGetItemsRequest, aCode, aMsg);},
-					null);
-			}
-*/
 			if (deletions.length > 0) {
 				for each (var deleted in deletions) {
 					var item = this.itemCache[deleted.Id];
