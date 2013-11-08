@@ -669,6 +669,9 @@ catch(err){
 				this._canModify = this.calendar.canCreateContent;
 				this._canRead = this.calendar.canRead;
 			}
+
+			this._effectiveRights = null;
+			this._effectiveRights = true;
 		}
 
 		var result = {
@@ -2818,7 +2821,7 @@ dump("What not recurrenceinfo\n");
 			var itemAlarms = aItem.getAlarms({});
 			//this.logInfo("AddOccurrence: itemAlarms.length:"+itemAlarms.length+", X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
 			var tmpStartDate = aItem.startDate || aItem.entryDate;
-			if ((itemAlarms.length > 0) && ((!tmpStartDate) || (tmpStartDate.compare(this.reminderDueBy) == 0))) {
+			if ((itemAlarms.length > 0) && ((!tmpStartDate) || ((this.reminderDueBy) && (tmpStartDate.compare(this.reminderDueBy) == 0)))) {
 				this.setProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime, this.reminderSignalTime.getInTimezone(cal.UTC()).icalString);
 			}
 		}
@@ -3765,6 +3768,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 			}
 		}
 
+		mbox = null;
 		return attendee;
 	},
 
@@ -3886,6 +3890,11 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 			this._exceptions[index].deleteItem();
 			this._exceptions[index] = null;
 			delete this._exceptions[index];
+		}
+
+		if (this._lowMemoryTimer) {
+			this._lowMemoryTimer.cancel();
+			this._lowMemoryTimer = null;
 		}
 
 		this._exchangeData = null;
