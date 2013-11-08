@@ -3803,7 +3803,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	getTag: function _getTag(aTagName)
 	{
 		if (this._exchangeData) {
-			return this._exchangeData.getTag(aTagName);
+			return this.exchangeData.getTag(aTagName);
 		}
 
 		return null;
@@ -3812,7 +3812,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	getTags: function _getTags(aTagName)
 	{
 		if (this._exchangeData) {
-			return this._exchangeData.getTags(aTagName);
+			return this.exchangeData.getTags(aTagName);
 		}
 
 		return null;
@@ -3821,7 +3821,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	getTagValue: function _getTagValue(aTagName, aDefaultValue)
 	{
 		if (this._exchangeData) {
-			return this._exchangeData.getTagValue(aTagName, aDefaultValue);
+			return this.exchangeData.getTagValue(aTagName, aDefaultValue);
 		}
 
 		return aDefaultValue;
@@ -3832,7 +3832,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		//this.logInfo("getAttributeByTag 1: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
 		if (this._exchangeData) {
 		//this.logInfo("getAttributeByTag 2: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
-			return this._exchangeData.getAttributeByTag(aTagName, aAttribute, aDefaultValue);
+			return this.exchangeData.getAttributeByTag(aTagName, aAttribute, aDefaultValue);
 		}
 		//this.logInfo("getAttributeByTag 3: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
 

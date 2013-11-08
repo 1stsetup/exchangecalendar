@@ -116,7 +116,9 @@ erSyncInboxRequest.prototype = {
 		this.parent.xml2jxon = true;
 
 		//exchWebService.commonFunctions.LOG("erSyncInboxRequest.execute:"+String(this.parent.makeSoapMessage(req)));
-                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		var soapStr = this.parent.makeSoapMessage(req);
+ 		req = null;
+                this.parent.sendRequest(soapStr, this.serverUrl);
 		req = null;
 	},
 

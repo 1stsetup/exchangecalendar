@@ -123,8 +123,10 @@ erSyncFolderItemsRequest.prototype = {
 		
 		//exchWebService.commonFunctions.LOG(String(this.parent.makeSoapMessage(req)));
 		this.attempts++;
-                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
-		req = null;
+
+		var soapStr = this.parent.makeSoapMessage(req);
+ 		req = null;
+		this.parent.sendRequest(soapStr, this.serverUrl);
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
