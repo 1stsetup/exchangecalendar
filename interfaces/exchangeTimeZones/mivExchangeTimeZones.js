@@ -446,6 +446,10 @@ mivExchangeTimeZones.prototype = {
 		var timezonedefinitions = new mivIxml2jxon(lines, 0, null);
 
 		this.addExchangeTimeZones(timezonedefinitions, "Exchange2007_SP1");
+
+		timezonedefinitions = null;
+		lines = null;
+		line = null;
 	},
 
 }

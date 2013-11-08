@@ -75,6 +75,7 @@ Cu.import("resource://exchangecalendar/erDeleteAttachment.js");
 //Cu.import("resource://interfaces/xml.js");
 
 //Cu.import("resource://interfaces/exchangeEvent/mivExchangeEvent.js");
+//Cu.import("resource://interfaces/exchangeBaseItem/mivExchangeBaseItem.js");
 
 var globalStart = new Date().getTime();
 
