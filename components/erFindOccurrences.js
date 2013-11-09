@@ -72,6 +72,24 @@ function erFindOccurrencesRequest(aArgument, aCbOk, aCbError, aListener)
 	this.startDate = aArgument.startDate;
 	this.endDate = aArgument.endDate;
 
+try{
+	if (!this.startDate) {
+		var monthBeforeDuration = cal.createDuration("-P4W");
+
+		this.startDate = cal.now();
+		this.startDate.addDuration(monthBeforeDuration);
+	}
+dump("  -------------->>> erFindOccurrences: this.startDate="+this.startDate+"\n");
+	if (!this.endDate) {
+		var monthAfterDuration = cal.createDuration("P4W");
+
+		this.endDate = cal.now();
+		this.endDate.addDuration(monthAfterDuration);
+	}
+dump("  -------------->>> erFindOccurrences: this.endDate="+this.endDate+"\n");
+}
+catch(err){dump(" ERROR: erFindOccurrences: err:"+err+"\n");}
+
 	this.currentSearchIndex = 1;
 	this.currentRealIndex = 0;
 	this.idGroupSize = 25; // We will request in pages of 50 occurrences of the list at once

@@ -184,6 +184,7 @@ try{
 			//}
 
 			rm = null;
+			aResp = null;
 
 			if (lastItemInRange == "false") {
 				if (!this.getSyncState) {
@@ -201,6 +202,9 @@ try{
 				if (this.mCbOk) {
 					this.mCbOk(this, this.creations, this.updates, this.deletions, syncState);
 				}
+				this.creations = [];
+				this.updates = [];
+				this.deletions = [];
 				this.isRunning = false;
 			}
 		}

@@ -593,7 +593,7 @@ mivExchangeAbCard.prototype = {
 		}
 
 		this.storedDebugLevel = this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"debuglevel", 0, true);
-		this.storedDebugLevel = 1;
+		//this.storedDebugLevel = 1;
 
 		if (debugLevel <= this.storedDebugLevel) {
 			this.globalFunctions.LOG("[exchangeAbCard] "+message + " ("+this.globalFunctions.STACKshort()+")");

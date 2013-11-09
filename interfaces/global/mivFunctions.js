@@ -422,7 +422,8 @@ mivFunctions.prototype = {
 	        }
 	        string += "End object\n";
 	    } else {
-	        string = "1st-setup: " + aArg;
+		var dt = new Date();
+	        string = "1st-setup:"+dt.getFullYear()+"-"+dt.getMonth()+"-"+dt.getDay()+" "+dt.getHours()+":"+dt.getMinutes()+":"+dt.getSeconds()+"."+dt.getMilliseconds()+":" + aArg;
 	    }
 
 	    // xxx todo consider using function debug()
