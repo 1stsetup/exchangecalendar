@@ -663,7 +663,7 @@ var d=new Date();var time2=d.getTime();
 var d=new Date();var time3=d.getTime();
 try {
 			this.mCbOk(this, newXML);
-}catch(err) { dump("onload: err:"+err+"\n");}
+}catch(err) { dump("onload: err:"+err+"\n"+this.globalFunctions.STACK()+"\n"+xml+"\n");}
 var d=new Date();var time4=d.getTime();
 			this.originalReq = null;
 		}

@@ -1164,9 +1164,9 @@ try {
 	//attribute calIRecurrenceInfo recurrenceInfo;
 	get recurrenceInfo()
 	{
-		if ((!this._recurrenceInfo) && (this._exchangeData)) {
-			var recurrence = this._exchangeData.XPath("/t:Recurrence/*");
-			if (recurrence) {
+		if ((!this._recurrenceInfo) && (this.exchangeData)) {
+			var recurrence = this.exchangeData.XPath("/*/t:Recurrence/*");
+			if (recurrence.length > 0) {
 				//this.logInfo("Recurrence::"+recurrence);
 				var recrule = this.readRecurrenceRule(recurrence);
 				recurrence = null;
@@ -1193,31 +1193,33 @@ try {
 				}
 				else {
 					this._recurrenceInfo = null;
-					this.logInfo("get recurrenceInfo 2: title:"+this.title+", recrule:null");
+//if( this.title == "SE overleg") {
+//					dump("get recurrenceInfo 2: title:"+this.title+", recurrence.length="+recurrence.length+", recrule:null, recurrence="+this.exchangeData.toString()+"\n");
+//}
 				}
 			}
 			else {
-				this.logInfo("No Recurrence tag.");
+				dump("No Recurrence tag.\n");
 			}
 		}
 		else {
 			if (this._recurrenceInfo) {
 				this.logInfo("get recurrenceInfo 0: title:"+this.title+", we al ready have recurrenceinfo.");
 			}
-			if (!this._exchangeData) {
-				this.logInfo("get recurrenceInfo 0: title:"+this.title+", we do not have _exchangeData.");
+			if (!this.exchangeData) {
+				dump("get recurrenceInfo 0: title:"+this.title+", we do not have _exchangeData.\n");
 			}
 		}
 
 		// For debugging
-		var recurrenceInfo = this._calEvent.recurrenceInfo;
+/*		var recurrenceInfo = this._calEvent.recurrenceInfo;
 		if (recurrenceInfo) {
 			this.logInfo("get recurrenceInfo 3: title:"+this.title+", this._calEvent.recurrenceInfo:"+this._calEvent.recurrenceInfo, 1, 2);
 			this.logInfo("                    : recurrenceItems.length:"+recurrenceInfo.getRecurrenceItems({}).length);
 		}
 		else {
-			this.logInfo("get recurrenceInfo 4: title:"+this.title+", this._calEvent.recurrenceInfo:null");
-		}
+			dump("get recurrenceInfo 4: title:"+this.title+", this._calEvent.recurrenceInfo:null\n");
+		}*/
 		return this._calEvent.recurrenceInfo;
 	},
 
@@ -1737,13 +1739,13 @@ try {
 	getAttendees: function _getAttendees(count)
 	{
 		//this.logInfo("getAttendees: title:"+this.title);
-		if ((!this._attendees) && (this._exchangeData)) {
+		if ((!this._attendees) && (this.exchangeData)) {
 			this._attendees = [];
 			var tmpAttendee;
 
 			this._calEvent.removeAllAttendees();
 
-			var attendees = this._exchangeData.XPath("/t:RequiredAttendees/t:Attendee")
+			var attendees = this.exchangeData.XPath("/t:RequiredAttendees/t:Attendee")
 			for each (var at in attendees) {
 				tmpAttendee = this.createAttendee(at, "REQ-PARTICIPANT");
 				this._calEvent.addAttendee(tmpAttendee);
@@ -1752,7 +1754,7 @@ try {
 				this._reqParticipants = true;
 			}
 			attendees = null;
-			attendees = this._exchangeData.XPath("/t:OptionalAttendees/t:Attendee")
+			attendees = this.exchangeData.XPath("/t:OptionalAttendees/t:Attendee")
 			for each (var at in attendees) {
 				tmpAttendee = this.createAttendee(at, "OPT-PARTICIPANT");
 				this._calEvent.addAttendee(tmpAttendee);
@@ -1912,11 +1914,11 @@ try {
 	getAttachments: function _getAttachments(count)
 	{
 		//this.logInfo("getAttachments: title:"+this.title);
-		if ((!this._attachments) && (this._exchangeData)) {
+		if ((!this._attachments) && (this.exchangeData)) {
 			this._attachments = [];
 			if (this.hasAttachments) {
 	//			if (this.debug) this.logInfo("Title:"+aItem.title+"Attachments:"+aExchangeItem.getTagValue("Attachments"));
-				var fileAttachments = this._exchangeData.XPath("/t:Attachments/t:FileAttachment");
+				var fileAttachments = this.exchangeData.XPath("/t:Attachments/t:FileAttachment");
 				for each(var fileAttachment in fileAttachments) {
 	//				if (this.debug) this.logInfo(" -- Attachment: name="+fileAttachment.getTagValue("t:Name"));
 					var newAttachment = cal.createAttachment();
@@ -1982,9 +1984,9 @@ try {
 	getCategories: function _getCategories(aCount)
 	{
 		//this.logInfo("getCategories: title:"+this.title+"\n");
-		if ((!this._categories) && (this._exchangeData)) {
+		if ((!this._categories) && (this.exchangeData)) {
 			this._categories = [];
-			var strings = this._exchangeData.XPath("/t:Categories/t:String");
+			var strings = this.exchangeData.XPath("/t:Categories/t:String");
 			for each (var cat in strings) {
 				this._categories.push(cat.value);
 			}
@@ -2299,8 +2301,8 @@ try {
 	//readonly attribute calIDateTime reminderSignalTime;
 	get reminderSignalTime()
 	{
-		if ((!this._reminderSignalTime) && (this._exchangeData)) {
-			var tmpObject = this._exchangeData.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']");
+		if ((!this._reminderSignalTime) && (this.exchangeData)) {
+			var tmpObject = this.exchangeData.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']");
 			if (tmpObject.length > 0) {
 //dump(this.title+"| /t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']:"+tmpObject[0].getTagValue("t:Value", null)+"\n");
 				this._reminderSignalTime = this.tryToSetDateValueUTC(tmpObject[0].getTagValue("t:Value", null), null);
@@ -2621,8 +2623,8 @@ try {
 	//readonly attribute AUTF8String type;
 	get type()
 	{
-		if ((!this._type) && (this._exchangeData)) {
-			this._type = this._exchangeData.tagName;
+		if ((!this._type) && (this.exchangeData)) {
+			this._type = this.exchangeData.tagName;
 		}
 		return this._type;
 	},
@@ -2666,10 +2668,10 @@ try {
 	*/
 	get responseObjects()
 	{
-		if ((!this._responseObjects) && (this._exchangeData)) {
+		if ((!this._responseObjects) && (this.exchangeData)) {
 			this._responseObjects = {};
 
-			var responseObjects = this._exchangeData.XPath("/t:ResponseObjects/*");
+			var responseObjects = this.exchangeData.XPath("/t:ResponseObjects/*");
 			for each (var prop in responseObjects) {
 				this._responseObjects[prop.tagName] = true;
 			}
@@ -2710,6 +2712,7 @@ try {
 				this.recurrenceInfo.modifyException(aItem, true);
 			}
 			else {
+				this._calEvent.addException(aItem. true);
 dump("What not recurrenceinfo\n");
 			}
 
@@ -3806,7 +3809,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 	getTag: function _getTag(aTagName)
 	{
-		if (this._exchangeData) {
+		if (this.exchangeData) {
 			return this.exchangeData.getTag(aTagName);
 		}
 
@@ -3815,7 +3818,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 	getTags: function _getTags(aTagName)
 	{
-		if (this._exchangeData) {
+		if (this.exchangeData) {
 			return this.exchangeData.getTags(aTagName);
 		}
 
@@ -3824,7 +3827,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 	getTagValue: function _getTagValue(aTagName, aDefaultValue)
 	{
-		if (this._exchangeData) {
+		if (this.exchangeData) {
 			return this.exchangeData.getTagValue(aTagName, aDefaultValue);
 		}
 
@@ -3834,7 +3837,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	getAttributeByTag: function _getAttributeByTag(aTagName, aAttribute, aDefaultValue)
 	{
 		//this.logInfo("getAttributeByTag 1: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
-		if (this._exchangeData) {
+		if (this.exchangeData) {
 		//this.logInfo("getAttributeByTag 2: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
 			return this.exchangeData.getAttributeByTag(aTagName, aAttribute, aDefaultValue);
 		}
