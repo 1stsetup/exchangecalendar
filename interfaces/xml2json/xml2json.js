@@ -685,6 +685,18 @@ xml2json.prototype = {
 		}
 	},
 
+	getAttributeFrom: function _getAttributeFrom(aParent, aName) {
+		if (!aParent) throw -70;
+
+		if ((!aParent["attributes"]) || (!aParen.attributes[aName])) return null;
+
+		return aParen.attributes[aName];
+	},
+
+	getAttribute: function _getAttribute(aName) {
+		return this.getAttributeFrom(this._json, aName);
+	},
+
 	setAttributeTo: function _setAttributeTo(aParent, aName, aValue) {
 		if ((!aParent) || (!aParent["elements"])) throw -50;
 		if (!aParent["attributes"]) {
