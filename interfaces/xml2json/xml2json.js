@@ -372,6 +372,7 @@ function ifFunction(aCondition, aJSONObject){
 								var evalConditionLeft = tmpLeft[x].toString();
 							}
 							else {
+dump("&& tmpLeft[x]="+tmpLeft[x]+"\n");
 								var evalConditionLeft = tmpLeft[x].value.toString();
 							}
 							var y = 0;
@@ -441,9 +442,9 @@ xml2json.prototype = {
 		this._currentjson = this._json;
 	},
 
-	addTagObjectTo: function _addChildTagTo(aParent, aChildObject) {
+	addTagObjectTo: function _addTagObjectTo(aParent, aChildObject) {
 		if ((!aParent) || (!aParent["elements"])) throw -50;
-		aParent.elements.push(aChild);
+		aParent.elements.push(aChildObject);
 
 		return aParent.elements[aParent.elements.length-1];
 	},
@@ -457,9 +458,7 @@ xml2json.prototype = {
 
 		if (aParentPos > this._json.elements.length) throw -31;
 
-		this._json.elements[aParentPos].elements.push(aChild);
-
-		return this._json.elements[aParentPos].elements[this._json.elements[aParentPos].elements.length-1];
+		return this.addTagObjectTo(this._json.elements[aParentPos], aChildObject);
 	},
 
 	getTagsFrom: function _getTagsFrom(aParent, aTagName) {
@@ -539,37 +538,54 @@ xml2json.prototype = {
 		return this.getTagFrom(this._json, aTagName);
 	},
 
-	addTagTo: function _addTagTo(aParent, aTagName, aNameSpace, aObject) {
+	addXMLTagTo: function _addXMLTagTo(aParent, aXMLString) {
+		if ((!aParent) || (!aParent["elements"])) throw -50;
+
+		let tmpObj = new xml2json(aXMLString);
+		let i = 0;
+		while (i < tmpObj.json.elements.length) {
+			this.addTagObjectTo(aParent, tmpObj.json.elements[i]);
+			i++;
+		}
+	},
+
+	addTagTo: function _addTagTo(aParent, aTagName, aNameSpace, aValue) {
 		if ((!aParent) || (!aParent["elements"])) throw -50;
 		var tmpJson = {tagName: aTagName,
 				nameSpace: aNameSpace,
 				elements: []};
-		if (aObject) {
-			tmpJson.elements.push(aObject);
+		if (aValue) {
+			this.addContentTo(tmpJson, aValue);
 		}
 		aParent.elements.push(tmpJson);
 
 		return aParent.elements[aParent.elements.length-1];
 	},
 
-	addTag: function _addTag(aTagName, aNameSpace, aObject) {
-		return this.addTagTo(this._json, aTagName, aNameSpace, aObject);
+	addTag: function _addTag(aTagName, aNameSpace, aValue) {
+		return this.addTagTo(this._json, aTagName, aNameSpace, aValue);
 	},
 
-	addChildTag: function _addChildTag(aParentPos, aTagName, aNameSpace, aObject) {
-		if (aParentPos < 0) throw -30;
-
-		if (aParentPos > this._json.elements.length) throw -31;
+	addChildTagTo: function _addChildTagTo(aParent, aTagName, aNameSpace, aValue) {
+		if ((!aParent) || (!aParent["elements"])) throw -80;
 
 		var tmpJson = {tagName: aTagName,
 				nameSpace: aNameSpace,
 				elements: []};
-		if (aObject) {
-			tmpJson.elements.push(aObject);
+		if (aValue) {
+			this.addContentTo(tmpJson, aValue);
 		}
-		this._json.elements[aParentPos].elements.push(tmpJson);
+		aParent.elements.push(tmpJson);
 
-		return this._json.elements[aParentPos].elements[this._json.elements[aParentPos].elements.length-1];
+		return aParent.elements[aParent.elements.length-1];
+	},
+
+	addChildTag: function _addChildTag(aParentPos, aTagName, aNameSpace, aValue) {
+		if (aParentPos < 0) throw -30;
+
+		if (aParentPos > this._json.elements.length) throw -31;
+
+		return this.addChildTagTo(this._json.elements[aParentPos], aTagName, aNameSpace, aValue);
 	},
 
 	elementToString: function _elementToString(aElement) {
@@ -683,6 +699,26 @@ xml2json.prototype = {
 				throw -6; // We should never get here. But in case we do. Wee see a closing element for which no opening element was seen.
 			}
 		}
+	},
+
+	getAttributeByTagFrom: function _getAttributeByTagFrom(aParent, aTagName, aName) {
+		if ((!aParent) || (!aParent['elements']) || (!aTagName)) throw -80;
+
+		let i = 0;
+		var tmpTN = splitTagName(aTagName);
+
+		while (i < aParent.elements.length) {
+			if ((tmpTN.tagName == aParent.elements[i].tagName) && (aParent.elements[i]["attributes"])) { // We ignore namespace for now.
+				if (aParent.elements[i].attributes[aName]) {
+					return aParent.elements[i].attributes[aName];
+				}
+			}
+		}
+		return null;
+	},
+
+	getAttributeByTag: function _getAttributeByTag(aTagName, aName) {
+		return this.getAttributeByTagFrom(this._json, aTagName, aName);
 	},
 
 	getAttributeFrom: function _getAttributeFrom(aParent, aName) {

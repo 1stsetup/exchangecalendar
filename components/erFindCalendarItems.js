@@ -33,7 +33,6 @@
  * the Initial Developer. All Rights Reserved.
  *
  * ***** BEGIN LICENSE BLOCK *****/
-
 var Cu = Components.utils;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
@@ -47,6 +46,8 @@ Cu.import("resource://calendar/modules/calAuthUtils.jsm");
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/soapFunctions.js");
+
+Cu.import("resource://interfaces/xml2json/xml2json.js");
 
 var EXPORTED_SYMBOLS = ["erFindCalendarItemsRequest"];
 
@@ -64,6 +65,8 @@ function convDate(aDate)
 
 function erFindCalendarItemsRequest(aArgument, aCbOk, aCbError, aListener)
 {
+try{
+dump("!!\n");
 	this.mCbOk = aCbOk;
 	this.mCbError = aCbError;
 
@@ -96,61 +99,72 @@ function erFindCalendarItemsRequest(aArgument, aCbOk, aCbError, aListener)
 	this.isRunning = true;
 	this.execute();
 }
+catch(err){dump("^^^^^^^^^^^^^^ err:"+err+"\n");}
+}
 
 erFindCalendarItemsRequest.prototype = {
 
 	execute: function _execute()
 	{
-//		exchWebService.commonFunctions.LOG("erGetCalendarItemsRequest.execute\n");
+		exchWebService.commonFunctions.LOG("erFindCalendarItemsRequest.execute\n");
 
-		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:FindItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
-		req.setAttribute("Traversal", "Shallow");
+		var root = new xml2json();
+		var req = root.addTag("FindItem", "nsMessages", null);
+		root.setAttributeTo(req, "xmlns:nsMessages", nsMessagesStr);
+		root.setAttributeTo(req, "xmlns:nsTypes", nsTypesStr);
+		root.setAttributeTo(req, "Traversal", "Shallow");
 
-		var itemShape = req.addChildTag("ItemShape", "nsMessages", null); 
-		itemShape.addChildTag("BaseShape", "nsTypes", "IdOnly");
+		var itemShape = root.addChildTagTo(req, "ItemShape", "nsMessages", null);
+		var baseShape = root.addChildTagTo(itemShape, "BaseShape", "nsTypes", "IdOnly");
 
-		var additionalProperties = itemShape.addChildTag("AdditionalProperties", "nsTypes", null);
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:UID");
+		var additionalProperties = root.addChildTagTo(itemShape, "AdditionalProperties", "nsTypes", null);
+		root.addXMLTagTo(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:UID'/>");
+		root.addXMLTagTo(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:CalendarItemType'/>");
+		root.addXMLTagTo(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:Start'/>");
+		root.addXMLTagTo(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:End'/>");
+		root.addXMLTagTo(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ItemClass'/>");
+		root.addXMLTagTo(additionalProperties,"<nsTypes:FieldURI FieldURI='item:Subject'/>");
+
+/*		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:UID");
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:CalendarItemType");
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:Start");
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:End");
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemClass");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Subject");
+		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Subject");*/
 
-		var view = exchWebService.commonFunctions.xmlToJxon('<nsMessages:CalendarView xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var view = root.addChildTagTo(req, "CalendarView", "nsMessages", null); 
 
 		if (this.newStartDate) {
-				view.setAttribute("StartDate", this.newStartDate);
+				root.setAttributeTo(view, "StartDate", this.newStartDate);
 		}
 		else {
 			if (this.rangeStart) {
-				view.setAttribute("StartDate", convDate(this.rangeStart));
+				root.setAttributeTo(view, "StartDate", convDate(this.rangeStart));
 			}
 			else {
-				view.setAttribute("StartDate", "1900-01-01T00:00:00-00:00");
+				root.setAttributeTo(view, "StartDate", "1900-01-01T00:00:00-00:00");
 			}
 		}
 
 		if (this.rangeEnd) {
-			view.setAttribute("EndDate", convDate(this.rangeEnd));
+			root.setAttributeTo(view, "EndDate", convDate(this.rangeEnd));
 		}
 		else {
-			view.setAttribute("EndDate", "2300-01-01T00:00:00-00:00");
+			root.setAttributeTo(view, "EndDate", "2300-01-01T00:00:00-00:00");
 		}
-		view.setAttribute("MaxEntriesReturned", "25");
+		root.setAttributeTo(view, "MaxEntriesReturned", "25");
 
-		req.addChildTagObject(view);
 		view = null;
 
-		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
-		req.addChildTagObject(parentFolder);
+		var parentFolder = makeParentFolderIds3("ParentFolderIds", this.argument);
+		root.addTagObjectTo(req,parentFolder);
 		parentFolder = null;
 
-		this.parent.xml2jxon = true;
+		this.parent.xml2json = true;
 
-		//exchWebService.commonFunctions.LOG("erFindCalendarItemsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
+		exchWebService.commonFunctions.LOG("erFindCalendarItemsRequest.execute:"+String(this.parent.makeSoapMessage2(req)));
 
-                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+                this.parent.sendRequest(this.parent.makeSoapMessage2(req), this.serverUrl);
 		req = null;
 	},
 
@@ -166,7 +180,7 @@ erFindCalendarItemsRequest.prototype = {
 		 * We first collect all non-Occurrences, and after that we fill in
 		 * Occurrence for those masters that did not yet see any Exception.
 		 */
-		//exchWebService.commonFunctions.LOG("erFindCalendarItemsRequest.onSendOk:"+String(aResp)+"\n");
+		exchWebService.commonFunctions.LOG("erFindCalendarItemsRequest.onSendOk:"+aResp.toString()+"\n");
 
 		var aError = false;
 		var aCode = 0;

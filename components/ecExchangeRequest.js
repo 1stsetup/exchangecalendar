@@ -48,6 +48,7 @@ Cu.import("resource://calendar/modules/calUtils.jsm");
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 
 Cu.import("resource://interfaces/xml2jxon/mivIxml2jxon.js");
+Cu.import("resource://interfaces/xml2json/xml2json.js");
 
 var EXPORTED_SYMBOLS = ["ExchangeRequest", "nsSoapStr","nsTypesStr","nsMessagesStr","nsAutodiscoverResponseStr1", "nsAutodiscoverResponseStr2", "nsAutodiscover2010Str", "nsErrors", "nsWSAStr", "nsXSIStr", "xml_tag"];
 
@@ -611,20 +612,29 @@ catch(err){
 // Removed following as this is no longer a problem as we are not using E4X anymore.
 //		xml = xml.replace(/&#x10;/g, ""); // BUG 61 remove hexadecimal code 0x10. It will fail in xml conversion.
 
+		var newXML;
 		try {
-			var newXML = new mivIxml2jxon('', 0, null);
+			if (this.xml2json === true) {
+				newXML = new xml2json();
+			}
+			else {
+				newXML = new mivIxml2jxon('', 0, null);
+			}
 		}
 		catch(exc) { if (this.debug) this.logInfo("createInstance error:"+exc);}
 
 		try {
-			newXML.addNameSpace("s", nsSoapStr);
-			newXML.addNameSpace("m", nsMessagesStr);
-			newXML.addNameSpace("t", nsTypesStr);
-			newXML.addNameSpace("a1", nsAutodiscoverResponseStr1);
-			newXML.addNameSpace("a2", nsAutodiscoverResponseStr2);
-var d=new Date();var time1=d.getTime();
-			newXML.processXMLString(xml, 0, null);
-var d=new Date();var time2=d.getTime();
+			if (this.xml2json === true) {
+				newXML.parseXML(xml);
+			}
+			else {
+				newXML.addNameSpace("s", nsSoapStr);
+				newXML.addNameSpace("m", nsMessagesStr);
+				newXML.addNameSpace("t", nsTypesStr);
+				newXML.addNameSpace("a1", nsAutodiscoverResponseStr1);
+				newXML.addNameSpace("a2", nsAutodiscoverResponseStr2);
+				newXML.processXMLString(xml, 0, null);
+			}
 		}
 		catch(exc) { if (this.debug) this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
 
@@ -636,21 +646,22 @@ var d=new Date();var time2=d.getTime();
 		if (this.mCbOk) {
 			// Try to get server version and store it.
 			try {
-				let serverVersion = newXML.XPath("/s:Header/ServerVersionInfo");
-				if ((serverVersion.length > 0) && (serverVersion[0].getAttribute("Version") != "")) {
-					this.exchangeStatistics.setServerVersion(this.currentUrl, serverVersion[0].getAttribute("Version"), serverVersion[0].getAttribute("MajorVersion"), serverVersion[0].getAttribute("MinorVersion"));
+				if (this.xml2json === true) {
+					let serverVersion = newXML.XPath("/Envelope/Header/ServerVersionInfo");
+					if ((serverVersion.length > 0) && (newXML.getAttributeFrom(serverVersion[0], "Version") !== null)) {
+dump("\n %% Version="+newXML.getAttributeFrom(serverVersion[0], "Version")+"\n");
+						this.exchangeStatistics.setServerVersion(this.currentUrl, newXML.getAttributeFrom(serverVersion[0], "Version"), newXML.getAttributeFrom(serverVersion[0], "MajorVersion"), newXML.getAttributeFrom(serverVersion[0], "MinorVersion"));
+					}
+					serverVersion = null;
 				}
-/*				else {
-					var header = newXML.XPath("/s:Header");
-					if (header.length > 0) {
-						dump(" @@@ We have not found serverVersion:"+header[0]+"\n");
+				else {
+					let serverVersion = newXML.XPath("/s:Header/ServerVersionInfo");
+					if ((serverVersion.length > 0) && (serverVersion[0].getAttribute("Version") != "")) {
+						this.exchangeStatistics.setServerVersion(this.currentUrl, serverVersion[0].getAttribute("Version"), serverVersion[0].getAttribute("MajorVersion"), serverVersion[0].getAttribute("MinorVersion"));
 					}
-					else {
-						dump(" !!! Could not find header.\n");
-					}
-				}*/
-				serverVersion[0] = null;
-				serverVersion = null;
+					serverVersion[0] = null;
+					serverVersion = null;
+				}
 			}
 			catch(err) { }
 
@@ -942,6 +953,50 @@ var d=new Date();var time4=d.getTime();
 			this.mCbError(this, aCode, aMsg);
 		}
 		this.originalReq = null;
+	},
+
+	makeSoapMessage2: function erMakeSoapMessage2(aReq)
+	{
+		this.originalReq = aReq;
+
+		var root = new xml2json();
+		var msg = root.addTag("Envelope", "nsSoap");
+		root.setAttributeTo(msg, "xmlns:nsSoap", nsSoapStr);
+		root.setAttributeTo(msg, "xmlns:nsMessages", nsMessagesStr);
+		root.setAttributeTo(msg, "xmlns:nsTypes", nsTypesStr);
+
+		this.version = this.exchangeStatistics.getServerVersion(this.mArgument.serverUrl);
+		
+		var header = root.addChildTagTo(msg,"Header", "nsSoap", null);
+
+		var requestServerVersion = root.addChildTagTo(header, "RequestServerVersion", "nsTypes", null);
+		root.setAttributeTo(requestServerVersion, "Version", this.version);
+		
+		var exchTimeZone = this.timeZones.getExchangeTimeZoneByCalTimeZone(this.globalFunctions.ecDefaultTimeZone(), this.mArgument.serverUrl, cal.now());
+
+		if (exchTimeZone) {
+				let timeZoneContext = root.addChildTagTo(header, "TimeZoneContext", "nsTypes", null);
+				let tmpTimeZone = root.addChildTagTo(timeZoneContext, "TimeZoneDefinition", "nsTypes");
+				if (this.version.indexOf("2007") < 0) {
+					root.setAttributeTo(tmpTimeZone, "Name",exchTimeZone.name);
+				}
+				root.setAttributeTo(tmpTimeZone, "Id",exchTimeZone.id);
+				tmpTimeZone = null;
+				timeZoneContext = null;
+		}
+		header = null;
+
+		let body = root.addChildTagTo(msg, "Body", "nsSoap", null);
+		root.addTagObjectTo(body, aReq);
+		body = null;
+
+//dump("Going to send1:"+msg.toString().length+", xml:"+msg.getSize()+"\n");
+dump("Going to send2:"+root.toString()+"\n");
+
+		var tmpStr = xml_tag + root.toString();
+		msg = null;
+		root = null;
+		return tmpStr;
 	},
 
 	makeSoapMessage: function erMakeSoapMessage(aReq)

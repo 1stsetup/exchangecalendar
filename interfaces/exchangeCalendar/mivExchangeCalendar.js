@@ -2584,7 +2584,7 @@ calExchangeCalendar.prototype = {
 
 		while (!doStop) {
 			if (this.debug) this.logInfo("Getting period part of: "+startDate.toString()+" until "+endDate.toString());
-			//dump(this.name+": Getting period part of: "+startDate.toString()+" until "+endDate.toString()+"\n");
+			dump(this.name+": Getting period part of: "+startDate.toString()+" until "+endDate.toString()+"\n");
 			this.addToQueue( erFindCalendarItemsRequest, 
 				{user: this.user, 
 				 mailbox: this.mailbox,
