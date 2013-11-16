@@ -766,9 +766,9 @@ var xml2json = {
 	getAttribute: function _getAttribute(aParent, aName) {
 		if (!aParent) throw -70;
 
-		if ((!aParent["attributes"]) || (!aParen.attributes[aName])) return null;
+		if ((!aParent["attributes"]) || (!aParent.attributes[aName])) return null;
 
-		return aParen.attributes[aName];
+		return aParent.attributes[aName];
 	},
 
 	setAttribute: function _setAttribute(aParent, aName, aValue) {
