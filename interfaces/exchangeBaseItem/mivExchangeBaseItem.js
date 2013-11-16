@@ -2576,7 +2576,9 @@ try {
 	get startTimeZoneId()
 	{
 		if (!this._startTimeZoneId) {
+dump(" $$ 1 ..\n");
 			this._startTimeZoneId = this.getAttributeByTag("t:StartTimeZone", "Id", null);
+dump(" $$ 2 ..\n");
 		}
 		return this._startTimeZoneId;
 	},
@@ -3775,6 +3777,9 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	getTagValue: function _getTagValue(aTagName, aDefaultValue)
 	{
 		if (this.exchangeData) {
+if (aTagName == "t:Body") {
+	dump(" #$# body:"+JSON.stringify(this.exchangeData)+"\n");
+}
 			return xml2json.getTagValue(this.exchangeData, aTagName, aDefaultValue);
 		}
 
@@ -3783,6 +3788,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 	getAttributeByTag: function _getAttributeByTag(aTagName, aAttribute, aDefaultValue)
 	{
+		//dump("getAttributeByTag 1: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute+"\n");
 		if (this.exchangeData) {
 			return xml2json.getAttributeByTag(this.exchangeData, aTagName, aAttribute, aDefaultValue);
 		}

@@ -749,6 +749,7 @@ var xml2json = {
 	},
 
 	getAttributeByTag: function _getAttributeByTag(aParent, aTagName, aName) {
+//dump("getAttributeByTag 1: aParent:"+aParent+", aTagName="+aTagName+", aName="+aName+"\n");
 		if ((!aParent) || (!aParent['elements']) || (!aTagName)) throw -80;
 
 		let i = 0;
@@ -760,6 +761,7 @@ var xml2json = {
 					return aParent.elements[i].attributes[aName];
 				}
 			}
+			i++;
 		}
 		return null;
 	},
