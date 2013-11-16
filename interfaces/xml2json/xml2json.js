@@ -420,7 +420,7 @@ function realGetValue(aParent) {
 		result = result + aParent.content[i];
 		i++;
 	}
-	return result;
+	return convertSpecialCharatersFromXML(result);
 }
 
 function realGetTags(aParent, aTagName) {
@@ -707,7 +707,7 @@ var xml2json = {
 				nameSpace: aNameSpace,
 				elements: []};
 		if (aValue) {
-			realAddContent(tmpJson, aValue);
+			realAddContent(tmpJson, convertSpecialCharatersToXML(aValue));
 		}
 		aParent.elements.push(tmpJson);
 
@@ -768,11 +768,11 @@ var xml2json = {
 
 		if ((!aParent["attributes"]) || (!aParent.attributes[aName])) return null;
 
-		return aParent.attributes[aName];
+		return convertSpecialCharatersFromXML(aParent.attributes[aName]);
 	},
 
 	setAttribute: function _setAttribute(aParent, aName, aValue) {
-		realSetAttribute(aParent, aName, aValue);
+		realSetAttribute(aParent, aName, convertSpecialCharatersToXML(aValue));
 	},
 
 	setAttributeStr: function _setAttributeStr(aParent, aString) {
