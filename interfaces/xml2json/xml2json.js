@@ -265,10 +265,7 @@ function convertComparisonPart(a, aJSONObject){
 	var r = [];
 	var tc = a[0];
 	if ((tc == "/") || (tc == ".") || (tc == "@")) {
-		let aXMLObject = new xml2json();
-		aXMLObject.json = aJSONObject;
-		r = aXMLObject.XPath(a);
-		aXMLObject = null;
+		r = realXPath(aJSONObject, a);
 	}
 	else {
 		r = [];
@@ -277,10 +274,7 @@ function convertComparisonPart(a, aJSONObject){
 		}
 		else {
 			if (isNaN(a)) {
-				let aXMLObject = new xml2json();
-				aXMLObject.json = aJSONObject;
-				r = aXMLObject.XPath(a);
-				aXMLObject = null;
+				r = realXPath(aJSONObject, a);
 			}
 			else {
 				r.push(Number(a));
@@ -372,15 +366,14 @@ function ifFunction(aCondition, aJSONObject){
 								var evalConditionLeft = tmpLeft[x].toString();
 							}
 							else {
-dump("&& tmpLeft[x]="+tmpLeft[x]+"\n");
-								var evalConditionLeft = tmpLeft[x].value.toString();
+								var evalConditionLeft = realGetValue(tmpLeft[x]).toString();
 							}
 							var y = 0;
 							while ((y < tmpRight.length) && (!tmpResult)) {
 								if ((typeof tmpRight[y] === "string") || (tmpRight[y] instanceof String) || (typeof tmpRight[y] === "number")) {
 									var evalConditionRight = tmpRight[y].toString();
 								}
-								else {var evalConditionRight = tmpRight[y].value.toString();}
+								else {var evalConditionRight = realGetValue(tmpRight[y]).toString();}
 								switch (compareList[index].comparison) {
 								case "!=":tmpResult = (evalConditionLeft != evalConditionRight);break;
 								case "<=":tmpResult = (evalConditionLeft <= evalConditionRight);break;
@@ -395,7 +388,9 @@ dump("&& tmpLeft[x]="+tmpLeft[x]+"\n");
 						}
 					}
 				}
-				else {tmpResult = true;}
+				else {
+					tmpResult = true;
+				}
 			}
 			else {tmpResult = false;}
 			tmpLeft = null;
@@ -415,87 +410,267 @@ dump("&& tmpLeft[x]="+tmpLeft[x]+"\n");
 	return totalResult;
 }
 
-var EXPORTED_SYMBOLS = ["xml2json"];
+function realGetValue(aParent) {
+	if (!aParent) throw -60;
+	if (!aParent["content"]) return "";
 
-function xml2json(aXMLString) {
-	this._json = { elements: []};
-	this._currentjson = this._json;
-
-	if (aXMLString) this.parseXML(aXMLString);
+	let result = "";
+	let i = 0;
+	while (i < aParent.content.length) {
+		result = result + aParent.content[i];
+		i++;
+	}
+	return result;
 }
+
+function realGetTags(aParent, aTagName) {
+	if ((!aParent) || (!aParent["elements"])) throw -50;
+	let result = [];
+
+	var tmpTN = splitTagName(aTagName);
+
+	var i = 0;
+	while (i < aParent.elements.length) {
+//			if ((aParent.elements[i].nameSpace == tmpTN.nameSpace) && (aParent.elements[i].tagName == tmpTN.tagName)) {
+		if (aParent.elements[i].tagName == tmpTN.tagName) {  // We ignore the namespace for now.
+			result.push(aParent.elements[i]);
+		}
+		i++;
+	}
+	return result;
+}
+
+
+function realXPath(aParent, aPath){
+	//dump("XPath:"+aPath+"("+STACK(6)+")\n");
+	//dump("aParent:"+JSON.stringify(aParent)+"\n");
+	//dump("..\n");
+	var tmpPath = aPath;
+	var result = [];
+	if (tmpPath[0] == "/") {
+		tmpPath = tmpPath.substr(1);
+	}
+
+	switch (tmpPath[0]) {
+	case "@" : // Find attribute within this element
+		let attrName = tmpPath.substr(1);
+		if ((aParent["attributes"]) && (aParent.attributes[attrName])) {
+			//dump("XPath:found attribute. value="+String(aParent.attributes[attrName])+"\n");
+			result.push(String(aParent.attributes[attrName]));
+		}
+		//dump("XPath find attribute '"+attrName+"'. result.length='"+result.length+"'\n");
+		tmpPath = "";
+		break;
+	case "*" : // Wildcard. Will parse all children.
+		tmpPath = tmpPath.substr(1);
+		let i = 0;
+		while (i < aParent.elements.length) {
+			result.push(aParent.elements[i]);
+			i++;
+		}
+		break;
+	case "[" : // Compare/match function
+		let index = splitOnCharacter(tmpPath.substr(1), 0, "]");
+		if (!index) {throw "XPath error: Did not find closing square bracket. tagName:"+aParent.tagName+", tmpPath:"+tmpPath;}
+		tmpPath = tmpPath.substr(index.length+2);
+		index = trim(index); 
+		if (index != "") {
+			if (ifFunction(index, aParent)) {
+				result.push(aParent);
+			}
+			else {
+				return result;
+			}
+		}
+		else {
+			throw "XPath compare error:No Value between square brackets:"+aParent.tagName+"["+index+"]";
+		}
+		break;
+	default:
+		let bracketPos = tmpPath.indexOf("[");
+		let forwardSlashPos = tmpPath.indexOf("/");
+		let splitPos = tmpPath.length;
+		if ((bracketPos < splitPos) && (bracketPos > -1)) {splitPos = bracketPos;}
+		if ((forwardSlashPos < splitPos) && (forwardSlashPos > -1)) {splitPos = forwardSlashPos;}
+		let tmpPath2 = tmpPath.substr(0, splitPos);
+		tmpPath = tmpPath.substr(splitPos);
+		let equalTags = [];
+		equalTags = realGetTags(aParent,tmpPath2);
+		result = equalTags;
+	}
+
+	if ((result.length > 0) && (tmpPath != "")) {
+		let finalResult = [];
+		let i = 0;
+		while (i < result.length) {
+			var tmpResult = realXPath(result[i], tmpPath);
+			if (!isArray(tmpResult)) { // Check if answer is an Array or a String. String is returned on attribute search.
+				finalResult = tmpResult;
+			}
+			else {
+				let j = 0;
+				while (j < tmpResult.length) {
+					finalResult.push(tmpResult[j]);
+					j++;
+				}
+			}
+			i++;
+		}
+		result = finalResult;
+	}
+
+	return result;
+}
+
+function realElementToString(aElement) {
+	if (!aElement.tagName) return "";
+
+	//dump(" @@@@@:"+JSON.stringify(aElement)+"\n");
+
+	var result = "<";
+	if (aElement.nameSpace) result = result + aElement.nameSpace + tsep;
+	result = result + aElement.tagName;
+
+	if (aElement["attributes"]) {
+		for (var attrName in aElement.attributes) {
+			result = result + " " + attrName + "="+'"' + aElement.attributes[attrName]+'"';
+		}
+	}
+
+	if ((aElement["content"]) || (aElement.elements.length > 0)) {
+		result = result + ">";
+		if ((aElement["content"]) && (aElement.content.length)) {
+			let i = 0;
+			while (i < aElement.content.length) {
+				result = result + aElement.content[i];
+				i++;
+			}
+		}
+
+		let i = 0;
+		while (i < aElement.elements.length) {
+			result = result + realElementToString(aElement.elements[i]);
+			i++;
+		}
+
+		result = result + "</";
+		if (aElement.nameSpace) result = result + aElement.nameSpace + tsep;
+		result = result + aElement.tagName + ">";
+		
+
+	}
+	else {
+		result = result + "/>";
+	}
+
+	return result;
+}
+
+function realSetAttribute(aParent, aName, aValue) {
+	if ((!aParent) || (!aParent["elements"])) throw -50;
+	if (!aParent["attributes"]) {
+		aParent.attributes = {};
+	}
+	aParent.attributes[aName] = aValue;
+}
+
+function realAddContent(aParent, aString) {
+	//dump("addContent: aString="+aString+"\n");
+	if ((!aParent) || (!aParent["elements"])) throw -50;
+	if (!aParent["content"]) {
+		aParent.content = [];
+	}
+	aParent.content.push(aString);
+}
+
+function realClosingTag(aParent, aTagName) {
+	//dump("closingTag: aTagName="+aTagName+"\n");
+	var tmpTN = splitTagName(aTagName);
+
+	let closingMatchesOpening = false;
+	if (tmpTN.tagName == aParent.tagName) {
+		if (tmpTN.nameSpace == aParent.nameSpace) {
+			closingMatchesOpening = true;
+		}
+	}
+
+	if (!closingMatchesOpening) {
+		throw -5; // Closing element does not match opening element.
+	}
+	else {
+		if (aParent.parent) {
+			let result = aParent.parent;
+			aParent.parent = null;
+			delete aParent['parent'];
+			return result;
+		}
+		else {
+			throw -6; // We should never get here. But in case we do. Wee see a closing element for which no opening element was seen.
+		}
+	}
+}
+
+function realOpeningTag(aParent, aTagName) {
+	//dump("openingTag: aTagName="+aTagName+"\n");
+	var tmpTN = splitTagName(aTagName);
+	let tmpElement = { parent: aParent,
+				elements: [],
+				nameSpace: tmpTN.nameSpace,
+				tagName: tmpTN.tagName};
+	aParent.elements.push(tmpElement);
+	return tmpElement;
+}
+
+function realSetAttributeStr(aParent, aString) {
+	//dump("setAttributeStr 1: aString="+aString+"\n");
+	aString = aString.replace(/\n/g, "").replace(/\r/g, "").replace(/\t/g, "");
+	var sp = aString.indexOf("=");
+	if (sp == -1) {
+		throw -13; // Equal sign not found.
+	}
+	var an = trim(aString.substr(0, sp));
+	var av = trim(aString.substr(sp+1));
+	var tc = av[0];
+	if ((tc == "'") || (tc == '"')) {
+		let vl = av.length;
+		if (tc == av[vl-1]) {
+			av = av.substr(1, vl-2);
+		}
+		else {
+			throw -14; // Did not find closing quote
+		}
+	}
+
+	//dump("setAttributeStr 2: name="+an+", value="+av+"\n");
+	realSetAttribute(aParent, an, av);
+}
+
+var EXPORTED_SYMBOLS = ["xml2json"];
 
 const tsep = ":";
 
-xml2json.prototype = {
+var xml2json = {
 
-	get json() {
-		return this._json;
+	newJSON: function _newJSON() {
+		return { elements: [] };
 	},
 
-	set json(aValue) {
-		if ((!aValue) || (!aValue["elements"])) throw -40;
-		this._json = aValue;
-		this.reset;
-	},
-
-	reset: function _reset() {
-		this._currentjson = this._json;
-	},
-
-	addTagObjectTo: function _addTagObjectTo(aParent, aChildObject) {
+	addTagObject: function _addTagObject(aParent, aChildObject) {
 		if ((!aParent) || (!aParent["elements"])) throw -50;
 		aParent.elements.push(aChildObject);
 
 		return aParent.elements[aParent.elements.length-1];
 	},
 
-	addTagObject: function _addChildTag(aChildObject) {
-		return this.addTagObjectTo(this._json, aChildObject);
+	getTags: function _getTags(aParent, aTagName) {
+		return realGetTags(aParent, aTagName);
 	},
 
-	addChildTagObject: function _addChildTag(aParentPos, aChildObject) {
-		if (aParentPos < 0) throw -30;
-
-		if (aParentPos > this._json.elements.length) throw -31;
-
-		return this.addTagObjectTo(this._json.elements[aParentPos], aChildObject);
+	getValue: function _getValue(aParent) {
+		return realGetValue(aParent);
 	},
 
-	getTagsFrom: function _getTagsFrom(aParent, aTagName) {
-		if ((!aParent) || (!aParent["elements"])) throw -50;
-		let result = [];
-
-		var tmpTN = splitTagName(aTagName);
-
-		var i = 0;
-		while (i < aParent.elements.length) {
-//			if ((aParent.elements[i].nameSpace == tmpTN.nameSpace) && (aParent.elements[i].tagName == tmpTN.tagName)) {
-			if (aParent.elements[i].tagName == tmpTN.tagName) {  // We ignore the namespace for now.
-				result.push(aParent.elements[i]);
-			}
-			i++;
-		}
-		return result;
-	},
-
-	getValueFrom: function _getValueFrom(aParent) {
-		if (!aParent) throw -60;
-		if (!aParent["content"]) return "";
-
-		let result = "";
-		let i = 0;
-		while (i < aParent.content.length) {
-			result = result + aParent.content[i];
-			i++;
-		}
-		return result;
-	},
-
-	getValue: function _getValue() {
-		return this.getValueFrom(this._json);
-	},
-
-	getTagValueFrom: function _getTagValueFrom(aParent, aTagName) {
+	getTagValue: function _getTagValue(aParent, aTagName) {
 		if ((!aParent) || (!aParent["elements"]) || (!aTagName)) throw -61;
 
 		let result = null;
@@ -503,22 +678,14 @@ xml2json.prototype = {
 		var tmpTN = splitTagName(aTagName);
 		while ((!result) && (i < aParent.elements.length)) {
 			if (aParent.elements[i].tagName == tmpTN.tagName) {  // We ignore the namespace for now.
-				result = this.getValueFrom(aParent.elements[i]);
+				result = realGetValue(aParent.elements[i]);
 			}
 			i++;
 		}
 		return result;
 	},
 
-	getTagValue: function _getTagValue(aTagName) {
-		return this.getTagValueFrom(this._json, aTagName);
-	},
-
-	getTags: function _getTags(aTagName) {
-		return this.getTagsFrom(this._json, aTagName);
-	},
-
-	getTagFrom: function _getTagFrom(aParent, aTagName) {
+	getTag: function _getTag(aParent, aTagName) {
 		let result = null;
 
 		var tmpTN = splitTagName(aTagName);
@@ -534,114 +701,33 @@ xml2json.prototype = {
 		return null;
 	},
 
-	getTag: function _getTag(aTagName) {
-		return this.getTagFrom(this._json, aTagName);
-	},
-
-	addXMLTagTo: function _addXMLTagTo(aParent, aXMLString) {
-		if ((!aParent) || (!aParent["elements"])) throw -50;
-
-		let tmpObj = new xml2json(aXMLString);
-		let i = 0;
-		while (i < tmpObj.json.elements.length) {
-			this.addTagObjectTo(aParent, tmpObj.json.elements[i]);
-			i++;
-		}
-	},
-
-	addTagTo: function _addTagTo(aParent, aTagName, aNameSpace, aValue) {
+	addTag: function _addTag(aParent, aTagName, aNameSpace, aValue) {
 		if ((!aParent) || (!aParent["elements"])) throw -50;
 		var tmpJson = {tagName: aTagName,
 				nameSpace: aNameSpace,
 				elements: []};
 		if (aValue) {
-			this.addContentTo(tmpJson, aValue);
+			realAddContent(tmpJson, aValue);
 		}
 		aParent.elements.push(tmpJson);
 
 		return aParent.elements[aParent.elements.length-1];
-	},
-
-	addTag: function _addTag(aTagName, aNameSpace, aValue) {
-		return this.addTagTo(this._json, aTagName, aNameSpace, aValue);
-	},
-
-	addChildTagTo: function _addChildTagTo(aParent, aTagName, aNameSpace, aValue) {
-		if ((!aParent) || (!aParent["elements"])) throw -80;
-
-		var tmpJson = {tagName: aTagName,
-				nameSpace: aNameSpace,
-				elements: []};
-		if (aValue) {
-			this.addContentTo(tmpJson, aValue);
-		}
-		aParent.elements.push(tmpJson);
-
-		return aParent.elements[aParent.elements.length-1];
-	},
-
-	addChildTag: function _addChildTag(aParentPos, aTagName, aNameSpace, aValue) {
-		if (aParentPos < 0) throw -30;
-
-		if (aParentPos > this._json.elements.length) throw -31;
-
-		return this.addChildTagTo(this._json.elements[aParentPos], aTagName, aNameSpace, aValue);
 	},
 
 	elementToString: function _elementToString(aElement) {
-		if (!aElement.tagName) return "";
-
-		//dump(" @@@@@:"+JSON.stringify(aElement)+"\n");
-
-		var result = "<";
-		if (aElement.nameSpace) result = result + aElement.nameSpace + tsep;
-		result = result + aElement.tagName;
-
-		if (aElement["attributes"]) {
-			for (var attrName in aElement.attributes) {
-				result = result + " " + attrName + "="+'"' + aElement.attributes[attrName]+'"';
-			}
-		}
-
-		if ((aElement["content"]) || (aElement.elements.length > 0)) {
-			result = result + ">";
-			if ((aElement["content"]) && (aElement.content.length)) {
-				let i = 0;
-				while (i < aElement.content.length) {
-					result = result + aElement.content[i];
-					i++;
-				}
-			}
-
-			let i = 0;
-			while (i < aElement.elements.length) {
-				result = result + this.elementToString(aElement.elements[i]);
-				i++;
-			}
-
-			result = result + "</";
-			if (aElement.nameSpace) result = result + aElement.nameSpace + tsep;
-			result = result + aElement.tagName + ">";
-			
-
-		}
-		else {
-			result = result + "/>";
-		}
-
-		return result;
+		return realElementToString(aElement);
 	},
 
-	toString: function _toString() {
+	toString: function _toString(aParent) {
 		var result = "";
 		var i = 0;
-		//dump(" !!!!!:"+JSON.stringify(this._json)+"\n");
-		if (this._json["tagName"]) {
-			result = result + this.elementToString(this._json);
+		//dump(" !!!!!:"+JSON.stringify(aParent)+"\n");
+		if (aParent["tagName"]) {
+			result = result + realElementToString(aParent);
 		}
 		else {
-			while (i < this._json.elements.length) {
-				result = result + this.elementToString(this._json.elements[i]);
+			while (i < aParent.elements.length) {
+				result = result + realElementToString(aParent.elements[i]);
 				i++;
 			}
 		}
@@ -649,59 +735,19 @@ xml2json.prototype = {
 		return result;
 	},
 
-	openingTag: function _openingTag(aTagName) {
-		//dump("openingTag: aTagName="+aTagName+"\n");
-		let tmpElement = { parent: this._currentjson,
-					elements: []};
-		this._currentjson.elements.push(tmpElement);
-		this._currentjson = tmpElement;
-
-		var tmpTN = splitTagName(aTagName);
-		this._currentjson.nameSpace = tmpTN.nameSpace;
-		this._currentjson.tagName = tmpTN.tagName;
+	openingTag: function _openingTag(aParent, aTagName) {
+		return realOpeningTag(aParent, aTagName);
 	},
 
-	addContentTo: function _addContentTo(aParent, aString) {
-		//dump("addContent: aString="+aString+"\n");
-		if ((!aParent) || (!aParent["elements"])) throw -50;
-		if (!aParent["content"]) {
-			aParent.content = [];
-		}
-		aParent.content.push(aString);
+	addContent: function _addContent(aParent, aString) {
+		realAddContent(aParent, aString);
 	},
 
-	addContent: function _addContent(aString) {
-		this.addContentTo(this._currentjson, aString);
+	closingTag: function _closingTag(aParent, aTagName) {
+		return realClosingTag(aParent, aTagName);
 	},
 
-	closingTag: function _closingTag(aTagName) {
-		//dump("closingTag: aTagName="+aTagName+"\n");
-		var tmpTN = splitTagName(aTagName);
-
-		let closingMatchesOpening = false;
-		if (tmpTN.tagName == this._currentjson.tagName) {
-			if (tmpTN.nameSpace == this._currentjson.nameSpace) {
-				closingMatchesOpening = true;
-			}
-		}
-
-		if (!closingMatchesOpening) {
-			throw -5; // Closing element does not match opening element.
-		}
-		else {
-			if (this._currentjson.parent) {
-				let oldCurrentjson = this._currentjson;
-				this._currentjson = this._currentjson.parent;
-				oldCurrentjson.parent = null;
-				delete oldCurrentjson['parent'];
-			}
-			else {
-				throw -6; // We should never get here. But in case we do. Wee see a closing element for which no opening element was seen.
-			}
-		}
-	},
-
-	getAttributeByTagFrom: function _getAttributeByTagFrom(aParent, aTagName, aName) {
+	getAttributeByTag: function _getAttributeByTag(aParent, aTagName, aName) {
 		if ((!aParent) || (!aParent['elements']) || (!aTagName)) throw -80;
 
 		let i = 0;
@@ -717,11 +763,7 @@ xml2json.prototype = {
 		return null;
 	},
 
-	getAttributeByTag: function _getAttributeByTag(aTagName, aName) {
-		return this.getAttributeByTagFrom(this._json, aTagName, aName);
-	},
-
-	getAttributeFrom: function _getAttributeFrom(aParent, aName) {
+	getAttribute: function _getAttribute(aParent, aName) {
 		if (!aParent) throw -70;
 
 		if ((!aParent["attributes"]) || (!aParen.attributes[aName])) return null;
@@ -729,54 +771,17 @@ xml2json.prototype = {
 		return aParen.attributes[aName];
 	},
 
-	getAttribute: function _getAttribute(aName) {
-		return this.getAttributeFrom(this._json, aName);
+	setAttribute: function _setAttribute(aParent, aName, aValue) {
+		realSetAttribute(aParent, aName, aValue);
 	},
 
-	setAttributeTo: function _setAttributeTo(aParent, aName, aValue) {
-		if ((!aParent) || (!aParent["elements"])) throw -50;
-		if (!aParent["attributes"]) {
-			aParent.attributes = {};
-		}
-		aParent.attributes[aName] = aValue;
+	setAttributeStr: function _setAttributeStr(aParent, aString) {
+		realSetAttributeStr(aParent, aString);
 	},
 
-	setAttribute: function _setAttribute(aName, aValue) {
-		this.setAttributeTo(this._currentjson, aName, aValue);
-	},
+	parseXML: function _parseXML(aJSONObject, aXMLString) {
 
-	setAttributeStr: function _setAttributeStr(aString) {
-		//dump("setAttributeStr 1: aString="+aString+"\n");
-		if (!this._currentjson["attributes"]) {
-			this._currentjson.attributes = {};
-		}
-
-		aString = aString.replace(/\n/g, "").replace(/\r/g, "").replace(/\t/g, "");
-		var sp = aString.indexOf("=");
-		if (sp == -1) {
-			throw -13; // Equal sign not found.
-		}
-		var an = trim(aString.substr(0, sp));
-		var av = trim(aString.substr(sp+1));
-		var tc = av[0];
-		if ((tc == "'") || (tc == '"')) {
-			let vl = av.length;
-			if (tc == av[vl-1]) {
-				av = av.substr(1, vl-2);
-			}
-			else {
-				throw -14; // Did not find closing quote
-			}
-		}
-
-		//dump("setAttributeStr 2: name="+an+", value="+av+"\n");
-		this.setAttribute(an, av);
-	},
-
-	parseXML: function _parseXML(aXMLString) {
-
-		this._json = { elements: []};
-		this._currentjson = this._json;
+		var currentjson = aJSONObject;
 
 		if (!aXMLString) return;
 
@@ -796,7 +801,7 @@ xml2json.prototype = {
 				let skipped = tmpPos - pos;
 				if (skipped > 0) {
 					// Found data before element.
-					this.addContent(aXMLString.substr(pos, skipped));
+					realAddContent(currentjson,aXMLString.substr(pos, skipped));
 				}
 				pos = tmpPos + 1;
 			}
@@ -808,7 +813,7 @@ xml2json.prototype = {
 				tmpPos = findCharacter(aXMLString, pos, ">");
 				if (tmpPos > -1) {
 					// found end character of closing element.
-					this.closingTag(aXMLString.substr(pos, tmpPos-pos)); 
+					currentjson = realClosingTag(currentjson, aXMLString.substr(pos, tmpPos-pos)); 
 				}
 				else {
 					// Did not find end character of closing element. Error.
@@ -829,12 +834,12 @@ xml2json.prototype = {
 							pos++;
 							tc = aXMLString[pos];
 						}
-						this.openingTag(elementName);
+						currentjson = realOpeningTag(currentjson, elementName);
 
 						// We have an element name. Let see if it contains data or is closed.
 						if ((pos < strLength) && (tc == "/")) {
 							// It is closed.
-							this.closingTag(elementName);
+							currentjson = realClosingTag(currentjson, elementName);
 							pos++;
 						}
 						else {
@@ -863,7 +868,7 @@ xml2json.prototype = {
 									pos++;
 									tc = aXMLString[pos];
 									if ((seenAttributeSeparator) && (pos < strLength) && (isInList(specialChars1,tc)) && (!quoteOpen)) {
-										this.setAttributeStr(attribute);
+										realSetAttributeStr(currentjson, attribute);
 										attribute = "";
 										seenAttributeSeparator = false;
 										pos++;
@@ -871,13 +876,13 @@ xml2json.prototype = {
 									}
 								}
 								if ((seenAttributeSeparator) && (!quoteOpen) && (pos < strLength) && (attribute.length > 0)) {
-									this.setAttributeStr(attribute);
+									realSetAttributeStr(currentjson, attribute);
 									seenAttributeSeparator = false;
 									attribute = "";
 								}
 								if ((pos < strLength) && (tc == "/")) {
 									// Found opening tag with attributes which is also closed.
-									this.closingTag(elementName);
+									currentjson = realClosingTag(currentjson, elementName);
 									pos++;
 									tc = aXMLString[pos];
 								}
@@ -907,119 +912,14 @@ xml2json.prototype = {
 	}
 	catch(err){ dump(" !! Err:"+err+"("+STACK()+"\n");}
 
-		return this.json;
 	},
 
-	XPath: function XPath(aPath){
-		return this.XPathFrom(this._json, aPath);
-	},
-
-	XPathFrom: function XPathFrom(aParent, aPath){
+	XPath: function _XPath(aParent, aPath){
 		//dump("XPath:"+aPath+"\n");
 		//dump("aParent:"+JSON.stringify(aParent)+"\n");
 		//dump("..\n");
-		var tmpPath = aPath;
-		var result = [];
-		if (tmpPath[0] == "/") {
-			tmpPath = tmpPath.substr(1);
-		}
 
-		switch (tmpPath[0]) {
-// double slahes is never used.
-/*		case "/" : // Find all elements by specified element name
-			var allTag = splitOnCharacter(tmpPath.substr(1), 0, ["/", "["]);
-			if (!allTag) {allTag = tmpPath.substr(1);}
-			for (let index in this.tags) {result.push(this.tags[index]);}
-			tmpPath = "/"+tmpPath;
-			break;*/
-		case "@" : // Find attribute within this element
-			let attrName = tmpPath.substr(1);
-			if ((aParent["attributes"]) && (aParent.attributes[attrName])) {result.push(aParent.attributes[attrName]);}
-			//dump("XPath find attribute '"+attrName+"'. result.length='"+result.length+"'\n");
-			tmpPath = "";
-			break;
-		case "*" : // Wildcard. Will parse all children.
-			tmpPath = tmpPath.substr(1);
-			let i = 0;
-			while (i < aParent.elements.length) {
-				result.push(aParent.elements[i]);
-				i++;
-			}
-			break;
-		case "[" : // Compare/match function
-			var index = splitOnCharacter(tmpPath.substr(1), 0, "]");
-			if (!index) {throw "XPath error: Did not find closing square bracket. tagName:"+aParent.tagName+", tmpPath:"+tmpPath;}
-			tmpPath = tmpPath.substr(index.length+2);
-			index = trim(index); 
-			if (index != "") {
-				if (ifFunction(index, aParent)) {result.push(aParent);}
-				else {return result;}
-			}
-			else {throw "XPath compare error:No Value between square brackets:"+aParent.tagName+"["+index+"]";}
-			break;
-		default:
-			var bracketPos = tmpPath.indexOf("[");
-			var forwardSlashPos = tmpPath.indexOf("/");
-			var splitPos = tmpPath.length;
-			if ((bracketPos < splitPos) && (bracketPos > -1)) {splitPos = bracketPos;}
-			if ((forwardSlashPos < splitPos) && (forwardSlashPos > -1)) {splitPos = forwardSlashPos;}
-			var tmpPath2 = tmpPath.substr(0, splitPos);
-			tmpPath = tmpPath.substr(splitPos);
-			var equalTags = [];
-			equalTags = this.getTagsFrom(aParent,tmpPath2);
-			result = equalTags;
-		}
-
-		if ((result.length > 0) && (tmpPath != "")) {
-			var finalResult = [];
-			let i = 0;
-			while (i < result.length) {
-				let tmpResult = this.XPathFrom(result[i], tmpPath);
-				if (!isArray(tmpResult)) { // Check if answer is an Array or a String. String is returned on attribute search.
-					finalResult = tmpResult;
-				}
-				else {
-					let j = 0;
-					while (j < tmpResult.length) {
-						finalResult.push(tmpResult[j]);
-						j++;
-					}
-				}
-				i++;
-			}
-			result = finalResult;
-		}
-/*		else {
-			if ((tmpPath != "") && (tmpPath.substr(0,2) != "//")) {
-				var finalResult = [];
-				let tmpResult = this.XPath(tmpPath);
-				if (tmpResult) {
-					for (let index2 in tmpResult) {
-						finalResult.push(tmpResult[index2]);
-						tmpResult[index2] = null;
-					}
-				}
-				tmpResult = null;
-				result = finalResult;
-			}
-		}*/ // double slashes never happen currently.
-
-/*		if ((tmpPath != "") && (tmpPath.substr(0,2) == "//") && (this.tags[allTag]) && (this.tagName == this.tags[allTag].tagName)) {
-			tmpPath = tmpPath.substr(1);
-			if ((tmpPath != "") && (tmpPath.substr(0,2) != "//")) {
-				var finalResult = [];
-				let tmpResult = this.XPath(tmpPath);
-				if (tmpResult) {
-					for (let index2 in tmpResult) {
-						finalResult.push(tmpResult[index2]);
-						tmpResult[index2] = null;
-					}
-				}
-				tmpResult = null;
-				result = finalResult;
-			}
-		}*/ // double slashes never happen currently.
-		return result;
+		return realXPath(aParent, aPath);
 	},
 
 }
