@@ -276,7 +276,7 @@ erGetItemsRequest.prototype = {
 
 		this.parent.xml2json = true;
 		
-		dump("erGetItemsRequest.execute:"+String(this.parent.makeSoapMessage2(req))+"\n");
+		//dump("erGetItemsRequest.execute:"+String(this.parent.makeSoapMessage2(req))+"\n");
 
 		this.parent.sendRequest(this.parent.makeSoapMessage2(req), this.serverUrl);
 		req = null;
@@ -287,7 +287,7 @@ erGetItemsRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		dump("erGetItemsRequest.onSendOk: "+xml2json.toString(aResp)+"\n");
+		//dump("erGetItemsRequest.onSendOk: "+xml2json.toString(aResp)+"\n");
 		var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']/m:Items/*");
 
 		if (this.mCbOk) {
@@ -300,7 +300,7 @@ erGetItemsRequest.prototype = {
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)
 	{
-		dump("erGetItemsRequest.onSendError: "+String(aMsg)+"\n");
+		//dump("erGetItemsRequest.onSendError: "+String(aMsg)+"\n");
 		this.isRunning = false;
 		this.parent = null;
 		if (this.mCbError) {

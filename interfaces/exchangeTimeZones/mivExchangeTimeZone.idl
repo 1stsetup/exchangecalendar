@@ -23,8 +23,6 @@
 #include "calITimezone.idl"
 #include "calIDateTime.idl"
 
-interface mivIxml2jxon;
-
 [scriptable, uuid(7621c4ee-d6fb-445a-80f3-4786d2ad5903)]
 interface mivExchangeTimeZone : nsISupports
 {

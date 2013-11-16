@@ -740,18 +740,12 @@ catch(err){
 	//attribute AUTF8String id;
 	get id()
 	{
-dump("get id 1\n");
 		if (this._id === undefined) {
-dump("get id 2\n");
-try{
 			this._id = this.getAttributeByTag("t:ItemId", "Id", null);
-}catch(err){dump("get id err:"+err+"\n");}
-dump("get id 3\n");
 			if (this._id) {
 				this._calEvent.id = this._id;
 			}
 		}
-dump("get id 4\n");
 		//dump("get id: title:"+this.title+", _id:"+this._id+", id:"+this._calEvent.id+"\n");
 		//return this._calEvent.id;
 		return this._id;
@@ -2888,8 +2882,6 @@ dump("What not recurrenceinfo\n");
 		//dump("exchangeData:"+aValue.toString()+"\n\n");
 
 		this.initialize();
-dump("\n1. aItems[index]:"+JSON.stringify(aValue)+"\n\n");
-dump("\n2. aItems[index]:"+xml2json.toString(aValue)+"\n\n");
 		this._exchangeData = aValue;
 	},
 
@@ -3791,9 +3783,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 	getAttributeByTag: function _getAttributeByTag(aTagName, aAttribute, aDefaultValue)
 	{
-		dump("getAttributeByTag 1: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute+"\n");
 		if (this.exchangeData) {
-		dump("getAttributeByTag 2: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute+"\n");
 			return xml2json.getAttributeByTag(this.exchangeData, aTagName, aAttribute, aDefaultValue);
 		}
 		//this.logInfo("getAttributeByTag 3: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);

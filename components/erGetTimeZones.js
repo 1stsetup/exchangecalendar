@@ -96,7 +96,6 @@ erGetTimeZonesRequest.prototype = {
 		var root = xml2json.newJSON();
 		xml2json.parseXML(root, '<nsMessages:GetServerTimeZones xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 		var req = root.elements[0];
-dump(" ^^ req="+xml2json.toString(req)+"\n");
 		xml2json.setAttribute(req, "ReturnFullTimeZoneData", "true");
 
 		this.parent.xml2json = true;

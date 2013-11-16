@@ -25,8 +25,6 @@
 #include "mivExchangeTimeZone.idl"
 
 
-interface mivIxml2jxon;
-
 [scriptable, uuid(16093d9f-a9ac-41ab-9995-0a3a7423b45c)]
 interface mivExchangeTimeZones : nsISupports
 {
@@ -37,6 +35,6 @@ interface mivExchangeTimeZones : nsISupports
   AUTF8String getExchangeTimeZoneNameByCalTimeZone(in calITimezone aCalTimeZone, in AUTF8String aURL, in calIDateTime aIndexDate);
 
   calITimezone getCalTimeZoneByExchangeMeetingTimeZone(in AUTF8String aTimeZoneName, in calIDateTime aIndexDate);
-  calITimezone getCalTimeZoneByExchangeTimeZone(in mivIxml2jxon aExchangeTimeZone, in AUTF8String aURL, in calIDateTime aIndexDate);
+  calITimezone getCalTimeZoneByExchangeTimeZone(in jsval aExchangeTimeZone, in AUTF8String aURL, in calIDateTime aIndexDate);
 
 };

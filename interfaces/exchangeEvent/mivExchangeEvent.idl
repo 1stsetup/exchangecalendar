@@ -21,8 +21,6 @@
 
 #include "mivExchangeBaseItem.idl"
 
-interface mivIxml2jxon;
-
 [scriptable, uuid(4cd0469e-093f-4f7c-8ace-68f6ec76b36e)]
 interface mivExchangeEvent : mivExchangeBaseItem
 {

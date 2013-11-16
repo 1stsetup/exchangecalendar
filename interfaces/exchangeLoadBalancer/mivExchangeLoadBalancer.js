@@ -44,13 +44,10 @@ jobObject.prototype = {
 
 		var self = this;
 		this.state = "running";
-dump(" && notify new job launch\n");
-try{
 		this.exchangeRequest = new this.job.ecRequest(this.job.arguments, 
 		function myOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) { self.onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, this.job);}, 
 		function myError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {self.onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, this.job);}
 		, this.job.listener);
-}catch(err){dump("@@@@ Error creating new exchange request job:"+err+"\n"+this.job.ecRequest+"\n\n");}
 	},
 
 	onRequestOk: function _onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job)
