@@ -31,7 +31,9 @@ Cu.import("resource://calendar/modules/calProviderUtils.jsm");
 
 Cu.import("resource://exchangecalendar/erGetTimeZones.js");
 
-Cu.import("resource://interfaces/xml2jxon/mivIxml2jxon.js");
+//Cu.import("resource://interfaces/xml2jxon/mivIxml2jxon.js");
+
+Cu.import("resource://interfaces/xml2json/xml2json.js");
 
 function mivExchangeTimeZones() {
 	this._timeZones = {};
@@ -191,8 +193,8 @@ mivExchangeTimeZones.prototype = {
 		if (!aTimeZone) return null;
 
 		var timeZoneId = null;
-		if (aTimeZone["getAttribute"]) {
-			timeZoneId = aTimeZone.getAttribute("Id", null);
+		if (aTimeZone["elements"]) {
+			timeZoneId = xml2json.getAttribute(aTimeZone, "Id", null);
 		}
 		if (aTimeZone instanceof Ci.calITimezone) {
 			timeZoneId = aTimeZone.tzid;
@@ -408,14 +410,14 @@ mivExchangeTimeZones.prototype = {
 
 	addExchangeTimeZones: function _addExchangeTimeZones(aTimeZoneDefinitions, aVersion)
 	{
-		var rm = aTimeZoneDefinitions.XPath("/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage");
+		var rm = xml2json.XPath(aTimeZoneDefinitions, "/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage");
 		if (rm.length == 0) return null;
 
 		this._timeZones[aVersion] = {};
 
-		var timeZoneDefinitionArray = rm[0].XPath("/m:TimeZoneDefinitions/t:TimeZoneDefinition");
+		var timeZoneDefinitionArray = xml2json.XPath(rm[0], "/m:TimeZoneDefinitions/t:TimeZoneDefinition");
 		for (var index in timeZoneDefinitionArray) {
-			this._timeZones[aVersion][timeZoneDefinitionArray[index].getAttribute("Id")] = timeZoneDefinitionArray[index];
+			this._timeZones[aVersion][xml2json.getAttribute(timeZoneDefinitionArray[index], "Id")] = timeZoneDefinitionArray[index];
 		}
 		timeZoneDefinitionArray = null;
 		rm = null;
@@ -442,9 +444,9 @@ mivExchangeTimeZones.prototype = {
 		} while(hasmore);  
 		  
 		istream.close();
-
-		var timezonedefinitions = new mivIxml2jxon(lines, 0, null);
-
+		var root = xml2json.newJSON();
+		xml2json.parseXML(root, lines);
+		var timezonedefinitions = root.elements[0];
 		this.addExchangeTimeZones(timezonedefinitions, "Exchange2007_SP1");
 
 		timezonedefinitions = null;

@@ -51,6 +51,8 @@ Cu.import("resource://calendar/modules/calAuthUtils.jsm");
 Cu.import("resource://exchangecalendar/ecFunctions.js");
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+
 var EXPORTED_SYMBOLS = ["erGetTimeZonesRequest"];
 
 function erGetTimeZonesRequest(aArgument, aCbOk, aCbError, aListener)
@@ -91,19 +93,22 @@ erGetTimeZonesRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erGetTimeZonesRequest\n");
 
-		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetServerTimeZones xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
-		req.setAttribute("ReturnFullTimeZoneData", "true");
+		var root = xml2json.newJSON();
+		xml2json.parseXML(root, '<nsMessages:GetServerTimeZones xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var req = root.elements[0];
+dump(" ^^ req="+xml2json.toString(req)+"\n");
+		xml2json.setAttribute(req, "ReturnFullTimeZoneData", "true");
 
-		this.parent.xml2jxon = true;
+		this.parent.xml2json = true;
 		//dump("erGetTimeZonesRequest.execute:"+req.toString()+"\n");
-                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+                this.parent.sendRequest(this.parent.makeSoapMessage2(req), this.serverUrl);
 		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
 		//exchWebService.commonFunctions.LOG("erGetTimeZonesRequest.onSendOk:"+String(aResp));
-		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
+		var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
 		if (rm.length > 0) {
 
@@ -114,7 +119,7 @@ erGetTimeZonesRequest.prototype = {
 		}
 		else {
 			exchWebService.commonFunctions.LOG("erGetTimeZonesRequest.onSendOk: DID NOT FIND valid response.");
-			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SYNCFOLDERITEMS_UNKNOWN, "Error during SyncFolderItems:"+ResponseCode);
+			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SYNCFOLDERITEMS_UNKNOWN, "Error during SyncFolderItems:");//+ResponseCode);
 			rm = null;
 			return;
 		}

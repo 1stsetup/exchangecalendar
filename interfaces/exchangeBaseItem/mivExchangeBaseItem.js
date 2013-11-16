@@ -35,6 +35,8 @@ Cu.import("resource://interfaces/exchangeAttendee/mivExchangeAttendee.js");
 
 Cu.import("resource://interfaces/xml2jxon/mivIxml2jxon.js");
 
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+
 const participationMap = {
 	"Unknown"	: "NEEDS-ACTION",
 	"NoResponseReceived" : "NEEDS-ACTION",
@@ -266,9 +268,6 @@ mivExchangeBaseItem.prototype = {
 
 		this.timeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
 					.getService(Ci.mivExchangeTimeZones);
-
-		this._movingToLowMemory = false;
-		this._movingToHighMemory = false;
 
 		this.logInfo("initExchangeBaseItem: done.");
 
@@ -660,9 +659,9 @@ catch(err){
 			this._effectiveRights = this.getTag("t:EffectiveRights", null);
 
 			if (this._effectiveRights) {
-				this._canDelete = (this._effectiveRights.getTagValue("t:Delete", "false") == "true");
-				this._canModify = (this._effectiveRights.getTagValue("t:Modify", "false") == "true");
-				this._canRead = (this._effectiveRights.getTagValue("t:Read", "false") == "true");
+				this._canDelete = (xml2json.getTagValue(this._effectiveRights, "t:Delete", "false") == "true");
+				this._canModify = (xml2json.getTagValue(this._effectiveRights, "t:Modify", "false") == "true");
+				this._canRead = (xml2json.getTagValue(this._effectiveRights, "t:Read", "false") == "true");
 			}
 			else {
 				this._canDelete = this.calendar.canCreateContent;
@@ -741,12 +740,18 @@ catch(err){
 	//attribute AUTF8String id;
 	get id()
 	{
+dump("get id 1\n");
 		if (this._id === undefined) {
+dump("get id 2\n");
+try{
 			this._id = this.getAttributeByTag("t:ItemId", "Id", null);
+}catch(err){dump("get id err:"+err+"\n");}
+dump("get id 3\n");
 			if (this._id) {
 				this._calEvent.id = this._id;
 			}
 		}
+dump("get id 4\n");
 		//dump("get id: title:"+this.title+", _id:"+this._id+", id:"+this._calEvent.id+"\n");
 		//return this._calEvent.id;
 		return this._id;
@@ -1165,7 +1170,7 @@ try {
 	get recurrenceInfo()
 	{
 		if ((!this._recurrenceInfo) && (this.exchangeData)) {
-			var recurrence = this.exchangeData.XPath("/*/t:Recurrence/*");
+			var recurrence = xml2json.XPath(this.exchangeData, "/*/t:Recurrence/*");
 			if (recurrence.length > 0) {
 				//this.logInfo("Recurrence::"+recurrence);
 				var recrule = this.readRecurrenceRule(recurrence);
@@ -1745,7 +1750,7 @@ try {
 
 			this._calEvent.removeAllAttendees();
 
-			var attendees = this.exchangeData.XPath("/t:RequiredAttendees/t:Attendee")
+			var attendees = xml2json.XPath(this.exchangeData, "/t:RequiredAttendees/t:Attendee")
 			for each (var at in attendees) {
 				tmpAttendee = this.createAttendee(at, "REQ-PARTICIPANT");
 				this._calEvent.addAttendee(tmpAttendee);
@@ -1754,7 +1759,7 @@ try {
 				this._reqParticipants = true;
 			}
 			attendees = null;
-			attendees = this.exchangeData.XPath("/t:OptionalAttendees/t:Attendee")
+			attendees = xml2json.XPath(this.exchangeData, "/t:OptionalAttendees/t:Attendee")
 			for each (var at in attendees) {
 				tmpAttendee = this.createAttendee(at, "OPT-PARTICIPANT");
 				this._calEvent.addAttendee(tmpAttendee);
@@ -1918,12 +1923,12 @@ try {
 			this._attachments = [];
 			if (this.hasAttachments) {
 	//			if (this.debug) this.logInfo("Title:"+aItem.title+"Attachments:"+aExchangeItem.getTagValue("Attachments"));
-				var fileAttachments = this.exchangeData.XPath("/t:Attachments/t:FileAttachment");
+				var fileAttachments = xml2json.XPath(this.exchangeData, "/t:Attachments/t:FileAttachment");
 				for each(var fileAttachment in fileAttachments) {
 	//				if (this.debug) this.logInfo(" -- Attachment: name="+fileAttachment.getTagValue("t:Name"));
 					var newAttachment = cal.createAttachment();
 					newAttachment.setParameter("X-AttachmentId",fileAttachment.getAttributeByTag("t:AttachmentId","Id")); 
-					newAttachment.uri = cal.makeURL("http://somewhere/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&calendarid="+encodeURIComponent(this.calendar.id));
+					newAttachment.uri = cal.makeURL("http://somewhere/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Name"))+"&size="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Size", ""))+"&calendarid="+encodeURIComponent(this.calendar.id));
 
 					//if (this.debug) this.logInfo("New attachment URI:"+this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
 
@@ -1986,7 +1991,7 @@ try {
 		//this.logInfo("getCategories: title:"+this.title+"\n");
 		if ((!this._categories) && (this.exchangeData)) {
 			this._categories = [];
-			var strings = this.exchangeData.XPath("/t:Categories/t:String");
+			var strings = xml2json.XPath(this.exchangeData, "/t:Categories/t:String");
 			for each (var cat in strings) {
 				this._categories.push(cat.value);
 			}
@@ -2302,10 +2307,10 @@ try {
 	get reminderSignalTime()
 	{
 		if ((!this._reminderSignalTime) && (this.exchangeData)) {
-			var tmpObject = this.exchangeData.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']");
+			var tmpObject = xml2json.XPath(this.exchangeData, "/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']");
 			if (tmpObject.length > 0) {
 //dump(this.title+"| /t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']:"+tmpObject[0].getTagValue("t:Value", null)+"\n");
-				this._reminderSignalTime = this.tryToSetDateValueUTC(tmpObject[0].getTagValue("t:Value", null), null);
+				this._reminderSignalTime = this.tryToSetDateValueUTC(xml2json.getTagValue(tmpObject[0], "t:Value", null), null);
 //dump(this.title+"| this._reminderSignalTime:"+this._reminderSignalTime+"\n");
 //dump(this.title+"| this._reminderSignalTime.icalString:"+this._reminderSignalTime.icalString+"\n");
 //dump(this.title+"| this.calendarItemType:"+this.calendarItemType+"\n");
@@ -2671,7 +2676,7 @@ try {
 		if ((!this._responseObjects) && (this.exchangeData)) {
 			this._responseObjects = {};
 
-			var responseObjects = this.exchangeData.XPath("/t:ResponseObjects/*");
+			var responseObjects = xml2json.XPath(this.exchangeData, "/t:ResponseObjects/*");
 			for each (var prop in responseObjects) {
 				this._responseObjects[prop.tagName] = true;
 			}
@@ -2871,55 +2876,9 @@ dump("What not recurrenceinfo\n");
 
 	},
 
-	// Used by lowMemoryTimer;
-	notify: function _notify() 
-	{
-		if (!this._exchangeData) {
-			return;
-		}
-
-		this._movingToLowMemory = true;
-
-		this._lowMemoryExchangeData = this._exchangeData.toString();
-		this._exchangeData = null;
-
-		this._movingToLowMemory = false;
-dump("L");
-	},
-
-	startLowMemoryTimer: function _startLowMemoryTimer()
-	{
-		if (this._lowMemoryTimer) {
-			this._lowMemoryTimer.cancel();
-			this._lowMemoryTimer = null;
-		}
-		this._lowMemoryTimer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
-		this._lowMemoryTimer.initWithCallback(this, 1000, this._lowMemoryTimer.TYPE_ONE_SHOT);
-	},
-
 	//attribute mivIxml2jxon exchangeData;
 	get exchangeData()
 	{
-		var a;
-		while (this._movingToLowMemory) { a = 1;}
-		while (this._movingToHighMemory) { a = 1;}
-
-		if (this._lowMemoryExchangeData) {
-dump("H");
-			this._movingToHighMemory = true;
-			try {
-				this._exchangeData = new mivIxml2jxon(this._lowMemoryExchangeData, 0, null);
-			}
-			catch(err) {
-				dump("ERROR: Cannot convert lowMemory ExchangeBaseItem back to full memory.: err="+err+"\n");
-			}
-			this._lowMemoryExchangeData = null;
-			this._movingToHighMemory = false;
-		}
-
-		if (this._exchangeData) {
-			this.startLowMemoryTimer();
-		}
 		return this._exchangeData;
 	},
 
@@ -2927,15 +2886,11 @@ dump("H");
 	{
 		//this.logInfo("exchangeData:"+aValue.toString());
 		//dump("exchangeData:"+aValue.toString()+"\n\n");
-if (!aValue) { dump("N "+this.globalFunctions.STACKshort()+"\n");}
 
 		this.initialize();
+dump("\n1. aItems[index]:"+JSON.stringify(aValue)+"\n\n");
+dump("\n2. aItems[index]:"+xml2json.toString(aValue)+"\n\n");
 		this._exchangeData = aValue;
-		this._lowMemoryExchangeData = null;
-
-		if (this._exchangeData) {
-			this.startLowMemoryTimer();
-		}
 	},
 
 	convertToExchange: function _convertToExchange() 
@@ -3734,28 +3689,28 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 		var me = false;
 		for each(var alias in this.mailboxAliases) {
-			if (mbox.getTagValue("t:EmailAddress","unknown").toLowerCase() == alias.toLowerCase()) {
+			if (xml2json.getTagValue(mbox, "t:EmailAddress","unknown").toLowerCase() == alias.toLowerCase()) {
 				me = true;
-				this.logInfo("createAttendee: Title:"+this.title+", email:"+mbox.getTagValue("t:EmailAddress","unknown")+". This address is mine ("+alias+").\n");
+				this.logInfo("createAttendee: Title:"+this.title+", email:"+xml2json.getTagValue(mbox, "t:EmailAddress","unknown")+". This address is mine ("+alias+").\n");
 				break;
 			}
 		}
 
 		// We also need to check aliases but these do not get stored yet.
 
-		switch (mbox.getTagValue("t:RoutingType","unknown")) {
+		switch (xml2json.getTagValue(mbox, "t:RoutingType","unknown")) {
 			case "SMTP" :
-				attendee.id = 'mailto:' + mbox.getTagValue("t:EmailAddress","unknown");
+				attendee.id = 'mailto:' + xml2json.getTagValue(mbox, "t:EmailAddress","unknown");
 				break;
 			case "EX" :
-				attendee.id = 'ldap:' + mbox.getTagValue("t:EmailAddress","unknown");
+				attendee.id = 'ldap:' + xml2json.getTagValue(mbox, "t:EmailAddress","unknown");
 				break;
 			default:
-				this.logInfo("createAttendee: Unknown RoutingType:'"+mbox.getTagValue("t:RoutingType")+"'");
-				attendee.id = 'mailto:' + mbox.getTagValue("t:EmailAddress","unknown");
+				this.logInfo("createAttendee: Unknown RoutingType:'"+xml2json.getTagValue(mbox, "t:RoutingType")+"'");
+				attendee.id = 'mailto:' + xml2json.getTagValue(mbox, "t:EmailAddress","unknown");
 				break;
 		}
-		attendee.commonName = mbox.getTagValue("t:Name");
+		attendee.commonName = xml2json.getTagValue(mbox, "t:Name");
 		attendee.rsvp = "FALSE";
 		attendee.userType = "INDIVIDUAL";
 		attendee.role = aType;
@@ -3765,8 +3720,8 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 				//dump("createAttendee A: Title:"+this.title+", attendee:"+attendee.id+", myResponseType:"+this.myResponseType+", attendee.participationStatus:"+attendee.participationStatus+"\n");
 		}
 		else {
-			if (aElement.getTagValue("t:ResponseType", "") != "") {
-				attendee.participationStatus = participationMap[aElement.getTagValue("t:ResponseType")];
+			if (xml2json.getTagValue(aElement, "t:ResponseType", "") != "") {
+				attendee.participationStatus = participationMap[xml2json.getTagValue(aElement, "t:ResponseType")];
 				//dump("createAttendee B: Title:"+this.title+", attendee:"+attendee.id+", ResponseType:"+aElement.getTagValue("t:ResponseType")+", attendee.participationStatus:"+attendee.participationStatus+"\n");
 			}
 		}
@@ -3810,7 +3765,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	getTag: function _getTag(aTagName)
 	{
 		if (this.exchangeData) {
-			return this.exchangeData.getTag(aTagName);
+			return xml2json.getTag(this.exchangeData, aTagName);
 		}
 
 		return null;
@@ -3819,7 +3774,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	getTags: function _getTags(aTagName)
 	{
 		if (this.exchangeData) {
-			return this.exchangeData.getTags(aTagName);
+			return xml2json.getTags(this.exchangeData, aTagName);
 		}
 
 		return null;
@@ -3828,7 +3783,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	getTagValue: function _getTagValue(aTagName, aDefaultValue)
 	{
 		if (this.exchangeData) {
-			return this.exchangeData.getTagValue(aTagName, aDefaultValue);
+			return xml2json.getTagValue(this.exchangeData, aTagName, aDefaultValue);
 		}
 
 		return aDefaultValue;
@@ -3836,10 +3791,10 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 	getAttributeByTag: function _getAttributeByTag(aTagName, aAttribute, aDefaultValue)
 	{
-		//this.logInfo("getAttributeByTag 1: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
+		dump("getAttributeByTag 1: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute+"\n");
 		if (this.exchangeData) {
-		//this.logInfo("getAttributeByTag 2: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
-			return this.exchangeData.getAttributeByTag(aTagName, aAttribute, aDefaultValue);
+		dump("getAttributeByTag 2: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute+"\n");
+			return xml2json.getAttributeByTag(this.exchangeData, aTagName, aAttribute, aDefaultValue);
 		}
 		//this.logInfo("getAttributeByTag 3: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
 
@@ -3893,11 +3848,6 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 			this._exceptions[index].deleteItem();
 			this._exceptions[index] = null;
 			delete this._exceptions[index];
-		}
-
-		if (this._lowMemoryTimer) {
-			this._lowMemoryTimer.cancel();
-			this._lowMemoryTimer = null;
 		}
 
 		this._exchangeData = null;

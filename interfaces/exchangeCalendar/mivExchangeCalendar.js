@@ -72,6 +72,9 @@ Cu.import("resource://exchangecalendar/erSendMeetingRespons.js");
 Cu.import("resource://exchangecalendar/erSyncInbox.js");
 Cu.import("resource://exchangecalendar/erCreateAttachment.js");
 Cu.import("resource://exchangecalendar/erDeleteAttachment.js");
+
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+
 //Cu.import("resource://interfaces/xml.js");
 
 //Cu.import("resource://interfaces/exchangeEvent/mivExchangeEvent.js");
@@ -291,6 +294,8 @@ const MAPI_PidLidReminderSet = "34051";
 //var EXPORTED_SYMBOLS = ["calExchangeCalendar"];
 
 function calExchangeCalendar() {
+
+try{
 	this.myId = null;
 
 	this.initProviderBase();
@@ -404,6 +409,7 @@ function calExchangeCalendar() {
 	this.itemUpdates = 0;
 	this.itemsFromExchange = 0;
 	this.masterCount = 0;
+}catch(err){dump("mivExchangeCalendar.new Err:"+err+"\n");}
 }
 
 var calExchangeCalendarGUID = "720a458e-b6cd-4883-8a4d-5be27ec454d8";
@@ -5714,7 +5720,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		this.saveCredentials(erFindCalendarItemsRequest.argument);
 	},
 
-	findMasterOccurrencesOk: function _findMasterOccurrencesOk(erGetItemsRequest, aIds)
+/*	findMasterOccurrencesOk: function _findMasterOccurrencesOk(erGetItemsRequest, aIds)
 	{
 		if (this.debug) this.logInfo("findMasterOccurrencesOk:Start: aIds.length="+aIds.length);
 
@@ -5731,7 +5737,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		erGetItemsRequest= null;
 		aIds = null;
 
-	},
+	},*/
 
 	findOccurrencesOK: function _findOccurrencesOK(erFindOccurrencesRequest, aIds)
 	{
@@ -6413,6 +6419,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 		if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment:"+String(aCalendarItem), 2);
 
 		//var item = createEvent();
+try{
 		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 				.createInstance(Ci.mivExchangeEvent, this);
 
@@ -6436,7 +6443,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 			//dump("convertExchangeAppointmentToCalAppointment. Item.id is missing. this is a required field.\n");
 			return null;
 		}
-
+}catch(err){dump("-- Err:"+err+"\n");}
 		//item.setProperty("X-ChangeKey", aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey"));
 		if ((erGetItemsRequest) && (erGetItemsRequest.argument.occurrenceIndexes) && (erGetItemsRequest.argument.occurrenceIndexes[item.id])) {
 			if (this.debug) this.logInfo(" Muriel:"+erGetItemsRequest.argument.occurrenceIndexes[item.id]+", title:"+item.title);
@@ -6458,7 +6465,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 		}
 		else {
 			if (this.recurringMasterCache[uid]) {
-				if ( (this.recurringMasterCache[uid].changeKey == aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey")) && (this.recurringMasterCache[uid].id == item.id)) {
+				if ( (this.recurringMasterCache[uid].changeKey == xml2json.getAttributeByTag(aCalendarItem, "t:ItemId", "ChangeKey")) && (this.recurringMasterCache[uid].id == item.id)) {
 					//if (this.debug) this.logInfo("Master item is allready in cache and the id and changeKey are the same. Skipping it.");
 			//dump("convertExchangeAppointmentToCalAppointment. Master item is allready in cache and the id and changeKey are the same. Skipping it:"+item.title+", item.calendarItemType:"+item.calendarItemType+"\n");
 					item.deleteItem();
@@ -6485,7 +6492,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 			return null;
 		}
 
-		item.setProperty("DTSTAMP", this.tryToSetDateValue(aCalendarItem.getTagValue("t:DateTimeReceived")));
+		item.setProperty("DTSTAMP", this.tryToSetDateValue(xml2json.getTagValue(aCalendarItem, "t:DateTimeReceived")));
 
 		if (!isMeetingRequest) {
 			//if (this.debug) this.logInfo(" == item.title:"+item.title+", calendarItemType:"+aCalendarItem.getTagValue("t:CalendarItemType"));
@@ -6657,7 +6664,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 
 	convertExchangeTaskToCalTask: function _convertExchangeTaskToCalTask(aTask, erGetItemsRequest)
 	{
-		if (this.debug) this.logInfo("convertExchangeTaskToCalTask:"+String(aTask), 2);
+		if (this.debug) this.logInfo("convertExchangeTaskToCalTask:"+xml2json.toString(aTask), 2);
 		//var item = createTodo();
 		var item = Cc["@1st-setup.nl/exchange/calendartodo;1"]
 				.createInstance(Ci.mivExchangeTodo, this);
@@ -6746,22 +6753,22 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 //				.createInstance(Ci.mivExchangeEvent);
 		item.calendar = this.superCalendar;
 
-		if (aCalendarEvent.getTagValue("t:BusyType") == "Free") {
+		if (xml2json.getTagValue(aCalendarEvent, "t:BusyType") == "Free") {
 			item.setProperty("TRANSP", "TRANSPARENT");
 		}
 		else {
 			item.setProperty("TRANSP", "OPAQUE");
 		}
 
-		item.title = this.tryToSetValue(aCalendarEvent.getTagValue("t:BusyType"), "");
+		item.title = this.tryToSetValue(xml2json.getTagValue(aCalendarEvent, "t:BusyType"), "");
 		if (! item.title) {
 			item.title = "";
 		}
 
-		if (aCalendarEvent.getTag("t:CalendarEventDetails")) {
-			item.title = this.tryToSetValue(aCalendarEvent.getTag("t:CalendarEventDetails").getTagValue("t:Subject"), "")+" ("+item.title+")";
+		if (xml2json.getTag(aCalendarEvent, "t:CalendarEventDetails")) {
+			item.title = this.tryToSetValue(xml2json.getTagValue(xml2json.getTag(aCalendarEvent, "t:CalendarEventDetails"), "t:Subject"), "")+" ("+item.title+")";
 
-			item.setProperty("LOCATION", aCalendarEvent.getTag("t:CalendarEventDetails").getTagValue("t:Location"));
+			item.setProperty("LOCATION", xml2json.getTagValue(xml2json.getTag(aCalendarEvent, "t:CalendarEventDetails"), "t:Location"));
 		}
 		else {
 			item.title = " ("+item.title+")";
@@ -6770,12 +6777,12 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 //		item.setProperty("DESCRIPTION", aCalendarItem.getTagValue("t:Body"));
 
 		item.startDate = null;
-		if (aCalendarEvent.getTagValue("t:StartTime", null)) {
+		if (xml2json.getTagValue(aCalendarEvent, "t:StartTime", null)) {
 			if (this.isVersion2007) {
-				item.startDate = cal.fromRFC3339(aCalendarEvent.getTagValue("t:StartTime", null), this.globalFunctions.ecUTC());
+				item.startDate = cal.fromRFC3339(xml2json.getTagValue(aCalendarEvent, "t:StartTime", null), this.globalFunctions.ecUTC());
 			}
 			else {
-				item.startDate = cal.fromRFC3339(aCalendarEvent.getTagValue("t:StartTime", null), this.globalFunctions.ecDefaultTimeZone());
+				item.startDate = cal.fromRFC3339(xml2json.getTagValue(aCalendarEvent, "t:StartTime", null), this.globalFunctions.ecDefaultTimeZone());
 			}
 		}
 
@@ -6787,12 +6794,12 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		}
 
 		item.endDate = null;
-		if (aCalendarEvent.getTagValue("t:EndTime", null)) {
+		if (xml2json.getTagValue(aCalendarEvent, "t:EndTime", null)) {
 			if (this.isVersion2007) {
-				item.endDate = cal.fromRFC3339(aCalendarEvent.getTagValue("t:EndTime", null), this.globalFunctions.ecUTC());
+				item.endDate = cal.fromRFC3339(xml2json.getTagValue(aCalendarEvent, "t:EndTime", null), this.globalFunctions.ecUTC());
 			}
 			else {
-				item.endDate = cal.fromRFC3339(aCalendarEvent.getTagValue("t:EndTime", null), this.globalFunctions.ecDefaultTimeZone());
+				item.endDate = cal.fromRFC3339(xml2json.getTagValue(aCalendarEvent, "t:EndTime", null), this.globalFunctions.ecDefaultTimeZone());
 			}
 		}
 
@@ -6803,8 +6810,8 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		}
 
 
-		var startDateStr = aCalendarEvent.getTagValue("t:StartTime", "");
-		var endDateStr = aCalendarEvent.getTagValue("t:EndTime", "");
+		var startDateStr = xml2json.getTagValue(aCalendarEvent, "t:StartTime", "");
+		var endDateStr = xml2json.getTagValue(aCalendarEvent, "t:EndTime", "");
 		item.id = this.md5(startDateStr+endDateStr);
 		if (this.itemCache[item.id]) {
 			item = null;
@@ -6830,7 +6837,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			return;
 		}
 
-		var switchValue = aExchangeItem.getTagValue("t:ItemClass", "");
+		var switchValue = xml2json.getTagValue(aExchangeItem, "t:ItemClass", "");
 		if (switchValue.indexOf(".{") > -1) {
 			switchValue = switchValue.substr(0,switchValue.indexOf(".{"));
 		}
@@ -6913,7 +6920,7 @@ return;
 	{
 		if (this.debug) this.logInfo("updateCalendar: We have '"+aItems.length+"' items to update in calendar. fromOfflineCache:"+fromOfflineCache);
 
-		for (var index in aItems) {
+		for (var index = 0; index < aItems.length; index++) {
 
 			this.itemsFromExchange++;
 
@@ -8257,7 +8264,7 @@ else {
 			}
 		}
 		
-		var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+aCalItem.id+"', '"+aCalItem.changeKey+"', '"+startDate+"', '"+endDate+"', '"+aCalItem.uid+"', '"+this.getItemType(aCalItem)+"', '"+aCalItem.parentItem.id+"', '"+aExchangeItem.toString().replace(/\x27/g, "''")+"')";
+		var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+aCalItem.id+"', '"+aCalItem.changeKey+"', '"+startDate+"', '"+endDate+"', '"+aCalItem.uid+"', '"+this.getItemType(aCalItem)+"', '"+aCalItem.parentItem.id+"', '"+xml2json.toString(aExchangeItem).toString().replace(/\x27/g, "''")+"')";
 		if (this.noDB) return;
 		if (!this.executeQuery(sqlStr)) {
 			if (this.debug) this.logInfo("Error inserting item into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
@@ -8354,7 +8361,7 @@ else {
 			}
 		}
 		
-		var sqlStr = "UPDATE items SET event='"+eventField+"', id='"+aCalItem.id+"', changeKey='"+aCalItem.changeKey+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+aCalItem.uid+"', type='"+this.getItemType(aCalItem)+"', parentItem='"+aCalItem.parentItem.id+"', item='"+aExchangeItem.toString().replace(/\x27/g, "''")+"' WHERE id='"+aCalItem.id+"'";
+		var sqlStr = "UPDATE items SET event='"+eventField+"', id='"+aCalItem.id+"', changeKey='"+aCalItem.changeKey+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+aCalItem.uid+"', type='"+this.getItemType(aCalItem)+"', parentItem='"+aCalItem.parentItem.id+"', item='"+xml2json.toString(aExchangeItem).toString().replace(/\x27/g, "''")+"' WHERE id='"+aCalItem.id+"'";
 		if (this.noDB) return;
 		if (!this.executeQuery(sqlStr)) {
 			if (this.debug) this.logInfo("Error updating item in offlineCacheDB. Error:"+this.offlineCacheDB.lastErrorString);
@@ -8519,7 +8526,9 @@ else {
 
 				if (doContinue) {
 					if (this.debug) this.logInfo("Found item in offline Cache.");
-					var cachedItem = this.globalFunctions.xmlToJxon(sqlStatement.row.item);
+					var root = xml2json.newJSON();
+					xml2json.parseXML(root, sqlStatement.row.item);
+					var cachedItem = root.elements[0];
 
 					//cachedItem.content = ;
 					//if (this.debug) this.logInfo(" --:"+cachedItem.toString());

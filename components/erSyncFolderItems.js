@@ -119,7 +119,7 @@ erSyncFolderItemsRequest.prototype = {
 		
 		this.parent.xml2jxon = true;
 		
-		//exchWebService.commonFunctions.LOG("erSyncFolderItemsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
+		dump("erSyncFolderItemsRequest.execute:"+String(this.parent.makeSoapMessage(req))+"\n");
 		
 		//exchWebService.commonFunctions.LOG(String(this.parent.makeSoapMessage(req)));
 		this.attempts++;

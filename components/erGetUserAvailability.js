@@ -48,6 +48,8 @@ Cu.import("resource://exchangecalendar/ecFunctions.js");
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/soapFunctions.js");
 
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+
 var EXPORTED_SYMBOLS = ["erGetUserAvailabilityRequest"];
 
 function erGetUserAvailabilityRequest(aArgument, aCbOk, aCbError, aListener)
@@ -80,42 +82,46 @@ erGetUserAvailabilityRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.execute\n");
 
-		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetUserAvailabilityRequest xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var root = xml2json.newJSON();
+		xml2json.parseXML(root, '<nsMessages:GetUserAvailabilityRequest xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var req = root.elements[0];
 
 		/* WTF really?  Just give me UTC. */
-		var timeZone = req.addChildTag("TimeZone", "nsTypes", null);
-		timeZone.addChildTag("Bias", "nsTypes", "0");
-		var standardTime = timeZone.addChildTag("StandardTime", "nsTypes", null);
-		standardTime.addChildTag("Bias", "nsTypes", "0");
-		standardTime.addChildTag("Time", "nsTypes", "00:00:00");
-		standardTime.addChildTag("DayOrder", "nsTypes", "1");
-		standardTime.addChildTag("Month", "nsTypes", "0");
-		standardTime.addChildTag("DayOfWeek", "nsTypes", "Sunday");
+		var timeZone = xml2json.addTag(req, "TimeZone", "nsTypes", null);
+		xml2json.addTag(timeZone, "Bias", "nsTypes", "0");
+		var standardTime = xml2json.addTag(timeZone, "StandardTime", "nsTypes", null);
+		xml2json.addTag(standardTime, "Bias", "nsTypes", "0");
+		xml2json.addTag(standardTime, "Time", "nsTypes", "00:00:00");
+		xml2json.addTag(standardTime, "DayOrder", "nsTypes", "1");
+		xml2json.addTag(standardTime, "Month", "nsTypes", "0");
+		xml2json.addTag(standardTime, "DayOfWeek", "nsTypes", "Sunday");
 
-		var daylightTime = timeZone.addChildTag("DaylightTime", "nsTypes", null);
-		daylightTime.addChildTag("Bias", "nsTypes", "0");
-		daylightTime.addChildTag("Time", "nsTypes", "00:00:00");
-		daylightTime.addChildTag("DayOrder", "nsTypes", "1");
-		daylightTime.addChildTag("Month", "nsTypes", "0");
-		daylightTime.addChildTag("DayOfWeek", "nsTypes", "Sunday");
+		var daylightTime = xml2json.addTag(timeZone, "DaylightTime", "nsTypes", null);
+		xml2json.addTag(daylightTime, "Bias", "nsTypes", "0");
+		xml2json.addTag(daylightTime, "Time", "nsTypes", "00:00:00");
+		xml2json.addTag(daylightTime, "DayOrder", "nsTypes", "1");
+		xml2json.addTag(daylightTime, "Month", "nsTypes", "0");
+		xml2json.addTag(daylightTime, "DayOfWeek", "nsTypes", "Sunday");
 
-		var mailboxData = req.addChildTag("MailboxDataArray", "nsMessages", null).addChildTag("MailboxData", "nsTypes", null);
-		mailboxData.addChildTag("Email", "nsTypes", null).addChildTag("Address", "nsTypes", this.email);
-		mailboxData.addChildTag("AttendeeType", "nsTypes", this.attendeeType);
+		var mailboxDataArray = xml2json.addTag(req, "MailboxDataArray", "nsMessages", null);
+		var mailboxData = xml2json.addTag(mailboxDataArray, "MailboxData", "nsTypes", null);
+		var email = xml2json.addTag(mailboxData, "Email", "nsTypes", null);
+		xml2json.addTag(email, "Address", "nsTypes", this.email);
+		xml2json.addTag(mailboxData, "AttendeeType", "nsTypes", this.attendeeType);
 	
-		var freeBusyViewOptions = req.addChildTag("FreeBusyViewOptions", "nsTypes", null);
-		var timeWindow = freeBusyViewOptions.addChildTag("TimeWindow", "nsTypes", null);
-		timeWindow.addChildTag("StartTime", "nsTypes", this.start);
-		timeWindow.addChildTag("EndTime", "nsTypes", this.end);
+		var freeBusyViewOptions = xml2json.addTag(req, "FreeBusyViewOptions", "nsTypes", null);
+		var timeWindow = xml2json.addTag(freeBusyViewOptions, "TimeWindow", "nsTypes", null);
+		xml2json.addTag(timeWindow, "StartTime", "nsTypes", this.start);
+		xml2json.addTag(timeWindow, "EndTime", "nsTypes", this.end);
 
-		freeBusyViewOptions.addChildTag("MergedFreeBusyIntervalInMinutes", "nsTypes", "15");
+		xml2json.addTag(freeBusyViewOptions, "MergedFreeBusyIntervalInMinutes", "nsTypes", "15");
 
-		freeBusyViewOptions.addChildTag("RequestedView", "nsTypes", "DetailedMerged");
+		xml2json.addTag(freeBusyViewOptions, "RequestedView", "nsTypes", "DetailedMerged");
 
-		this.parent.xml2jxon = true;
+		this.parent.xml2json = true;
 
 		//exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.execute: "+String(this.parent.makeSoapMessage(req))+"\n");
-                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+                this.parent.sendRequest(this.parent.makeSoapMessage2(req), this.serverUrl);
 		req = null;
 	},
 
@@ -123,14 +129,14 @@ erGetUserAvailabilityRequest.prototype = {
 	{
 		//exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: "+String(aResp)+"\n");
 
-		var rm = aResp.XPath("/s:Envelope/s:Body/GetUserAvailabilityResponse/FreeBusyResponseArray/FreeBusyResponse/ResponseMessage[@ResponseClass='Success' and ResponseCode='NoError']");
+		var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/GetUserAvailabilityResponse/FreeBusyResponseArray/FreeBusyResponse/ResponseMessage[@ResponseClass='Success' and ResponseCode='NoError']");
 
 		if (rm.length == 0) {
 			rm = null;
-			var rm = aResp.XPath("/s:Envelope/s:Body/GetUserAvailabilityResponse/FreeBusyResponseArray/FreeBusyResponse/ResponseMessage[@ResponseClass='Error']");
+			var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/GetUserAvailabilityResponse/FreeBusyResponseArray/FreeBusyResponse/ResponseMessage[@ResponseClass='Error']");
 			if (rm.length == 0) {
 				//Check if we only have a /s:Envelope/s:Body/GetUserAvailabilityResponse
-				var rm = aResp.XPath("/s:Envelope/s:Body/GetUserAvailabilityResponse");
+				var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/GetUserAvailabilityResponse");
 				if (rm.length == 0) {
 					exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: Respons does not contain expected field");
 					this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field");
@@ -140,8 +146,8 @@ erGetUserAvailabilityRequest.prototype = {
 				}
 			}
 			else {
-				var responseCode = rm[0].getTagValue("m:ResponseCode", "");
-				var messageText = rm[0].getTagValue("m:MessageText", "");
+				var responseCode = xml2json.getTagValue(rm[0], "m:ResponseCode", "");
+				var messageText = xml2json.getTagValue(rm[0], "m:MessageText", "");
 				if (responseCode.indexOf("ErrorMailRecipientNotFound") > -1) {
 					exchWebService.commonFunctions.LOG("erGetUserAvailabilityRequest.onSendOk: "+messageText);
 				}
@@ -156,7 +162,7 @@ erGetUserAvailabilityRequest.prototype = {
 		}
 		rm = null;
 
-		var items = aResp.XPath("/s:Envelope/s:Body/GetUserAvailabilityResponse/FreeBusyResponseArray/FreeBusyResponse/FreeBusyView/CalendarEventArray/CalendarEvent");
+		var items = xml2json.XPath(aResp, "/s:Envelope/s:Body/GetUserAvailabilityResponse/FreeBusyResponseArray/FreeBusyResponse/FreeBusyView/CalendarEventArray/CalendarEvent");
 
 		// We also need to get the working hour period. But lightning cannot handle this.
 		//dump("erGetUserAvailabilityRequest.onSendOk 2: We have '"+items.length+"' items.\n");

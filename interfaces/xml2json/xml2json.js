@@ -424,7 +424,7 @@ function realGetValue(aParent) {
 }
 
 function realGetTags(aParent, aTagName) {
-	if ((!aParent) || (!aParent["elements"])) throw -50;
+	if ((!aParent) || (!aParent["elements"])) throw -54;
 	let result = [];
 
 	var tmpTN = splitTagName(aTagName);
@@ -567,7 +567,7 @@ function realElementToString(aElement) {
 }
 
 function realSetAttribute(aParent, aName, aValue) {
-	if ((!aParent) || (!aParent["elements"])) throw -50;
+	if ((!aParent) || (!aParent["elements"])) throw -51;
 	if (!aParent["attributes"]) {
 		aParent.attributes = {};
 	}
@@ -576,7 +576,7 @@ function realSetAttribute(aParent, aName, aValue) {
 
 function realAddContent(aParent, aString) {
 	//dump("addContent: aString="+aString+"\n");
-	if ((!aParent) || (!aParent["elements"])) throw -50;
+	if ((!aParent) || (!aParent["elements"])) throw -55;
 	if (!aParent["content"]) {
 		aParent.content = [];
 	}
@@ -656,7 +656,7 @@ var xml2json = {
 	},
 
 	addTagObject: function _addTagObject(aParent, aChildObject) {
-		if ((!aParent) || (!aParent["elements"])) throw -50;
+		if ((!aParent) || (!aParent["elements"])) throw -52;
 		aParent.elements.push(aChildObject);
 
 		return aParent.elements[aParent.elements.length-1];
@@ -670,10 +670,11 @@ var xml2json = {
 		return realGetValue(aParent);
 	},
 
-	getTagValue: function _getTagValue(aParent, aTagName) {
-		if ((!aParent) || (!aParent["elements"]) || (!aTagName)) throw -61;
+	getTagValue: function _getTagValue(aParent, aTagName, aDefault) {
+		if ((!aParent) || (!aParent["elements"]) || (!aTagName)) throw "-62 aParent:"+aParent+", aTagName="+aTagName;
 
 		let result = null;
+		if (aDefault) result = aDefault;
 		let i = 0;
 		var tmpTN = splitTagName(aTagName);
 		while ((!result) && (i < aParent.elements.length)) {
@@ -702,7 +703,7 @@ var xml2json = {
 	},
 
 	addTag: function _addTag(aParent, aTagName, aNameSpace, aValue) {
-		if ((!aParent) || (!aParent["elements"])) throw -50;
+		if ((!aParent) || (!aParent["elements"])) throw -53;
 		var tmpJson = {tagName: aTagName,
 				nameSpace: aNameSpace,
 				elements: []};
@@ -763,10 +764,15 @@ var xml2json = {
 		return null;
 	},
 
-	getAttribute: function _getAttribute(aParent, aName) {
+	getAttribute: function _getAttribute(aParent, aName, aDefault) {
 		if (!aParent) throw -70;
 
-		if ((!aParent["attributes"]) || (!aParent.attributes[aName])) return null;
+		if ((!aParent["attributes"]) || (!aParent.attributes[aName])) {
+			if (aDefault) {
+				return aDefault;
+			}
+			return null;
+		}
 
 		return convertSpecialCharatersFromXML(aParent.attributes[aName]);
 	},

@@ -201,7 +201,6 @@ erFindCalendarItemsRequest.prototype = {
 								}
 							case "RecurringMaster" :
 							case "Single" :
-dump("!!="+xml2json.getTagValue(calendarItems[index], "t:CalendarItemType")+"\n");
 								this.ids.push({Id: xml2json.getAttributeByTag(calendarItems[index], "t:ItemId","Id"),
 										  ChangeKey: xml2json.getAttributeByTag(calendarItems[index], "t:ItemId", "ChangeKey"),
 										  type: xml2json.getTagValue(calendarItems[index], "t:CalendarItemType"),
