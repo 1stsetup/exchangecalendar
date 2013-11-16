@@ -87,31 +87,31 @@ function makeParentFolderIds2(aParentItem, aArgument)
 // This is the xml2json version.
 function makeParentFolderIds3(aParentItem, aArgument)
 {
-	var root = new xml2json();
-	var ParentFolderIds = root.addTag(aParentItem, "nsMessages");
-	root.setAttributeTo(ParentFolderIds, "xmlns:nsMessages", nsMessagesStr);
-	root.setAttributeTo(ParentFolderIds, "xmlns:nsTypes", nsTypesStr);
+	var root = xml2json.newJSON();
+	var ParentFolderIds = xml2json.addTag(root, aParentItem, "nsMessages");
+	xml2json.setAttribute(ParentFolderIds, "xmlns:nsMessages", nsMessagesStr);
+	xml2json.setAttribute(ParentFolderIds, "xmlns:nsTypes", nsTypesStr);
 
 	if (! aArgument.folderID) {
-		let DistinguishedFolderId = root.addChildTagTo(ParentFolderIds, "DistinguishedFolderId", "nsTypes", null);
-		root.setAttributeTo(DistinguishedFolderId, "Id", aArgument.folderBase);
+		let DistinguishedFolderId = xml2json.addTag(ParentFolderIds, "DistinguishedFolderId", "nsTypes", null);
+		xml2json.setAttribute(DistinguishedFolderId, "Id", aArgument.folderBase);
 
 		// If the folderBase is a public folder then do not provide mailbox if
 		// available.
 		if (! publicFoldersMap[aArgument.folderBase]) {
 			if (aArgument.mailbox) {
-				let mailbox = root.addChildTagTo(DistinguishedFolderId, "Mailbox", "nsTypes", null);
-				root.addChildTagTo(mailbox, "EmailAddress", "nsTypes", aArgument.mailbox);
+				let mailbox = xml2json.addTag(DistinguishedFolderId, "Mailbox", "nsTypes", null);
+				xml2json.addTag(mailbox, "EmailAddress", "nsTypes", aArgument.mailbox);
 				mailbox = null;
 			}
 		}
 		DistinguishedFolderId = null;
 	}
 	else {
-		let FolderId = root.addChildTagTo(ParentFolderIds, "FolderId", "nsTypes", null);
-		root.setAttributeTo(FolderId, "Id", aArgument.folderID);
+		let FolderId = xml2json.addChildTag(ParentFolderIds, "FolderId", "nsTypes", null);
+		xml2json.setAttribute(FolderId, "Id", aArgument.folderID);
 		if ((aArgument.changeKey) && (aArgument.changeKey != "")) {
-			root.setAttributeTo(FolderId, "ChangeKey", aArgument.changeKey);
+			xml2json.setAttribute(FolderId, "ChangeKey", aArgument.changeKey);
 		}
 		FolderId = null;
 	}

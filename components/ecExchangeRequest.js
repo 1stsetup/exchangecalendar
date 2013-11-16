@@ -615,7 +615,7 @@ catch(err){
 		var newXML;
 		try {
 			if (this.xml2json === true) {
-				newXML = new xml2json();
+				newXML = xml2json.newJSON();
 			}
 			else {
 				newXML = new mivIxml2jxon('', 0, null);
@@ -625,7 +625,7 @@ catch(err){
 
 		try {
 			if (this.xml2json === true) {
-				newXML.parseXML(xml);
+				xml2json.parseXML(newXML, xml);
 			}
 			else {
 				newXML.addNameSpace("s", nsSoapStr);
@@ -638,8 +638,6 @@ catch(err){
 		}
 		catch(exc) { if (this.debug) this.logInfo("processXMLString error:"+exc.name+", "+exc.message+"\n"+xml);} 
 
-//		dump("StringSize:"+xml.length+", xmlSize:"+newXML.getSize()+"\n");
-
 		this.mAuthFail = 0;
 		this.mRunning  = false;
 
@@ -647,10 +645,9 @@ catch(err){
 			// Try to get server version and store it.
 			try {
 				if (this.xml2json === true) {
-					let serverVersion = newXML.XPath("/Envelope/Header/ServerVersionInfo");
-					if ((serverVersion.length > 0) && (newXML.getAttributeFrom(serverVersion[0], "Version") !== null)) {
-dump("\n %% Version="+newXML.getAttributeFrom(serverVersion[0], "Version")+"\n");
-						this.exchangeStatistics.setServerVersion(this.currentUrl, newXML.getAttributeFrom(serverVersion[0], "Version"), newXML.getAttributeFrom(serverVersion[0], "MajorVersion"), newXML.getAttributeFrom(serverVersion[0], "MinorVersion"));
+					let serverVersion = xml2json.XPath(newXML,"/Envelope/Header/ServerVersionInfo");
+					if ((serverVersion.length > 0) && (xml2json.getAttribute(serverVersion[0], "Version") !== null)) {
+						this.exchangeStatistics.setServerVersion(this.currentUrl, xml2json.getAttribute(serverVersion[0], "Version"), xml2json.getAttribute(serverVersion[0], "MajorVersion"), xml2json.getAttribute(serverVersion[0], "MinorVersion"));
 					}
 					serverVersion = null;
 				}
@@ -671,11 +668,9 @@ dump("\n %% Version="+newXML.getAttributeFrom(serverVersion[0], "Version")+"\n")
 				exchWebService.prePasswords[this.mArgument.user+"@"+this.currentUrl].tryCount = 0;
 			}
 
-var d=new Date();var time3=d.getTime();
 try {
 			this.mCbOk(this, newXML);
 }catch(err) { dump("onload: err:"+err+"\n"+this.globalFunctions.STACK()+"\n"+xml+"\n");}
-var d=new Date();var time4=d.getTime();
 			this.originalReq = null;
 		}
 
@@ -959,41 +954,38 @@ var d=new Date();var time4=d.getTime();
 	{
 		this.originalReq = aReq;
 
-		var root = new xml2json();
-		var msg = root.addTag("Envelope", "nsSoap");
-		root.setAttributeTo(msg, "xmlns:nsSoap", nsSoapStr);
-		root.setAttributeTo(msg, "xmlns:nsMessages", nsMessagesStr);
-		root.setAttributeTo(msg, "xmlns:nsTypes", nsTypesStr);
+		var root = xml2json.newJSON();
+		var msg = xml2json.addTag(root, "Envelope", "nsSoap");
+		xml2json.setAttribute(msg, "xmlns:nsSoap", nsSoapStr);
+		xml2json.setAttribute(msg, "xmlns:nsMessages", nsMessagesStr);
+		xml2json.setAttribute(msg, "xmlns:nsTypes", nsTypesStr);
 
 		this.version = this.exchangeStatistics.getServerVersion(this.mArgument.serverUrl);
 		
-		var header = root.addChildTagTo(msg,"Header", "nsSoap", null);
+		var header = xml2json.addTag(msg,"Header", "nsSoap", null);
 
-		var requestServerVersion = root.addChildTagTo(header, "RequestServerVersion", "nsTypes", null);
-		root.setAttributeTo(requestServerVersion, "Version", this.version);
+		var requestServerVersion = xml2json.addTag(header, "RequestServerVersion", "nsTypes", null);
+		xml2json.setAttribute(requestServerVersion, "Version", this.version);
 		
 		var exchTimeZone = this.timeZones.getExchangeTimeZoneByCalTimeZone(this.globalFunctions.ecDefaultTimeZone(), this.mArgument.serverUrl, cal.now());
 
 		if (exchTimeZone) {
-				let timeZoneContext = root.addChildTagTo(header, "TimeZoneContext", "nsTypes", null);
-				let tmpTimeZone = root.addChildTagTo(timeZoneContext, "TimeZoneDefinition", "nsTypes");
+				let timeZoneContext = xml2json.addTag(header, "TimeZoneContext", "nsTypes", null);
+				let tmpTimeZone = xml2json.addTag(timeZoneContext, "TimeZoneDefinition", "nsTypes");
 				if (this.version.indexOf("2007") < 0) {
-					root.setAttributeTo(tmpTimeZone, "Name",exchTimeZone.name);
+					xml2json.setAttribute(tmpTimeZone, "Name",exchTimeZone.name);
 				}
-				root.setAttributeTo(tmpTimeZone, "Id",exchTimeZone.id);
+				xml2json.setAttribute(tmpTimeZone, "Id",exchTimeZone.id);
 				tmpTimeZone = null;
 				timeZoneContext = null;
 		}
 		header = null;
 
-		let body = root.addChildTagTo(msg, "Body", "nsSoap", null);
-		root.addTagObjectTo(body, aReq);
+		let body = xml2json.addTag(msg, "Body", "nsSoap", null);
+		xml2json.addTagObject(body, aReq);
 		body = null;
 
-//dump("Going to send1:"+msg.toString().length+", xml:"+msg.getSize()+"\n");
-dump("Going to send2:"+root.toString()+"\n");
-
-		var tmpStr = xml_tag + root.toString();
+		var tmpStr = xml_tag + xml2json.toString(root);
 		msg = null;
 		root = null;
 		return tmpStr;
