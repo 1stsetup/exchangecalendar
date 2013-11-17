@@ -379,7 +379,7 @@ mivExchangeTodo.prototype = {
 			if (this._exchangeData) {
 				var tmpStr = this._exchangeData.XPath("/t:Companies/t:String");
 				for each(var string in tmpStr) {
-					this._companies.push(string.value);
+					this._companies.push(xml2json.getValue(string));
 				}
 				tmpStr = null;
 			}
