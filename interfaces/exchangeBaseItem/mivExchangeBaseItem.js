@@ -1207,7 +1207,7 @@ try {
 				this.logInfo("get recurrenceInfo 0: title:"+this.title+", we al ready have recurrenceinfo.");
 			}
 			if (!this.exchangeData) {
-				dump("get recurrenceInfo 0: title:"+this.title+", we do not have _exchangeData.\n");
+				dump("get recurrenceInfo 0: title:"+this.title+", we do not have _exchangeData. this.exchangeData:"+this.exchangeData+"\n");
 			}
 		}
 
@@ -1358,11 +1358,8 @@ try {
 			this._calEvent.setProperty(name, this.percentComplete);
 			break;
 		case "DESCRIPTION": 
-dump("getProperty DESCRIPTION 1: title="+this.title+"\n");
 			if (!this._body) {
-dump("getProperty DESCRIPTION 2: title="+this.title+"\n");
 				this._body = this.getTagValue("t:Body", null);
-dump("getProperty DESCRIPTION 3: title="+this.title+"\n");
 				//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
 				if (this._body) {
 					this._calEvent.setProperty(name, this._body);
@@ -1925,10 +1922,10 @@ dump("getProperty DESCRIPTION 3: title="+this.title+"\n");
 				for each(var fileAttachment in fileAttachments) {
 	//				if (this.debug) this.logInfo(" -- Attachment: name="+fileAttachment.getTagValue("t:Name"));
 					var newAttachment = cal.createAttachment();
-					newAttachment.setParameter("X-AttachmentId",fileAttachment.getAttributeByTag("t:AttachmentId","Id")); 
-					newAttachment.uri = cal.makeURL("http://somewhere/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Name"))+"&size="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Size", ""))+"&calendarid="+encodeURIComponent(this.calendar.id));
+					newAttachment.setParameter("X-AttachmentId",xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id")); 
+					newAttachment.uri = cal.makeURL("http://somewhere/?id="+encodeURIComponent(xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id"))+"&name="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Name"))+"&size="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Size", ""))+"&calendarid="+encodeURIComponent(this.calendar.id));
 
-					//if (this.debug) this.logInfo("New attachment URI:"+this.serverUrl+"/?id="+encodeURIComponent(fileAttachment.getAttributeByTag("t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
+					//if (this.debug) this.logInfo("New attachment URI:"+this.serverUrl+"/?id="+encodeURIComponent(xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
 
 					this._attachments.push(newAttachment.clone());
 					this._calEvent.addAttachment(newAttachment);
@@ -2580,9 +2577,7 @@ dump("getProperty DESCRIPTION 3: title="+this.title+"\n");
 	get startTimeZoneId()
 	{
 		if (!this._startTimeZoneId) {
-dump(" $$ 1 ..\n");
 			this._startTimeZoneId = this.getAttributeByTag("t:StartTimeZone", "Id", null);
-dump(" $$ 2 ..\n");
 		}
 		return this._startTimeZoneId;
 	},
@@ -3765,9 +3760,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	getTag: function _getTag(aTagName)
 	{
 		if (this.exchangeData) {
-try{
 			return xml2json.getTag(this.exchangeData, aTagName);
-}catch(err){dump(" getTag ERROR:"+err+"\n");}
 		}
 
 		return null;
@@ -3776,9 +3769,7 @@ try{
 	getTags: function _getTags(aTagName)
 	{
 		if (this.exchangeData) {
-try{
 			return xml2json.getTags(this.exchangeData, aTagName);
-}catch(err){dump(" getTags ERROR:"+err+"\n");}
 		}
 
 		return null;
@@ -3787,12 +3778,7 @@ try{
 	getTagValue: function _getTagValue(aTagName, aDefaultValue)
 	{
 		if (this.exchangeData) {
-if (aTagName == "t:Body") {
-	dump(" #$# body:"+JSON.stringify(this.exchangeData)+"\n");
-}
-try{
 			return xml2json.getTagValue(this.exchangeData, aTagName, aDefaultValue);
-}catch(err){dump(" getTagValue ERROR:"+err+"\n");}
 		}
 
 		return aDefaultValue;

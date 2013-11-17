@@ -300,9 +300,7 @@ mivExchangeTimeZones.prototype = {
 					}
 				}
 				if ((tmpScore > zoneScore) && (tmpScore > 0)) {
-dump(" A. ((tmpScore > zoneScore) && (tmpScore > 0))\n");
 					if (calTimeZone.equal(exchangeTimeZone)) {
-dump(" B. ((tmpScore > zoneScore) && (tmpScore > 0))\n");
 						result = tmpZone;
 						zoneScore = tmpScore;
 					}
@@ -312,7 +310,6 @@ dump(" B. ((tmpScore > zoneScore) && (tmpScore > 0))\n");
 
 		var weHaveAMatch = false;
 		if (result == null) {
-dump("  ++ We scan the while list to find a match.\n");
 			// We scan the while list to find a match.
 			var timezones = this.timezoneService.timezoneIds;
 			var tmpResult = null;

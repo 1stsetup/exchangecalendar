@@ -22,12 +22,11 @@
 #include "calIAttendee.idl"
 
 interface mivExchangeBaseItem;
-interface mivIxml2jxon;
 
 [scriptable, uuid(0bc8c910-70f4-4c5c-a2cd-e2657ca53595)]
 interface mivExchangeAttendee : calIAttendee
 {
 	attribute mivExchangeBaseItem parent;
 	void cloneToCalAttendee(in calIAttendee aCalAttendee);
-	void convertFromExchange(in mivExchangeBaseItem aParent, in mivIxml2jxon aElement, in AUTF8String aType);
+	void convertFromExchange(in mivExchangeBaseItem aParent, in jsval aElement, in AUTF8String aType);
 };

@@ -27,6 +27,8 @@ var components = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+
 const participationMap = {
 	"Unknown"	: "NEEDS-ACTION",
 	"NoResponseReceived" : "NEEDS-ACTION",
@@ -297,7 +299,7 @@ mivExchangeAttendee.prototype = {
 
 		this._parent = aParent;
 
-		let mbox = aElement.getTag("t:Mailbox");
+		let mbox = xml2json.getTag(aElement, "t:Mailbox");
 
 		if (!aType) {
 			aType = "REQ-PARTICIPANT";
@@ -306,28 +308,28 @@ mivExchangeAttendee.prototype = {
 		var me = false;
 
 		for each(var alias in aParent.mailboxAliases) {
-			if (mbox.getTagValue("t:EmailAddress","unknown").toLowerCase() == alias.toLowerCase()) {
+			if (xml2json.getTagValue(mbox, "t:EmailAddress","unknown").toLowerCase() == alias.toLowerCase()) {
 				me = true;
-				//dump("convertFromExchange: Title:"+aParent.title+", email:"+mbox.getTagValue("t:EmailAddress","unknown")+". This address is mine ("+alias+").\n");
+				//dump("convertFromExchange: Title:"+aParent.title+", email:"+xml2json.getTagValue(mbox, "t:EmailAddress","unknown")+". This address is mine ("+alias+").\n");
 				break;
 			}
 		}
 
 		// We also need to check aliases but these do not get stored yet.
 
-		switch (mbox.getTagValue("t:RoutingType","unknown")) {
+		switch (xml2json.getTagValue(mbox, "t:RoutingType","unknown")) {
 			case "SMTP" :
-				this.id = 'mailto:' + mbox.getTagValue("t:EmailAddress","unknown");
+				this.id = 'mailto:' + xml2json.getTagValue(mbox, "t:EmailAddress","unknown");
 				break;
 			case "EX" :
-				this.id = 'ldap:' + mbox.getTagValue("t:EmailAddress","unknown");
+				this.id = 'ldap:' + xml2json.getTagValue(mbox, "t:EmailAddress","unknown");
 				break;
 			default:
-				//dump("convertFromExchange: Unknown RoutingType:'"+mbox.getTagValue("t:RoutingType")+"'\n");
-				this.id = 'mailto:' + mbox.getTagValue("t:EmailAddress","unknown");
+				//dump("convertFromExchange: Unknown RoutingType:'"+xml2json.getTagValue(mbox, "t:RoutingType")+"'\n");
+				this.id = 'mailto:' + xml2json.getTagValue(mbox, "t:EmailAddress","unknown");
 				break;
 		}
-		this.commonName = mbox.getTagValue("t:Name");
+		this.commonName = xml2json.getTagValue(mbox, "t:Name");
 		this.rsvp = "FALSE";
 		this.userType = "INDIVIDUAL";
 		this.role = aType;
@@ -337,9 +339,9 @@ mivExchangeAttendee.prototype = {
 			//dump("convertFromExchange A: Title:"+aParent.title+", attendee:"+this.id+", myResponseType:"+aParent.myResponseType+", this.participationStatus:"+this.participationStatus+"\n");
 		}
 		else {
-			if (aElement.getTagValue("t:ResponseType", "") != "") {
-				this.participationStatus = participationMap[aElement.getTagValue("t:ResponseType")];
-				//dump("convertFromExchange B: Title:"+aParent.title+", attendee:"+this.id+", ResponseType:"+aElement.getTagValue("t:ResponseType")+", this.participationStatus:"+this.participationStatus+"\n");
+			if (xml2json.getTagValue(aElement, "t:ResponseType", "") != "") {
+				this.participationStatus = participationMap[xml2json.getTagValue(aElement, "t:ResponseType")];
+				//dump("convertFromExchange B: Title:"+aParent.title+", attendee:"+this.id+", ResponseType:"+xml2json.getTagValue(aElement, "t:ResponseType")+", this.participationStatus:"+this.participationStatus+"\n");
 			}
 		}
 	},

@@ -33,6 +33,8 @@ Cu.import("resource://calendar/modules/calProviderUtils.jsm");
 
 Cu.import("resource://interfaces/exchangeBaseItem/mivExchangeBaseItem.js");
 
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+
 function mivExchangeTodo() {
 
 	this.initialize();

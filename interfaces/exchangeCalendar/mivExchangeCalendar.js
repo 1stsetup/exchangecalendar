@@ -2590,7 +2590,7 @@ calExchangeCalendar.prototype = {
 
 		while (!doStop) {
 			if (this.debug) this.logInfo("Getting period part of: "+startDate.toString()+" until "+endDate.toString());
-			dump(this.name+": Getting period part of: "+startDate.toString()+" until "+endDate.toString()+"\n");
+			//dump(this.name+": Getting period part of: "+startDate.toString()+" until "+endDate.toString()+"\n");
 			this.addToQueue( erFindCalendarItemsRequest, 
 				{user: this.user, 
 				 mailbox: this.mailbox,
@@ -6279,14 +6279,11 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 		if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment:"+String(aCalendarItem), 2);
 
 		//var item = createEvent();
-try{
 		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
 				.createInstance(Ci.mivExchangeEvent, this);
 
 		item.addMailboxAlias(this.mailbox);
-dump(" @@ 1 --\n");
 		item.exchangeData = aCalendarItem;
-dump(" @@ 2 --\n");
 
 		item.calendar = this.superCalendar;
 //		item.calendar = this;
@@ -6298,7 +6295,6 @@ dump(" @@ 2 --\n");
 		}
 
 		//item.id = this.tryToSetValue(aCalendarItem.getAttributeByTag("t:ItemId", "Id"), item.id);
-dump(" @@ 3 --\n");
 		if (! item.id) {
 			if (this.debug) this.logInfo("Item.id is missing. this is a required field.");
 			item.deleteItem();
@@ -6306,8 +6302,6 @@ dump(" @@ 3 --\n");
 			//dump("convertExchangeAppointmentToCalAppointment. Item.id is missing. this is a required field.\n");
 			return null;
 		}
-}catch(err){dump("-- Err:"+err+"\n");}
-dump(" @@ 4 --\n");
 		//item.setProperty("X-ChangeKey", aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey"));
 		if ((erGetItemsRequest) && (erGetItemsRequest.argument.occurrenceIndexes) && (erGetItemsRequest.argument.occurrenceIndexes[item.id])) {
 			if (this.debug) this.logInfo(" Muriel:"+erGetItemsRequest.argument.occurrenceIndexes[item.id]+", title:"+item.title);
@@ -6315,10 +6309,8 @@ dump(" @@ 4 --\n");
 			//setProperty("X-OccurrenceIndex", erGetItemsRequest.argument.occurrenceIndexes[item.id]+"");
 		}
 		
-dump(" @@ 5 --\n");
 		var uid = item.uid;
 
-dump(" @@ 6 --\n");
 		if (this.itemCache[item.id]) {
 			if (this.itemCache[item.id].changeKey == item.changeKey) {
 				//if (this.debug) this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
@@ -6342,7 +6334,6 @@ dump(" @@ 6 --\n");
 		}
 		
 
-dump(" @@ 7 --\n");
 		if (! item.startDate) {
 			if (this.debug) this.logInfo("We have an empty startdate. Skipping this item.");
 			item.deleteItem();
@@ -6351,7 +6342,6 @@ dump(" @@ 7 --\n");
 			return null;
 		}
 
-dump(" @@ 8 --\n");
 		if (! item.endDate) {
 			if (this.debug) this.logInfo("We have an empty enddate. Skipping this item.");
 			item.deleteItem();
@@ -6361,13 +6351,11 @@ dump(" @@ 8 --\n");
 		}
 
 		item.setProperty("DTSTAMP", this.tryToSetDateValue(xml2json.getTagValue(aCalendarItem, "t:DateTimeReceived")));
-dump(" @@ 9 --\n");
 
 		if (!isMeetingRequest) {
 			//if (this.debug) this.logInfo(" == item.title:"+item.title+", calendarItemType:"+aCalendarItem.getTagValue("t:CalendarItemType"));
 			switch (item.calendarItemType) {
 				case "Exception" :
-dump(" @@ 10 --\n");
 					if (this.debug) this.logInfo("@1:"+item.startDate.toString()+":IsException");
 					item.setProperty("X-RecurringType", "RE");
 					var master = this.recurringMasterCache[uid];
@@ -6389,11 +6377,9 @@ dump(" @@ 10 --\n");
 						return null;
 					}
 
-dump(" @@ 11 --\n");
 					break;
 				case "Occurrence" :
 					if (this.debug) this.logInfo("@1:"+item.startDate.toString()+":IsOccurrence");
-dump(" @@ 12 --\n");
 					item.setProperty("X-RecurringType", "RO");
 					// This is a occurrence. Try to find the master and link recurrenceinfo.
 					var master = this.recurringMasterCache[uid];
@@ -6416,11 +6402,9 @@ dump(" @@ 12 --\n");
 						return null;
 					}
 					
-dump(" @@ 13 --\n");
 					break;
 				case "RecurringMaster" :
 	
-dump(" @@ 14 --\n");
 					if (this.debug) this.logInfo(item.title+":"+item.startDate.toString()+":IsMaster, fromOfflineCache:"+fromOfflineCache);
 
 					if ((this.recurringMasterCache[item.uid]) && (this.recurringMasterCache[item.uid].changeKey != item.changeKey)) {
@@ -6523,18 +6507,14 @@ dump(" @@ 14 --\n");
 
 					if (this.debug) this.logInfo("This is a master it will not be put into the normal items cache list.");
 			//dump("convertExchangeAppointmentToCalAppointment. The master will not be visible:"+item.title+"\n");
-dump(" @@ 15 --\n");
 					return null;  // The master will not be visible
 
 					break;
 				default:
-dump(" @@ 16 --\n");
 					//this.setSnoozeTime(item, null);
 			}
 		}
 
-//		return null;
-dump(" @@ 17 --\n");
 		return item;
 
 	},
