@@ -1206,9 +1206,9 @@ try {
 			if (this._recurrenceInfo) {
 				this.logInfo("get recurrenceInfo 0: title:"+this.title+", we al ready have recurrenceinfo.");
 			}
-			if (!this.exchangeData) {
+/*			if (!this.exchangeData) {
 				dump("get recurrenceInfo 0: title:"+this.title+", we do not have _exchangeData. this.exchangeData:"+this.exchangeData+"\n");
-			}
+			}*/
 		}
 
 		// For debugging
@@ -1739,7 +1739,7 @@ try {
 	getAttendees: function _getAttendees(count)
 	{
 		//this.logInfo("getAttendees: title:"+this.title);
-		if ((!this._attendees) && (this.exchangeData)) {
+		if ((this._attendees === undefined) && (this.exchangeData)) {
 			this._attendees = [];
 			var tmpAttendee;
 
@@ -2876,6 +2876,9 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 	//attribute mivIxml2jxon exchangeData;
 	get exchangeData()
 	{
+/*		if (this._exchangeData === null) {
+			dump("Who is requesting exchangedata when it is null:"+this.globalFunctions.STACK()+"\n");
+		}*/
 		return this._exchangeData;
 	},
 
@@ -2885,6 +2888,9 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		//dump("exchangeData:"+aValue.toString()+"\n\n");
 
 		this.initialize();
+/*		if (aValue === null) {
+			dump("Who is setting exchangeData to null:"+this.globalFunctions.STACK()+"\n");
+		}*/
 		this._exchangeData = aValue;
 	},
 
