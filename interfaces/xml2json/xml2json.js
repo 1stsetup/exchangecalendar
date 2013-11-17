@@ -527,7 +527,7 @@ function realElementToString(aElement) {
 
 	//dump(" @@@@@:"+JSON.stringify(aElement)+"\n");
 
-	var result = "<";
+	let result = "<";
 	if (aElement.nameSpace) result = result + aElement.nameSpace + tsep;
 	result = result + aElement.tagName;
 
@@ -539,7 +539,7 @@ function realElementToString(aElement) {
 
 	if ((aElement["content"]) || (aElement.elements.length > 0)) {
 		result = result + ">";
-		if ((aElement["content"]) && (aElement.content.length)) {
+		if ((aElement["content"]) && (aElement.content.length > 0)) {
 			let i = 0;
 			while (i < aElement.content.length) {
 				result = result + aElement.content[i];
@@ -674,7 +674,6 @@ var xml2json = {
 		if ((!aParent) || (!aParent["elements"]) || (!aTagName)) throw "-62 aParent:"+aParent+", aTagName="+aTagName;
 
 		let result = null;
-		if (aDefault) result = aDefault;
 		let i = 0;
 		var tmpTN = splitTagName(aTagName);
 		while ((!result) && (i < aParent.elements.length)) {
@@ -683,6 +682,7 @@ var xml2json = {
 			}
 			i++;
 		}
+		if (!result) result = aDefault;
 		return result;
 	},
 
@@ -848,7 +848,7 @@ var xml2json = {
 						if ((pos < strLength) && (tc == "/")) {
 							// It is closed.
 							currentjson = realClosingTag(currentjson, elementName);
-							pos++;
+							pos++; pos++;
 						}
 						else {
 							// Element is not closed. Let see if it contains attributes.
