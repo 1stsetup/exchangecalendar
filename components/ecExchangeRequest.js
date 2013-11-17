@@ -609,6 +609,7 @@ catch(err){
 
 		var xml = xmlReq.responseText; // bug 270553
 
+
 // Removed following as this is no longer a problem as we are not using E4X anymore.
 //		xml = xml.replace(/&#x10;/g, ""); // BUG 61 remove hexadecimal code 0x10. It will fail in xml conversion.
 
@@ -1040,15 +1041,27 @@ try {
 
 	getSoapErrorMsg: function _getSoapErrorMsg(aResp)
 	{
-		var rm = aResp.XPath("/s:Envelope/s:Body/*/m:ResponseMessages/*[@ResponseClass='Error']");
-		var result;
-		if (rm.length > 0) {
-			result = rm[0].getTagValue("m:MessageText").value+"("+rm[0].getTagValue("m:ResponseCode")+")";
+		if (this.xml2json) {
+			var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/*/m:ResponseMessages/*[@ResponseClass='Error']");
+			var result;
+			if (rm.length > 0) {
+				result = xml2json.getTagValue(rm[0], "m:MessageText").value+"("+xml2json.getTagValue(rm[0], "m:ResponseCode")+")";
+			}
+			else {
+				result = null;
+			}
 		}
 		else {
-			result = null;
-		}
+			var rm = aResp.XPath("/s:Envelope/s:Body/*/m:ResponseMessages/*[@ResponseClass='Error']");
+			var result;
+			if (rm.length > 0) {
+				result = rm[0].getTagValue("m:MessageText").value+"("+rm[0].getTagValue("m:ResponseCode")+")";
+			}
+			else {
+				result = null;
+			}
 
+		}
 		rm = null;
 		return result
 	},

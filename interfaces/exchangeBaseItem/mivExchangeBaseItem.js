@@ -493,7 +493,7 @@ try {
 			for each(var change in this._changedProperties) {
 				switch (change.action) {
 				case "set": 
-					result.setProperty(change.name, change.value);
+					result.setProperty(change.name, xml2json.getValue(change));
 					break;
 				case "remove":
 					result.deleteProperty(change.name);
@@ -1163,8 +1163,8 @@ try {
 	//attribute calIRecurrenceInfo recurrenceInfo;
 	get recurrenceInfo()
 	{
-		if ((!this._recurrenceInfo) && (this.exchangeData)) {
-			var recurrence = xml2json.XPath(this.exchangeData, "/*/t:Recurrence/*");
+		if ((this._recurrenceInfo === undefined) && (this.exchangeData)) {
+			var recurrence = xml2json.XPath(this.exchangeData, "/t:Recurrence/*");
 			if (recurrence.length > 0) {
 				//this.logInfo("Recurrence::"+recurrence);
 				var recrule = this.readRecurrenceRule(recurrence);
@@ -1198,7 +1198,8 @@ try {
 				}
 			}
 			else {
-				dump("No Recurrence tag.\n");
+				//dump("No Recurrence tag. this.title:"+this.title+"\n -- "+xml2json.toString(this.exchangeData)+"\n\n");
+				this._recurrenceInfo = null;
 			}
 		}
 		else {
@@ -1357,8 +1358,11 @@ try {
 			this._calEvent.setProperty(name, this.percentComplete);
 			break;
 		case "DESCRIPTION": 
+dump("getProperty DESCRIPTION 1: title="+this.title+"\n");
 			if (!this._body) {
+dump("getProperty DESCRIPTION 2: title="+this.title+"\n");
 				this._body = this.getTagValue("t:Body", null);
+dump("getProperty DESCRIPTION 3: title="+this.title+"\n");
 				//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
 				if (this._body) {
 					this._calEvent.setProperty(name, this._body);
@@ -1987,7 +1991,7 @@ try {
 			this._categories = [];
 			var strings = xml2json.XPath(this.exchangeData, "/t:Categories/t:String");
 			for each (var cat in strings) {
-				this._categories.push(cat.value);
+				this._categories.push(xml2json.getValue(cat));
 			}
 			strings = null;
 			this._calEvent.setCategories(this._categories.length, this._categories);
@@ -2246,7 +2250,7 @@ try {
 	//readonly attribute AUTF8String subject;
 	get subject()
 	{
-		if (!this._subject) {
+		if (this._subject === undefined) {
 			this._subject = this.getTagValue("t:Subject", null);
 		}
 		return this._subject;
@@ -2713,8 +2717,10 @@ dump(" $$ 2 ..\n");
 				this.recurrenceInfo.modifyException(aItem, true);
 			}
 			else {
-				this._calEvent.addException(aItem. true);
-dump("What not recurrenceinfo\n");
+				//this._calEvent.addException(aItem. true);
+dump("What not recurrenceinfo for title:'"+this.title+"', aItem.title:"+aItem.title+"\n");
+dump(" ++    MASTER:"+xml2json.toString(this.exchangeData)+"\n");
+dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 			}
 
 			var itemAlarms = aItem.getAlarms({});
@@ -3586,41 +3592,41 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	
 			var weekdays = [];
 			var week = [];
-			var comps2 = rec.XPath("/*");
+			var comps2 = xml2json.XPath(rec,"/*");
 			for each (var comp in comps2) {
 				switch (comp.tagName) {
 				case 'DaysOfWeek':
-					for each (let day in comp.value.split(" ")) {
+					for each (let day in xml2json.getValue(comp).split(" ")) {
 						weekdays = weekdays.concat(dayMap[day]);
 					}
 					break;
 				case 'DayOfWeekIndex':
-					week = weekMap[comp.value];
+					week = weekMap[xml2json.getValue(comp)];
 					break;
 				case 'Month':
-					comps['BYMONTH'] = monthMap[comp.value];
+					comps['BYMONTH'] = monthMap[xml2json.getValue(comp)];
 					break;
 				case 'DayOfMonth':
-					comps['BYMONTHDAY'] = comp.value;
+					comps['BYMONTHDAY'] = xml2json.getValue(comp);
 					break;
 				case 'FirstDayOfWeek':
-					comps['WKST'] = dayMap[comp.value];
+					comps['WKST'] = dayMap[xml2json.getValue(comp)];
 					break;
 				case 'Interval':
-					comps['INTERVAL'] = comp.value;
+					comps['INTERVAL'] = xml2json.getValue(comp);
 					break;
 				case 'StartDate':
 					/* Dunno what to do with this for iCal; no place to set */
-					this._recurrenceStartDate = cal.fromRFC3339(comp.value.substr(0,10)+"T00:00:00Z", this.globalFunctions.ecTZService().UTC);
+					this._recurrenceStartDate = cal.fromRFC3339(xml2json.getValue(comp).substr(0,10)+"T00:00:00Z", this.globalFunctions.ecTZService().UTC);
 					this._recurrenceStartDate.isDate = true;
 					break;
 				case 'EndDate':
 //					comps['UNTIL'] = comp.value.replace(/Z$/, '');
 					// As we only get the date + timezonediff we make a nice date+time from it.
-					comps['UNTIL'] = comp.value.substr(0,10)+"T00:00:00Z";
+					comps['UNTIL'] = xml2json.getValue(comp).substr(0,10)+"T00:00:00Z";
 					break;
 				case 'NumberOfOccurrences':
-					comps['COUNT'] = comp.value;
+					comps['COUNT'] = xml2json.getValue(comp);
 					break;
 				}
 			}
@@ -3759,7 +3765,9 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	getTag: function _getTag(aTagName)
 	{
 		if (this.exchangeData) {
+try{
 			return xml2json.getTag(this.exchangeData, aTagName);
+}catch(err){dump(" getTag ERROR:"+err+"\n");}
 		}
 
 		return null;
@@ -3768,7 +3776,9 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	getTags: function _getTags(aTagName)
 	{
 		if (this.exchangeData) {
+try{
 			return xml2json.getTags(this.exchangeData, aTagName);
+}catch(err){dump(" getTags ERROR:"+err+"\n");}
 		}
 
 		return null;
@@ -3780,7 +3790,9 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 if (aTagName == "t:Body") {
 	dump(" #$# body:"+JSON.stringify(this.exchangeData)+"\n");
 }
+try{
 			return xml2json.getTagValue(this.exchangeData, aTagName, aDefaultValue);
+}catch(err){dump(" getTagValue ERROR:"+err+"\n");}
 		}
 
 		return aDefaultValue;

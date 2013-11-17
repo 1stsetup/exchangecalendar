@@ -130,7 +130,6 @@ mivExchangeTimeZone.prototype = {
 			this._hasDaylight = false;
 			return null;
 		}
-
 		if (!aDate) {
 			aDate = cal.now();
 		}
@@ -200,6 +199,7 @@ mivExchangeTimeZone.prototype = {
 			else {
 				this._standardRRule = null;
 			}
+			//dump("this._standardBias:"+this._standardBias+"\n");
 			//dump("this._standardRRule:"+this._standardRRule+"\n");
 		}
 
@@ -212,6 +212,7 @@ mivExchangeTimeZone.prototype = {
 			daylightPeriods = null;
 
 			this._daylightRRule = "FREQ=YEARLY;BYDAY="+xml2json.getTagValue(daylightTransition, "t:Occurrence", 1)+dayMap[xml2json.getTagValue(daylightTransition, "t:DayOfWeek", "Sunday")]+";BYMONTH="+xml2json.getTagValue(daylightTransition, "t:Month", 3);
+			//dump("this._daylightBias:"+this._daylightBias+"\n");
 			//dump("this._daylightRRule:"+this._daylightRRule+"\n");
 
 			this._hasDaylight = true;
@@ -219,7 +220,6 @@ mivExchangeTimeZone.prototype = {
 		else {
 			this._hasDaylight = false;
 		}
-
 	},
 
 	setCalTimezone: function _setCalTimezone(aValue, aDate)

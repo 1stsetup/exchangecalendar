@@ -258,7 +258,7 @@ mivExchangeTimeZones.prototype = {
 
 	getCalTimeZoneByExchangeTimeZone: function _getCalTimeZoneByExchangeTimeZone(aExchangeTimeZone, aURL, aIndexDate)
 	{
-//dump("getCalTimeZoneByExchangeTimeZone: aExchangeTimeZone:"+JSON.stringify(aExchangeTimeZone)+"\n");
+//dump("getCalTimeZoneByExchangeTimeZone: aExchangeTimeZone:"+xml2json.toString(aExchangeTimeZone)+"\n");
 		var exchangeTimeZone = this.getTimeZone(aExchangeTimeZone, aIndexDate);
 
 		if (exchangeTimeZone == null) return null;
@@ -291,6 +291,7 @@ mivExchangeTimeZones.prototype = {
 
 				var tmpScore = 0;
 				for each(var zonePart in tmpArray) {
+
 					if ((exchangeTimeZone.id) && (exchangeTimeZone.id.indexOf(zonePart) > -1)) {
 						tmpScore = tmpScore + 1;
 					}
@@ -299,7 +300,9 @@ mivExchangeTimeZones.prototype = {
 					}
 				}
 				if ((tmpScore > zoneScore) && (tmpScore > 0)) {
+dump(" A. ((tmpScore > zoneScore) && (tmpScore > 0))\n");
 					if (calTimeZone.equal(exchangeTimeZone)) {
+dump(" B. ((tmpScore > zoneScore) && (tmpScore > 0))\n");
 						result = tmpZone;
 						zoneScore = tmpScore;
 					}
@@ -309,6 +312,7 @@ mivExchangeTimeZones.prototype = {
 
 		var weHaveAMatch = false;
 		if (result == null) {
+dump("  ++ We scan the while list to find a match.\n");
 			// We scan the while list to find a match.
 			var timezones = this.timezoneService.timezoneIds;
 			var tmpResult = null;
@@ -410,17 +414,12 @@ mivExchangeTimeZones.prototype = {
 
 	addExchangeTimeZones: function _addExchangeTimeZones(aTimeZoneDefinitions, aVersion)
 	{
-dump(" &&&&&&&&&&&&&&&&& 1. aVersion="+aVersion+"\n");
-dump(" &&&&&&&&&&&&&&&&& 1a. aVersion="+xml2json.toString(aTimeZoneDefinitions)+"\n");
 		var rm = xml2json.XPath(aTimeZoneDefinitions, "/s:Envelope/s:Body/m:GetServerTimeZonesResponse/m:ResponseMessages/m:GetServerTimeZonesResponseMessage");
-dump(" &&&&&&&&&&&&&&&&& 2. aVersion="+aVersion+", rm.length="+rm.length+"\n");
 		if (rm.length == 0) return null;
-dump(" &&&&&&&&&&&&&&&&& 3. aVersion="+aVersion+"\n");
 		this._timeZones[aVersion] = {};
 
 		var timeZoneDefinitionArray = xml2json.XPath(rm[0], "/m:TimeZoneDefinitions/t:TimeZoneDefinition");
 		for (var index in timeZoneDefinitionArray) {
-dump("     -- Id:"+xml2json.getAttribute(timeZoneDefinitionArray[index], "Id")+"\n");
 			this._timeZones[aVersion][xml2json.getAttribute(timeZoneDefinitionArray[index], "Id")] = timeZoneDefinitionArray[index];
 		}
 		timeZoneDefinitionArray = null;
@@ -429,7 +428,6 @@ dump("     -- Id:"+xml2json.getAttribute(timeZoneDefinitionArray[index], "Id")+"
 
 	load_timezonedefinitions_file: function _load_timezonedefinitions_file()
 	{
-dump(" {{ 1. load_timezonedefinitions_file\n");
 		var somefile = this.globalFunctions.chromeToPath("chrome://exchangeTimeZones/content/ewsTimesZoneDefinitions_2007.xml");
 		var file = Components.classes["@mozilla.org/file/local;1"]
 				.createInstance(Components.interfaces.nsILocalFile);
@@ -449,15 +447,10 @@ dump(" {{ 1. load_timezonedefinitions_file\n");
 		} while(hasmore);  
 		  
 		istream.close();
-dump(" {{ 2. load_timezonedefinitions_file\n");
 		var root = xml2json.newJSON();
-dump(" {{ 3. load_timezonedefinitions_file\n");
 		xml2json.parseXML(root, lines);
-dump(" {{ 4. load_timezonedefinitions_file\n");
 		var timezonedefinitions = root.elements[0];
-dump(" {{ 5. load_timezonedefinitions_file\n");
-		this.addExchangeTimeZones(timezonedefinitions, "Exchange2007_SP1");
-dump(" {{ 6. load_timezonedefinitions_file\n");
+		this.addExchangeTimeZones(root, "Exchange2007_SP1");
 
 		timezonedefinitions = null;
 		lines = null;
