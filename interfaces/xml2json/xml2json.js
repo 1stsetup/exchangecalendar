@@ -431,7 +431,7 @@ function realGetTags(aParent, aTagName) {
 
 	var i = 0;
 	while (i < aParent[telements].length) {
-//			if ((aParent[telements][i][tnamespace] == tmpTN[tnamespace]) && (aParent[telements][i].tagName == tmpTN.tagName)) {
+//			if ((aParent[telements][i][tnamespace] == tmpTN.nameSpace) && (aParent[telements][i].tagName == tmpTN.tagName)) {
 		if (aParent[telements][i].tagName == tmpTN.tagName) {  // We ignore the namespace for now.
 			result.push(aParent[telements][i]);
 		}
@@ -589,7 +589,7 @@ function realClosingTag(aParent, aTagName) {
 
 	let closingMatchesOpening = false;
 	if (tmpTN.tagName == aParent.tagName) {
-		if (tmpTN[tnamespace] == aParent[tnamespace]) {
+		if (tmpTN.nameSpace == aParent[tnamespace]) {
 			closingMatchesOpening = true;
 		}
 	}
@@ -615,7 +615,7 @@ function realOpeningTag(aParent, aTagName) {
 	var tmpTN = splitTagName(aTagName);
 	let tmpElement = { parent: aParent,
 				e: [],
-				n: tmpTN[tnamespace],
+				n: tmpTN.nameSpace,
 				tagName: tmpTN.tagName};
 	aParent[telements].push(tmpElement);
 	return tmpElement;
@@ -697,7 +697,7 @@ var xml2json = {
 
 		var i = 0;
 		while ((!result) && (i < aParent[telements].length)) {
-//			if ((aParent[telements][i][tnamespace] == tmpTN[tnamespace]) && (aParent[telements][i].tagName == tmpTN.tagName)) {
+//			if ((aParent[telements][i][tnamespace] == tmpTN.nameSpace) && (aParent[telements][i].tagName == tmpTN.tagName)) {
 			if (aParent[telements][i].tagName == tmpTN.tagName) { // Namespace is ignored for now.
 				return aParent[telements][i];
 			}
