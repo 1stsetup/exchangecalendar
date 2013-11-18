@@ -1140,7 +1140,7 @@ catch(err){
 	{
 //dump("set alarmLastAck 1:"+aValue+"\n");
 try {
-		if ((aValue) && (aValue.compare(this.alarmLastAck) != 0)) {
+		if ((aValue) && ((!this.alarmLastAck) || (aValue.compare(this.alarmLastAck) != 0))) {
 
 			//dump("set alarmLastAck: User snoozed alarm. Title:"+this.title+", aValue:"+aValue.toString()+", alarmTime:"+this.getAlarmTime(), -1);
 //dump("set alarmLastAck 2:"+aValue+"\n");
