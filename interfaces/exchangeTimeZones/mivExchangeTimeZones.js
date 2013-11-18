@@ -193,7 +193,7 @@ mivExchangeTimeZones.prototype = {
 		if (!aTimeZone) return null;
 
 		var timeZoneId = null;
-		if (aTimeZone["elements"]) {
+		if (aTimeZone[telements]) {
 			timeZoneId = xml2json.getAttribute(aTimeZone, "Id", null);
 		}
 		if (aTimeZone instanceof Ci.calITimezone) {
@@ -446,7 +446,7 @@ mivExchangeTimeZones.prototype = {
 		istream.close();
 		var root = xml2json.newJSON();
 		xml2json.parseXML(root, lines);
-		var timezonedefinitions = root.elements[0];
+		var timezonedefinitions = root[telements][0];
 		this.addExchangeTimeZones(root, "Exchange2007_SP1");
 
 		timezonedefinitions = null;

@@ -412,28 +412,28 @@ function ifFunction(aCondition, aJSONObject){
 
 function realGetValue(aParent) {
 	if (!aParent) throw -60;
-	if (!aParent["content"]) return "";
+	if (!aParent[tcontent]) return "";
 
 	let result = "";
 	let i = 0;
-	while (i < aParent.content.length) {
-		result = result + aParent.content[i];
+	while (i < aParent[tcontent].length) {
+		result = result + aParent[tcontent][i];
 		i++;
 	}
 	return convertSpecialCharatersFromXML(result);
 }
 
 function realGetTags(aParent, aTagName) {
-	if ((!aParent) || (!aParent["elements"])) throw -54;
+	if ((!aParent) || (!aParent[telements])) throw -54;
 	let result = [];
 
 	var tmpTN = splitTagName(aTagName);
 
 	var i = 0;
-	while (i < aParent.elements.length) {
-//			if ((aParent.elements[i].nameSpace == tmpTN.nameSpace) && (aParent.elements[i].tagName == tmpTN.tagName)) {
-		if (aParent.elements[i].tagName == tmpTN.tagName) {  // We ignore the namespace for now.
-			result.push(aParent.elements[i]);
+	while (i < aParent[telements].length) {
+//			if ((aParent[telements][i][tnamespace] == tmpTN[tnamespace]) && (aParent[telements][i].tagName == tmpTN.tagName)) {
+		if (aParent[telements][i].tagName == tmpTN.tagName) {  // We ignore the namespace for now.
+			result.push(aParent[telements][i]);
 		}
 		i++;
 	}
@@ -454,9 +454,9 @@ function realXPath(aParent, aPath){
 	switch (tmpPath[0]) {
 	case "@" : // Find attribute within this element
 		let attrName = tmpPath.substr(1);
-		if ((aParent["attributes"]) && (aParent.attributes[attrName])) {
-			//dump("XPath:found attribute. value="+String(aParent.attributes[attrName])+"\n");
-			result.push(String(aParent.attributes[attrName]));
+		if ((aParent[tattributes]) && (aParent[tattributes][attrName])) {
+			//dump("XPath:found attribute. value="+String(aParent[tattributes][attrName])+"\n");
+			result.push(String(aParent[tattributes][attrName]));
 		}
 		//dump("XPath find attribute '"+attrName+"'. result.length='"+result.length+"'\n");
 		tmpPath = "";
@@ -464,8 +464,8 @@ function realXPath(aParent, aPath){
 	case "*" : // Wildcard. Will parse all children.
 		tmpPath = tmpPath.substr(1);
 		let i = 0;
-		while (i < aParent.elements.length) {
-			result.push(aParent.elements[i]);
+		while (i < aParent[telements].length) {
+			result.push(aParent[telements][i]);
 			i++;
 		}
 		break;
@@ -528,33 +528,33 @@ function realElementToString(aElement) {
 	//dump(" @@@@@:"+JSON.stringify(aElement)+"\n");
 
 	let result = "<";
-	if (aElement.nameSpace) result = result + aElement.nameSpace + tsep;
+	if (aElement[tnamespace]) result = result + aElement[tnamespace] + tsep;
 	result = result + aElement.tagName;
 
-	if (aElement["attributes"]) {
-		for (var attrName in aElement.attributes) {
-			result = result + " " + attrName + "="+'"' + aElement.attributes[attrName]+'"';
+	if (aElement[tattributes]) {
+		for (var attrName in aElement[tattributes]) {
+			result = result + " " + attrName + "="+'"' + aElement[tattributes][attrName]+'"';
 		}
 	}
 
-	if ((aElement["content"]) || (aElement.elements.length > 0)) {
+	if ((aElement[tcontent]) || (aElement[telements].length > 0)) {
 		result = result + ">";
-		if ((aElement["content"]) && (aElement.content.length > 0)) {
+		if ((aElement[tcontent]) && (aElement[tcontent].length > 0)) {
 			let i = 0;
-			while (i < aElement.content.length) {
-				result = result + aElement.content[i];
+			while (i < aElement[tcontent].length) {
+				result = result + aElement[tcontent][i];
 				i++;
 			}
 		}
 
 		let i = 0;
-		while (i < aElement.elements.length) {
-			result = result + realElementToString(aElement.elements[i]);
+		while (i < aElement[telements].length) {
+			result = result + realElementToString(aElement[telements][i]);
 			i++;
 		}
 
 		result = result + "</";
-		if (aElement.nameSpace) result = result + aElement.nameSpace + tsep;
+		if (aElement[tnamespace]) result = result + aElement[tnamespace] + tsep;
 		result = result + aElement.tagName + ">";
 		
 
@@ -567,20 +567,20 @@ function realElementToString(aElement) {
 }
 
 function realSetAttribute(aParent, aName, aValue) {
-	if ((!aParent) || (!aParent["elements"])) throw -51;
-	if (!aParent["attributes"]) {
-		aParent.attributes = {};
+	if ((!aParent) || (!aParent[telements])) throw -51;
+	if (!aParent[tattributes]) {
+		aParent[tattributes] = {};
 	}
-	aParent.attributes[aName] = aValue;
+	aParent[tattributes][aName] = aValue;
 }
 
 function realAddContent(aParent, aString) {
 	//dump("addContent: aString="+aString+"\n");
-	if ((!aParent) || (!aParent["elements"])) throw -55;
-	if (!aParent["content"]) {
-		aParent.content = [];
+	if ((!aParent) || (!aParent[telements])) throw -55;
+	if (!aParent[tcontent]) {
+		aParent[tcontent] = [];
 	}
-	aParent.content.push(aString);
+	aParent[tcontent].push(aString);
 }
 
 function realClosingTag(aParent, aTagName) {
@@ -589,7 +589,7 @@ function realClosingTag(aParent, aTagName) {
 
 	let closingMatchesOpening = false;
 	if (tmpTN.tagName == aParent.tagName) {
-		if (tmpTN.nameSpace == aParent.nameSpace) {
+		if (tmpTN[tnamespace] == aParent[tnamespace]) {
 			closingMatchesOpening = true;
 		}
 	}
@@ -614,10 +614,10 @@ function realOpeningTag(aParent, aTagName) {
 	//dump("openingTag: aTagName="+aTagName+"\n");
 	var tmpTN = splitTagName(aTagName);
 	let tmpElement = { parent: aParent,
-				elements: [],
-				nameSpace: tmpTN.nameSpace,
+				e: [],
+				n: tmpTN[tnamespace],
 				tagName: tmpTN.tagName};
-	aParent.elements.push(tmpElement);
+	aParent[telements].push(tmpElement);
 	return tmpElement;
 }
 
@@ -645,21 +645,25 @@ function realSetAttributeStr(aParent, aString) {
 	realSetAttribute(aParent, an, av);
 }
 
-var EXPORTED_SYMBOLS = ["xml2json"];
+var EXPORTED_SYMBOLS = ["xml2json", "telements", "tattributes", "tcontent"];
 
 const tsep = ":";
+const telements = "e";
+const tattributes = "a";
+const tcontent = "c";
+const tnamespace = "n";
 
 var xml2json = {
 
 	newJSON: function _newJSON() {
-		return { elements: [] };
+		return { e: [] };
 	},
 
 	addTagObject: function _addTagObject(aParent, aChildObject) {
-		if ((!aParent) || (!aParent["elements"])) throw -52;
-		aParent.elements.push(aChildObject);
+		if ((!aParent) || (!aParent[telements])) throw -52;
+		aParent[telements].push(aChildObject);
 
-		return aParent.elements[aParent.elements.length-1];
+		return aParent[telements][aParent[telements].length-1];
 	},
 
 	getTags: function _getTags(aParent, aTagName) {
@@ -671,14 +675,14 @@ var xml2json = {
 	},
 
 	getTagValue: function _getTagValue(aParent, aTagName, aDefault) {
-		if ((!aParent) || (!aParent["elements"]) || (!aTagName)) throw "-62 aParent:"+aParent+", aTagName="+aTagName;
+		if ((!aParent) || (!aParent[telements]) || (!aTagName)) throw "-62 aParent:"+aParent+", aTagName="+aTagName;
 
 		let result = null;
 		let i = 0;
 		var tmpTN = splitTagName(aTagName);
-		while ((!result) && (i < aParent.elements.length)) {
-			if (aParent.elements[i].tagName == tmpTN.tagName) {  // We ignore the namespace for now.
-				result = realGetValue(aParent.elements[i]);
+		while ((!result) && (i < aParent[telements].length)) {
+			if (aParent[telements][i].tagName == tmpTN.tagName) {  // We ignore the namespace for now.
+				result = realGetValue(aParent[telements][i]);
 			}
 			i++;
 		}
@@ -692,10 +696,10 @@ var xml2json = {
 		var tmpTN = splitTagName(aTagName);
 
 		var i = 0;
-		while ((!result) && (i < aParent.elements.length)) {
-//			if ((aParent.elements[i].nameSpace == tmpTN.nameSpace) && (aParent.elements[i].tagName == tmpTN.tagName)) {
-			if (aParent.elements[i].tagName == tmpTN.tagName) { // Namespace is ignored for now.
-				return aParent.elements[i];
+		while ((!result) && (i < aParent[telements].length)) {
+//			if ((aParent[telements][i][tnamespace] == tmpTN[tnamespace]) && (aParent[telements][i].tagName == tmpTN.tagName)) {
+			if (aParent[telements][i].tagName == tmpTN.tagName) { // Namespace is ignored for now.
+				return aParent[telements][i];
 			}
 			i++;
 		}
@@ -703,16 +707,16 @@ var xml2json = {
 	},
 
 	addTag: function _addTag(aParent, aTagName, aNameSpace, aValue) {
-		if ((!aParent) || (!aParent["elements"])) throw -53;
+		if ((!aParent) || (!aParent[telements])) throw -53;
 		var tmpJson = {tagName: aTagName,
-				nameSpace: aNameSpace,
-				elements: []};
+				n: aNameSpace,
+				e: []};
 		if (aValue) {
 			realAddContent(tmpJson, convertSpecialCharatersToXML(aValue));
 		}
-		aParent.elements.push(tmpJson);
+		aParent[telements].push(tmpJson);
 
-		return aParent.elements[aParent.elements.length-1];
+		return aParent[telements][aParent[telements].length-1];
 	},
 
 	elementToString: function _elementToString(aElement) {
@@ -727,8 +731,8 @@ var xml2json = {
 			result = result + realElementToString(aParent);
 		}
 		else {
-			while (i < aParent.elements.length) {
-				result = result + realElementToString(aParent.elements[i]);
+			while (i < aParent[telements].length) {
+				result = result + realElementToString(aParent[telements][i]);
 				i++;
 			}
 		}
@@ -750,15 +754,15 @@ var xml2json = {
 
 	getAttributeByTag: function _getAttributeByTag(aParent, aTagName, aName) {
 //dump("getAttributeByTag 1: aParent:"+aParent+", aTagName="+aTagName+", aName="+aName+"\n");
-		if ((!aParent) || (!aParent['elements']) || (!aTagName)) throw -80;
+		if ((!aParent) || (!aParent[telements]) || (!aTagName)) throw -80;
 
 		let i = 0;
 		var tmpTN = splitTagName(aTagName);
 
-		while (i < aParent.elements.length) {
-			if ((tmpTN.tagName == aParent.elements[i].tagName) && (aParent.elements[i]["attributes"])) { // We ignore namespace for now.
-				if (aParent.elements[i].attributes[aName]) {
-					return aParent.elements[i].attributes[aName];
+		while (i < aParent[telements].length) {
+			if ((tmpTN.tagName == aParent[telements][i].tagName) && (aParent[telements][i][tattributes])) { // We ignore namespace for now.
+				if (aParent[telements][i][tattributes][aName]) {
+					return aParent[telements][i][tattributes][aName];
 				}
 			}
 			i++;
@@ -769,14 +773,14 @@ var xml2json = {
 	getAttribute: function _getAttribute(aParent, aName, aDefault) {
 		if (!aParent) throw -70;
 
-		if ((!aParent["attributes"]) || (!aParent.attributes[aName])) {
+		if ((!aParent[tattributes]) || (!aParent[tattributes][aName])) {
 			if (aDefault) {
 				return aDefault;
 			}
 			return null;
 		}
 
-		return convertSpecialCharatersFromXML(aParent.attributes[aName]);
+		return convertSpecialCharatersFromXML(aParent[tattributes][aName]);
 	},
 
 	setAttribute: function _setAttribute(aParent, aName, aValue) {

@@ -8385,7 +8385,7 @@ else {
 					if (this.debug) this.logInfo("Found item in offline Cache.");
 					var root = xml2json.newJSON();
 					xml2json.parseXML(root, sqlStatement.row.item);
-					var cachedItem = root.elements[0];
+					var cachedItem = root[telements][0];
 
 					//cachedItem.content = ;
 					//if (this.debug) this.logInfo(" --:"+cachedItem.toString());

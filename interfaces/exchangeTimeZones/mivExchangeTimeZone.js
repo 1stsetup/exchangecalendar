@@ -394,7 +394,7 @@ mivExchangeTimeZone.prototype = {
 	set timeZone(aValue)
 	{
 		this._timeZone = aValue;
-		if (aValue["elements"]) {
+		if (aValue[telements]) {
 		//if (aValue instanceof Ci.mivIxml2jxon) {
 			this.setExchangeTimezone(aValue, this._indexDate);
 		}

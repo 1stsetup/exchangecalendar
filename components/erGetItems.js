@@ -95,7 +95,7 @@ erGetItemsRequest.prototype = {
 
 		var root = xml2json.newJSON();
 		xml2json.parseXML(root, '<nsMessages:GetItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
-		var req = root.elements[0];
+		var req = root[telements][0];
 
 		var itemShape = xml2json.addTag(req, "ItemShape", "nsMessages", null);
 		xml2json.addTag(itemShape, "BaseShape", "nsTypes", "IdOnly");		

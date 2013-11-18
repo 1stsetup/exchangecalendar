@@ -84,7 +84,7 @@ erGetUserAvailabilityRequest.prototype = {
 
 		var root = xml2json.newJSON();
 		xml2json.parseXML(root, '<nsMessages:GetUserAvailabilityRequest xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
-		var req = root.elements[0];
+		var req = root[telements][0];
 
 		/* WTF really?  Just give me UTC. */
 		var timeZone = xml2json.addTag(req, "TimeZone", "nsTypes", null);
