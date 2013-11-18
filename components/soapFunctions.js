@@ -108,7 +108,7 @@ function makeParentFolderIds3(aParentItem, aArgument)
 		DistinguishedFolderId = null;
 	}
 	else {
-		let FolderId = xml2json.addChildTag(ParentFolderIds, "FolderId", "nsTypes", null);
+		let FolderId = xml2json.addTag(ParentFolderIds, "FolderId", "nsTypes", null);
 		xml2json.setAttribute(FolderId, "Id", aArgument.folderID);
 		if ((aArgument.changeKey) && (aArgument.changeKey != "")) {
 			xml2json.setAttribute(FolderId, "ChangeKey", aArgument.changeKey);
