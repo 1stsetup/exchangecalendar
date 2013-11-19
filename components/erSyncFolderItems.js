@@ -85,6 +85,7 @@ function erSyncFolderItemsRequest(aArgument, aCbOk, aCbError, aListener)
 	this.deletions = [];
 
 	this.attempts = 0;
+	this.runs = 0;
 
 	this.isRunning = true;
 	this.execute(aArgument.syncState);
@@ -95,6 +96,7 @@ erSyncFolderItemsRequest.prototype = {
 	execute: function _execute(aSyncState)
 	{
 		//exchWebService.commonFunctions.LOG("erSyncFolderItemsRequest.execute\n");
+		this.runs++;
 
 		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:SyncFolderItems xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
@@ -237,7 +239,7 @@ catch(tmpErr) {
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)
 	{
-//exchWebService.commonFunctions.LOG("onSendError aMsg:"+aMsg+"\n");
+dump("erSyncFolderItemsRequest.onSendError aMsg:"+aMsg+"\n");
 		this.isRunning = false;
 		this.parent = null;
 		if (this.mCbError) {
