@@ -381,7 +381,12 @@ mivExchangeAuthPrompt2.prototype = {
 					this.logInfo("asyncPromptAuthNotifyCallback: authInfo only wants a password.");
 				}
 				authInfo.password = password;
-				this.logInfo("asyncPromptAuthNotifyCallback: authInfo{ password:"+authInfo.password+", username:"+authInfo.username+", domain:"+authInfo.domain+"}");
+				if (this.showPassword) {
+					this.logInfo("asyncPromptAuthNotifyCallback: authInfo{ password:"+authInfo.password+", username:"+authInfo.username+", domain:"+authInfo.domain+"}");
+				}
+				else {
+					this.logInfo("asyncPromptAuthNotifyCallback: authInfo{ password:*******, username:"+authInfo.username+", domain:"+authInfo.domain+"}");
+				}
 				try {
 					this.logInfo("asyncPromptAuthNotifyCallback: Sending authInfo to callback function.");
 					if (canUseBasicAuth == true) {
@@ -441,11 +446,22 @@ mivExchangeAuthPrompt2.prototype = {
 		this.logInfo("asyncPromptAuth: authInfo.authenticationScheme="+authInfo.authenticationScheme);
 		this.logInfo("asyncPromptAuth: authInfo.realm="+authInfo.realm);
 		this.logInfo("asyncPromptAuth: authInfo.username="+authInfo.username);
-		this.logInfo("asyncPromptAuth: authInfo.password="+authInfo.password);
+		
+		if (this.showPassword) {
+			this.logInfo("asyncPromptAuth: authInfo.password="+authInfo.password);
+		}
+		else {
+			this.logInfo("asyncPromptAuth: authInfo.password=************");
+		}
 		this.logInfo("asyncPromptAuth: authInfo.domain="+authInfo.domain);
 
 		var URL = decodeURIComponent(aChannel.URI.scheme+"://"+aChannel.URI.hostPort+aChannel.URI.path);
-		this.logInfo("asyncPromptAuth: aChannel.URL="+URL+", username="+decodeURIComponent(aChannel.URI.username)+", password="+decodeURIComponent(aChannel.URI.password));
+		if (this.showPassword) {
+			this.logInfo("asyncPromptAuth: aChannel.URL="+URL+", username="+decodeURIComponent(aChannel.URI.username)+", password="+decodeURIComponent(aChannel.URI.password));
+		}
+		else {
+			this.logInfo("asyncPromptAuth: aChannel.URL="+URL+", username="+decodeURIComponent(aChannel.URI.username)+", password=********");
+		}
 
 		var uuid = this.globalFunctions.getUUID();
 
