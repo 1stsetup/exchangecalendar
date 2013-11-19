@@ -2153,26 +2153,26 @@ calExchangeCalendar.prototype = {
 		if (this.debug) this.logInfo("getItems 0: aListener:"+aListener);
 		if (this.debug) this.logInfo("getItems 1: aCount:"+aCount);
 
-		dump("getItems name:"+this.name+", aListener:"+aListener);
-		dump(", aCount:"+aCount);
+		//dump("getItems name:"+this.name+", aListener:"+aListener);
+		//dump(", aCount:"+aCount);
 
 		if (aRangeStart)  { 
 			if (this.debug) this.logInfo("getItems 2: aRangeStart:"+aRangeStart.toString()); 
-			dump(", aRangeStart:"+aRangeStart.toString());
+			//dump(", aRangeStart:"+aRangeStart.toString());
 		}
 		else { 
 			if (this.debug) this.logInfo("getItems 2: aRangeStart:null");
-			dump(", aRangeStart:null");
+			//dump(", aRangeStart:null");
 		}
 		if (aRangeEnd) { 
 			if (this.debug) this.logInfo("getItems 3: aRangeEnd:"+aRangeEnd.toString()); 
-			dump(", aRangeEnd:"+aRangeEnd.toString()); 
+			//dump(", aRangeEnd:"+aRangeEnd.toString()); 
 		}
 		else { 
 			if (this.debug) this.logInfo("getItems 3: aRangeEnd:null");
-			dump(", aRangeEnd:null");
+			//dump(", aRangeEnd:null");
 		}
-		dump("\n");
+		//dump("\n");
 
 		var wantEvents = ((aItemFilter & Ci.calICalendar
 			.ITEM_FILTER_TYPE_EVENT) != 0);
@@ -2368,6 +2368,11 @@ calExchangeCalendar.prototype = {
 		if (!this.lastValidRangeStart) this.lastValidRangeStart = aRangeStart.clone();
 		if (!this.lastValidRangeEnd) this.lastValidRangeEnd = aRangeEnd.clone();
 
+		// 2013-11-19 We now always request period from offline cache.
+		if (this.useOfflineCache) {
+			this.getItemsFromOfflineCache(aRangeStart, aRangeEnd, aListener);
+		}
+/*
 		if ((this.useOfflineCache) && (dateChanged)) {
 			if (((wantEvents) && (this.supportsEvents)) || ((wantTodos) && (this.supportsTasks))) {
 				if (this.debug) this.logInfo("Requesting events/tasks from offline cache.");
@@ -2421,10 +2426,7 @@ calExchangeCalendar.prototype = {
 				}
 			}
 
-/*			if ((!startChanged) && (!endChanged)) {
-				dateChanged = false;
-			}*/
-		}
+		} */
 
 		this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
 
@@ -8343,6 +8345,7 @@ else {
 	getItemsFromOfflineCache: function _getItemsFromOfflineCache(aStartDate, aEndDate)
 	{
 		if (this.debug) this.logInfo("getItemsFromOfflineCache startDate:"+aStartDate+", endDate:"+aEndDate);
+		dump("getItemsFromOfflineCache: name:"+this.name+", startDate:"+aStartDate+", endDate:"+aEndDate+"\n");
 
 		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
