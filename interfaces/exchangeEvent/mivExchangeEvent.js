@@ -32,6 +32,8 @@ Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://calendar/modules/calProviderUtils.jsm");
 
 Cu.import("resource://interfaces/exchangeBaseItem/mivExchangeBaseItem.js");
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+
 
 //var EXPORTED_SYMBOLS = ["mivExchangeEvent"];
 
@@ -356,12 +358,16 @@ mivExchangeEvent.prototype = {
 					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:StartTimeZone xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 					tmpTimeZone.setAttribute("Name",exchTimeZone.name); 
 					tmpTimeZone.setAttribute("Id",exchTimeZone.id); 
-					var periods = exchTimeZone.timeZone.getTag("t:Periods");
-					var transitionsGroups = exchTimeZone.timeZone.getTag("t:TransitionsGroups");
-					var transitions = exchTimeZone.timeZone.getTag("t:Transitions");
-					tmpTimeZone.addChildTagObject(periods);
-					tmpTimeZone.addChildTagObject(transitionsGroups);
-					tmpTimeZone.addChildTagObject(transitions);
+					var periods = xml2json.getTag(exchTimeZone.timeZone, "t:Periods");
+					var transitionsGroups = xml2json.getTag(exchTimeZone.timeZone, "t:TransitionsGroups");
+					var transitions = xml2json.getTag(exchTimeZone.timeZone, "t:Transitions");
+
+					var tmpPeriods = this.globalFunctions.xmlToJxon(xml2json.toString(periods));
+					tmpTimeZone.addChildTagObject(tmpPeriods);
+					var tmpTransitionsGroups = this.globalFunctions.xmlToJxon(xml2json.toString(transitionsGroups));
+					tmpTimeZone.addChildTagObject(tmpTransitionsGroups);
+					var tmpTransitions = this.globalFunctions.xmlToJxon(xml2json.toString(transitions));
+					tmpTimeZone.addChildTagObject(tmpTransitions);
 
 					this.addSetItemField(updates, "StartTimeZone", tmpTimeZone, null, true);
 				}
@@ -395,12 +401,16 @@ mivExchangeEvent.prototype = {
 					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:EndTimeZone xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 					tmpTimeZone.setAttribute("Name",exchTimeZone.name); 
 					tmpTimeZone.setAttribute("Id",exchTimeZone.id); 
-					var periods = exchTimeZone.timeZone.getTag("t:Periods");
-					var transitionsGroups = exchTimeZone.timeZone.getTag("t:TransitionsGroups");
-					var transitions = exchTimeZone.timeZone.getTag("t:Transitions");
-					tmpTimeZone.addChildTagObject(periods);
-					tmpTimeZone.addChildTagObject(transitionsGroups);
-					tmpTimeZone.addChildTagObject(transitions);
+					var periods = xml2json.getTag(exchTimeZone.timeZone, "t:Periods");
+					var transitionsGroups = xml2json.getTag(exchTimeZone.timeZone, "t:TransitionsGroups");
+					var transitions = xml2json.getTag(exchTimeZone.timeZone, "t:Transitions");
+
+					var tmpPeriods = this.globalFunctions.xmlToJxon(xml2json.toString(periods));
+					tmpTimeZone.addChildTagObject(tmpPeriods);
+					var tmpTransitionsGroups = this.globalFunctions.xmlToJxon(xml2json.toString(transitionsGroups));
+					tmpTimeZone.addChildTagObject(tmpTransitionsGroups);
+					var tmpTransitions = this.globalFunctions.xmlToJxon(xml2json.toString(transitions));
+					tmpTimeZone.addChildTagObject(tmpTransitions);
 
 					this.addSetItemField(updates, "EndTimeZone", tmpTimeZone, null, true);
 				}
