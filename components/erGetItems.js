@@ -84,6 +84,7 @@ function erGetItemsRequest(aArgument, aCbOk, aCbError, aListener)
 	this.folderClass = aArgument.folderClass;
 
 	this.isRunning = true;
+	this.requestedItemId = [];
 	this.execute();
 }
 
@@ -263,6 +264,7 @@ erGetItemsRequest.prototype = {
 		for each (var item in this.ids) {
 			var itemId = xml2json.addTag(itemids, "ItemId", "nsTypes", null);
 			xml2json.setAttribute(itemId, "Id", item.Id);
+			this.requestedItemId.push(item.Id);
 			if (item.ChangeKey) {
 				xml2json.setAttribute(itemId, "ChangeKey", item.ChangeKey);
 			}
@@ -290,8 +292,21 @@ erGetItemsRequest.prototype = {
 		//dump("erGetItemsRequest.onSendOk: "+xml2json.toString(aResp)+"\n");
 		var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']/m:Items/*");
 
+		var rmErrorSearch = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage");
+		var rmErrors = [];
+		if (rmErrorSearch.length > 0) {
+			var i = 0;
+			while (i < rmErrorSearch.length) {
+				if (xml2json.getAttribute(rmErrorSearch[i], "ResponseClass", "") == "Error") {
+					//dump("Found an get item with error answer. id:"+this.requestedItemId[i]+"\n");
+					rmErrors.push(this.requestedItemId[i]);
+				}
+				i++;
+			}
+		}
+
 		if (this.mCbOk) {
-			this.mCbOk(this, rm);
+			this.mCbOk(this, rm, rmErrors);
 		}
 
 		this.isRunning = false;

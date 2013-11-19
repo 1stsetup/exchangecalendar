@@ -2335,8 +2335,9 @@ calExchangeCalendar.prototype = {
 		// Check if this requested period touches a previous seen period.
 		var periodMatch = false;
 		var i = 0;
-		while ((!periodMatch && (i < this.periods.length)) {
+		while ((!periodMatch) && (i < this.periods.length)) {
 			if (this.periods[i].startDate.compare(aRangeStart) > 0) {
+			}
 			i++;
 		}
 
@@ -2380,10 +2381,10 @@ calExchangeCalendar.prototype = {
 		if (!this.lastValidRangeEnd) this.lastValidRangeEnd = aRangeEnd.clone();
 
 		// 2013-11-19 We now always request period from offline cache.
-		if (this.useOfflineCache) {
+/*		if (this.useOfflineCache) {
 			this.getItemsFromOfflineCache(aRangeStart, aRangeEnd, aListener);
-		}
-/*
+		}*/
+
 		if ((this.useOfflineCache) && (dateChanged)) {
 			if (((wantEvents) && (this.supportsEvents)) || ((wantTodos) && (this.supportsTasks))) {
 				if (this.debug) this.logInfo("Requesting events/tasks from offline cache.");
@@ -2437,7 +2438,7 @@ calExchangeCalendar.prototype = {
 				}
 			}
 
-		} */
+		} 
 
 		this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
 
@@ -2458,10 +2459,10 @@ calExchangeCalendar.prototype = {
 		}
 
 		// 2013-11-19 Going to request getitems period from exchange.
-/*		if (!dateChanged) {
+		if (!dateChanged) {
 			if (this.debug) this.logInfo("No dateChanged. Not going to request items from server.");
 			return;
-		}*/
+		}
 
 		if (this.isOffline) {
 			if (this.debug) this.logInfo("We are offline. Not going to request items from server.");
@@ -2479,15 +2480,15 @@ calExchangeCalendar.prototype = {
 		}
 
 		// 2013-11-19 Going to request getitems period from exchange.
-		if ((wantEvents) && (this.supportsEvents)) {
-			this.requestPeriod(aRangeStart, aRangeEnd, aItemFilter, aCount, false);
-		}
-
 /*		if ((wantEvents) && (this.supportsEvents)) {
+			this.requestPeriod(aRangeStart, aRangeEnd, aItemFilter, aCount, false);
+		}*/
+
+		if ((wantEvents) && (this.supportsEvents)) {
 			if (this.debug) this.logInfo("Requesting events from exchange server.");
 			if ((startChanged) || (endChanged)) {
 
-//				this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
+				//this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
 
 				if (startChanged) {
 					if (this.debug) this.logInfo("Startdate has changed to an earlier date. Requesting difference.");
@@ -2504,7 +2505,7 @@ calExchangeCalendar.prototype = {
 				if (this.debug) this.logInfo("New time period. Requesting items in period.");
 				this.requestPeriod(aRangeStart, aRangeEnd, aItemFilter, aCount, false);
 			}
-		}*/
+		}
 	
 		if ((wantTodos) && (this.supportsTasks)) {
 			if (this.debug) this.logInfo("Requesting tasks from exchange server.");
@@ -2588,7 +2589,7 @@ calExchangeCalendar.prototype = {
 	requestPeriod: function _requestPeriod(aStartDate, aEndDate, aItemFilter, aCount, findReverse)
 	{
 		if (this.debug) this.logInfo("Getting period from: "+aStartDate+" until "+aEndDate);
-		dump(this.name+": Getting period from: "+aStartDate+" until "+aEndDate+"\n");
+		//dump(this.name+": Getting period from: "+aStartDate+" until "+aEndDate+"\n");
 
 		if (findReverse) {
 			var endDate = aEndDate.clone();
@@ -5707,7 +5708,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			 occurrences: newOccurrenceList,
 			 folderClass: this.folderClass,
 			 GUID: calExchangeCalendarGUID}, 
-			function(erGetItemsRequest, aIds) { self.getCalendarItemsOK(erGetItemsRequest, aIds);}, 
+			function(erGetItemsRequest, aIds, aItemErrors) { self.getCalendarItemsOK(erGetItemsRequest, aIds, aItemErrors);}, 
 			function(erGetItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erGetItemsRequest, aCode, aMsg);},
 			null);
 		}
@@ -5798,7 +5799,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			 changeKey: this.changeKey,
 			 folderClass: this.folderClass,
 			 GUID: calExchangeCalendarGUID }, 
-			function(erGetItemsRequest, aIds) { self.getTaskItemsOK(erGetItemsRequest, aIds);}, 
+			function(erGetItemsRequest, aIds, aItemErrors) { self.getTaskItemsOK(erGetItemsRequest, aIds, aItemErrors);}, 
 			function(erGetItemsRequest, aCode, aMsg) { self.getTaskItemsError(erGetItemsRequest, aCode, aMsg);},
 			null);
 
@@ -5849,13 +5850,26 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 	},
 
-	getTaskItemsOK: function _getTaskItemsOK(erGetItemsRequest, aItems)
+	getTaskItemsOK: function _getTaskItemsOK(erGetItemsRequest, aItems, aItemErrors)
 	{
 		if (this.debug) this.logInfo("getTaskItemsOK: aItems.length:"+aItems.length);
 		this.saveCredentials(erGetItemsRequest.argument);
 		this.notConnected = false;
 
 if (this.debug) this.logInfo("getTaskItemsOK 2");
+
+		if ((aItemErrors) && (aItemErrors.length > 0)) {
+			// Remove these items as they have an error
+			var i = 0;
+			while (i < aItemErrors.length) {
+				if (this.itemCache[aItemErrors[i]]) {
+					this.notifyTheObservers("onDeleteItem", [this.itemCache[aItemErrors[i]]]);
+					this.removeItemFromCache(this.itemCache[aItemErrors[i]]);
+				}
+				i++;
+			}
+			
+		}
 
 		if (aItems.length == 0) {
 			this.syncBusy = false;
@@ -6511,7 +6525,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 							if (this.debug) this.logInfo("We have a new master without children. Most of the times this means we nead to request the children separately.");
 							var self = this;
 							var tmpItem = { Id: item.id, ChangeKey: item.changeKey, type:"RecurringMaster"};
-							this.addToQueue( erFindOccurrencesRequest, 
+/*							this.addToQueue( erFindOccurrencesRequest, 
 								{user: this.user, 
 								 mailbox: this.mailbox,
 								 folderBase: this.folderBase,
@@ -6524,7 +6538,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 						 		 GUID: calExchangeCalendarGUID}, 
 								function(erGetItemsRequest, aIds) { self.findOccurrencesOK(erGetItemsRequest, aIds);}, 
 								function(erGetItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erGetItemsRequest, aCode, aMsg);},
-								null);	
+								null);	*/
 
 						}
 					}
@@ -6847,12 +6861,25 @@ return;
 	},
 
 
-	getCalendarItemsOK: function _getCalendarItemsOK(erGetItemsRequest, aItems)
+	getCalendarItemsOK: function _getCalendarItemsOK(erGetItemsRequest, aItems, aItemErrors)
 	{
 //		if (this.debug) this.logInfo("getCalendarItemsOK: aItems.length="+aItems.length);
 //dump("  getCalendarItemsOK:"+aItems.length+"\n");
 		this.saveCredentials(erGetItemsRequest.argument);
 		this.notConnected = false;
+
+		if ((aItemErrors) && (aItemErrors.length > 0)) {
+			// Remove these items as they have an error
+			var i = 0;
+			while (i < aItemErrors.length) {
+				if (this.itemCache[aItemErrors[i]]) {
+					this.notifyTheObservers("onDeleteItem", [this.itemCache[aItemErrors[i]]]);
+					this.removeItemFromCache(this.itemCache[aItemErrors[i]]);
+				}
+				i++;
+			}
+			
+		}
 
 		if (aItems.length == 0) {
 			return;
@@ -7007,7 +7034,7 @@ return;
 					 folderClass: this.folderClass,
 					 GUID: calExchangeCalendarGUID,
 					 syncState: syncState }, 
-					function(erGetItemsRequest, aIds) { self.getTaskItemsOK(erGetItemsRequest, aIds);}, 
+					function(erGetItemsRequest, aIds, aItemErrors) { self.getTaskItemsOK(erGetItemsRequest, aIds, aItemErrors);}, 
 					function(erGetItemsRequest, aCode, aMsg) { self.getTaskItemsError(erGetItemsRequest, aCode, aMsg);},
 					null);
 			}
@@ -8363,7 +8390,7 @@ else {
 	getItemsFromOfflineCache: function _getItemsFromOfflineCache(aStartDate, aEndDate)
 	{
 		if (this.debug) this.logInfo("getItemsFromOfflineCache startDate:"+aStartDate+", endDate:"+aEndDate);
-		dump("getItemsFromOfflineCache: name:"+this.name+", startDate:"+aStartDate+", endDate:"+aEndDate+"\n");
+		//dump("getItemsFromOfflineCache: name:"+this.name+", startDate:"+aStartDate+", endDate:"+aEndDate+"\n");
 
 		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
