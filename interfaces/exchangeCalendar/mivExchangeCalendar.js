@@ -2153,18 +2153,26 @@ calExchangeCalendar.prototype = {
 		if (this.debug) this.logInfo("getItems 0: aListener:"+aListener);
 		if (this.debug) this.logInfo("getItems 1: aCount:"+aCount);
 
+		dump("getItems name:"+this.name+", aListener:"+aListener);
+		dump(", aCount:"+aCount);
+
 		if (aRangeStart)  { 
 			if (this.debug) this.logInfo("getItems 2: aRangeStart:"+aRangeStart.toString()); 
+			dump(", aRangeStart:"+aRangeStart.toString());
 		}
 		else { 
 			if (this.debug) this.logInfo("getItems 2: aRangeStart:null");
+			dump(", aRangeStart:null");
 		}
 		if (aRangeEnd) { 
 			if (this.debug) this.logInfo("getItems 3: aRangeEnd:"+aRangeEnd.toString()); 
+			dump(", aRangeEnd:"+aRangeEnd.toString()); 
 		}
 		else { 
 			if (this.debug) this.logInfo("getItems 3: aRangeEnd:null");
+			dump(", aRangeEnd:null");
 		}
+		dump("\n");
 
 		var wantEvents = ((aItemFilter & Ci.calICalendar
 			.ITEM_FILTER_TYPE_EVENT) != 0);
@@ -7752,8 +7760,8 @@ else {
 				this.prefs.setIntPref("dbVersion", latestDBVersion);
 
 			}
-			this.executeQuery("UPDATE items set event='y' where event='y_'");
-			this.executeQuery("UPDATE items set event='n' where event='n_'");
+			//this.executeQuery("UPDATE items set event='y' where event='y_'"); // Turned of 2013-11-19. Items will always be read from offline cache even if they have already been read
+			//this.executeQuery("UPDATE items set event='n' where event='n_'");
 
 			this.dbInit = false;
 			this.noDB = false;
@@ -8155,7 +8163,8 @@ else {
 		if (isEvent(aCalItem)) {
 			var startDate = cal.toRFC3339(aCalItem.startDate.getInTimezone(this.globalFunctions.ecUTC()));
 			var endDate = cal.toRFC3339(aCalItem.endDate.getInTimezone(this.globalFunctions.ecUTC()));
-			var eventField = "y_";
+//			var eventField = "y_";
+			var eventField = "y";
 		}
 		else {
 			if (aCalItem.entryDate) {
@@ -8176,7 +8185,8 @@ else {
 					var endDate = "";
 				}
 			}
-			var eventField = "n_";
+//			var eventField = "n_";
+			var eventField = "n";
 		}
 
 		if (isEvent(aCalItem)) {
@@ -8442,7 +8452,7 @@ else {
 		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
 
 			if (result.length > 0) {
-				this.executeQuery("UPDATE items set event=(event || '_')"+whereStr);
+				//this.executeQuery("UPDATE items set event=(event || '_')"+whereStr); // Turned this of so items are always requested from offline cache. Even if they have been requested already.
 
 				return this.updateCalendar(null, result, false, true);
 			}
