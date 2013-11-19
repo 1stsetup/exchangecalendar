@@ -2329,6 +2329,17 @@ calExchangeCalendar.prototype = {
 		var startChanged = false;
 		var endChanged = false;
 
+		if (!this.periods) {
+			this.periods = [];
+		}
+		// Check if this requested period touches a previous seen period.
+		var periodMatch = false;
+		var i = 0;
+		while ((!periodMatch && (i < this.periods.length)) {
+			if (this.periods[i].startDate.compare(aRangeStart) > 0) {
+			i++;
+		}
+
 		if (!this.startDate) {
 			if (this.debug) this.logInfo("no startdate");
 			this.startDate = aRangeStart.clone();
@@ -2446,10 +2457,11 @@ calExchangeCalendar.prototype = {
 			return;
 		}
 
-		if (!dateChanged) {
+		// 2013-11-19 Going to request getitems period from exchange.
+/*		if (!dateChanged) {
 			if (this.debug) this.logInfo("No dateChanged. Not going to request items from server.");
 			return;
-		}
+		}*/
 
 		if (this.isOffline) {
 			if (this.debug) this.logInfo("We are offline. Not going to request items from server.");
@@ -2466,7 +2478,12 @@ calExchangeCalendar.prototype = {
 			}
 		}
 
+		// 2013-11-19 Going to request getitems period from exchange.
 		if ((wantEvents) && (this.supportsEvents)) {
+			this.requestPeriod(aRangeStart, aRangeEnd, aItemFilter, aCount, false);
+		}
+
+/*		if ((wantEvents) && (this.supportsEvents)) {
 			if (this.debug) this.logInfo("Requesting events from exchange server.");
 			if ((startChanged) || (endChanged)) {
 
@@ -2487,7 +2504,7 @@ calExchangeCalendar.prototype = {
 				if (this.debug) this.logInfo("New time period. Requesting items in period.");
 				this.requestPeriod(aRangeStart, aRangeEnd, aItemFilter, aCount, false);
 			}
-		}
+		}*/
 	
 		if ((wantTodos) && (this.supportsTasks)) {
 			if (this.debug) this.logInfo("Requesting tasks from exchange server.");
@@ -2571,6 +2588,7 @@ calExchangeCalendar.prototype = {
 	requestPeriod: function _requestPeriod(aStartDate, aEndDate, aItemFilter, aCount, findReverse)
 	{
 		if (this.debug) this.logInfo("Getting period from: "+aStartDate+" until "+aEndDate);
+		dump(this.name+": Getting period from: "+aStartDate+" until "+aEndDate+"\n");
 
 		if (findReverse) {
 			var endDate = aEndDate.clone();
