@@ -5660,7 +5660,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 	},
 
-	findCalendarItemsOK: function _findCalendarItemsOK(erFindCalendarItemsRequest, aIds, aOccurrences)
+	findCalendarItemsOK: function _findCalendarItemsOK(erFindCalendarItemsRequest, aIds, aOccurrences, doNotCheckCache)
 	{
 		if (this.debug) this.logInfo("findCalendarItemsOK: aIds.length="+aIds.length+", aOccurrences.length="+aOccurrences.length);
 
@@ -5675,8 +5675,10 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		var newIdList = new Array();
 //dump("     findCalendarItemsOK: aIds.length:"+aIds.length+"\n");
 		for each(var item in aIds) {
-			var inItemCache = ((this.itemCache[item.Id]) && (this.itemCache[item.Id].changeKey == item.ChangeKey));
-			var inMasterCache = ((item.type == "RecurringMaster") && (this.recurringMasterCache[item.uid]) && (this.recurringMasterCache[item.uid].changeKey == item.ChangeKey));
+			if (!doNotCheckCache) {
+				var inItemCache = ((this.itemCache[item.Id]) && (this.itemCache[item.Id].changeKey == item.ChangeKey));
+				var inMasterCache = ((item.type == "RecurringMaster") && (this.recurringMasterCache[item.uid]) && (this.recurringMasterCache[item.uid].changeKey == item.ChangeKey));
+			}
 			if ((!inItemCache) && (!inMasterCache)) {
 				newIdList.push(item);
 			}
@@ -5863,8 +5865,12 @@ if (this.debug) this.logInfo("getTaskItemsOK 2");
 			var i = 0;
 			while (i < aItemErrors.length) {
 				if (this.itemCache[aItemErrors[i]]) {
+					this.removeFromOfflineCache(this.itemCache[aItemErrors[i]]);
 					this.notifyTheObservers("onDeleteItem", [this.itemCache[aItemErrors[i]]]);
 					this.removeItemFromCache(this.itemCache[aItemErrors[i]]);
+				}
+				else {
+					this.removeFromOfflineCache({ id: aItemErrors[i], title:"from offline"});
 				}
 				i++;
 			}
@@ -6481,7 +6487,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 							for (var counter=0; ((counter < 10) && (ids.length > 0)); counter++) {
 								req.push(ids.pop());
 							}
-							this.findCalendarItemsOK(null, req, []);
+							this.findCalendarItemsOK(null, req, [], true);
 						}
 					}
 
@@ -6519,7 +6525,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 							for (var counter=0; ((counter < 10) && (ids.length > 0)); counter++) {
 								req.push(ids.pop());
 							}
-							this.findCalendarItemsOK(null, req, []);
+							this.findCalendarItemsOK(null, req, [], true);
 						}
 					}
 
@@ -6914,8 +6920,12 @@ return;
 			var i = 0;
 			while (i < aItemErrors.length) {
 				if (this.itemCache[aItemErrors[i]]) {
+					this.removeFromOfflineCache(this.itemCache[aItemErrors[i]]);
 					this.notifyTheObservers("onDeleteItem", [this.itemCache[aItemErrors[i]]]);
 					this.removeItemFromCache(this.itemCache[aItemErrors[i]]);
+				}
+				else {
+					this.removeFromOfflineCache({ id: aItemErrors[i], title:"from offline"});
 				}
 				i++;
 			}
