@@ -6447,13 +6447,15 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 					break;
 				case "RecurringMaster" :
 	
-					if (this.debug) this.logInfo(item.title+":"+item.startDate.toString()+":IsMaster, fromOfflineCache:"+fromOfflineCache);
+//					if (this.debug) this.logInfo(item.title+":"+item.startDate.toString()+":IsMaster, fromOfflineCache:"+fromOfflineCache);
+					dump(item.title+":"+item.startDate.toString()+":IsMaster, fromOfflineCache:"+fromOfflineCache+"\n");
 
 					if ((this.recurringMasterCache[item.uid]) && (this.recurringMasterCache[item.uid].changeKey != item.changeKey)) {
 						if (this.debug) this.logInfo("We allready have this master in cache but the changeKey changed.");
+						dump("We allready have this master in cache but the changeKey changed.\n");
 
-						var ids = [];
-						var myExceptions = this.recurringMasterCache[item.uid].getExceptions({});
+						let ids = [];
+						let myExceptions = this.recurringMasterCache[item.uid].getExceptions({});
 						for each(var tmpException in myExceptions) {
 							ids.push({Id: tmpException.id,
 									  type: "Exception",
@@ -6461,7 +6463,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 									  start: null,
 									  end: null});
 						}
-						var myOccurrences = this.recurringMasterCache[item.uid].getOccurrences({});
+						let myOccurrences = this.recurringMasterCache[item.uid].getOccurrences({});
 						for each(var tmpOccurrence in myOccurrences) {
 							ids.push({Id: tmpOccurrence.id,
 									  type: "Occurrence",
@@ -6471,6 +6473,45 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 						}
 
 						if (this.debug) this.logInfo("Going to request '"+ids.length+"' children to see if they are updated.");
+						dump("Going to request '"+ids.length+"' memorycache children to see if they are updated.\n");
+
+						// Devide the whole in smaller request otherwise on the return answer we will flood the cpu and memory.
+						while (ids.length > 0) {
+							let req = [];
+							for (var counter=0; ((counter < 10) && (ids.length > 0)); counter++) {
+								req.push(ids.pop());
+							}
+							this.findCalendarItemsOK(null, req, []);
+						}
+					}
+
+					if ((this.itemIsInOfflineCache(item.id)) && (!fromOfflineCache)) {
+						dump("Master is in offline cache. Going to see if children have changed.\n");
+						let inOfflineCache = this.getOccurrencesFromOfflineCache(item, "RO");
+						let i = 0;
+						let ids = [];
+						while (i < inOfflineCache.length) {
+							ids.push({Id: inOfflineCache[i],
+									  type: "Occurrence",
+									  uid: item.uid,
+									  start: null,
+									  end: null});
+							i++;
+						}
+
+						inOfflineCache = this.getOccurrencesFromOfflineCache(item, "RE");
+						i = 0;
+						while (i < inOfflineCache.length) {
+							ids.push({Id: inOfflineCache[i],
+									  type: "Exception",
+									  uid: item.uid,
+									  start: null,
+									  end: null});
+							i++;
+						}
+
+						if (this.debug) this.logInfo("Going to request '"+ids.length+"' offline children to see if they are updated.");
+						dump("Going to request '"+ids.length+"' offline children to see if they are updated.\n");
 
 						// Devide the whole in smaller request otherwise on the return answer we will flood the cpu and memory.
 						while (ids.length > 0) {
@@ -8385,6 +8426,126 @@ else {
 		//this.requestPeriod(startDate, endDate, filter, null, false);
 		//this.getItems(filter, 0, startDate, endDate, null);
 
+	},
+
+	itemIsInOfflineCache: function _itemIsInOfflineCache(aId) {
+		if (this.debug) this.logInfo("itemIsInOfflineCache: aId:"+aId);
+		if (!aId) return null;
+
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
+			return null;
+		}
+
+		var result = null;
+
+		var sqlStr = "SELECT id, changeKey FROM items WHERE id = '"+aId+"'";
+
+		if (this.debug) this.logInfo("sql-query:"+sqlStr, 1);
+		try {
+			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
+		}
+		catch(exc) {
+			if (this.debug) this.logInfo("Error on createStatement. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString+", Exception:"+exc+". ("+sqlStr+")");
+			return [];
+		}
+
+		var doContinue = true;
+		try {
+			while (doContinue) {
+				doContinue = sqlStatement.executeStep();
+
+				if (doContinue) {
+					if (this.debug) this.logInfo("Found item in offline Cache.");
+
+					// Check if this item is not in the itemCache already.
+					result = sqlStatement.row.changeKey;
+				}
+			}
+		}
+		finally {  
+			sqlStatement.reset();
+		}
+
+		if (this.debug) this.logInfo("itemIsInOfflineCache: Retreived changeKey:'"+result+"' from offline cache.");
+		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
+
+			if (result.length > 0) {
+dump("itemIsInOfflineCache: found:"+result+"\n");
+				return result;
+			}
+		}
+		else {
+			if (this.debug) this.logInfo("itemIsInOfflineCache: Error executing Query. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString);
+			return null;
+		}
+		return null;
+	},
+
+	getOccurrencesFromOfflineCache: function _getOccurrencesFromOfflineCache(aMaster, aType) {
+		if (this.debug) this.logInfo("getOccurrencesFromOfflineCache: aMaster.title:"+aMaster.title);
+		if (!aMaster) return [];
+
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
+			return [];
+		}
+
+		var result = [];
+
+		var sqlStr = "SELECT id FROM items";
+		var whereStr = "";
+		if ((this.supportsEvents) && (!this.supportsTasks)) {
+			whereStr = " WHERE event = 'y' AND type = '"+aType+"' AND uid = '"+aMaster.uid+"'";
+			sqlStr += whereStr;
+		}
+		else {
+			if ((!this.supportsEvents) && (this.supportsTasks)) {
+				whereStr = " WHERE event = 'n' AND type = '"+aType+"' AND uid = '"+aMaster.uid+"'";
+				sqlStr += whereStr;
+			}
+		}
+
+		if (this.debug) this.logInfo("sql-query:"+sqlStr, 1);
+		try {
+			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
+		}
+		catch(exc) {
+			if (this.debug) this.logInfo("Error on createStatement. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString+", Exception:"+exc+". ("+sqlStr+")");
+			return [];
+		}
+
+		var doContinue = true;
+		try {
+			while (doContinue) {
+				doContinue = sqlStatement.executeStep();
+
+				if (doContinue) {
+					if (this.debug) this.logInfo("Found item in offline Cache.");
+
+					// Check if this item is not in the itemCache already.
+					if (!this.itemCache[sqlStatement.row.id]) {
+						result.push(sqlStatement.row.id);
+						cachedItem = null;
+					}
+				}
+			}
+		}
+		finally {  
+			sqlStatement.reset();
+		}
+
+		if (this.debug) this.logInfo("getOccurrencesFromOfflineCache: Retreived '"+result.length+"' records from offline cache.");
+		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
+
+			if (result.length > 0) {
+dump("getOccurrencesFromOfflineCache: found:"+result.length+"\n");
+				return result;
+			}
+		}
+		else {
+			if (this.debug) this.logInfo("getOccurrencesFromOfflineCache: Error executing Query. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString);
+			return [];
+		}
+		return [];
 	},
 
 	getItemsFromOfflineCache: function _getItemsFromOfflineCache(aStartDate, aEndDate)

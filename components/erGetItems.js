@@ -298,7 +298,7 @@ erGetItemsRequest.prototype = {
 			var i = 0;
 			while (i < rmErrorSearch.length) {
 				if (xml2json.getAttribute(rmErrorSearch[i], "ResponseClass", "") == "Error") {
-					//dump("Found an get item with error answer. id:"+this.requestedItemId[i]+"\n");
+					dump("Found an get item with error answer. id:"+this.requestedItemId[i]+"\n");
 					rmErrors.push(this.requestedItemId[i]);
 				}
 				i++;
