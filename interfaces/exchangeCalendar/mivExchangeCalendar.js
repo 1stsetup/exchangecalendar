@@ -6491,41 +6491,44 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 						}
 					}
 
-					if ((this.itemIsInOfflineCache(item.id)) && (!fromOfflineCache)) {
-						dump("Master is in offline cache. Going to see if children have changed.\n");
-						let inOfflineCache = this.getOccurrencesFromOfflineCache(item, "RO");
-						let i = 0;
-						let ids = [];
-						while (i < inOfflineCache.length) {
-							ids.push({Id: inOfflineCache[i],
-									  type: "Occurrence",
-									  uid: item.uid,
-									  start: null,
-									  end: null});
-							i++;
-						}
-
-						inOfflineCache = this.getOccurrencesFromOfflineCache(item, "RE");
-						i = 0;
-						while (i < inOfflineCache.length) {
-							ids.push({Id: inOfflineCache[i],
-									  type: "Exception",
-									  uid: item.uid,
-									  start: null,
-									  end: null});
-							i++;
-						}
-
-						if (this.debug) this.logInfo("Going to request '"+ids.length+"' offline children to see if they are updated.");
-						dump("Going to request '"+ids.length+"' offline children to see if they are updated.\n");
-
-						// Devide the whole in smaller request otherwise on the return answer we will flood the cpu and memory.
-						while (ids.length > 0) {
-							let req = [];
-							for (var counter=0; ((counter < 10) && (ids.length > 0)); counter++) {
-								req.push(ids.pop());
+					if (!fromOfflineCache) {
+						let changeKey = this.itemIsInOfflineCache(item.id);
+						if ((changeKey) && (item.changeKey != changeKey)) {
+							dump("Master is in offline cache and changeKey is different. Going to see if children have changed.\n");
+							let inOfflineCache = this.getOccurrencesFromOfflineCache(item, "RO");
+							let i = 0;
+							let ids = [];
+							while (i < inOfflineCache.length) {
+								ids.push({Id: inOfflineCache[i],
+										  type: "Occurrence",
+										  uid: item.uid,
+										  start: null,
+										  end: null});
+								i++;
 							}
-							this.findCalendarItemsOK(null, req, [], true);
+
+							inOfflineCache = this.getOccurrencesFromOfflineCache(item, "RE");
+							i = 0;
+							while (i < inOfflineCache.length) {
+								ids.push({Id: inOfflineCache[i],
+										  type: "Exception",
+										  uid: item.uid,
+										  start: null,
+										  end: null});
+								i++;
+							}
+
+							if (this.debug) this.logInfo("Going to request '"+ids.length+"' offline children to see if they are updated.");
+							dump("Going to request '"+ids.length+"' offline children to see if they are updated.\n");
+
+							// Devide the whole in smaller request otherwise on the return answer we will flood the cpu and memory.
+							while (ids.length > 0) {
+								let req = [];
+								for (var counter=0; ((counter < 10) && (ids.length > 0)); counter++) {
+									req.push(ids.pop());
+								}
+								this.findCalendarItemsOK(null, req, [], true);
+							}
 						}
 					}
 
@@ -8456,7 +8459,7 @@ else {
 		}
 		catch(exc) {
 			if (this.debug) this.logInfo("Error on createStatement. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString+", Exception:"+exc+". ("+sqlStr+")");
-			return [];
+			return null;
 		}
 
 		var doContinue = true;
@@ -8479,7 +8482,7 @@ else {
 		if (this.debug) this.logInfo("itemIsInOfflineCache: Retreived changeKey:'"+result+"' from offline cache.");
 		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
 
-			if (result.length > 0) {
+			if (result) {
 dump("itemIsInOfflineCache: found:"+result+"\n");
 				return result;
 			}
