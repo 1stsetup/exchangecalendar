@@ -9011,6 +9011,8 @@ function ecObserver(inCalendar)
 					rmPrefs.deleteBranch(aCalendar.id);
 				} catch(err) {}
 
+				aCalendar.removeFile("syncState.txt");
+				aCalendar.removeFile("syncInboxState.txt");
 				self.unregister();
 			}
 		},

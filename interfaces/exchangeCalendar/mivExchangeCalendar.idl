@@ -71,4 +71,6 @@ interface mivExchangeCalendar : calICalendar
 	readonly attribute boolean canDelete;
 	readonly attribute boolean canRead;
 	readonly attribute boolean canModify;
+
+	void removeFile(in AUTF8String aFilename);
 };
