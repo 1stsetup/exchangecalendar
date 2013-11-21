@@ -3019,7 +3019,18 @@ calExchangeCalendar.prototype = {
 			this.checkFolderPath();
 
 			this.syncState = this.globalFunctions.safeGetCharPref(this.prefs,"syncState", "");
+			if (this.syncState != "") {
+				this.saveToFile("syncState.txt", this.syncState);
+				this.prefs.deleteBranch("syncState");
+			}
 			this.syncInboxState = this.globalFunctions.safeGetCharPref(this.prefs,"syncInboxState", "");
+			if (this.syncInboxState != "") {
+				this.saveToFile("syncInboxState.txt", this.syncInboxState);
+				this.prefs.deleteBranch("syncInboxState");
+			}
+
+			this.syncState = this.loadFromFile("syncState.txt");
+			this.syncInboxState = this.loadFromFile("syncInboxState.txt");
 
 			this.getSyncState();
 
@@ -3330,7 +3341,8 @@ calExchangeCalendar.prototype = {
 		}
 
 		this.syncInboxState = syncState;
-		this.prefs.setCharPref("syncInboxState", syncState);
+		//this.prefs.setCharPref("syncInboxState", syncState);
+		this.saveToFile("syncInboxState.txt", syncState);
 
 		// Do something with the results.
 //		if (this.debug) this.logInfo("syncInboxOK meetingrequests: Creation:"+creations.meetingrequests.length+", Updates:"+updates.meetingrequests.length+", Deletions:"+deletions.meetingrequests.length);
@@ -3854,7 +3866,8 @@ calExchangeCalendar.prototype = {
 
 		// Now we can initialize.
 		this.syncState = null;
-		this.prefs.deleteBranch("syncState");
+		//this.prefs.deleteBranch("syncState");
+		this.removeFile("syncState.txt");
 		this.weAreSyncing = false;
 		this.firstSyncDone = false;
 		
@@ -3918,7 +3931,8 @@ calExchangeCalendar.prototype = {
 		this.meetingrequestAnswered = [];
 		this.meetingResponsesCache = [];
 		this.syncInboxState = null;
-		this.prefs.deleteBranch("syncInboxState");
+		//this.prefs.deleteBranch("syncInboxState");
+		this.removeFile("syncInboxState.txt");
 		this.weAreInboxSyncing = false;
 
 		this.supportsTasks = false;
@@ -5890,7 +5904,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 3");
 		if ((erGetItemsRequest.argument) && (erGetItemsRequest.argument.syncState)) {
 				if (this.debug) this.logInfo("getTaskItemsOK: We have a syncState to save.");
 				this.syncState = erGetItemsRequest.argument.syncState;
-				this.prefs.setCharPref("syncState", erGetItemsRequest.argument.syncState);
+				//this.prefs.setCharPref("syncState", erGetItemsRequest.argument.syncState);
+				this.saveToFile("syncState.txt", erGetItemsRequest.argument.syncState);
 		}
 
 		aItems  = null;
@@ -7035,7 +7050,8 @@ return;
 		if (!this.syncState) {
 			// This was the first time. we now save the syncState;
 			this.syncState = syncState;
-			this.prefs.setCharPref("syncState", syncState);
+			//this.prefs.setCharPref("syncState", syncState);
+			this.saveToFile("syncState.txt", syncState);
 			this.weAreSyncing = false;
 			this.processItemSyncQueue();
 		}
@@ -7045,7 +7061,8 @@ return;
 				// Nothing was changed. 
 				//if (this.debug) this.logInfo("Sync finished. Nothing finished.");
 				this.syncState = syncState;
-				this.prefs.setCharPref("syncState", syncState);
+				//this.prefs.setCharPref("syncState", syncState);
+				this.saveToFile("syncState.txt", syncState);
 
 				if (this.getItemSyncQueue.length > 0) {
 					if (this.debug) this.logInfo("We have "+this.getItemSyncQueue.length+" items in this.getItemSyncQueue");
@@ -7094,7 +7111,8 @@ return;
 			}
 			else {
 				this.syncState = syncState;
-				this.prefs.setCharPref("syncState", syncState);
+				//this.prefs.setCharPref("syncState", syncState);
+				this.saveToFile("syncState.txt", syncState);
 			}
 
 			if (deletions.length > 0) {
@@ -8877,6 +8895,96 @@ dump("getOccurrencesFromOfflineCache: found:"+result.length+"\n");
 		return this._connectionStateDescription;
 	},
 
+	// Loads a file which is located below the Thunderbird <profile folder>/exchange-data
+	// Real filename will be <calendar.id>.<aFilename>
+	// e.g: aFilename == 'syncState'  -> <ProfD>/exchange-data/<calendar.id>.syncState
+	// When the file exists the content will be read and returned as a string.
+	// When the file does not exists it will return null.
+	loadFromFile: function _loadFromFile(aFilename)
+	{
+		var file = Cc["@mozilla.org/file/directory_service;1"]
+				.getService(Components.interfaces.nsIProperties)
+				.get("ProfD", Components.interfaces.nsIFile);
+		file.append("exchange-data");
+		if ( !file.exists() || !file.isDirectory() ) {
+			return null;  
+		}
+
+		file.append(this.id+"."+aFilename);
+
+		if (!file.exists()) {
+			return null;
+		}
+
+		var istream = Components.classes["@mozilla.org/network/file-input-stream;1"].  
+				 createInstance(Components.interfaces.nsIFileInputStream);  
+		istream.init(file, -1, -1, 0);  
+		istream.QueryInterface(Components.interfaces.nsILineInputStream);  
+		  
+		// read lines into array  
+		var line = {}, lines = "", hasmore;  
+		do {  
+			hasmore = istream.readLine(line);
+			if (lines != "") lines += "\n";  
+			lines += line.value;   
+		} while(hasmore);  
+		  
+		istream.close();
+
+		return lines;
+	},
+
+	// Loads a file which is located below the Thunderbird <profile folder>/exchange-data
+	// Real filename will be <calendar.id>.<aFilename>
+	// e.g: aFilename == 'syncState'  -> <ProfD>/exchange-data/<calendar.id>.syncState
+	// When the file exists the file will be overwritten.
+	saveToFile: function _saveToFile(aFilename, aContent)
+	{
+		var file = Cc["@mozilla.org/file/directory_service;1"]
+				.getService(Components.interfaces.nsIProperties)
+				.get("ProfD", Components.interfaces.nsIFile);
+		file.append("exchange-data");
+		if ( !file.exists() || !file.isDirectory() ) {
+			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);  
+		}
+
+		file.append(this.id+"."+aFilename);
+
+		if (file.exists()) {
+			file.remove(false);
+		}
+
+//		file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0777);  
+
+		var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].  
+				 createInstance(Components.interfaces.nsIFileOutputStream);  
+		foStream.init(file, 0x02 | 0x08 | 0x20, 0777, 0);  
+
+		var converter = Components.classes["@mozilla.org/intl/converter-output-stream;1"].
+				createInstance(Components.interfaces.nsIConverterOutputStream);
+		converter.init(foStream, "UTF-8", 0, 0);
+		converter.writeString(aContent);
+		converter.close(); // this closes foStream
+		  
+		return 0;
+	},
+
+	removeFile: function _removeFile(aFilename)
+	{
+		var file = Cc["@mozilla.org/file/directory_service;1"]
+				.getService(Components.interfaces.nsIProperties)
+				.get("ProfD", Components.interfaces.nsIFile);
+		file.append("exchange-data");
+		if ( !file.exists() || !file.isDirectory() ) {
+			return;  
+		}
+
+		file.append(this.id+"."+aFilename);
+
+		if (file.exists()) {
+			file.remove(false);
+		}
+	},
 };
 
 function ecObserver(inCalendar)  
