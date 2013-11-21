@@ -65,28 +65,26 @@ exchOfflineCacheSettings.prototype = {
 
 		// Load cache preferences
 
-		this.oldUseOfflineCache = aCalendar.getProperty("exchWebService.useOfflineCache"); 
-		if(aCalendar.getProperty("exchWebService.useOfflineCache")){			
+		this.oldUseOfflineCache = aCalendar.useOfflineCache;
+		if(aCalendar.useOfflineCache){
 			this._document.getElementById("exchWebService-offlineCacheproperties-cacheState").checked=true;
 			this._document.getElementById("exchWebService-offlineCacheproperties-detaisvbox").removeAttribute("collapsed");
-			
-			var cachePrefs = this.countItemsInOfflineCache(aCalendar);			
 			
 			var startDate = "no date";
 			var endDate = "no date";
 
-			if (cachePrefs.aStartDateForCaching != null && (cachePrefs.aStartDateForCaching).length>11){
-				startDate = (cachePrefs.aStartDateForCaching).substring(0,10);				
+			if (aCalendar.offlineStartDate) {
+				startDate = aCalendar.offlineStartDate.toString().substring(0,10);
 			}
-			if (cachePrefs.aEndDateForCaching != null && (cachePrefs.aEndDateForCaching).length>11){
-				endDate = (cachePrefs.aEndDateForCaching).substring(0,10);
-			}				
+			if (aCalendar.offlineEndDate) {
+				endDate = aCalendar.offlineEndDate.toString().substring(0,10);
+			}
 	
 			this._document.getElementById("exchWebService-offlineCacheproperties-cachingStartDateValue").value = startDate;
 			this._document.getElementById("exchWebService-offlineCacheproperties-cachingEndDateValue").value = endDate;
 			
-			this._document.getElementById("exchWebService-offlineCacheproperties-totalEventsValue").value=cachePrefs.totalNoOfEvents;
-			this._document.getElementById("exchWebService-offlineCacheproperties-totalTasksValue").value=cachePrefs.totalNoOfToDos;
+			this._document.getElementById("exchWebService-offlineCacheproperties-totalEventsValue").value=aCalendar.offlineEventItemCount;
+			this._document.getElementById("exchWebService-offlineCacheproperties-totalTasksValue").value=aCalendar.offlineToDoItemCount;
 
 			this._document.getElementById("exchWebService-offlineCacheproperties-maintainancegroupbox").removeAttribute("collapsed");
 			this._document.getElementById("exchWebService-offlineCacheproperties-preferencesgroupbox").removeAttribute("collapsed");
@@ -143,66 +141,11 @@ exchOfflineCacheSettings.prototype = {
 		return mDBConn;
 	},
 
-	countItemsInOfflineCache : function _countItemsInOfflineCache(aCalendar)
-	{	
-		let aDBConn = this.getDBConn(aCalendar);
-		var eventCount = 0;
-		var toDoCount = 0;
-		var startDate = 0;
-		var endDate=0;
-		
-		var cachePrefs={
-					aStartDateForCaching: startDate,
-					aEndDateForCaching: endDate,
-					totalNoOfEvents: eventCount,
-					totalNoOfToDos: toDoCount
-				};
-
-		if(aDBConn.connectionReady && aDBConn.tableExists("items")){
-				
-				let statement = aDBConn.createStatement("SELECT COUNT() as eventcount FROM items where event = 'y'");
-				let statement1 = aDBConn.createStatement("SELECT min(startDate) as startDate FROM items");
-				let statement2 = aDBConn.createStatement("SELECT max(endDate) as endDate FROM items");
-				let statement3 = aDBConn.createStatement("SELECT COUNT() as toDoCount FROM items where event = 'n'");
-								
-				try{	
-					statement.executeStep();
-					statement1.executeStep();
-					statement2.executeStep();
-					statement3.executeStep();
-
-					eventCount=statement.row.eventcount;
-					toDoCount=statement3.row.toDoCount;
-
-					startDate=statement1.row.startDate;
-					endDate=statement2.row.endDate;					
-
-					statement.finalize();
-					statement1.finalize();
-					statement2.finalize();
-					statement3.finalize();
-				}
-				catch(e){
-			       		this.globalFunctions.LOG("unable to count events"+e);					
-				}
-
-
-				cachePrefs={
-					aStartDateForCaching: startDate,
-					aEndDateForCaching: endDate,
-					totalNoOfEvents: eventCount,
-					totalNoOfToDos: toDoCount
-				};				
-			}
-		this.globalFunctions.LOG("in count: tsks: "+cachePrefs.totalNoOfToDos+ " events: "+cachePrefs.totalNoOfEvents+" start date: " +cachePrefs.aStartDateForCaching+ " end date: "+cachePrefs.aEndDateForCaching);
-		return cachePrefs;	
-	},
-
 	clearCachedData : function _clearCachedData(aCalendar)
 	{
 		let aDBConn = this.getDBConn(aCalendar);
 		if(aDBConn.connectionReady && aDBConn.tableExists("items")){
-				this.globalFunctions.LOG("in if of delete");
+				this.globalFunctions.LOG("clearCachedData");
 				let statement = aDBConn.createStatement("DELETE FROM items");
 				let statement1 = aDBConn.createStatement("DELETE FROM attachments");
 				let statement2 = aDBConn.createStatement("DELETE FROM attachments_per_item");

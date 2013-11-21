@@ -46,6 +46,8 @@ Cu.import("resource://exchangecalendar/ecFunctions.js");
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/soapFunctions.js");
 
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+
 var EXPORTED_SYMBOLS = ["erGetItemsRequest"];
 
 const MAPI_PidLidTaskAccepted = "33032";
@@ -82,6 +84,7 @@ function erGetItemsRequest(aArgument, aCbOk, aCbError, aListener)
 	this.folderClass = aArgument.folderClass;
 
 	this.isRunning = true;
+	this.requestedItemId = [];
 	this.execute();
 }
 
@@ -91,155 +94,158 @@ erGetItemsRequest.prototype = {
 	{
 		//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute\n");
 
-		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var root = xml2json.newJSON();
+		xml2json.parseXML(root, '<nsMessages:GetItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var req = root[telements][0];
 
-		var itemShape = req.addChildTag("ItemShape", "nsMessages", null);
-		itemShape.addChildTag("BaseShape", "nsTypes", "IdOnly");		
-		itemShape.addChildTag("BodyType", "nsTypes", "Text");
+		var itemShape = xml2json.addTag(req, "ItemShape", "nsMessages", null);
+		xml2json.addTag(itemShape, "BaseShape", "nsTypes", "IdOnly");		
+		xml2json.addTag(itemShape, "BodyType", "nsTypes", "Text");
 
-		var additionalProperties = itemShape.addChildTag("AdditionalProperties", "nsTypes", null);
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemId");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ParentFolderId");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemClass");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Attachments");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Subject");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:DateTimeReceived");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Size");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Categories");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:HasAttachments");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Importance");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:IsDraft");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:IsFromMe");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:IsResend");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:IsSubmitted");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:IsUnmodified");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:DateTimeSent");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:DateTimeCreated");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Body");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ResponseObjects");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Sensitivity");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ReminderDueBy");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ReminderIsSet");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ReminderMinutesBeforeStart");
+		var additionalProperties = xml2json.addTag(itemShape, "AdditionalProperties", "nsTypes", null);
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ItemId'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ParentFolderId'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ItemClass'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:Attachments'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:Subject'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:DateTimeReceived'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:Size'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:Categories'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:HasAttachments'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:Importance'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:IsDraft'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:IsFromMe'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:IsResend'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:IsSubmitted'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:IsUnmodified'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:DateTimeSent'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:DateTimeCreated'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:Body'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ResponseObjects'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:Sensitivity'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ReminderDueBy'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ReminderIsSet'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ReminderMinutesBeforeStart'/>");
+		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:EffectiveRights'/>");
 
 		var extFieldURI;
-		extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-		extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
-		extFieldURI.setAttribute("PropertyId", MAPI_PidLidReminderSignalTime);
-		extFieldURI.setAttribute("PropertyType", "SystemTime");
+		extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+		xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Common");
+		xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidReminderSignalTime);
+		xml2json.setAttribute(extFieldURI, "PropertyType", "SystemTime");
+
+		extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+		xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Common");
+		xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidReminderSet);
+		xml2json.setAttribute(extFieldURI, "PropertyType", "Boolean");
 		
-		extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-		extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
-		extFieldURI.setAttribute("PropertyId", MAPI_PidLidReminderSet);
-		extFieldURI.setAttribute("PropertyType", "Boolean");
-		
-		extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-		extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
-		extFieldURI.setAttribute("PropertyId", MAPI_PidLidReminderDelta);
-		extFieldURI.setAttribute("PropertyType", "Integer");
+		extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+		xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Common");
+		xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidReminderDelta);
+		xml2json.setAttribute(extFieldURI, "PropertyType", "Integer");
 
 			// Calendar fields
 		switch (this.folderClass) {
 		case "IPF.Appointment":
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:Start");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:End");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:OriginalStart");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:IsAllDayEvent");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:LegacyFreeBusyStatus");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:Location");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:When");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:IsMeeting");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:IsCancelled");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:IsRecurring");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:MeetingRequestWasSent");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:IsResponseRequested");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:CalendarItemType");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:MyResponseType");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:Organizer");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:RequiredAttendees");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:OptionalAttendees");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:Resources");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:Duration");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:TimeZone");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:Recurrence");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:ConferenceType");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:AllowNewTimeProposal");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:IsOnlineMeeting");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:MeetingWorkspaceUrl");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:UID");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:RecurrenceId");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:Start'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:End'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:OriginalStart'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:IsAllDayEvent'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:LegacyFreeBusyStatus'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:Location'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:When'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:IsMeeting'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:IsCancelled'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:IsRecurring'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:MeetingRequestWasSent'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:IsResponseRequested'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:CalendarItemType'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:MyResponseType'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:Organizer'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:RequiredAttendees'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:OptionalAttendees'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:Resources'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:Duration'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:TimeZone'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:Recurrence'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:ConferenceType'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:AllowNewTimeProposal'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:IsOnlineMeeting'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:MeetingWorkspaceUrl'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:UID'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:RecurrenceId'/>");
 
 			this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
 					.getService(Ci.mivExchangeStatistics);
 
 			if ((this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2010") > -1) || (this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2013") > -1 )) {
-				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:StartTimeZone");
-				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:EndTimeZone");
+				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:StartTimeZone'/>");
+				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:EndTimeZone'/>");
 			}
 			else { // Exchange2007
-				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:MeetingTimeZone");
+				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:MeetingTimeZone'/>");
 			}
 			break;	
 
 		case "IPF.Task":
 			//Task fields
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:ActualWork");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:AssignedTime");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:BillingInformation");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:ChangeCount");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:Companies");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:CompleteDate");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:Contacts");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:DelegationState");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:Delegator");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:DueDate");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:IsAssignmentEditable");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:IsComplete");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:IsRecurring");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:IsTeamTask");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:Mileage");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:Owner");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:PercentComplete");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:Recurrence");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:StartDate");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:Status");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:StatusDescription");
-			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "task:TotalWork");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:ActualWork'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:AssignedTime'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:BillingInformation'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:ChangeCount'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:Companies'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:CompleteDate'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:Contacts'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:DelegationState'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:Delegator'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:DueDate'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:IsAssignmentEditable'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:IsComplete'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:IsRecurring'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:IsTeamTask'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:Mileage'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:Owner'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:PercentComplete'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:Recurrence'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:StartDate'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:Status'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:StatusDescription'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:TotalWork'/>");
 
-			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
-			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskAccepted);
-			extFieldURI.setAttribute("PropertyType", "Boolean");
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskAccepted);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "Boolean");
 
-			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
-			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskLastUpdate);
-			extFieldURI.setAttribute("PropertyType", "SystemTime");
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskLastUpdate);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "SystemTime");
 
-			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
-			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskAcceptanceState);
-			extFieldURI.setAttribute("PropertyType", "Integer");
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskAcceptanceState);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "Integer");
 
-			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
-			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskMode);
-			extFieldURI.setAttribute("PropertyType", "Integer");
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskMode);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "Integer");
 
-			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
-			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskGlobalId);
-			extFieldURI.setAttribute("PropertyType", "Binary");
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskGlobalId);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "Binary");
 
-			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
-			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskHistory);
-			extFieldURI.setAttribute("PropertyType", "Integer");
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskHistory);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "Integer");
 
-			extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
-			extFieldURI.setAttribute("DistinguishedPropertySetId", "Task");
-			extFieldURI.setAttribute("PropertyId", MAPI_PidLidTaskOwnership);
-			extFieldURI.setAttribute("PropertyType", "Integer");
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskOwnership);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "Integer");
 		}
 /*
 			//meeting fields
@@ -254,51 +260,64 @@ erGetItemsRequest.prototype = {
 				</>;
 */
 
-		var itemids = req.addChildTag("ItemIds", "nsMessages", null);
+		var itemids = xml2json.addTag(req, "ItemIds", "nsMessages", null);
 		for each (var item in this.ids) {
-			var itemId = itemids.addChildTag("ItemId", "nsTypes", null);
-			itemId.setAttribute("Id", item.Id);
-			itemId.setAttribute("ChangeKey", item.ChangeKey);
+			var itemId = xml2json.addTag(itemids, "ItemId", "nsTypes", null);
+			xml2json.setAttribute(itemId, "Id", item.Id);
+			this.requestedItemId.push(item.Id);
+			if (item.ChangeKey) {
+				xml2json.setAttribute(itemId, "ChangeKey", item.ChangeKey);
+			}
 			if (item.index) {
 				//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute. We have an index.");
 				this.argument.occurrenceIndexes[item.Id] = item.index;
 			}
+			itemId = null;
 		}
+		itemids = null;
 
-		this.parent.xml2jxon = true;
+		this.parent.xml2json = true;
 		
-		//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
+		//dump("erGetItemsRequest.execute:"+String(this.parent.makeSoapMessage2(req))+"\n");
 
-		this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		this.parent.sendRequest(this.parent.makeSoapMessage2(req), this.serverUrl);
+		req = null;
+
+		itemShape = null;
+		additionalProperties = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.onSendOk: "+String(aResp)+"\n");
-		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
+		//dump("erGetItemsRequest.onSendOk: "+xml2json.toString(aResp)+"\n");
+		var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']/m:Items/*");
 
-		var items = [];
-		
-		for each (var e in rm) {
-			var item = e.XPath("/m:Items/*");
-			if (item.length > 0)
-			{
-				//exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.item: "+item[0]+"\n");
-				items.push(item[0]);
+		var rmErrorSearch = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage");
+		var rmErrors = [];
+		if (rmErrorSearch.length > 0) {
+			var i = 0;
+			while (i < rmErrorSearch.length) {
+				if (xml2json.getAttribute(rmErrorSearch[i], "ResponseClass", "") == "Error") {
+					dump("Found an get item with error answer. id:"+this.requestedItemId[i]+"\n");
+					rmErrors.push(this.requestedItemId[i]);
+				}
+				i++;
 			}
 		}
 
 		if (this.mCbOk) {
-			this.mCbOk(this, items);
+			this.mCbOk(this, rm, rmErrors);
 		}
 
 		this.isRunning = false;
+		this.parent = null;
 	},
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)
 	{
-		exchWebService.commonFunctions.LOG("erGetTaskItemsRequest.onSendError: "+String(aMsg)+"\n");
+		//dump("erGetItemsRequest.onSendError: "+String(aMsg)+"\n");
 		this.isRunning = false;
+		this.parent = null;
 		if (this.mCbError) {
 			this.mCbError(this, aCode, aMsg);
 		}

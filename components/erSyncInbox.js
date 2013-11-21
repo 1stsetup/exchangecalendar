@@ -96,9 +96,11 @@ erSyncInboxRequest.prototype = {
 
 		var itemShape = req.addChildTag("ItemShape", "nsMessages", null);
 		itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");
+		itemShape = null;
 
 		var parentFolder = makeParentFolderIds2("SyncFolderId", this.argument);
 		req.addChildTagObject(parentFolder);
+		parentFolder = null;
 	
 		if ((aSyncState) && (aSyncState != "")) {
 			req.addChildTag("SyncState", "nsMessages", aSyncState);
@@ -114,7 +116,10 @@ erSyncInboxRequest.prototype = {
 		this.parent.xml2jxon = true;
 
 		//exchWebService.commonFunctions.LOG("erSyncInboxRequest.execute:"+String(this.parent.makeSoapMessage(req)));
-                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		var soapStr = this.parent.makeSoapMessage(req);
+ 		req = null;
+                this.parent.sendRequest(soapStr, this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -166,6 +171,7 @@ erSyncInboxRequest.prototype = {
 				}
 		//	}
 
+			rm = null;
 			if (lastItemInRange == "false") {
 				this.execute(syncState);
 				return;
@@ -178,6 +184,7 @@ erSyncInboxRequest.prototype = {
 			}
 		}
 		else {
+			rm = null;
 			var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage");
 			if (rm.length > 0) {
 				var ResponseCode = rm[0].getTagValue("m:ResponseCode");
@@ -186,6 +193,7 @@ erSyncInboxRequest.prototype = {
 				var ResponseCode = "Unknown error from Exchange server.";
 			}
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SYNCFOLDERITEMS_UNKNOWN, "Error during SyncFolderItems:"+ResponseCode);
+			rm = null;
 			return;
 		}
 

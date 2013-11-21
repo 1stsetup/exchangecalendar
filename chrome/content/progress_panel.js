@@ -125,11 +125,12 @@ exchProgressPanel.prototype = {
 						}
 					}
 				}
-				var tmpStr = running + "/" + waiting + " (r/w job";
+//				var tmpStr = running + "/" + waiting + " (r/w job";
+				var tmpStr = running + " running & " + waiting + " queued job";
 				if ((waiting+running) > 1) {
 					tmpStr = tmpStr + "s";
 				}
-				tmpStr = tmpStr + ")";
+//				tmpStr = tmpStr + ")";
 				this._document.getElementById("exchWebService-progress-label").value = tmpStr;
 			}
 
@@ -198,7 +199,7 @@ exchProgressPanel.prototype = {
 }
 
 var myExchProgressPanel = new exchProgressPanel(document, window);
-window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); myExchProgressPanel.onLoad(); }, true);
+window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,true); dump("progress_panel\n"); myExchProgressPanel.onLoad(); }, true);
 
 /**
  * Creates the given element in the XUL namespace.

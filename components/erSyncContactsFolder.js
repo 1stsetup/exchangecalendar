@@ -104,6 +104,7 @@ erSyncContactsFolderRequest.prototype = {
 
 		var parentFolder = makeParentFolderIds2("SyncFolderId", this.argument);
 		req.addChildTagObject(parentFolder);
+		parentFolder = null;
 	
 		if (aSyncState) {
 			req.addChildTag("SyncState", "nsMessages", aSyncState);
@@ -114,7 +115,10 @@ erSyncContactsFolderRequest.prototype = {
 		this.parent.xml2jxon = true;
 
 		//exchWebService.commonFunctions.LOG("erSyncContactsFolderRequest.execute:"+String(this.parent.makeSoapMessage(req))+"\n");
-                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		var soapStr = this.parent.makeSoapMessage(req);
+ 		req = null;
+                this.parent.sendRequest(soapStr, this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -166,6 +170,8 @@ erSyncContactsFolderRequest.prototype = {
 				this.deletions.contacts.push(deleted);
 			}
 
+			rm = null;
+
 			if (lastItemInRange == "false") {
 				this.execute(syncState);
 				return;
@@ -178,6 +184,7 @@ erSyncContactsFolderRequest.prototype = {
 			}
 		}
 		else {
+			rm = null;
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SYNCFOLDERITEMS_UNKNOWN, "Error during erSyncContactsFolderRequest");
 			return;
 		}

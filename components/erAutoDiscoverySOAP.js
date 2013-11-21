@@ -100,9 +100,12 @@ erAutoDiscoverySOAPRequest.prototype = {
 		header.addChildTag("RequestedServerVersion", "a", "Exchange2010");
 		header.addChildTag("Action", "wsa", "http://schemas.microsoft.com/exchange/2010/Autodiscover/Autodiscover/GetUserSettings");
 		header.addChildTag("To", "wsa", "https://" + domain + "/autodiscover/autodiscover.svc");
+		header = null;
 
 		var body = msg.addChildTag("Body", "nsSoap", null);
 		var getUserSettingsRequest = body.addChildTag("GetUserSettingsRequestMessage", "a", null);
+		body = null;
+
 		var request = getUserSettingsRequest.addChildTag("Request", "a", null);
 		request.addChildTag("Users", "a", null).addChildTag("User", "a", null).addChildTag("Mailbox", "a", email);
 
@@ -114,10 +117,13 @@ erAutoDiscoverySOAPRequest.prototype = {
 		requestedSettings.addChildTag("Setting", "a", "AlternateMailboxes");
 		requestedSettings.addChildTag("Setting", "a", "EwsSupportedSchemas");
 		requestedSettings.addChildTag("Setting", "a", "AutoDiscoverSMTPAddress");
+		requestedSettings = null;
 
 		exchWebService.commonFunctions.LOG("sendAutodiscoverySOAP.execute:"+msg.toString()+"\n");
  		this.parent.xml2jxon = true;
 		this.parent.sendRequest(xml_tag + msg.toString());
+		msg = null;
+		request = null;
 
 	},
 
@@ -144,9 +150,11 @@ erAutoDiscoverySOAPRequest.prototype = {
 				this.onSendError(aExchangeRequest, aCode, aMsg);
 			}
 			this.isRunning = false;
+			rm = null;
 			return;
 		}
-		
+		rm = null;
+
 		var rm = aResp.XPath("/s:Envelope/s:Body/_default_:GetUserSettingsResponseMessage/_default_:Response[_default_:ErrorCode='NoError']/_default_:UserResponses/_default_:UserResponse[_default_:ErrorCode='NoError']/_default_:UserSettings/_default_:UserSetting");
 
 		if (rm.length > 0) {
@@ -174,6 +182,7 @@ erAutoDiscoverySOAPRequest.prototype = {
 			exchWebService.commonFunctions.LOG("autodiscoverySOAPOk but no settings returned.");
 			aCode = this.parent.ER_ERROR_AUTODISCOVER_GET_EWSULR;
 		}
+		rm = null;
 
 		// Try to get the SMTP address if it is available
 		if ((!aError) && (SMTPaddress == "")) {

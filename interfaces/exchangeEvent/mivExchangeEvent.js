@@ -32,6 +32,8 @@ Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://calendar/modules/calProviderUtils.jsm");
 
 Cu.import("resource://interfaces/exchangeBaseItem/mivExchangeBaseItem.js");
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+
 
 //var EXPORTED_SYMBOLS = ["mivExchangeEvent"];
 
@@ -40,8 +42,6 @@ function mivExchangeEvent() {
 	this.initialize();
 
 	this.initExchangeBaseItem();
-
-	//this.logInfo("mivExchangeEvent: init");
 
 }
 
@@ -66,7 +66,7 @@ mivExchangeEvent.prototype = {
 
 	classID : components.ID("{"+mivExchangeEventGUID+"}"),
 	contractID : "@1st-setup.nl/exchange/calendarevent;1",
-	flags : Ci.nsIClassInfo.THREADSAFE,
+	flags : 0,
 	implementationLanguage : Ci.nsIProgrammingLanguage.JAVASCRIPT,
 
 	getInterfaces : function _getInterfaces(count) 
@@ -122,7 +122,7 @@ mivExchangeEvent.prototype = {
 
 	set startDate(aValue)
 	{
-		//this.logInfo("set startdate: title:"+this.title+", aValue:"+aValue);
+		//dump("set startdate: title:"+this.title+", aValue:"+aValue+"\n");
 		if (aValue.toString() != this.startDate.toString()) {
 			this._newStartDate = aValue;
 			this._calEvent.startDate = aValue;
@@ -205,7 +205,7 @@ mivExchangeEvent.prototype = {
 
 	set status(aValue)
 	{
-		this.logInfo("set status: title:"+this.title+", aValue:"+aValue);
+		//this.logInfo("set status: title:"+this.title+", aValue:"+aValue);
 		if (aValue != this.status) {
 			const statuses = { "NONE": "NoResponseReceived",
 					"TENTATIVE": "Tentative", 
@@ -237,16 +237,21 @@ mivExchangeEvent.prototype = {
 		}
 		else {
 
-			if (this._newTitle) {
+			if (this._newTitle !== undefined) {
 				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "Subject", this._newTitle);
 			}
 			if (this._newPrivacy) {
 				this.addSetItemField(updates, "Sensitivity", this._newPrivacy);
 			}
-			if (this._newBody) {
+			if (this._newBody !== undefined) {
 				this._nonPersonalDataChanged = true;
-				this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
+				if (this._newBody === null) {
+					this.addDeleteItemField(updates, "Body");
+				}
+				else {
+					this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
+				}
 			}
 			// Categories
 			if (this._changesCategories) {
@@ -281,28 +286,35 @@ mivExchangeEvent.prototype = {
 			var recurrenceInfoChanged;
 			if (this._recurrenceInfo) {
 				// We had recurrenceInfo. Lets see if it changed.
-				this.logInfo("We had recurrenceInfo. Lets see if it changed.");
+				//dump("We had recurrenceInfo. Lets see if it changed.\n");
 				if (this._newRecurrenceInfo !== undefined) {
 					// It was changed or removed
 					if (this._newRecurrenceInfo === null) {
 						// It was removed
-						this.logInfo("We had recurrenceInfo. And it is removed.");
+						//dump("We had recurrenceInfo. And it is removed.\n");
 						recurrenceInfoChanged = false;
 						this._nonPersonalDataChanged = true;
 						this.addDeleteItemField(updates, "Recurrence");
 					}
 					else {
 						// See if something changed
-						this.logInfo("We had recurrenceInfo. And it was changed.");
+						//dump("We had recurrenceInfo. And it was changed. 1.\n");
+						recurrenceInfoChanged = true;
+					}
+				}
+				else {
+					// It could be that the content of the recurrenceInfo was changed
+					if (this._recurrenceInfo.toString() != this.recurrenceInfo.toString()) {
+						//dump("We had recurrenceInfo. And it was changed. 2.\n");
 						recurrenceInfoChanged = true;
 					}
 				}
 			}
 			else {
 				// We did not have recurrence info. Check if we have now
-				this.logInfo("We did not have recurrenceInfo. See if it was added.");
+				//this.logInfo("We did not have recurrenceInfo. See if it was added.");
 				if (this._newRecurrenceInfo) {
-					this.logInfo("We did not have recurrenceInfo. But we do have now.");
+					//this.logInfo("We did not have recurrenceInfo. But we do have now.");
 					recurrenceInfoChanged = true;
 				}
 			}
@@ -323,9 +335,9 @@ mivExchangeEvent.prototype = {
 				var tmpStart = this._newStartDate.clone();
 				if (this._newStartDate.isDate) {
 					tmpStart.isDate = false;
-					var tmpDuration = cal.createDuration();
-					tmpDuration.minutes = -60;
-					tmpStart.addDuration(tmpDuration);
+					//var tmpDuration = cal.createDuration();
+					//tmpDuration.minutes = -60;
+					//tmpStart.addDuration(tmpDuration);
 
 					// We make a non-UTC datetime value for this.globalFunctions.
 					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
@@ -346,12 +358,16 @@ mivExchangeEvent.prototype = {
 					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:StartTimeZone xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 					tmpTimeZone.setAttribute("Name",exchTimeZone.name); 
 					tmpTimeZone.setAttribute("Id",exchTimeZone.id); 
-					var periods = exchTimeZone.timeZone.getTag("t:Periods");
-					var transitionsGroups = exchTimeZone.timeZone.getTag("t:TransitionsGroups");
-					var transitions = exchTimeZone.timeZone.getTag("t:Transitions");
-					tmpTimeZone.addChildTagObject(periods);
-					tmpTimeZone.addChildTagObject(transitionsGroups);
-					tmpTimeZone.addChildTagObject(transitions);
+					var periods = xml2json.getTag(exchTimeZone.timeZone, "t:Periods");
+					var transitionsGroups = xml2json.getTag(exchTimeZone.timeZone, "t:TransitionsGroups");
+					var transitions = xml2json.getTag(exchTimeZone.timeZone, "t:Transitions");
+
+					var tmpPeriods = this.globalFunctions.xmlToJxon(xml2json.toString(periods));
+					tmpTimeZone.addChildTagObject(tmpPeriods);
+					var tmpTransitionsGroups = this.globalFunctions.xmlToJxon(xml2json.toString(transitionsGroups));
+					tmpTimeZone.addChildTagObject(tmpTransitionsGroups);
+					var tmpTransitions = this.globalFunctions.xmlToJxon(xml2json.toString(transitions));
+					tmpTimeZone.addChildTagObject(tmpTransitions);
 
 					this.addSetItemField(updates, "StartTimeZone", tmpTimeZone, null, true);
 				}
@@ -385,12 +401,16 @@ mivExchangeEvent.prototype = {
 					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:EndTimeZone xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 					tmpTimeZone.setAttribute("Name",exchTimeZone.name); 
 					tmpTimeZone.setAttribute("Id",exchTimeZone.id); 
-					var periods = exchTimeZone.timeZone.getTag("t:Periods");
-					var transitionsGroups = exchTimeZone.timeZone.getTag("t:TransitionsGroups");
-					var transitions = exchTimeZone.timeZone.getTag("t:Transitions");
-					tmpTimeZone.addChildTagObject(periods);
-					tmpTimeZone.addChildTagObject(transitionsGroups);
-					tmpTimeZone.addChildTagObject(transitions);
+					var periods = xml2json.getTag(exchTimeZone.timeZone, "t:Periods");
+					var transitionsGroups = xml2json.getTag(exchTimeZone.timeZone, "t:TransitionsGroups");
+					var transitions = xml2json.getTag(exchTimeZone.timeZone, "t:Transitions");
+
+					var tmpPeriods = this.globalFunctions.xmlToJxon(xml2json.toString(periods));
+					tmpTimeZone.addChildTagObject(tmpPeriods);
+					var tmpTransitionsGroups = this.globalFunctions.xmlToJxon(xml2json.toString(transitionsGroups));
+					tmpTimeZone.addChildTagObject(tmpTransitionsGroups);
+					var tmpTransitions = this.globalFunctions.xmlToJxon(xml2json.toString(transitions));
+					tmpTimeZone.addChildTagObject(tmpTransitions);
 
 					this.addSetItemField(updates, "EndTimeZone", tmpTimeZone, null, true);
 				}
@@ -420,14 +440,19 @@ mivExchangeEvent.prototype = {
 			}
 
 			if (((this._newStartDate) || (this._newEndDate)) && (this.calendar.isVersion2007)) {
-				this.addSetItemField(updates, "MeetingTimeZone", null, { TimeZoneName: this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl, this._newStartDate)});
+				if (this._newStartDate) {
+					this.addSetItemField(updates, "MeetingTimeZone", null, { TimeZoneName: this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl, this._newStartDate)});
+				}
+				else {
+					this.addSetItemField(updates, "MeetingTimeZone", null, { TimeZoneName: this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newEndDate.timezone, this.calendar.serverUrl, this._newEndDate)});
+				}
 			}
 
 			if (this._newLegacyFreeBusyStatus) {
 				this.addSetItemField(updates, "LegacyFreeBusyStatus", this._newLegacyFreeBusyStatus);
 			}
 
-			if (this._newLocation) {
+			if (this._newLocation !== undefined) {
 				this._nonPersonalDataChanged = true;
 				this.addSetItemField(updates, "Location", this._newLocation);
 			}
@@ -511,7 +536,7 @@ mivExchangeEvent.prototype = {
 			this.checkAlarmChange(updates);
 		}
 
-		this.logInfo("updates:"+updates.toString()+"\n");
+		//dump("updates:"+updates.toString()+"\n");
 		return updates;
 	},
 

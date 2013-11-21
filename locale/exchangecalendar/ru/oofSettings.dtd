@@ -1,0 +1,26 @@
+<!ENTITY title.oofsettings "Настройки Заместителя">
+<!ENTITY label.acceptbutton "Сохранить">
+<!ENTITY label.cancelbutton "Закрыть">
+<!ENTITY label.oofsettings.title "Настройки Заместителя для:">
+
+<!ENTITY label.oofstatus "Статус Заместителя:">
+
+<!ENTITY label.externalaudience "Кому из внешних адресатов Заместитель должен отправлять сообщения: ">
+<!ENTITY menuitem.label.exchWebService-oof-externalaudience.none "Никому">
+<!ENTITY menuitem.label.exchWebService-oof-externalaudience.known "Только адресатам из моих контактов">
+<!ENTITY menuitem.label.exchWebService-oof-externalaudience.all "Всем">
+
+<!ENTITY button.label.internal "Внутреннее сообщение">
+<!ENTITY button.label.external "Внешнее сообщение">
+<!ENTITY label.internalreply "Сообщение, которое будет отправлено для адресатов в моей организации:">
+<!ENTITY label.externalreply "Сообщение, которое будет отправлено для адресатов за пределами моей организации:">
+
+<!ENTITY menuitem.label.exchWebService-oof-status.disabled "Запрещено">
+<!ENTITY menuitem.label.exchWebService-oof-status.enabled "Разрешено">
+
+<!ENTITY checkbox.label.exchWebService-oof-scheduled "Включено только в указанный интервал времени:">
+<!ENTITY label.hbox-oof-scheduled-startTime "Начальное время:">
+<!ENTITY label.hbox-oof-scheduled-endTime "Конечное время:">
+
+
+

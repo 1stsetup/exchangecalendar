@@ -40,10 +40,9 @@ interface mivIxml2jxon : nsISupports
   attribute AUTF8String uuid;
   attribute AUTF8String tagName;
   attribute AUTF8String nameSpace;
-  attribute jsval nameSpaces;
+  attribute boolean closed;
+  attribute unsigned long long lastPos;
 
-//  void addToContent(in jsval aValue);
-//  void setParentTag(in jsval aNewParent);
   void correctNameSpace();
   void processXMLString(in AUTF8String aString, in long aStartPos, in mivIxml2jxon aParent);
   jsval XPath(in AUTF8String aString);
@@ -51,22 +50,25 @@ interface mivIxml2jxon : nsISupports
   readonly attribute AUTF8String value;
 
   AUTF8String toString([optional] in AUTF8String parentNameSpace);
+  mivIxml2jxon clone();
 
   void setAttribute(in AUTF8String aAttribute, in AUTF8String aValue);
   AUTF8String getAttribute(in AUTF8String aAttribute, [optional] in AUTF8String aDefaultValue);
   AUTF8String getAttributeByTag(in AUTF8String aTagName, in AUTF8String aAttribute, [optional] in AUTF8String aDefaultValue);
 
-  jsval getTag(in AUTF8String aTagName);
+  mivIxml2jxon getTag(in AUTF8String aTagName);
   jsval getTags(in AUTF8String aTagName);
   AUTF8String getTagValue(in AUTF8String aTagName, [optional] in AUTF8String aDefaultValue);
   AUTF8String getTagValueByXPath(in AUTF8String aXPath, [optional] in AUTF8String aDefaultValue);
   AUTF8String getNameSpace(in AUTF8String aAlias);
   AUTF8String addNameSpace(in AUTF8String aAlias, in AUTF8String aValue);
-  AUTF8String deleteNameSpace(in AUTF8String aAlias);
+  void addToContent(in AUTF8String aValue);
 
   void addParentNameSpaces(in mivIxml2jxon aParent);
-  jsval addChildTagObject(in jsval aObject);
-  jsval addChildTag(in AUTF8String aTagName, in AUTF8String aNameSpace, in AUTF8String aValue);
-  jsval addSibblingTag(in AUTF8String aTagName, in AUTF8String aNameSpace, in AUTF8String aValue);
+  mivIxml2jxon addChildTagObject(in mivIxml2jxon aObject);
+  mivIxml2jxon addChildTag(in AUTF8String aTagName, in AUTF8String aNameSpace, in AUTF8String aValue);
+  mivIxml2jxon addSibblingTag(in AUTF8String aTagName, in AUTF8String aNameSpace, in AUTF8String aValue);
+
+  AUTF8String realTagName(in AUTF8String aCurrentTagName);
 
 };

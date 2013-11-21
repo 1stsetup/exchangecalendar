@@ -1,0 +1,9 @@
+<!ENTITY toolbar.button.label.addaccount "Добавить папку контактов Exchange">
+<!ENTITY toolbar.button.tooltip.addaccount "Это позволит добавить новую папку контактов Exchange">
+
+<!ENTITY toolbar.button.label.deleteaccount "Удалить папку контактов Exchange">
+<!ENTITY toolbar.button.tooltip.deleteaccount "Это позволит удалить существующую папку контактов Exchange">
+
+<!ENTITY deleteExchangeCmd.label "Удалить папку контактов Exchange">
+
+

@@ -132,6 +132,7 @@ erCreateAttachmentRequest.prototype = {
 			attachment.addChildTag("Content", "nsTypes", fileData.content);
 
 			attachments.addChildTagObject(attachment);
+			attachment = null;
 			
 		}
 
@@ -139,6 +140,9 @@ erCreateAttachmentRequest.prototype = {
 		
 		//exchWebService.commonFunctions.LOG("erCreateAttachmentRequest.execute>"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
+		attachments = null;
+		parentItemId = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -161,6 +165,7 @@ erCreateAttachmentRequest.prototype = {
 				okCount++;
 			}
 		}
+		oofSettingsResponse = null;
 
 		exchWebService.commonFunctions.LOG("erCreateAttachmentRequest.onSendOk: errorCount:"+errorCount+", okCount:"+okCount);
 
@@ -178,8 +183,10 @@ erCreateAttachmentRequest.prototype = {
 			}
 			else {
 				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_CREATING_ITEM_UNKNOWN, "Error. Valid createattachment request but receive no update details:"+String(aResp));
+				aAttachments = null;
 				return;
 			}
+			aAttachments = null;
 		}
 
 		if (this.mCbOk) {

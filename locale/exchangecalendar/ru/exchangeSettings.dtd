@@ -1,0 +1,45 @@
+<!ENTITY label.acceptbutton "Сохранить">
+<!ENTITY label.cancelbutton "Отмена">
+
+<!ENTITY ecsettings.tab.adsettings "Exchange/Windows AD">
+<!ENTITY ecsettings.tab.meetingrequestsettings "Проглашение на встречу">
+<!ENTITY ecsettings.tab.calendarfolderproperties "Свойства папки">
+
+<!ENTITY label.ecExchangeSettings.title "Настройки для календаря:">
+
+<!ENTITY label.poll.inbox "Опрос входящих запросов, изменения и отмены.">
+<!ENTITY label.poll.inbox.interval "Частота (в секундах) опроса входящих:">
+<!ENTITY label.poll.calendar.interval "Частота (в секундах) опроса календаря:">
+
+<!ENTITY label.nomeetingrequestsettings "Вы не можете установить запрос на встречу потому, что не выбрали основной календарь почтового ящика">
+
+<!ENTITY label.autorespond.meetingrequest "Автоматически реагировать на новые приглашения с ">
+
+<!ENTITY menuitem.label.ec-autorespond-answer.tentative "Я предполагаю присутствовать">
+<!ENTITY menuitem.label.ec-autorespond-answer.accepted "Я буду присутствовать">
+<!ENTITY menuitem.label.ec-autorespond-answer.declined "Я не буду присутствовать">
+
+<!ENTITY label.autoremove.invitation_cancellation1 "Автоматическое удаление сообщений приглашения и сопутствующие отмены, если вы еще не откликались на приглашения.">
+<!ENTITY label.autoremove.invitation_cancellation2 "Автоматическое удаление подтвержденных приглашений, когда вы получаете сообщение об отмене.">
+
+<!ENTITY label.autoremove.invitation_response1 "Автоматически удалять от других приглашение на встречу, если вы не её организатор.">
+
+<!ENTITY label.doautorespond.meetingrequest.message "Отправить следующее сообщение с ответами, вместо того, чтобы запрашивать сообщение.">
+<!ENTITY label.autorespond.meetingrequest.message "Ваше сообщение:">
+
+<!ENTITY treecol.label.userid "Идентификатор пользователя">
+<!ENTITY treecol.label.email "Почтовый адрес">
+
+
+<!ENTITY ecsettings.tab.offlineCachingproperties "Автономное кэширование">
+
+<!ENTITY label.offlineCacheproperties.cachingStartDate "Начальная дата кэширования:">
+<!ENTITY label.offlineCacheproperties.cachingEndDate "Конечная дата кэширования:">
+<!ENTITY label.offlineCacheproperties.totalEvents "Общее количество кэшированных событий:">
+<!ENTITY label.offlineCacheproperties.totalTasks "Общее количество кэшированных задач:">
+
+<!ENTITY label.offlineCacheproperties.monthsBeforeStartDate "Количество месяцев в кэше до сегодня:">
+<!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Количество месяцев в кэше после сегодня:">
+
+<!ENTITY button.offlineCacheproperties.clearCache "Очистить автономные данные в кэше">
+

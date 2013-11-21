@@ -43,13 +43,17 @@
 	<script type="application/javascript" src="chrome://exchangecalendar/content/OutOfOfficeMenu.js" />
 	<menupopup id="menu_Event_Task_Popup">
 		<menuitem id="exchangecalendar-OutOfOfficeMenu" label="Out of Office..."
-			oncommand="exchWebService.outOfOfficeMenu.openOutofOfficeDialog();" hidden="true"/>
+			oncommand="tmpToolsMenu.openOutofOfficeDialog();" hidden="true"/>
 	</menupopup>
 
 	<menupopup id="taskPopup">
 		<menuitem id="exchangecalendar-tools-OutOfOfficeMenu" label="Out of Office..."
-			oncommand="exchWebService.outOfOfficeMenu.openOutofOfficeDialog();" hidden="true"/>
+			oncommand="tmpToolsMenu.openOutofOfficeDialog();" hidden="true"/>
 		<menuitem id="exchangecalendar-tools-aboutMemory" label="about:memory"
-			oncommand="exchWebService.aboutMemory.show();" hidden="false"/>
+			oncommand="tmpToolsMenu.showAboutMemory(false);" hidden="false"/>
+		<menuitem id="exchangecalendar-tools-aboutMemoryVerbose" label="about:memory?verbose"
+			oncommand="tmpToolsMenu.showAboutMemory(true);" hidden="false"/>
+		<menuitem id="exchangecalendar-tools-xml2jxontest" label="XML2JXON tes"
+			oncommand="tmpToolsMenu.showXML2JXonTest();" hidden="false"/> 
 	</menupopup>
 </overlay>

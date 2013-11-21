@@ -81,7 +81,7 @@ function erGetOccurrenceIndexRequest(aArgument, aCbOk, aCbError, aListener)
 	var tmpObject = new erGetMasterOccurrenceIdRequest( 
 			{user: aArgument.user, 
 			 serverUrl: aArgument.serverUrl,
-			 item: aArgument.masterItem,
+			 item: aArgument.item,
 			 folderID: aArgument.folderID,
 			 changeKey: aArgument.changeKey,
 			 getType: "lightning" }, 
@@ -114,12 +114,14 @@ erGetOccurrenceIndexRequest.prototype = {
 		}
 
 		req.addChildTagObject(itemids);
+		itemids = null;
 
 		this.parent.xml2jxon = true;
 
 //		exchWebService.commonFunctions.LOG("erGetOccurrenceIndexRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -141,13 +143,14 @@ erGetOccurrenceIndexRequest.prototype = {
 					var items = e.XPath("/m:Items/*");
 					for each(var item in items) {
 						this.currentRealIndex++;
-						if (this.argument.masterItem.id == item.getAttributeByTag("t:ItemId","Id")) {
+						if (this.argument.item.id == item.getAttributeByTag("t:ItemId","Id")) {
 							// We found our occurrence
 							finished = true;
 							found = true;
 							break;
 						}
 					}
+					items = null;
 					break;
 				case "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange" :
 					finished = true;
@@ -157,7 +160,8 @@ erGetOccurrenceIndexRequest.prototype = {
 				break;	// break the loop
 			}
 		}
-	
+		rm = null;
+
 		if (found) {
 			// We found our occurrence.
 			if (this.mCbOk) {
@@ -169,7 +173,7 @@ erGetOccurrenceIndexRequest.prototype = {
 			if (finished) {
 				// We hit the end of the occurrence list and did not find our occurrence.
 				// Error....
-				this.onSendError(aExchangeRequest, this.parent.this.parent.ER_ERROR_GETOCCURRENCEINDEX_NOTFOUND, "Index could not be found for occurrence.");
+				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_GETOCCURRENCEINDEX_NOTFOUND, "Index could not be found for occurrence.");
 				return;
 			}
 			else {

@@ -92,12 +92,14 @@ erGetFolderRequest.prototype = {
 
 		var parentFolder = makeParentFolderIds2("FolderIds", this.argument);
 		req.addChildTagObject(parentFolder);
+		parentFolder = null;
 
 		//exchWebService.commonFunctions.LOG(" ++ xml2jxon ++:"+this.parent.makeSoapMessage(req));
 
 		//exchWebService.commonFunctions.LOG("erGetFolderRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 		this.parent.xml2jxon = true;
 		this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 
 	},
 
@@ -128,6 +130,7 @@ erGetFolderRequest.prototype = {
 				aCode = this.parent.ER_ERROR_FINDFOLDER_FOLDERID_DETAILS;
 				aError = true;
 			}
+			calendarFolder = null;
 		}
 		else {
 			aMsg = this.parent.getSoapErrorMsg(aResp);
@@ -141,6 +144,8 @@ erGetFolderRequest.prototype = {
 				aMsg = "Wrong response received.";
 			}
 		}
+
+		rm = null;
 
 		if (aError) {
 			this.onSendError(aExchangeRequest, aCode, aMsg);

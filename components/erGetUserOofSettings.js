@@ -87,6 +87,7 @@ erGetUserOofSettingsRequest.prototype = {
 
 		//exchWebService.commonFunctions.LOG("erGetUserOofSettingsRequest.execute: "+String(this.parent.makeSoapMessage(req))+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -96,10 +97,20 @@ erGetUserOofSettingsRequest.prototype = {
 		var oofSettingsResponse = aResp.XPath("/s:Envelope/s:Body/m:GetUserOofSettingsResponse");
 		var rm = oofSettingsResponse[0].XPath("/m:ResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 		if (rm.length == 0) {
-			var responseCode = rm[0].getTagValue("m:ResponseCode");
+			rm = null;
+			var rm = oofSettingsResponse[0].XPath("/m:ResponseMessage[@ResponseClass='Error']");
+			if (rm.length > 0) {
+				var responseCode = rm[0].getTagValue("m:ResponseCode");
+			}
+			else {
+				var responseCode = "unknown";
+			}
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getting user Oof Settings:"+responseCode);
+			oofSettingsResponse = null;
+			rm = null;
 			return;
 		}
+		rm = null;
 
 		var oofSettingsXML = oofSettingsResponse[0].getTag("t:OofSettings");
 
@@ -128,6 +139,7 @@ erGetUserOofSettingsRequest.prototype = {
 
 		oofSettings.allowExternalOof = oofSettingsResponse[0].getTagValue("t:AllowExternalOof", "All");
 
+		oofSettingsResponse = null;
 		if (this.mCbOk) {
 			this.mCbOk(this, oofSettings);
 		}

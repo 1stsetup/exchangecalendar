@@ -29,6 +29,8 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 Cu.import("resource://calendar/modules/calProviderUtils.jsm");
 
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+
 function mivExchangeTimeZone() {
 	this._timeZone = null;
 	this._indexDate = null;
@@ -128,7 +130,6 @@ mivExchangeTimeZone.prototype = {
 			this._hasDaylight = false;
 			return null;
 		}
-
 		if (!aDate) {
 			aDate = cal.now();
 		}
@@ -136,33 +137,35 @@ mivExchangeTimeZone.prototype = {
 
 		var result = null;
 
-		this._id = aValue.getAttribute("Id", "??");
+		this._id = xml2json.getAttribute(aValue, "Id", "??");
 
-		this._name = aValue.getAttribute("Name", "??");
+		this._name = xml2json.getAttribute(aValue, "Name", "??");
 		//dump("Exchange timezone:"+this._id+"/"+this._name+"\n");
 
 		//dump("exchangezone:"+aValue+"\n");
 		// Se if we have <t:Transitions><t:AbsoluteDateTransition>
-		var absoluteDateTransitions = aValue.XPath("/t:Transitions/t:AbsoluteDateTransition");
+		var absoluteDateTransitions = xml2json.XPath(aValue, "/t:Transitions/t:AbsoluteDateTransition");
 		var lastDate = "1900-01-01T00:00:00";
 		var transitionIndex = 0;
 		for each(var absoluteDateTransition in absoluteDateTransitions) {
-			var newDate = absoluteDateTransition.getTagValue("t:DateTime", lastDate);
+			var newDate = xml2json.getTagValue(absoluteDateTransition, "t:DateTime", lastDate);
 			if ((newDate >= lastDate) && (newDate <= indexDateStr)) {
-				lastDate = absoluteDateTransition.getTagValue("t:DateTime", lastDate);
-				transitionIndex = absoluteDateTransition.getTagValue("t:To", 0);
+				lastDate = xml2json.getTagValue(absoluteDateTransition, "t:DateTime", lastDate);
+				transitionIndex = xml2json.getTagValue(absoluteDateTransition, "t:To", 0);
 			}
 		}
+		absoluteDateTransitions = null;
+
 		//dump("\nindexDateStr:"+indexDateStr+", lastDate:"+lastDate+", transitionIndex:"+transitionIndex+"\n\n");
 
 		// Now we are going to find the right transition.
-		var transitions = aValue.XPath("/t:TransitionsGroups/t:TransitionsGroup[@Id = '"+transitionIndex+"']/*");
+		var transitions = xml2json.XPath(aValue, "/t:TransitionsGroups/t:TransitionsGroup[@Id = '"+transitionIndex+"']/*");
 
 		// Get Standard and Daylight transitionId's
 		var standardTransition = null;
 		var daylightTransition = null;
 		for each(var transition in transitions) {
-			var tmpId = transition.getTagValue("t:To","");
+			var tmpId = xml2json.getTagValue(transition, "t:To","");
 			if (tmpId.indexOf("-Standard") >= 0) {
 				standardTransition = transition;
 			}
@@ -172,6 +175,7 @@ mivExchangeTimeZone.prototype = {
 				}
 			}
 		}
+		transitions = null;
 
 		const dayMap = { Sunday : "SU",
 				Saturday : "SA",
@@ -183,28 +187,32 @@ mivExchangeTimeZone.prototype = {
 
 		this._standardBias = null;
 		if (standardTransition) {
-			var standardPeriods = aValue.XPath("/t:Periods/t:Period[@Name = 'Standard' and @Id='"+standardTransition.getTagValue("t:To","")+"']");
+			var standardPeriods = xml2json.XPath(aValue, "/t:Periods/t:Period[@Name = 'Standard' and @Id='"+xml2json.getTagValue(standardTransition, "t:To","")+"']");
 			if (standardPeriods.length > 0) {
-				this._standardBias = this.globalFunctions.convertDurationToSeconds(standardPeriods[0].getAttribute("Bias"));
+				this._standardBias = this.globalFunctions.convertDurationToSeconds(xml2json.getAttribute(standardPeriods[0], "Bias"));
 			}
+			standardPeriods = null;
 
 			if (standardTransition.tagName == "RecurringDayTransition") {
-				this._standardRRule = "FREQ=YEARLY;BYDAY="+standardTransition.getTagValue("t:Occurrence", 1)+dayMap[standardTransition.getTagValue("t:DayOfWeek", "Sunday")]+";BYMONTH="+standardTransition.getTagValue("t:Month", 3);
+				this._standardRRule = "FREQ=YEARLY;BYDAY="+xml2json.getTagValue(standardTransition, "t:Occurrence", 1)+dayMap[xml2json.getTagValue(standardTransition, "t:DayOfWeek", "Sunday")]+";BYMONTH="+xml2json.getTagValue(standardTransition, "t:Month", 3);
 			}
 			else {
 				this._standardRRule = null;
 			}
+			//dump("this._standardBias:"+this._standardBias+"\n");
 			//dump("this._standardRRule:"+this._standardRRule+"\n");
 		}
 
 		this._daylightBias = null;
 		if (daylightTransition) {
-			var daylightPeriods = aValue.XPath("/t:Periods/t:Period[@Name = 'Daylight' and @Id='"+daylightTransition.getTagValue("t:To","")+"']");
+			var daylightPeriods = xml2json.XPath(aValue, "/t:Periods/t:Period[@Name = 'Daylight' and @Id='"+xml2json.getTagValue(daylightTransition, "t:To","")+"']");
 			if (daylightPeriods.length > 0) {
-				this._daylightBias = this.globalFunctions.convertDurationToSeconds(daylightPeriods[0].getAttribute("Bias"));
+				this._daylightBias = this.globalFunctions.convertDurationToSeconds(xml2json.getAttribute(daylightPeriods[0], "Bias"));
 			}
+			daylightPeriods = null;
 
-			this._daylightRRule = "FREQ=YEARLY;BYDAY="+daylightTransition.getTagValue("t:Occurrence", 1)+dayMap[daylightTransition.getTagValue("t:DayOfWeek", "Sunday")]+";BYMONTH="+daylightTransition.getTagValue("t:Month", 3);
+			this._daylightRRule = "FREQ=YEARLY;BYDAY="+xml2json.getTagValue(daylightTransition, "t:Occurrence", 1)+dayMap[xml2json.getTagValue(daylightTransition, "t:DayOfWeek", "Sunday")]+";BYMONTH="+xml2json.getTagValue(daylightTransition, "t:Month", 3);
+			//dump("this._daylightBias:"+this._daylightBias+"\n");
 			//dump("this._daylightRRule:"+this._daylightRRule+"\n");
 
 			this._hasDaylight = true;
@@ -212,7 +220,6 @@ mivExchangeTimeZone.prototype = {
 		else {
 			this._hasDaylight = false;
 		}
-
 	},
 
 	setCalTimezone: function _setCalTimezone(aValue, aDate)
@@ -387,7 +394,7 @@ mivExchangeTimeZone.prototype = {
 	set timeZone(aValue)
 	{
 		this._timeZone = aValue;
-		if (aValue["getAttribute"]) {
+		if (aValue[telements]) {
 		//if (aValue instanceof Ci.mivIxml2jxon) {
 			this.setExchangeTimezone(aValue, this._indexDate);
 		}

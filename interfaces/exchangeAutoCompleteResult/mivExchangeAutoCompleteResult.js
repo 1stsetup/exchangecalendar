@@ -179,14 +179,16 @@ mivExchangeAutoCompleteResult.prototype = {
 					}
 					var tmpCard = childNodes.getNext().QueryInterface(Ci.mivExchangeAbCard);
 //dump(" || "+tmpCard+"\n");
-					emailList = emailList + tmpCard.displayName + " <" + tmpCard.primaryEmail + ">" ;
+//					emailList = emailList + tmpCard.displayName + " <" + tmpCard.primaryEmail + ">" ;
+					emailList = emailList + tmpCard.firstName + " " + tmpCard.lastName + " <" + tmpCard.primaryEmail + ">" ;
 				}
 			//dump("  ++ addr:"+emailList+"\n");
 				return emailList;
 			}
 			//dump("  -- mailListURI:"+this._cards[aIndex].mailListURI+"\n");
 		}
-		return this._cards[aIndex].displayName + " <" + this._cards[aIndex].primaryEmail + ">";
+//		return this._cards[aIndex].displayName + " <" + this._cards[aIndex].primaryEmail + ">";
+		return this._cards[aIndex].firstName + " " + this._cards[aIndex].lastName + " <" + this._cards[aIndex].primaryEmail + ">";
 	},
 
   /**

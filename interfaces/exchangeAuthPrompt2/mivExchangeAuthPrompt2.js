@@ -32,6 +32,8 @@ function mivExchangeAuthPrompt2() {
 	this.passwordCache = {};
 	this.details = {};
 
+	this.showPassword = false;
+
 	this.timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
 
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
@@ -102,6 +104,8 @@ mivExchangeAuthPrompt2.prototype = {
 			return null;
 		}
 
+		this.showPassword = this.globalFunctions.safeGetBoolPref(null, "extensions.1st-setup.authentication.showpassword", false, true);
+
 //		var realm = aRealm;
 		var realm = "Exchange Web Service";
 
@@ -135,7 +139,12 @@ mivExchangeAuthPrompt2.prototype = {
 		else {
 			this.logInfo("getPassword: There is no password in the passwordCache["+username+"|"+aURL+"|"+realm+"]");
 		}
-		this.logInfo("getPassword: password(1)="+password);
+		if (this.showPassword) {
+			this.logInfo("getPassword: password(1)="+password);
+		}
+		else {
+			this.logInfo("getPassword: password(1)=********");
+		}
 
 		if (!password) {
 			this.logInfo("getPassword: There is no password in the cache. Going to see if there is one in the passwordManager.");
@@ -148,7 +157,12 @@ mivExchangeAuthPrompt2.prototype = {
 				this.logInfo("getPassword: There is no password stored in the passwordManager.");
 			}
 		}
-		this.logInfo("getPassword: password(2)="+password);
+		if (this.showPassword) {
+			this.logInfo("getPassword: password(2)="+password);
+		}
+		else {
+			this.logInfo("getPassword: password(2)=********");
+		}
 
 		if ((password) && (aChannel) && (aChannel.URI.password) && (decodeURIComponent(aChannel.URI.password) != "")) {
 			this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. Going to see if they are the same.");
@@ -169,7 +183,12 @@ mivExchangeAuthPrompt2.prototype = {
 				else {
 					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And useCached specified.");
 				}
-				this.logInfo("getPassword: cached/store='"+password+"', on channel='"+decodeURIComponent(aChannel.URI.password)+"'.");
+				if (this.showPassword) {
+					this.logInfo("getPassword: cached/store='"+password+"', on channel='"+decodeURIComponent(aChannel.URI.password)+"'.");
+				}
+				else {
+					this.logInfo("getPassword: cached/store='********', on channel='********'.");
+				}
 			}
 		}
 
@@ -195,7 +214,12 @@ mivExchangeAuthPrompt2.prototype = {
 
 			if (answer.result) {
 				password = answer.password;
-				this.logInfo("getPassword: User specified a password:"+password);
+				if (this.showPassword) {
+					this.logInfo("getPassword: User specified a password:"+password);
+				}
+				else {
+					this.logInfo("getPassword: User specified a password:********");
+				}
 				if (answer.save) {
 					this.logInfo("getPassword: User requested to store password in passwordmanager.");
 					this.passwordManagerSave(username, password, aURL, realm);
@@ -213,7 +237,12 @@ mivExchangeAuthPrompt2.prototype = {
 			}
 		}
 
-		this.logInfo("getPassword: We have a password:"+password);
+		if (this.showPassword) {
+			this.logInfo("getPassword: We have a password:"+password);
+		}
+		else {
+			this.logInfo("getPassword: We have a password:********");
+		}
 
 //} catch(err) { this.logInfo("getPassword: Error:"+err); }
 		return password;
@@ -352,7 +381,12 @@ mivExchangeAuthPrompt2.prototype = {
 					this.logInfo("asyncPromptAuthNotifyCallback: authInfo only wants a password.");
 				}
 				authInfo.password = password;
-				this.logInfo("asyncPromptAuthNotifyCallback: authInfo{ password:"+authInfo.password+", username:"+authInfo.username+", domain:"+authInfo.domain+"}");
+				if (this.showPassword) {
+					this.logInfo("asyncPromptAuthNotifyCallback: authInfo{ password:"+authInfo.password+", username:"+authInfo.username+", domain:"+authInfo.domain+"}");
+				}
+				else {
+					this.logInfo("asyncPromptAuthNotifyCallback: authInfo{ password:*******, username:"+authInfo.username+", domain:"+authInfo.domain+"}");
+				}
 				try {
 					this.logInfo("asyncPromptAuthNotifyCallback: Sending authInfo to callback function.");
 					if (canUseBasicAuth == true) {
@@ -412,11 +446,22 @@ mivExchangeAuthPrompt2.prototype = {
 		this.logInfo("asyncPromptAuth: authInfo.authenticationScheme="+authInfo.authenticationScheme);
 		this.logInfo("asyncPromptAuth: authInfo.realm="+authInfo.realm);
 		this.logInfo("asyncPromptAuth: authInfo.username="+authInfo.username);
-		this.logInfo("asyncPromptAuth: authInfo.password="+authInfo.password);
+		
+		if (this.showPassword) {
+			this.logInfo("asyncPromptAuth: authInfo.password="+authInfo.password);
+		}
+		else {
+			this.logInfo("asyncPromptAuth: authInfo.password=************");
+		}
 		this.logInfo("asyncPromptAuth: authInfo.domain="+authInfo.domain);
 
 		var URL = decodeURIComponent(aChannel.URI.scheme+"://"+aChannel.URI.hostPort+aChannel.URI.path);
-		this.logInfo("asyncPromptAuth: aChannel.URL="+URL+", username="+decodeURIComponent(aChannel.URI.username)+", password="+decodeURIComponent(aChannel.URI.password));
+		if (this.showPassword) {
+			this.logInfo("asyncPromptAuth: aChannel.URL="+URL+", username="+decodeURIComponent(aChannel.URI.username)+", password="+decodeURIComponent(aChannel.URI.password));
+		}
+		else {
+			this.logInfo("asyncPromptAuth: aChannel.URL="+URL+", username="+decodeURIComponent(aChannel.URI.username)+", password=********");
+		}
 
 		var uuid = this.globalFunctions.getUUID();
 

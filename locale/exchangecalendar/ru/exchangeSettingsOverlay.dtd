@@ -1,0 +1,51 @@
+﻿<!ENTITY ecautodiscover "Использовать функцию автопоиска Exchange.">
+<!ENTITY ecfolderbase.label "Базовая папка:">
+<!ENTITY ecfolderpath.label "Путь ниже базовой папки:">
+<!ENTITY ecfolderidofshare.label "Идентификатор общей папки:">
+<!ENTITY exchWebServices.SharedFolderID.label "Общее отображаемое имя:">
+
+<!ENTITY menuitem.label.ecfolderbase.calendar "Календарь">
+<!ENTITY menuitem.label.ecfolderbase.publicfoldersroot "Общие папки">
+<!ENTITY menuitem.label.ecfolderbase.inbox "Входящие">
+<!ENTITY menuitem.label.ecfolderbase.voicemail "Голосовая почта">
+<!ENTITY menuitem.label.ecfolderbase.msgfolderroot "Корневая папка сообщений">
+<!ENTITY menuitem.label.ecfolderbase.root "Корень почты">
+<!ENTITY menuitem.label.ecfolderbase.tasks "Задачи">
+<!ENTITY menuitem.label.ecfolderbase.contacts "Контакты">
+<!ENTITY menuitem.label.ecfolderbase.deleteditems "Корзина">
+<!ENTITY menuitem.label.ecfolderbase.drafts "Черновики">
+<!ENTITY menuitem.label.ecfolderbase.journal "Документы">
+<!ENTITY menuitem.label.ecfolderbase.notes "Заметки">
+<!ENTITY menuitem.label.ecfolderbase.outbox "Исходящие">
+<!ENTITY menuitem.label.ecfolderbase.sentitems "Отправленные">
+<!ENTITY menuitem.label.ecfolderbase.junkemail "Нежелательная почта">
+<!ENTITY menuitem.label.ecfolderbase.searchfolders "Папки поиска">
+
+<!ENTITY menuitem.label.ecfolderbase.version2010 "-- Параметры ниже только для Exchange2010 --">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsroot "Корневая папка восстановимых элементов">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsdeletions "Восстановимые элементы удалений">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsversion "Восстановимые элементы версий">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemspurges "Восстановимые элементы очисток">
+<!ENTITY menuitem.label.ecfolderbase.archiveroot "Корневая архивная папка">
+<!ENTITY menuitem.label.ecfolderbase.archivemsgfolderroot "Корневая папка архива сообщений">
+<!ENTITY menuitem.label.ecfolderbase.archivedeleteditems "Архив удаленных элементов">
+<!ENTITY menuitem.label.ecfolderbase.archiverecoverableitemsroot "Корневая папка архива восстановимых элементов">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsdeletions "Архив восстановимых элементов удалений">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsversions "Архив восстановимых элементов версий">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemspurges "Архив восстановимых элементов очисток">
+
+<!ENTITY button.label.autodiscovercheck "Выполнить автообнаружение">
+<!ENTITY button.label.serverandmailboxcheck "Проверить сервер и почтовый ящик">
+<!ENTITY button.label.servercheck "Проверить сервер и аккаунт">
+
+<!ENTITY ecmailbox.label "Первичный почтовый адрес:">
+<!ENTITY ecmailbox.tooltip "Если вы не укажете почтовый ящик, то вы будет иметь доступ только к общим папкам.">
+<!ENTITY ecwindowsuser.label "Имя пользователя:">
+<!ENTITY ecwindowsdomain.label "Имя домена:">
+<!ENTITY ecwindowspassword.label "Пароль:">
+
+<!ENTITY button.label.folderpathcheck "Проверка">
+<!ENTITY button.label.folderbrowse "Просмотр">
+
+<!ENTITY exchWebServices.UserAvailability.label "Только состояние доступности пользователя для календаря почтового ящика будет видно, когда у вас есть права доступа.">
+

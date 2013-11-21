@@ -2,6 +2,16 @@ Version 3.2.0:
 - changed add-on name to "Exchange EWS Provider" as it is shorter than including all the exchange versions it can connect to.
 - Fixes bug where sometimes the date/time is shifted on Free/busy info in calendar of someone else.
 - Added preference userAgent. User can now specify their own userAgent string to use in communication.
+- Fixes Bug 277 - Cannot extend the time on a calendar event (Exchange2007)
+- Improved Out Of Office text editor so it is fully HTML aware again.
+- Improved memory usage. It shoud use less memory now. Please read bug 279 on https://www.1st-setup.nl/bugzilla
+- Fixed Bug 287 - no folder details anymore in the ews settings of calendar
+- Fixed a bug where it was not possible to create an exception.
+- Update on French locale.
+- Fixed Bug 291 - Modify instance of recurring meeting fails silently
+- Added Access Control List functionality of Lightning to follow user rights and permissions.
+- Russian translation is added.
+- Fixed problem with new exchange versions of Office365 and Exchange2013.
 
 Version 3.2.0-Beta20:
 - Fixed Bug 276 - Duplicate entries, wrong hours and sometimes missing entries when viewving other calendars

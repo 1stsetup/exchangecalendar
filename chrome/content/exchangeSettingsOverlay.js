@@ -485,7 +485,7 @@ exchSettingsOverlay.prototype = {
 
 		var start = cal.now();
 		var offset = cal.createDuration();
-		offset.hours = 1;
+		offset.hours = 10;
 		var end = start.clone();
 		end.addDuration(offset);
 

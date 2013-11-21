@@ -82,6 +82,8 @@ interface mivFunctions : nsISupports
   jsval chromeToPath(in AUTF8String aPath);
 
   AUTF8String splitOnCharacter(in AUTF8String aString, in uint64_t aStartPos, in jsval aSplitCharacter);
+  long long findCharacter(in AUTF8String aString, in long long aStartPos, in wchar aChar);
+  long long findString(in AUTF8String aString, in long long aStartPos, in AUTF8String  aNeedle);
 
   AUTF8String copyCalendarSettings(in AUTF8String aFromId, [optional] in AUTF8String aToId);
   void addCalendarById(in AUTF8String aId);

@@ -102,6 +102,7 @@ erResolveNames.prototype = {
 		//exchWebService.commonFunctions.LOG("erResolveNames.execute:"+String(this.parent.makeSoapMessage(req)));
 
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -148,7 +149,7 @@ erResolveNames.prototype = {
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)
 	{
-		exchWebService.commonFunctions.LOG("erResolveNames.onSendError: aCode"+aCode+", aMsg:"+aMsg);
+		//exchWebService.commonFunctions.LOG("erResolveNames.onSendError: aCode"+aCode+", aMsg:"+aMsg);
 		this.isRunning = false;
 		if (this.mCbError) {
 			this.mCbError(this, aCode, aMsg);

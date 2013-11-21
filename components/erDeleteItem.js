@@ -156,11 +156,13 @@ erDeleteItemRequest.prototype = {
 		}
 
 		req.addChildTagObject(itemids);
+		itemids = null;
 
 		this.parent.xml2jxon = true;
 		
 		//exchWebService.commonFunctions.LOG("erDeleteItemRequest.execute>"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)

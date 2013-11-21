@@ -30,6 +30,8 @@ var components = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource:///modules/Services.jsm");
 
+Cu.import("resource://interfaces/xml2jxon/mivIxml2jxon.js");
+
 function mivFunctions()
 {
 	//dump("\n ++ mivFunctions.init\n");
@@ -39,28 +41,12 @@ mivFunctions.prototype = {
 
 	// methods from nsISupport
 
-	_refCount: 0,
-
-	//nsrefcnt AddRef();
-	AddRef: function _AddRef()
-	{
-		this._refCount++;
-		return this._refCount;
-	},
-
 	/* void QueryInterface(
 	  in nsIIDRef uuid,
 	  [iid_is(uuid),retval] out nsQIResult result
 	);	 */
 	QueryInterface: XPCOMUtils.generateQI([Ci.mivFunctions,
 			Ci.nsISupports]),
-
-	//nsrefcnt Release();
-	Release: function _Release()
-	{
-		this._refCount--;
-		return this._refCount;
-	},
 
 	// Attributes from nsIClassInfo
 
@@ -69,7 +55,6 @@ mivFunctions.prototype = {
 	contractID: "@1st-setup.nl/global/functions;1",
 	flags: Ci.nsIClassInfo.SINGLETON || Ci.nsIClassInfo.THREADSAFE,
 	implementationLanguage: Ci.nsIProgrammingLanguage.JAVASCRIPT,
-
 
 	doEncodeFolderSpecialChars: function _doEncodeFolderSpecialChars(str, r1)
 	{
@@ -378,11 +363,12 @@ mivFunctions.prototype = {
  * Make a UUID using the UUIDGenerator service available, we'll use that.
  */
 	getUUID: function _getUUID() {
-	    var uuidGen = Cc["@mozilla.org/uuid-generator;1"]
-	                  .getService(Ci.nsIUUIDGenerator);
 	    // generate uuids without braces to avoid problems with
-	    // CalDAV servers that don't support filenames with {}
-	    return uuidGen.generateUUID().toString().replace(/[{}]/g, '');
+		if (!this.uuidGen) {
+			this.uuidGen = Cc["@mozilla.org/uuid-generator;1"]
+					.getService(Ci.nsIUUIDGenerator);
+		}
+		return this.uuidGen.generateUUID().toString().replace(/[{}]/g, '');
 	},
 
 
@@ -436,7 +422,8 @@ mivFunctions.prototype = {
 	        }
 	        string += "End object\n";
 	    } else {
-	        string = "1st-setup: " + aArg;
+		var dt = new Date();
+	        string = "1st-setup:"+dt.getFullYear()+"-"+dt.getMonth()+"-"+dt.getDay()+" "+dt.getHours()+":"+dt.getMinutes()+":"+dt.getSeconds()+"."+dt.getMilliseconds()+":" + aArg;
 	    }
 
 	    // xxx todo consider using function debug()
@@ -658,16 +645,14 @@ mivFunctions.prototype = {
 
 	xmlToJxon: function _xmlToJxon(aXMLString) 
 	{
-		var result = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
-				.createInstance(Ci.mivIxml2jxon);
-		if ((result) && (aXMLString) && (aXMLString != ""))	{
-			try {
-				result.processXMLString(aXMLString, 0, null);
-			}
-			catch(exc) {
-				this.LOG("xmlToJxon: Error processXMLString:"+exc+".("+aXMLString+")");
-				result = null;
-			}
+		if ((!aXMLString) || (aXMLString == "")) { return null;}
+		
+		try {
+			var result = new mivIxml2jxon(aXMLString, 0, null);
+		}
+		catch(exc) {
+			this.LOG("xmlToJxon: Error processXMLString:"+exc+".("+aXMLString+")");
+			result = null;
 		}
 
 		return result;
@@ -707,8 +692,6 @@ mivFunctions.prototype = {
 
 	splitOnCharacter: function _splitOnCharacter(aString, aStartPos, aSplitCharacter)
 	{
-//		this.LOG("splitOnCharacter: aString:"+aString+", aSplitCharacter:"+aSplitCharacter);
-
 		if (!aString) {
 			return null;
 		}
@@ -718,15 +701,17 @@ mivFunctions.prototype = {
 		var notClosed = true;
 		var notQuoteOpen = true;
 		var quotesUsed = "";
-		while ((tmpPos < aString.length) && (notClosed)) {
-			if ((aString.substr(tmpPos,1) == "'") || (aString.substr(tmpPos,1) == '"')) {
+		var strLen = aString.length;
+		var splitCharIsArray = Array.isArray(aSplitCharacter);
+		while ((tmpPos < strLen) && (notClosed)) {
+			if ((aString[tmpPos] == "'") || (aString[tmpPos] == '"')) {
 				// We found quotes. Do they belong to our string.
 				if (notQuoteOpen) {
-					quotesUsed = aString.substr(tmpPos,1);
+					quotesUsed = aString[tmpPos];
 					notQuoteOpen = false;
 				}
 				else {
-					if (aString.substr(tmpPos,1) == quotesUsed) {
+					if (aString[tmpPos] == quotesUsed) {
 						quotesUsed = "";
 						notQuoteOpen = true;
 					}
@@ -735,12 +720,10 @@ mivFunctions.prototype = {
 
 			var hitSplitCharacter = false;
 			if (notQuoteOpen) {
-				if (Array.isArray(aSplitCharacter)) {
-//					this.LOG("splitOnCharacter: isArray");
+				if (splitCharIsArray) {
 					for (var index in aSplitCharacter) {
 						if (aString.substr(tmpPos,aSplitCharacter[index].length) == aSplitCharacter[index]) {
 							hitSplitCharacter = true;
-//							this.LOG("splitOnCharacter: hitSplitCharacter: index="+result);
 							break;
 						}
 					}
@@ -756,7 +739,7 @@ mivFunctions.prototype = {
 				notClosed = false;
 			}
 			else {
-				result += aString.substr(tmpPos,1);
+				result += aString[tmpPos];
 			}
 			tmpPos++;
 		}
@@ -767,6 +750,45 @@ mivFunctions.prototype = {
 		else {
 			return null;
 		}
+	},
+
+	findCharacter: function _findCharacter(aString, aStartPos, aChar)
+	{
+		if (!aString) return -1;
+
+		var pos = aStartPos;
+		var strLength = aString.length;
+		while ((pos < strLength) && (aString[pos] != aChar)) {
+			pos++;
+		}
+
+		if (pos < strLength) {
+			return pos;
+		}
+	
+		return -1;
+	},
+
+	findString: function _findString(aString, aStartPos, aNeedle)
+	{
+		if (!aString) return -1;
+
+		if (aNeedle.length == 1) {
+			return this.findCharacter(aString, aStartPos, aNeedle[0]);
+		}
+
+		var pos = aStartPos;
+		var needleLength = aNeedle.length;
+		var strLength = aString.length - needleLength + 1;
+		while ((pos < strLength) && (aString.substr(pos, needleLength) != aNeedle)) {
+			pos++;
+		}
+
+		if (pos < strLength) {
+			return pos;
+		}
+	
+		return -1;
 	},
 
 	copyCalendarSettings: function _copyCalendarSettings(aFromId, aToId)

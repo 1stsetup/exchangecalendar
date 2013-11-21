@@ -94,14 +94,17 @@ erCreateItemRequest.prototype = {
 
 		var savedItemFolderId = makeParentFolderIds2("SavedItemFolderId", this.argument);
 		req.addChildTagObject(savedItemFolderId);
+		savedItemFolderId = null;
 
 		var Items = exchWebService.commonFunctions.xmlToJxon('<nsMessages:Items xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'">'+String(this.createReq)+'</nsMessages:Items>');
 		req.addChildTagObject(Items);
+		Items = null;
 
 		this.parent.xml2jxon = true;
 
 		//exchWebService.commonFunctions.LOG("erCreateItemRequest.execute>"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -113,6 +116,7 @@ erCreateItemRequest.prototype = {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Respons does not contain expected field.");
 			return;
 		}
+		rm = null;
 
 		var aItem = aResp.XPath("/s:Envelope/s:Body/m:CreateItemResponse/m:ResponseMessages/m:CreateItemResponseMessage/m:Items/*");
 
@@ -122,8 +126,10 @@ erCreateItemRequest.prototype = {
 		}
 		else {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_CREATING_ITEM_UNKNOWN, "Error. Valid createitem request but received no update details:"+String(aResp));
+			aItem = null;
 			return;
 		}
+		aItem = null;
 
 		if (this.mCbOk) {
 			this.mCbOk(this, itemId, changeKey);

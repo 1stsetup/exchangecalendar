@@ -1,0 +1,16 @@
+<!ENTITY label.acceptbutton "Закрыть">
+
+<!ENTITY exchWebService.manageEWSAccounts.newAccount.button "Добавить аккаунт">
+<!ENTITY exchWebService.manageEWSAccounts.removeAccount.button "Удалить аккаунт">
+<!ENTITY exchWebService.manageEWSAccounts.saveAccount.button "Сохранить настройки">
+
+<!ENTITY exchWebService.manageEWSAccounts.autodiscover.label "Использовать функцию автопоиска Exchange.">
+<!ENTITY exchWebService.manageEWSAccounts.mailbox.label "Имя почтового ящика:">
+<!ENTITY exchWebService.manageEWSAccounts.windowsuser.label "Имя пользователя:">
+<!ENTITY exchWebService.manageEWSAccounts.windowsdomain.label "Имя домена:">
+<!ENTITY exchWebService.manageEWSAccounts.autodiscover.button "Выполнить автообнаружение">
+<!ENTITY exchWebService.manageEWSAccounts.servercheck.button "Проверить сервер и аккаунт">
+<!ENTITY exchWebService.manageEWSAccounts.name.label "Имя:">
+
+<!ENTITY exchWebService.manageEWSAccounts.menuitem "Exchange Web аккаунты сервисов">
+

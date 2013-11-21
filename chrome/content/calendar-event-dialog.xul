@@ -47,20 +47,17 @@
     <script type="application/javascript" src="chrome://exchangecalendar/content/calendar-event-dialog.js"/> 
 
 	<rows id="event-grid-rows">
+		<row id="exchWebService-owner-row" collapsed="true" insertafter="event-grid-title-row">
+			<label value="&exchWebService.owner.label;"/>
+			<label id="exchWebService-owner-label" value=""/>
+		</row>
+
 		<row id="event-grid-category-color-row">
 			<hbox id="event-grid-category-box">
 				<menulist id="item-calendar" oncommand="tmpEventDialog.selectedCalendarChanged(this);"/>
 			</hbox>
 		</row>
 
-		<row id="event-grid-startdate-row" collapsed="false">
-			<hbox id="event-grid-startdate-picker-box">
-				<hbox id="exchWebService-owner-hbox" hidden="true">
-					<label value="&exchWebService.owner.label;"/>
-					<label id="exchWebService-owner-label" value=""/>
-				</hbox>
-			</hbox>
-		</row>
 		<separator id="exchWebService-details-separator" hidden="true" class="groove" insertafter="event-grid-todo-status-row"/>
 		<row id="exchWebService-details-row1" align="center"
 			collapsed="true" insertafter="exchWebService-details-separator">

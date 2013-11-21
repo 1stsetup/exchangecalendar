@@ -30,1070 +30,503 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
 function typeString(o) {
-  if (typeof o != 'object')
-    return typeof o;
+	if (typeof o != 'object')
+		return typeof o;
 
-  if (o === null)
-      return "null";
+	if (o === null)
+		return "null";
   //object, array, function, date, regexp, string, number, boolean, error
-  var internalClass = Object.prototype.toString.call(o)
+	var internalClass = Object.prototype.toString.call(o)
                                                .match(/\[object\s(\w+)\]/)[1];
-  return internalClass.toLowerCase();
+	return internalClass.toLowerCase();
 }
 
-var isArray = function(obj) {
-        return typeString(obj) == "array";
-    }
+function isArray(obj) {
+	return (typeString(obj) == "array");
+}
 
 function isInList(inArray, inStr)
 {
 	return (inArray[inStr] !== undefined);
 }
 
-var specialChars1 = {	" ": true, 
+const specialChars1 = {	" ": true, 
 			"\n" : true, 
 			"\r" : true, 
 			"\t" : true };
 
-function xmlErrorObject(aName, aMessage, aCode) {
-	this.name = aName;
-	this.message = aMessage;
-	this.code = aCode;
+function findCharacter(aStr, aSP, aChar)
+{
+	if (!aStr) return -1;
+
+	var pos = aSP;
+	var strLength = aStr.length;
+	while ((pos < strLength) && (aStr[pos] != aChar)) {
+		pos++;
+	}
+
+	if (pos < strLength) {
+		return pos;
+	}
+
+	return -1;
 }
 
-function mivIxml2jxon(aXMLString, aStartPos, aParent) {
+function findString(aStr, aSP, aNeedle)
+{
+	if (!aStr) return -1;
 
-	this.content = {};
-	this.itemCount = 0;
-	this.messageLength = 0;
-	this.closed = false;
+	var pos = aSP;
+	var needleLength = aNeedle.length;
+	var strLength = aStr.length - needleLength + 1;
+	while ((pos < strLength) && (aStr.substr(pos, needleLength) != aNeedle)) {
+		pos++;
+	}
+
+	if (pos < strLength) {
+		return pos;
+	}
+
+	return -1;
+}
+
+function splitOnCharacter(aStr, aSP, aSplitCharacter)
+{
+	if (!aStr) {
+		return null;
+	}
+
+	var tmpPos = aSP;
+	var result = "";
+	var notClosed = true;
+	var notQuoteOpen = true;
+	var quotesUsed = "";
+	var strLen = aStr.length;
+	var splitCharIsArray = isArray(aSplitCharacter);
+	while ((tmpPos < strLen) && (notClosed)) {
+		if ((aStr[tmpPos] == "'") || (aStr[tmpPos] == '"')) {
+			// We found quotes. Do they belong to our string.
+			if (notQuoteOpen) {
+				quotesUsed = aStr[tmpPos];
+				notQuoteOpen = false;
+			}
+			else {
+				if (aStr[tmpPos] == quotesUsed) {
+					quotesUsed = "";
+					notQuoteOpen = true;
+				}
+			}
+		}
+
+		var hitSplitCharacter = false;
+		if (notQuoteOpen) {
+			if (splitCharIsArray) {
+				for (var index in aSplitCharacter) {
+					if (aStr.substr(tmpPos,aSplitCharacter[index].length) == aSplitCharacter[index]) {
+						hitSplitCharacter = true;
+						break;
+					}
+				}
+			}
+			else {
+				if (aStr.substr(tmpPos,aSplitCharacter.length) == aSplitCharacter) {
+					hitSplitCharacter = true;
+				}
+			}
+		}
+
+		if (hitSplitCharacter) {
+			notClosed = false;
+		}
+		else {
+			result += aStr[tmpPos];
+		}
+		tmpPos++;
+	}
+
+	if (!notClosed) {
+		return result;
+	}
+	else {
+		return null;
+	}
+}
+
+var replaceFromXML = function _replaceFromXML(str, r1)
+{
+	var result = str;
+	if (r1[0] == "#") {
+		if (r1[1] == "x") {
+			// hexadecimal
+			result = String.fromCharCode(parseInt(r1.substr(2),16))
+		}
+		else {
+			// Decimal
+			result = String.fromCharCode(parseInt(r1.substr(1),10))
+		}
+	}
+	else {
+		switch (r1) {
+		case "amp": result = "&"; break;
+		case "quot": result = '"'; break;
+		case "apos": result = "'"; break;
+		case "lt": result = "<"; break;
+		case "gt": result = ">"; break;
+		}
+	}
+	return result;
+}
+
+function convertSpecialCharatersFromXML(aStr)
+{
+	if (!aStr) return aStr;
+
+	var result = aStr;
+	// Convert special characters
+	result = result.replace(/&(quot|apos|lt|gt|amp|#x[0123456789ancdefABCDEF][0123456789ancdefABCDEF]?[0123456789ancdefABCDEF]?[0123456789ancdefABCDEF]?|#[0123456789][0123456789]?[0123456789]?[0123456789]?);/g, replaceFromXML); 
+
+	return result;
+}
+
+var replaceToXML = function _replaceToXML(str, r1)
+{
+	var result = str;
+	switch (r1) {
+	case "&": result = "&amp;"; break;
+	case '"': result = "&quot;"; break;
+	case "'": result = "&apos;"; break;
+	case "<": result = "&lt;"; break;
+	case ">": result = "&gt;"; break;
+	}
+
+	return result;
+}
+
+function convertSpecialCharatersToXML(aStr)
+{
+	if ((aStr === null) || (aStr === undefined)) return aStr;
+
+	var result = aStr.toString();
+	// Convert special characters
+	result = result.replace(/(&|\x22|\x27|<|>)/g, replaceToXML);  
+
+	return result;
+}
+
+function trim(aValue)
+{
+	var strLength = aValue.length;
+	var leftPos = 0;
+	while ((leftPos < strLength) && (aValue[leftPos] == " ")) {
+		leftPos++;
+	}
+	var rightPos = strLength-1;
+	while ((rightPos >= 0) && (aValue[rightPos] == " ")) {
+		rightPos--;
+	}
+	return aValue.substr(leftPos, rightPos - leftPos + 1);
+}
+
+var nameSpaceMgr = Cc["@1st-setup.nl/conversion/namespaces;1"]
+			.getService(Ci.mivNameSpaces);
+
+var tagNameMgr = Cc["@1st-setup.nl/conversion/tagnames;1"]
+			.getService(Ci.mivTagNames);
+
+const cId = "@1st-setup.nl/conversion/xml2jxon;1";
+
+var EXPORTED_SYMBOLS = ["mivIxml2jxon"];
+
+function mivIxml2jxon(aXMLString, aSP, aParent) {
 	this.nameSpaces = {};
 	this.tags = {};
 	this.attr = {};
-
-	this._siblings = new Array();
-
-	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
-				.getService(Ci.mivFunctions);
-
-	this.uuid = this.globalFunctions.getUUID();
-
-	//this.logInfo("mivIxml2jxon.init",2);
-
-	if (aXMLString) {
-		this.processXMLString(aXMLString, aStartPos, aParent);
-	}
-	else {
-		this.isXMLHeader = true;
-		this.XMLHeader = '<?xml version="1.0" encoding="utf-8"?>';
-	}
+	this._siblings = [];
+	this._c1 = false;
+	if (aXMLString) {this.processXMLString(aXMLString, aSP, aParent);}
 }
 
-var xml2jxonGUID = "d7165a60-7d64-42b2-ac48-6ccfc0962abb";
-
-const tagSeparator = ":";
+const xguid = "d7165a60-7d64-42b2-ac48-6ccfc0962abb";
+const tsep = ":";
 
 mivIxml2jxon.prototype = {
-
-	// methods from nsISupport
-
-	/* void QueryInterface(
-	  in nsIIDRef uuid,
-	  [iid_is(uuid),retval] out nsQIResult result
-	);	 */
-	QueryInterface: XPCOMUtils.generateQI([Ci.mivIxml2jxon,
-			Ci.nsIClassInfo,
-			Ci.nsISupports]),
-
-	// methods from nsIClassInfo
-
-	// nsISupports getHelperForLanguage(in PRUint32 language);
-	getHelperForLanguage: function _getHelperForLanguage(language) {
-		return null;
-	},
-
-	// void getInterfaces(out PRUint32 count, [array, size_is(count), retval] out nsIIDPtr array);
-	getInterfaces: function _getInterfaces(count) 
-	{
-		var ifaces = [Ci.mivIxml2jxon,
-			Ci.nsIClassInfo,
-			Ci.nsISupports];
-		count.value = ifaces.length;
-		return ifaces;
-	},
-
-	// Attributes from nsIClassInfo
-
-	classDescription: "XML to JXON and back conversion functionality.",
-	classID: components.ID("{"+xml2jxonGUID+"}"),
-	contractID: "@1st-setup.nl/conversion/xml2jxon;1",
+	QueryInterface: XPCOMUtils.generateQI([Ci.mivIxml2jxon,Ci.nsIClassInfo,Ci.nsISupports]),
+	getHelperForLanguage: function _getHelperForLanguage(language) {return null;},
+	getInterfaces: function _getInterfaces(c){c.value = 3;return [Ci.mivIxml2jxon,Ci.nsIClassInfo,Ci.nsISupports];},
+	classDescription: "XML2JXON",
+	classID: components.ID("{"+xguid+"}"),
+	contractID: cId,
 	flags: Ci.nsIClassInfo.THREADSAFE,
 	implementationLanguage: Ci.nsIProgrammingLanguage.JAVASCRIPT,
-
-	// External methods
-
-	// External attributes
-
-	// Internal methods.
-
-	xmlError: function _xmlError(aErrorID)
-	{
-		switch (aErrorID) {
-			case Ci.mivIxml2jxon.ERR_MISSING_SPECIAL_TAG: 
-				//this.logInfo(this.tagName+":Error:ERR_MISSING_SPECIAL_TAG. ("+this.globalFunctions.STACKshort()+")");
-				return new xmlErrorObject("ERR_MISSING_SPECIAL_TAG","A special tag like '?' is missing",aErrorID);
-			case Ci.mivIxml2jxon.ERR_INVALID_TAG: 
-				//this.logInfo(this.tagName+":Error:ERR_INVALID_SPECIAL_TAG. ("+this.globalFunctions.STACKshort()+")");
-				return new xmlErrorObject("ERR_INVALID_SPECIAL_TAG", "Tag is invalid", aErrorID);
-			case Ci.mivIxml2jxon.ERR_INVALID_SPECIAL_TAG: 
-				//this.logInfo(this.tagName+":Error:ERR_INVALID_SPECIAL_TAG. ("+this.globalFunctions.STACKshort()+")");
-				return new xmlErrorObject("ERR_INVALID_SPECIAL_TAG", "Special Tag is invalid", aErrorID);
-			case Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG: 
-				//this.logInfo(this.tagName+":Error:ERR_WRONG_CLOSING_TAG. ("+this.globalFunctions.STACKshort()+")");
-				return new xmlErrorObject("ERR_WRONG_CLOSING_TAG", "Found wrong closing tag. Expected another.", aErrorID);
-			case Ci.mivIxml2jxon.ERR_WRONG_ATTRIBUTE_SEPARATOR: 
-				//this.logInfo(this.tagName+":Error:ERR_WRONG_ATTRIBUTE_SEPARATOR. ("+this.globalFunctions.STACKshort()+")");
-				return new xmlErrorObject("ERR_WRONG_ATTRIBUTE_SEPARATOR", "Found wrong attribute separator. Expected '=' character.", aErrorID);
-			case Ci.mivIxml2jxon.ERR_ATTRIBUTE_VALUE_QUOTES: 
-				//this.logInfo(this.tagName+":Error:ERR_ATTRIBUTE_VALUE_QUOTES. ("+this.globalFunctions.STACKshort()+")");
-				return new xmlErrorObject("ERR_ATTRIBUTE_VALUE_QUOTES", "Found error in attribute value quotes.", aErrorID);
-		}
+	get closed(){return this._c1;},
+	set closed(a){this._c1 = a;},
+	addToContent: function _addToContent(a){
+		if (this.content === undefined) this.content = []; this.content.push(a);
 	},
-
-	addToContent: function _addToContent(aValue)
-	{
-		this.content[this.itemCount] = aValue;
-		this.itemCount++;
+	explodeAttribute: function _explodeAttribute(a){
+		a = a.replace(/\n/g, "").replace(/\r/g, "").replace(/\t/g, "");
+		var sp = a.indexOf("=");
+		if (sp == -1) {throw Ci.mivIxml2jxon.ERR_WRONG_ATTRIBUTE_SEPARATOR;}
+		var an = trim(a.substr(0, sp));
+		var av = trim(a.substr(sp+1));
+		var tc = av[0];
+		if ((tc == "'") || (tc == '"')) {
+			let vl = av.length;
+			if (tc == av[vl-1]) {av = av.substr(1, vl-2);}
+			else {throw Ci.mivIxml2jxon.ERR_ATTRIBUTE_VALUE_QUOTES;}
+		}
+		if (an.toLowerCase().indexOf("xmlns") == 0) {
+			let xp = an.indexOf(":");
+			if (xp > -1) {this.addNameSpace(an.substr(xp+1), av);}
+			else {this.addNameSpace("_default_" , av);}
+		}
+		else {this.attr[an] = av;}
 	},
-
-	trim: function _trim(aValue)
-	{
-		var strLength = aValue.length;
-		var leftPos = 0;
-		while ((leftPos < strLength) && (aValue.substr(leftPos,1) == " ")) {
-			leftPos++;
-		}
-		var rightPos = strLength-1;
-		while ((rightPos >= 0) && (aValue.substr(rightPos,1) == " ")) {
-			rightPos--;
-		}
-		return aValue.substr(leftPos, rightPos - leftPos + 1);
+	getNameSpace: function _getNameSpace(a){
+		if ((a === undefined) || (a === null)) {return null;}
+		if (a == "") {a = "_default_";}
+		if (!this.nameSpaces[a]) {return nameSpaceMgr.findNameSpaceByAlias(a);}
+		else {return nameSpaceMgr.getNameSpace(this.nameSpaces[a]);}
 	},
-
-	explodeAttribute: function _explodeAttribute(aValue)
-	{
-		// Remove any of the special characters
-		aValue = aValue.replace(/\n/g, "");
-		aValue = aValue.replace(/\r/g, "");
-		aValue = aValue.replace(/\t/g, "");
-
-
-		var splitPos = aValue.indexOf("=");
-		if (splitPos == -1) {
-			throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_ATTRIBUTE_SEPARATOR);
-		}
- 
-		// trim left and right.
-		var attributeName = this.trim(aValue.substr(0, splitPos));
-		var attributeValue = this.trim(aValue.substr(splitPos+1));
-
-		if ((attributeValue.substr(0,1) == "'") || (attributeValue.substr(0,1) == '"')) {
-			var valueLength = attributeValue.length;
-			if (attributeValue.substr(0,1) == attributeValue.substr(valueLength-1,1)) {
-				// Remove quote around attribute value.
-				attributeValue = attributeValue.substr(1, valueLength-2);
-			}
-			else {
-				throw this.xmlError(Ci.mivIxml2jxon.ERR_ATTRIBUTE_VALUE_QUOTES);
-			}
-		}
-
-		if (attributeName.toLowerCase().indexOf("xmlns") == 0) {
-			if (!this.nameSpaces) {
-				this.nameSpaces = {};
-			}
-			var xmlnsPos = attributeName.indexOf(":");
-			if (xmlnsPos > -1) {
-				//this.logInfo("Found xml namespace:"+attributeName.substr(xmlnsPos+1)+"="+attributeValue, 2);
-				this.addNameSpace(attributeName.substr(xmlnsPos+1), attributeValue);
-				//this.nameSpaces[attributeName.substr(xmlnsPos+1)] = attributeValue;
-			}
-			else {
-				//this.logInfo("Found xml namespace:_default_="+attributeValue, 2);
-				this.addNameSpace("" , attributeValue);
-				//this.nameSpaces["_default_"] = attributeValue;
-			}
-		}
-		else {
-			//this.logInfo("Added attribute to tag '"+this.tagName+"'. "+attributeName+"="+attributeValue,2);
-
-			this.attr[attributeName] = attributeValue;
-		}
+	addNameSpace: function _addNameSpace(a, b){
+		var index = a;
+		if ((a == "") || (a === undefined)) {index = "_default_";}
+		this.nameSpaces[index] = nameSpaceMgr.addNameSpace(index, b);
+		for each(var child in this.tags) {child.addNameSpace(index, b);}
 	},
-
-	getNameSpace: function _getNameSpace(aAlias)
-	{
-		// Check if we have this nameSpace alias our selfs.
-		//this.logInfo("getNameSpace: aAlias:'"+aAlias+"'.(tagName:"+this.tagName+")", 2);
-		if (aAlias === undefined) {
-			return null;
+	setAttribute: function _setAttribute(a, b){this.attr[a] = convertSpecialCharatersToXML(b);},
+	getAttribute: function _getAttribute(a, b){
+		if (this.attr[a]) {return convertSpecialCharatersFromXML(this.attr[a]);}
+		else {return b;}
+	},
+	getAttributeByTag: function _getAttributeByTag(a, b, c){
+		var to = this.getTag(a);
+		if (to) {return to.getAttribute(b, c);}
+		else {return c;}
+	},
+	get tagName(){
+		if (this._tagNameIndex === undefined) return "";
+		return tagNameMgr.getTagName(this._tagNameIndex);
+	},
+	set tagName(a){this._tagNameIndex = tagNameMgr.addTagName(a);},
+	getTag: function _getTag(a){
+		if (this.tags[a]) {return this.tags[a];}
+		var it = a;
+		var sp = it.indexOf(tsep);
+		if (sp > -1) {it = it.substr(sp);}
+		var ri;
+		var rt;
+		for (let index in this.tags) {
+			let childTag = this.tags[index];
+			if ((childTag instanceof Ci.mivIxml2jxon) || (childTag instanceof mivIxml2jxon)) {
+				ri = childTag.realTagName(index);
+				rt = childTag.realTagName(a);
+				if (ri == rt) {return childTag;}
+			}
+			else {for (let arrayIndex in childTag) {
+					ri = childTag[arrayIndex].realTagName(index);
+					rt = childTag[arrayIndex].realTagName(a);
+					if (ri == rt) {return childTag;}
+				}
+			}
 		}
-
-		if (aAlias == "") {
-			aAlias = "_default_";
-		}
-
-		if ((this.nameSpaces) && (this.nameSpaces[aAlias])) {
-			//this.logInfo("getNameSpace: found namespace '"+this.nameSpaces[aAlias]+"' for aAlias '"+aAlias+"' in tag:"+this.tagName+".", 2);
-			return this.nameSpaces[aAlias];
-		}
-
 		return null;
 	},
-
-	addNameSpace: function _addNameSpace(aAlias, aValue)
-	{
-		if (!this.nameSpaces) {
-			this.nameSpaces = {};
-		}
-
-		var index = aAlias;
-		if ((aAlias == "") || (aAlias === undefined)) {
-			index = "_default_";
-		}
-
-		this.logInfo("addNameSpace: aAlias:"+index+", aValue:"+aValue+" to tag:"+this.tagName, 1);
-		this.nameSpaces[index] = aValue;
-
-		// Add new namespace to children.
-		for each(var child in this.tags) {
-			child.addNameSpace(index, aValue);
+	getTags: function _getTags(a)	{
+		var to = this.getTag(a);
+		if (!to) {return [];}
+		if (isArray(to)) {return to;}
+		var r = [];
+		r.push(to);
+		return r;
+	},
+	getTagValue: function _getTagValue(a, b){
+		var to = this.getTag(a);
+		if (to) {return to.value;}
+		else {return b;}
+	},
+	getTagValueByXPath: function _getTagValueByXPath(a, b)	{
+		var rs = this.XPath(a);
+		var r = b;
+		if (rs.length > 0) {r = rs[0].value;}
+		rs = null;
+		return r;
+	},
+	addParentNameSpaces: function _addParentNameSpaces(a){
+		if (!a.nameSpaces) return;
+		if (!this.nameSpaces) {this.nameSpaces = {};}
+		for (let index in a.nameSpaces) {
+			if (!this.nameSpaces[index]) {this.nameSpaces[index] = a.nameSpaces[index];}
 		}
 	},
-
-	deleteNameSpace: function _deleteNameSpace(aAlias)
-	{
-		if ((aAlias == "") || (aAlias === undefined)) {
-			aAlias = "_default_";
-		}
-
-		if (this.nameSpaces[aAlias]) {
-			delete this.nameSpaces[aAlias];
-		}
-	},
-
-	setAttribute: function _setAttribute(aAttribute, aValue)
-	{
-		//this.logInfo("setAttribute: aAttribute="+aAttribute+", aValue="+aValue, 0);
-		this.attr[aAttribute] = this.convertSpecialCharatersToXML(aValue);
-	},
-
-	getAttribute: function _getAttribute(aAttribute, aDefaultValue)
-	{
-		if (this.attr[aAttribute]) {
-			//this.logInfo("@"+aAttribute+"="+this["@"+aAttribute]);
-			return this.convertSpecialCharatersFromXML(this.attr[aAttribute]);
-		}
-		else {
-			return aDefaultValue;
-		}
-	},
-
-	getAttributeByTag: function _getAttributeByTag(aTagName, aAttribute, aDefaultValue)
-	{
-		var tmpObject = this.getTag(aTagName);
-		if (tmpObject) {
-			return tmpObject.getAttribute(aAttribute, aDefaultValue);
-		}
-		else {
-			return aDefaultValue;
-		}
-	},
-
-	getTag: function _getTag(aTagName)
-	{
-		if (this.tags[aTagName]) {
-			return this.tags[aTagName];
-		}
-
-		var realIndex;
-		for (var index in this.tags) {
-			if (index.indexOf(tagSeparator) > -1) {
-				if ((this.tags[index] instanceof Ci.mivIxml2jxon) || (this.tags[index] instanceof mivIxml2jxon)) {
-					// this[index] is an xml2jxon object.
-					realIndex = this.tags[index].realTagName(index);
-					realATagName = this.tags[index].realTagName(aTagName);
-					if (realIndex == realATagName) {
-						return this.tags[index];
-					}
-				}
-				else {
-					if (isArray(this.tags[index])) {
-						// this[index] is an array of xml2jxon objects. We pick the first
-						var arrayIndex = 0;
-						var continueArray = true;
-						while ((arrayIndex < this.tags[index].length) && (continueArray)) {
-							if ((this.tags[index][arrayIndex] instanceof Ci.mivIxml2jxon) || (this.tags[index][arrayIndex] instanceof mivIxml2jxon)) {
-								realIndex = this.tags[index][arrayIndex].realTagName(index);
-								realATagName = this.tags[index][arrayIndex].realTagName(aTagName);
-								if (realIndex == realATagName) {
-									return this.tags[index];
-								}
-							}
-							arrayIndex++;
-						}
-					}
-				}
+	addChildTagObject: function _addChildTagObject(a){
+		if (!a) {return;}
+		a.addParentNameSpaces(this);
+		var ntn = a.nameSpace+tsep+a.tagName;
+		if (!this.tags[ntn]) {this.tags[ntn] = a;}
+		else { if (!isArray(this.tags[ntn])) {
+				let fo = this.tags[ntn];
+				this.tags[ntn] = [];
+				this.tags[ntn].push(fo);
 			}
-		}
-
-		return null;
-	},
-
-	getTags: function _getTags(aTagName)
-	{
-		var tmpObject = this.getTag(aTagName);
-		if (!tmpObject) {
-			return [];
-		}
-
-		if (isArray(tmpObject)) {
-			return tmpObject;
-		}
-
-		var result = new Array;
-		result.push(tmpObject);
-		return result;
-	},
-
-	getTagValue: function _getTagValue(aTagName, aDefaultValue)
-	{
-		var tmpObject = this.getTag(aTagName);
-		if (tmpObject) {
-			return tmpObject.value;
-		}
-		else {
-			return aDefaultValue;
+			this.tags[ntn].push(a);
 		}
 	},
-
-	getTagValueByXPath: function _getTagValueByXPath(aXPath, aDefaultValue)
-	{
-		var results = this.XPath(aXPath);
-
-		var result = aDefaultValue;
-		if (results.length > 0) {
-			result = results[0].value;
+	addChildTag: function _addChildTag(a, b, c){
+		var ns;
+		if (b) {ns = b;}
+		else {if (this.nameSpace) {ns = this.nameSpace;}
+			else {ns = "_default_";}
 		}
-		
-		results = null;
-		return result;
+		if (c === false) {c = "false";}
+		if (c === 0) { c = "0";}
+		if ((c !== undefined) && (c !== null) && (c != "")) {var xml = "<"+ns+tsep+a+">"+convertSpecialCharatersToXML(c)+"</"+ns+tsep+a+">"}
+		else {var xml = "<"+ns+tsep+a+"/>"}
+		var r = new mivIxml2jxon(xml,0, this);
+		return r;
 	},
-
-	addParentNameSpaces: function _addParentNameSpaces(aParent)
-	{
-		if (!this.nameSpaces) {
-			this.nameSpaces = {};
-		}
-
-		for (var index in aParent.nameSpaces) {
-			this.nameSpaces[index] = aParent.nameSpaces[index];
-		}
+	addSibblingTag: function _addSibblingTag(a, b, c){
+		if (b) {var nameSpace = b;}
+		else {var nameSpace = "_default_";}
+		var r = new mivIxml2jxon("<"+nameSpace+tsep+a+"/>", 0, null);
+		r.addToContent(c);
+		this._siblings.push(r);
+		return r;
 	},
-
-	addChildTagObject: function _addChildTagObject(aObject)
-	{
-		if (!aObject) {
-			return;
-		}
-
-		if (aObject.uuid != this.uuid) {
-			aObject.addParentNameSpaces(this);
-		}
-
-		var aNameSpace = aObject.nameSpace;
-		var aTagName = aObject.tagName;
-		if (!this.tags[aNameSpace+tagSeparator+aTagName]) {
-			//this.logInfo("First childTag: "+this.tagName+"."+aNameSpace+tagSeparator+aTagName+"="+aObject,2);
-			this.tags[aNameSpace+tagSeparator+aTagName] = aObject;
-			//this[aNameSpace+tagSeparator+aTagName] = aObject;
-			this.addToContent(aObject);
-		}
-		else {
-			if (!isArray(this.tags[aNameSpace+tagSeparator+aTagName])) {
-				var firstObject = this.tags[aNameSpace+tagSeparator+aTagName];
-				////this.logInfo("creating array:'"+aNameSpace+tagSeparator+aTagName+"'",1);
-				this.tags[aNameSpace+tagSeparator+aTagName] = new Array();
-				this.tags[aNameSpace+tagSeparator+aTagName].push(firstObject);
-			}
-			//this.logInfo("childTag : "+this.tagName+"."+aNameSpace+tagSeparator+aTagName+"["+(this[aNameSpace+tagSeparator+aTagName].length+1)+"]",2);
-			////this.logInfo("adding item to array:'"+aNameSpace+tagSeparator+aTagName+"'",1);
-			this.tags[aNameSpace+tagSeparator+aTagName].push(aObject);
-			//this[aNameSpace+tagSeparator+aTagName] = this.tags[aNameSpace+tagSeparator+aTagName];
-			this.addToContent(aObject);
-		}
+	contentStr: function _contentStr(){
+		if ((this.content) && (this.content[0])) {return this.content[0];} else {return "";}
 	},
-
-	addChildTag: function _addChildTag(aTagName, aNameSpace, aValue)
-	{
-		if (aNameSpace) {
-			var nameSpace = aNameSpace;
+	get value(){return convertSpecialCharatersFromXML(this.contentStr().toString());},
+	attributesToString: function _attributesToString(){
+		var r = "";
+		for (let i in this.attr) {r += " "+i + '="'+this.attr[i]+'"';}
+		return r;
+	},
+	nameSpacesToString: function _nameSpacesToString(){
+		var r = "";
+		for (let i in this.nameSpaces) {
+			if (i == "_default_") {r += ' xmlns="'+nameSpaceMgr.getNameSpace(this.nameSpaces[i])+'"';}
+			else {r += " xmlns:"+i+'="'+nameSpaceMgr.getNameSpace(this.nameSpaces[i])+'"';}
 		}
-		else {
-			if (this.nameSpace) {
-				var nameSpace = this.nameSpace;
+		return r;
+	},
+	clone: function _clone(){return new mivIxml2jxon(this.toString(), 0, null);},
+	toString: function _toString(a){
+		var nss = this.nameSpacesToString();
+		var r = "";
+		var cc = 0;
+		for (let index in this.tags) {
+			cc++;
+			if (isArray(this.tags[index])) {
+				for each(let tag in this.tags[index]) {
+					r += tag.toString(nss);
+				}
 			}
 			else {
-				var nameSpace = "_default_";
+				r += this.tags[index].toString(nss);
 			}
-		}
-
-		if ((aValue) && (aValue != "")) {
-			var result = new mivIxml2jxon("<"+nameSpace+tagSeparator+aTagName+">"+this.convertSpecialCharatersToXML(aValue)+"</"+nameSpace+tagSeparator+aTagName+">", 0, this);
-		}
-		else {
-			var result = new mivIxml2jxon("<"+nameSpace+tagSeparator+aTagName+"/>", 0, this);
-		}
-
-//		this.addChildTagObject(result);
-		return result;
-	},
-
-	addSibblingTag: function _addSibblingTag(aTagName, aNameSpace, aValue)
-	{
-		if (aNameSpace) {
-			var nameSpace = aNameSpace;
-		}
-		else {
-			var nameSpace = "_default_";
-		}
-
-		var result = new mivIxml2jxon("<"+nameSpace+tagSeparator+aTagName+"/>", 0, null);
-		result.addToContent(aValue);
-		this._siblings.push(result);
-		//this.addToContent(result);
-		return result;
-	},
-
-	contentStr: function _contentStr()
-	{
-		if (this.content[0]) {
-			//this.logInfo("We have content getting first string record.", 2);
-			var index = 0;
-			var value = "";
-			while ((index < this.itemCount) && (value == "")) {
-				if ((typeof this.content[index] === "string") || (this.content[index] instanceof String)) {
-					//this.logInfo(" @@: index:"+index+", content:"+this.content[index], 2);
-					value = this.content[index];
-				}
-				index++;
-			}
-			return value;
-		}
-		else {
-			//this.logInfo("We have no content.tagName:"+this.tagName, 2);
-			return "";
-		}
-	},
-
-	replaceFromXML: function _replaceFromXML(str, r1)
-	{
-		//this.globalFunctions.LOG("replaceFromXML: str:"+str+"|r1:"+r1);
-		var result = str;
-//try{
-		if (r1.substr(0,1) == "#") {
-			if (r1.substr(1,1) == "x") {
-				// hexadecimal
-				result = String.fromCharCode(parseInt(r1.substr(2),16))
-			}
-			else {
-				// Decimal
-				result = String.fromCharCode(parseInt(r1.substr(1),10))
-			}
-		}
-		else {
-			switch (r1) {
-			case "amp": result = "&"; break;
-			case "quot": result = '"'; break;
-			case "apos": result = "'"; break;
-			case "lt": result = "<"; break;
-			case "gt": result = ">"; break;
-			}
-		}
-//}
-//catch(exc){ this.globalFunctions.LOG("replaceFromXML: Error:"+exc);}
-		return result;
-	},
-
-	convertSpecialCharatersFromXML: function _convertSpecialCharatersFromXML(aString)
-	{
-		//this.logInfo(aString+" !! ");
-		if (!aString) return aString;
-
-		var result = aString;
-		// Convert special characters
-//try{
-		result = result.replace(/&(quot|apos|lt|gt|amp|#x[0123456789ancdefABCDEF][0123456789ancdefABCDEF]?[0123456789ancdefABCDEF]?[0123456789ancdefABCDEF]?|#[0123456789][0123456789]?[0123456789]?[0123456789]?);/g, this.replaceFromXML); 
-//} 
-//catch(exc) { this.globalFunctions.LOG("[xml2jxon] Error:"+exc + " ("+this.globalFunctions.STACKshort()+")");}
-		//this.logInfo(aString+" > "+result);
-
-		return result;
-	},
-
-	replaceToXML: function _replaceToXML(str, r1)
-	{
-		var result = str;
-		switch (r1) {
-		case "&": result = "&amp;"; break;
-		case '"': result = "&quot;"; break;
-		case "'": result = "&apos;"; break;
-		case "<": result = "&lt;"; break;
-		case ">": result = "&gt;"; break;
-		}
-
-		return result;
-	},
-	
-	convertSpecialCharatersToXML: function _convertSpecialCharatersToXML(aString)
-	{
-		//this.logInfo(aString+" !! ");
-
-		if (!aString) return aString;
-
-		var result = aString.toString();
-		// Convert special characters
-		result = result.replace(/(&|\x22|\x27|<|>)/g, this.replaceToXML);  
-		//this.logInfo(aString+" > "+result);
-
-		return result;
-	},
-
-	get value()
-	{
-		var result = this.convertSpecialCharatersFromXML(this.contentStr().toString());
-
-
-		return result;
-	},
-
-	attributesToString: function _attributesToString()
-	{
-		var result = "";
-		for (var index in this.attr) {
-				result += " "+index + '="'+this.attr[index]+'"';
-		}
-		return result;
-	},
-
-	nameSpacesToString: function _nameSpacesToString()
-	{
-		var result = "";
-		for (var index in this.nameSpaces) {
-			if (index == "_default_") {   
-				result += ' xmlns="'+this.nameSpaces[index]+'"';
-			}
-			else {
-				result += " xmlns:"+index+'="'+this.nameSpaces[index]+'"';
-			}
-		}
-		return result;
-	},
-
-	toString: function _toString(parentNameSpace)
-	{
-		//this.logInfo(this.tagName+":toString", 2);
-		var nameSpaces = this.nameSpacesToString();
-		var result = "";
-		var contentCount = 0;
-		for (var index in this.content) {
-			contentCount++;
-			if ((this.content[index] instanceof Ci.mivIxml2jxon) || (this.content[index] instanceof mivIxml2jxon)) {
-
-				//this.logInfo(this.tagName+":Found object at content index '"+index+"'.", 2);
-				result += this.content[index].toString(nameSpaces);
-			}
-			else {
-				if ((typeof this.content[index] === "string") || (this.content[index] instanceof String)) {
-					//this.logInfo(this.tagName+":Found string at content index '"+index+"'.", 2);
-					result += this.content[index];
-				}
-				else {
-					//this.logInfo(this.tagName+":Found UNKNOWN at content index '"+index+"'.", 2);
-				}
-			}
-		}
-
-		if ((parentNameSpace) && (nameSpaces == parentNameSpace)) {
-			nameSpaces = "";
-		}
-
-		var attributes = this.attributesToString();
-
-		var nameSpace = this.nameSpace;
-		if (nameSpace == "_default_") {
-			nameSpace = "";
-		}
-		else {
-			nameSpace += tagSeparator;
-		}
-
-		if (contentCount == 0) {
-			result = "<"+nameSpace+this.tagName+attributes+nameSpaces+"/>";
-		}
-		else {
-			result = "<"+nameSpace+this.tagName+attributes+nameSpaces+">" + result + "</"+nameSpace+this.tagName+">";
-		}
-
-		for each(var sibling in this._siblings) {
-			result = result + sibling.toString();
-		}
-
-		return result;
-	},
-
-	convertComparisonPart: function _convertComparisonPart(aPart)
-	{
-		//this.logInfo(" == convertComparisonPart:"+aPart,2);
-		var result = new Array();
-		if ((aPart.substr(0,1) == "/") || (aPart.substr(0,1) == ".") || (aPart.substr(0,1) == "@")) {
-			// Left side is a XPath query.
-			//this.logInfo("  convertComparisonPart: this is a XPath query 1. aPart:"+aPart,2);
-			result = this.XPath(aPart);
-		}
-		else {
-			// Left side is a number or string.
-			var result = new Array();
-			if ( (aPart.substr(0,1) == "'") || (aPart.substr(0,1) == '"')) {
-				result.push(new String(aPart.substr(1,aPart.length-2)));
-			}
-			else {
-				if (isNaN(aPart)) {
-					//this.logInfo("  convertComparisonPart: this is a XPath query 2. aPart:"+aPart,2);
-					result = this.XPath(aPart);
-				}
-				else {
-					result.push(Number(aPart));
-				}
-			}
-		}
-		return result;
-	},
-
-	if: function _if(aCondition)
-	{
-		var level = 0;
-
-		//this.logInfo("if: aCondition:"+aCondition, level);
-
-		var tmpCondition = this.trim(aCondition);
-
-		var compareList = new Array();
-		while (tmpCondition != "") {
-			var startPos = 0;
-			var weHaveSubCondition = false;
-
-			if (tmpCondition.substr(0,1) == "(") {
-				//this.logInfo("if: found opening round bracker.", level);
-				var subCondition = this.globalFunctions.splitOnCharacter(tmpCondition.substr(1), 0, ")");
-				//this.logInfo("if: subCondition:"+subCondition, level);
-				if (subCondition) {
-					startPos = subCondition.length;
-					weHaveSubCondition = true;
-				}
-				else {
-					throw "XPath error: Did not find closing round bracket '"+this.tagName+"' for condition:"+aCondition;
-				}
-			}
-
-			var splitPart = this.globalFunctions.splitOnCharacter(tmpCondition.toLowerCase(), startPos, [" and ", " or "]);
-
-			var operator = null;
-			var comparison = null;
-			if (splitPart) {
-				splitPart = tmpCondition.substr(0, splitPart.length);
-				tmpCondition = tmpCondition.substr(splitPart.length + 1);
-
-				// Findout which operator was specified.
 			
-				if (tmpCondition.substr(0,1) == "a") {
-					//this.logInfo("if: found 'and' operator.", level);
-					var operator = "and";
-					tmpCondition = tmpCondition.substr(4);
-				}
-				else {
-					//this.logInfo("if: found 'or' operator.", level);
-					var operator = "or";
-					tmpCondition = tmpCondition.substr(3);
-				}
-			}
-			else {
-				splitPart = tmpCondition;
-				tmpCondition = "";
-			}
-			//this.logInfo(" == splitPart:"+splitPart+", subCondition:"+subCondition+", tmpCondition="+tmpCondition, level);
-
-			// Findout which comparison is requested.
-			if (weHaveSubCondition) {
-				//this.logInfo("--Add compare: left:'"+subCondition+"', right:'', operator:"+operator+", comparison:"+comparison, level);
-				compareList.push( { left: subCondition, right: "", operator: operator, comparison: comparison, subCondition: subCondition} );
-			}
-			else {
-				var splitPart2 = this.globalFunctions.splitOnCharacter(splitPart, 0, ["!=", "<=", ">=", "<", "=", ">"]);
-				if (splitPart2) {
-					// Get comparison type
-					var smallerThen = false;
-					var equalTo = false;
-					var biggerThen = false;
-					var splitPos2 = splitPart2.length;
-					switch (splitPart.substr(splitPos2, 1)) {
-						case "!" : 
-							comparison = "!=";
-							break;
-						case "<" : 
-							comparison = "<";
-							if (splitPart.substr(splitPos2+1, 1) == "=") comparison = "<="; 
-							break;
-						case "=" : 
-							comparison = "="; 
-							break;
-						case ">" : 
-							comparison = ">";
-							if (splitPart.substr(splitPos2+1, 1) == "=") comparison = ">="; 
-							break;
-					}
-					//this.logInfo("--Add compare: left:'"+this.trim(splitPart2)+"', right:'"+this.trim(splitPart.substr(splitPart2.length+comparison.length))+"', operator:"+operator+", comparison:"+comparison, level);
-					compareList.push( { left: this.trim(splitPart2), right: this.trim(splitPart.substr(splitPart2.length+comparison.length)), operator: operator, comparison: comparison, subCondition: subCondition} );
-				}
-				else {
-					//this.logInfo("--Add compare: left:'"+this.trim(splitPart)+"', right:'', operatoroperatorcomparison:"+comparison, level);
-					compareList.push( { left: this.trim(splitPart), right: "", operator: operator, comparison: comparison, subCondition: subCondition} );
+		}
+		if (this.content) {
+			for (let index in this.content) {
+				cc++;
+				if ((typeof this.content[index] === "string") || (this.content[index] instanceof String)) {
+					r += this.content[index];
 				}
 			}
 		}
-
-		var totalResult = true;
-		var lastOperator = null;
-		for (var index in compareList) {
-			
-			var tmpResult = false;
-
-			if (compareList[index].subCondition) {
-				//dump(" ------------------------------------1"+"\n");
-				tmpResult = this.if(compareList[index].left);
-			}
-			else {
-				//dump(" ------------------------------------2: compareList[index].left:"+compareList[index].left+", compareList[index].right:"+compareList[index].right+"\n");
-				var tmpLeft = this.convertComparisonPart(compareList[index].left);
-				var tmpRight = this.convertComparisonPart(compareList[index].right);
-
-				if (tmpLeft.length > 0) {
-					//this.logInfo("tmpLeft.length:"+tmpLeft.length,level);
-					if (compareList[index].comparison) {
-						// Filter out ony the valid ones.
-						if (tmpRight.length > 0) {
-							//this.logInfo("tmpRight.length:"+tmpRight.length,level);
-							//this.logInfo("Going to match found results to compare function",level);
-							var x = 0;
-							tmpResult = false;
-							while ((x < tmpLeft.length) && (!tmpResult)) {
-
-								if ((typeof tmpLeft[x] === "string") || (tmpLeft[x] instanceof String) || (typeof tmpLeft[x] === "number")) {
-									//this.logInfo("  ** a", level);
-									var evalConditionLeft = tmpLeft[x].toString();
-								}
-								else {
-									//this.logInfo("  ** b", level);
-									var evalConditionLeft = tmpLeft[x].value.toString();
-								}
-
-								var y = 0;
-								while ((y < tmpRight.length) && (!tmpResult)) {
-
-									if ((typeof tmpRight[y] === "string") || (tmpRight[y] instanceof String) || (typeof tmpRight[y] === "number")) {
-										//this.logInfo("  ** c", level);
-										var evalConditionRight = tmpRight[y].toString();
-									}
-									else {
-										this.logInfo("  ** d", level);
-										var evalConditionRight = tmpRight[y].value.toString();
-									}
-
-									//dump(" +++ Going to compare:'"+evalConditionLeft+compareList[index].comparison+evalConditionRight+"'"+"\n");
-									//dump("   + typeof evalConditionLeft:"+typeof evalConditionLeft+"\n");
-									//dump("   + typeof evalConditionRight:"+typeof evalConditionRight+"\n");
-									switch (compareList[index].comparison) {
-									case "!=":
-										tmpResult = (evalConditionLeft != evalConditionRight);
-										break;
-									case "<=":
-										tmpResult = (evalConditionLeft <= evalConditionRight);
-										break;
-									case ">=":
-										tmpResult = (evalConditionLeft >= evalConditionRight);
-										break;
-									case "<":
-										tmpResult = (evalConditionLeft < evalConditionRight);
-										break;
-									case "=":
-										tmpResult = (evalConditionLeft==evalConditionRight);
-										break;
-									case ">":
-										tmpResult = (evalConditionLeft > evalConditionRight);
-										break;
-									}
-									//dump("   + tmpResult:"+tmpResult+"\n");
-
-									y++;
-								}
-								x++;
-							}
-						}
-					}
-					else {
-						// Return all results.
-						tmpResult = true;
-					}
-				}
-				else {
-					tmpResult = false;
-				}
-
-				tmpLeft = null;
-				tmpRight = null;
-			}
-
-			//this.logInfo(" @@@@@@@@@@@@ -------- MATCHFOUND["+index+"]:"+tmpResult+" ---------- @@@@@@@@@@@@@", level);
-			switch (lastOperator) {
-			case "and":
-				totalResult = (totalResult && tmpResult);
-				break;
-			case "or":
-				totalResult = (totalResult || tmpResult);
-				break;
-			case null:
-				totalResult = tmpResult;
-				break;
-			}
-			//dump("    + totalResult:"+totalResult+"\n");
-
-			if (compareList[index].operator) {
-				if ((compareList[index].operator == "and") && (!totalResult)) { // We are done false is the endresult.
-					return false;
-				}
-				if ((compareList[index].operator == "or") && (totalResult)) {// We are done true is the endresult.
-					return true;
-				}
-			}
-
-			lastOperator = compareList[index].operator;
-			//this.logInfo(" @@@@@@@@@@@@ -------- totalResult["+index+"]:"+totalResult+" ---------- @@@@@@@@@@@@@", level);
-		}
-
-		return totalResult;
-	},
-
-	realTagName: function _realTagName(aCurrentTagName)
-	{
-		var result = aCurrentTagName;
-		var tmpAlias = "_default_";
-		var tmpTagName = "";
-		var aliasPos = aCurrentTagName.indexOf(tagSeparator);
-		if (aliasPos > -1) {
-			tmpAlias = aCurrentTagName.substr(0,aliasPos);
-			tmpTagName = aCurrentTagName.substr(aliasPos+1);
+		if ((a) && (nss == a)) {nss = "";}
+		var at = this.attributesToString();
+		var ns = this.nameSpace;
+		if (ns == "_default_") {ns = "";}
+		else {ns += tsep;}
+		if (cc == 0) {
+			r = "<"+ns+this.tagName+at+nss+"/>";
 		}
 		else {
-			tmpTagName = aCurrentTagName;
+			r = "<"+ns+this.tagName+at+nss+">" + r + "</"+ns+this.tagName+">";
 		}
-		var newNameSpace = this.getNameSpace(tmpAlias);
-		if (newNameSpace) {
-			result = newNameSpace + tagSeparator + tmpTagName;
-		}
-
-		return result;
+		for each(let s in this._siblings) {r = r + s.toString();}
+		return r;
 	},
-
-	XPath: function XPath(aPath)
-	{
-		//this.logInfo("XPath:"+aPath,0);
+	realTagName: function _realTagName(a){
+		var r = a;
+		var ta = "_default_";
+		var tn = "";
+		var ap = a.indexOf(tsep);
+		if (ap > -1) {
+			ta = a.substr(0,ap);
+			tn = a.substr(ap+1);
+		}
+		else {tn = a;}
+		var ns = this.getNameSpace(ta);
+		if (ns) {r = ns + tsep + tn;}
+		return r;
+	},
+	XPath: function XPath(aPath){
 		var tmpPath = aPath;
-		var result = new Array();
+		var result = [];
+		if (tmpPath[0] == "/") {tmpPath = tmpPath.substr(1);}
 
-		if (tmpPath.substr(0, 1) == "/") {
-			tmpPath = tmpPath.substr(1);
-		}
-
-		switch (tmpPath.substr(0,1)) {
+		switch (tmpPath[0]) {
 		case "/" : // Find all elements by specified element name
-			var allTag = this.globalFunctions.splitOnCharacter(tmpPath.substr(1), 0, ["/", "["]);
-			if (!allTag) {
-				allTag = tmpPath.substr(1);
-			}
-
-			//this.logInfo(" @@ allTag="+allTag, 2);
-
-			for (var index in this.tags) {
-				if (index.indexOf(tagSeparator) > -1) {
-					result.push(this.tags[index]);
-				}
-			}
+			var allTag = splitOnCharacter(tmpPath.substr(1), 0, ["/", "["]);
+			if (!allTag) {allTag = tmpPath.substr(1);}
+			for (let index in this.tags) {result.push(this.tags[index]);}
 			tmpPath = "/"+tmpPath;
 			break;
-
 		case "@" : // Find attribute within this element
-			//this.logInfo("Attribute search:"+tmpPath+" in tag '"+this.tagName+"'", 0);
-			if (this.attr[tmpPath.substr(1)]) {
-				//this.logInfo("  --==--:"+this[tmpPath], 0);
-				result.push(this.attr[tmpPath.substr(1)]);
-			}
+			if (this.attr[tmpPath.substr(1)]) {result.push(this.attr[tmpPath.substr(1)]);}
 			tmpPath = "";
 			break;
-
 		case "*" : // Wildcard. Will parse all children.
 			tmpPath = tmpPath.substr(1);
-			for (var index in this.tags) {
+			for (let index in this.tags) {
+				let tmpTagName = "";
+				var tmpIsArray = isArray(this.tags[index]);
+				if (tmpIsArray) {tmpTagName = this.tags[index][0].tagName;}
+				else {tmpTagName = this.tags[index].tagName;}
 
-				if ((this.tags[index]) && (index.indexOf(tagSeparator) > -1)) {
-					var tmpTagName = "";
-					var tmpIsArray = isArray(this.tags[index]);
-					if (tmpIsArray) {
-						tmpTagName = this.tags[index][0].tagName;
-					}
-					else {
-						tmpTagName = this.tags[index].tagName;
-					}
-
-					if (tmpTagName != this.tagName) {
-						//this.logInfo(" -- tag:"+index, 2);
-						if (tmpIsArray) {
-							for (var index2 in this.tags[index]) {
-								result.push(this.tags[index][index2]);
-							}
-						}
-						else {
-							result.push(this.tags[index]);
-						}
-					}
-					
+				if (tmpTagName != this.tagName) {
+					if (tmpIsArray) {for (let index2 in this.tags[index]) {result.push(this.tags[index][index2]);}}
+					else {result.push(this.tags[index]);}
 				}
-
 			}
 			break;
-
 		case "[" : // Compare/match function
-			//this.logInfo("Requested XPath contains an index, attribute or compare request.", 0);
-
-			var index = this.globalFunctions.splitOnCharacter(tmpPath.substr(1), 0, "]");
-			if (!index) {
-				throw "XPath error: Did not find closing square bracket. tagName:"+this.tagName+", tmpPath:"+tmpPath;
-			}
-
+			var index = splitOnCharacter(tmpPath.substr(1), 0, "]");
+			if (!index) {throw "XPath error: Did not find closing square bracket. tagName:"+this.tagName+", tmpPath:"+tmpPath;}
 			tmpPath = tmpPath.substr(index.length+2);
-			//dump("~ Condition: ["+index+"], tmpPath:"+tmpPath+"\n");
-
-			index = this.trim(index); 
-
+			index = trim(index); 
 			if (index != "") {
-
-				//dump("  ^ 1 Going to see what condition we have. index="+index+"\n");
-				if (this.if(index)) {
-					//dump(" %%%%%%%%%%%%%% -------- MATCHFOUND ---------- %%%%%%%%%%%%%%"+"\n");
-					result.push(this);
-				}
-				else {
-					//dump(" ************** -------- MATCHFOUND ---------- **************"+"\n");
-					return result;
-				}
-				//dump("  ^ 2 Going to see what condition we have. index="+index+"\n");
-
+				if (ifFunction(index, this)) {result.push(this);}
+				else {return result;}
 			}
-			else {
-				//this.logInfo("Nothing specified between the square brackets!!??",1);
-				throw "XPath compare error:No Value between square brackets:"+this.tagName+"["+index+"]";
-			}
+			else {throw "XPath compare error:No Value between square brackets:"+this.tagName+"["+index+"]";}
 			break;
-
 		default:
 			var bracketPos = tmpPath.indexOf("[");
 			var forwardSlashPos = tmpPath.indexOf("/");
 			var splitPos = tmpPath.length;
-			if ((bracketPos < splitPos) && (bracketPos > -1)) {
-				splitPos = bracketPos;
-			}
-			if ((forwardSlashPos < splitPos) && (forwardSlashPos > -1)) {
-				splitPos = forwardSlashPos;
-			}
-
+			if ((bracketPos < splitPos) && (bracketPos > -1)) {splitPos = bracketPos;}
+			if ((forwardSlashPos < splitPos) && (forwardSlashPos > -1)) {splitPos = forwardSlashPos;}
 			var tmpPath2 = tmpPath.substr(0, splitPos);
 			tmpPath = tmpPath.substr(splitPos);
-
 			if (tmpPath2 != "") {
-
-				tmpPath2 = this.realTagName(tmpPath2);
-
-				//this.logInfo("We will check if specified element '"+tmpPath2+"' exists as child in '"+this.tagName+"'", 0);
-				for (var index in this.tags) {
-					if (index.indexOf(tagSeparator) > -1) {
-						//this.logInfo(" %%:"+index, 2);
-
-						var realIndex = index;
-						if (realIndex != tmpPath2) {
-							if ((this.tags[index] instanceof Ci.mivIxml2jxon) || (this.tags[index] instanceof mivIxml2jxon)) {
-								// this[index] is an xml2jxon object.
-								realIndex = this.tags[index].realTagName(index);
-							}
-							else {
-								if (isArray(this.tags[index])) {
-									// this[index] is an array of xml2jxon objects. We pick the first
-									var arrayIndex = 0;
-									var continueArray = true;
-									while ((arrayIndex < this.tags[index].length) && (continueArray)) {
-										if ((this.tags[index][arrayIndex] instanceof Ci.mivIxml2jxon) || (this.tags[index][arrayIndex] instanceof mivIxml2jxon)) {
-											realIndex = this.tags[index][arrayIndex].realTagName(index);
-											continueArray = false;
-										}
-										arrayIndex++;
-									}
-								}
-							}
-						}
-
-						if (realIndex == tmpPath2) {
-							if (isArray(this.tags[index])) {
-								//this.logInfo(" ^^ found tag:"+index+" and is an array with "+this[index].length+" elements.", 2);
-								for (var index2 in this.tags[index]) {
-									result.push(this.tags[index][index2]);
-								}
-							}
-							else {
-								//this.logInfo(" ^^ found tag:"+index, 2);
-								result.push(this.tags[index]);
-							}
-						}
-					}
-				}
-
+				var equalTags = this.getTags(tmpPath2);
+				for (let index in equalTags) {result.push(equalTags[index]);}
 			}
-
-		} // End of switch
-
-			//this.logInfo("tmpPath:"+tmpPath+", result.length="+result.length,2);
+		}
 		if ((result.length > 0) && (tmpPath != "")) {
-			//this.logInfo("tmpPath:"+tmpPath,2);
-			var finalResult = new Array();
-			for (var index in result) {
-
-				if ((typeof result[index] === "string") || (result[index] instanceof String)) {
-					finalResult.push(result[index]);
-				}
+			var finalResult = [];
+			for (let index in result) {
+				if ((typeof result[index] === "string") || (result[index] instanceof String)) {finalResult.push(result[index]);}
 				else {
 					if (isArray(result[index])) {
-						for (var index2 in result[index]) {
-							//this.logInfo("~~a:"+result[index][index2].tagName, 2);
-							var tmpResult = result[index][index2].XPath(tmpPath);
+						for (let index2 in result[index]) {
+							let tmpResult = result[index][index2].XPath(tmpPath);
 							if (tmpResult) {
-								for (var index3 in tmpResult) {
+								for (let index3 in tmpResult) {
 									finalResult.push(tmpResult[index3]);
 									tmpResult[index3] = null;
 								}
@@ -1102,11 +535,9 @@ mivIxml2jxon.prototype = {
 						}
 					}
 					else {
-						//this.logInfo("~~aa:index:"+index, 2);
-						//this.logInfo("~~ab:"+result[index].tagName, 2);
-						var tmpResult = result[index].XPath(tmpPath);
+						let tmpResult = result[index].XPath(tmpPath);
 						if (tmpResult) {
-							for (var index2 in tmpResult) {
+							for (let index2 in tmpResult) {
 								finalResult.push(tmpResult[index2]);
 								tmpResult[index2] = null;
 							}
@@ -1119,11 +550,10 @@ mivIxml2jxon.prototype = {
 		}
 		else {
 			if ((tmpPath != "") && (tmpPath.substr(0,2) != "//")) {
-				var finalResult = new Array();
-				//this.logInfo("~~b:"+this.tagName, 2);
-				var tmpResult = this.XPath(tmpPath);
+				var finalResult = [];
+				let tmpResult = this.XPath(tmpPath);
 				if (tmpResult) {
-					for (var index2 in tmpResult) {
+					for (let index2 in tmpResult) {
 						finalResult.push(tmpResult[index2]);
 						tmpResult[index2] = null;
 					}
@@ -1132,18 +562,13 @@ mivIxml2jxon.prototype = {
 				result = finalResult;
 			}
 		}
-
-			//this.logInfo("@@ tmpPath:"+tmpPath+", tag:"+this.tagName+", allTag:"+allTag+", result.length="+result.length,2);
 		if ((tmpPath != "") && (tmpPath.substr(0,2) == "//") && (this.tags[allTag]) && (this.tagName == this.tags[allTag].tagName)) {
-			//this.logInfo(" !!:tag:"+this.tagName, 2);
-dump("3. !!??\n");
-			tmpPath = tmpPath.substr(1); // We remove one of double forward slash so it becomes a normal xpath and filtering will take place.
+			tmpPath = tmpPath.substr(1);
 			if ((tmpPath != "") && (tmpPath.substr(0,2) != "//")) {
-				var finalResult = new Array();
-				//this.logInfo("~~c:"+this.tagName, 2);
-				var tmpResult = this.XPath(tmpPath);
+				var finalResult = [];
+				let tmpResult = this.XPath(tmpPath);
 				if (tmpResult) {
-					for (var index2 in tmpResult) {
+					for (let index2 in tmpResult) {
 						finalResult.push(tmpResult[index2]);
 						tmpResult[index2] = null;
 					}
@@ -1151,331 +576,332 @@ dump("3. !!??\n");
 				tmpResult = null;
 				result = finalResult;
 			}
-
-//			result.push(this);
 		}
-
-		//this.logInfo("XPath return.....",2);
 		return result;
 	},
+	get lastPos(){return this._lastPos;},
+	set lastPos(aValue){this._lastPos = aValue;},
+	processXMLString: function _processXMLString(aStr, aSP, aParent){processXMLStringEXT(aStr, aSP, aParent, this);},
+}
 
-	processXMLString: function _processXMLString(aString, aStartPos, aParent)
-	{
-		//Search for Tag opening character "<"
-		if (!aString) return;
-
-		var pos = this.findCharacter(aString, aStartPos, "<");
-		var strLength = aString.length;
-
-		if (pos > -1) {
-			// Found opening character for Tag.
-			this.startPos = pos;
-			this.skipped = pos - aStartPos;
-			if ((this.skipped > 0) && (aParent)) {
-				//this.logInfo("Added content '"+aString.substr(aStartPos, this.skipped)+"' to tag '"+aParent.tagName+"'.", 2);
-				aParent.addToContent(new String(aString.substr(aStartPos, this.skipped)));
+function checkClosingElement(aStr, aPos, aXMLObject, aParent)
+{
+	var strLength = aStr.length;
+	var tmpStartPos = aPos;
+	if (aPos < strLength) {
+		var tmpPos = findCharacter(aStr, aPos, ">");
+		if (tmpPos > -1) {
+			var closingTag = aStr.substr(tmpStartPos, tmpPos-tmpStartPos);
+			var xmlnsPos = closingTag.indexOf(tsep);
+			if (xmlnsPos > -1) {
+				var nameSpace = closingTag.substr(0, xmlnsPos);
+				closingTag = closingTag.substr(xmlnsPos+1);
 			}
+			else {var nameSpace = "_default_";}
 
-			pos++;
-			// check if next character is special character "?"
-			var tmpChar = aString.substr(pos, 1);
-			if ( (pos < strLength) && (tmpChar == "?")) {
-				// found special character "?"
-				// Next four characters should be "xml " or else error.
-				pos++;
-				if (aString,substr(pos, 4) == "xml ") {
-					// We have a header.
-					var tmpPos = this.findString(aString, pos, "?>");
-					if (tmpPos == -1) {
-						throw this.xmlError(Ci.mivIxml2jxon.ERR_INVALID_SPECIAL_TAG);
-					}
-					else {
-						// found complete special tag.
-						this.isXMLHeader = true;
-						this.XMLHeader = aString.substr(this.startPos, tmpPos-this.startPos+1);
-						this.addToContent(new mivIxml2jxon(aString, tmpPos+2, this));
-						this.messageLength = tmpPos - this.startPos + 3;
-						this.closed = true; 
-						return;						
-					}
-				}
-				else {
-					// Error no valid header.
-					throw this.xmlError(Ci.mivIxml2jxon.ERR_MISSING_SPECIAL_TAG);
-				}
+			if ((aParent) && (closingTag == aParent.tagName) && (nameSpace == aParent.nameSpace)) {
+				aXMLObject.lastPos = tmpPos;
+				aXMLObject.closed = true;
+				return true;
 			}
-			else {
-				if ( (pos < strLength) && (tmpChar == "/")) {
-					// found special character "/" at start of tag
-					// this should be a closing tag.
-					pos++;
-					var tmpStartPos = pos;
-					if (pos < strLength) {
-						// We still have characters left.
-						var tmpPos = this.findCharacter(aString, pos, ">");
-						if (tmpPos > -1) {
-							// We found a closing character.
-							// Disassemble the tag. And see if it is the same tag as our parent. If so return else Error.
-							var closingTag = aString.substr(tmpStartPos, tmpPos-tmpStartPos);
-							var xmlnsPos = closingTag.indexOf(tagSeparator);
-							if (xmlnsPos > -1) {
-								var nameSpace = closingTag.substr(0, xmlnsPos);
-								closingTag = closingTag.substr(xmlnsPos+1);
-							}
-							else {
-								var nameSpace = "_default_";
-							}
-
-							if ((aParent) && (closingTag == aParent.tagName) && (nameSpace == aParent.nameSpace)) {
-								//this.logInfo("Found closing tag '"+closingTag+"' in namespace '"+nameSpace+"'",2);
-								this.lastPos = tmpPos;
-								this.closed = true;
-								return;
-							}
-							else {
-								//this.logInfo("Found closing tag '"+closingTag+"' in namespace '"+nameSpace+"' but expected tag '"+aParent.tagName+"' in namespace '"+aParent.nameSpace+"'",1);
-								throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG);
-							}
-						}
-						else {
-							throw this.xmlError(Ci.mivIxml2jxon.ERR_INVALID_TAG);
-						}
-					}
-					else {
-						// No more characters left in aString.
-						throw this.xmlError(Ci.mivIxml2jxon.ERR_INVALID_TAG);
-					}
-				}
-				else {
-					// did not find special character or aString is not long enough.
-					if (pos < strLength) {
-						// We still have characters left.
-						var tmpPos = this.findCharacter(aString, pos, ">");
-						if (tmpPos > -1) {
-							// We found a closing character.
-							// Disassemble the tag. And process the content.
-						
-							// get tag name.
-							var tmpStart = this.startPos + 1;
-							this.tagName = "";
-							tmpChar = aString.substr(tmpStart,1);
-							while ((tmpStart < strLength) && (tmpChar != ">") && 
-								(tmpChar != "/") && (!(isInList(specialChars1,tmpChar)))) {
-								this.tagName = this.tagName + tmpChar;
-								tmpStart++;
-								tmpChar = aString.substr(tmpStart,1);
-							}
-
-							var xmlnsPos = this.tagName.indexOf(tagSeparator);
-							if (xmlnsPos > -1) {
-								this.nameSpace = this.tagName.substr(0, xmlnsPos);
-								this.tagName = this.tagName.substr(xmlnsPos+1);
-							}
-							else {
-								this.nameSpace = "_default_";
-							}
-							//this.logInfo("Found opening tag '"+this.tagName+"' in xml namespace '"+this.nameSpace+"'",2);
-							if (aParent) {
-								aParent.addChildTagObject(this);
-							}
-
-							if ((tmpStart < strLength) && (tmpChar == "/")) {
-								//this.logInfo("a. Found close character '/' at end of opening tag.",2); 
-								this.messageLength = tmpStart - this.startPos + 2;
-								this.lastPos = tmpStart+1;
-								return;
-							}
-							else {
-								if ((tmpStart < strLength) && (isInList(specialChars1,tmpChar))) {
-									//this.logInfo("Found special character. There are attributes.",2); 
-
-									// get attributes &
-									// get namespaces
-									var attribute = "";
-									var attributes = [];
-									tmpStart++;
-									tmpChar = aString.substr(tmpStart,1);
-									var quoteOpen = false;
-									var seenAttributeSeparator = false;
-									var quoteChar = "";
-									while ((tmpStart < strLength) && 
-										(((tmpChar != ">") && (tmpChar != "/")) || (quoteOpen)) ) {
-
-										attribute = attribute + tmpChar;
-
-										if ((!seenAttributeSeparator) && (tmpChar == "=") && (!quoteOpen)) {
-											//this.logInfo("seenAttributeSeparator: pos:"+tmpStart+", attribute:"+attribute,2);
-											seenAttributeSeparator = true;
-										}
-										else {
-											if (seenAttributeSeparator) {
-//												if (((tmpChar == '"') || (tmpChar == "'")) && (seenAttributeSeparator)) {
-												if ((tmpChar == '"') || (tmpChar == "'")) {
-													if ((!quoteOpen) || ((quoteOpen) && (quoteChar == tmpChar))) {
-														quoteOpen = !quoteOpen;
-														if (quoteOpen) {
-															//this.logInfo("Found opening quote:"+tmpStart,2);
-															quoteChar = tmpChar;
-														}
-/* Removed it from the code for performance														else {
-															//this.logInfo("Found closing quote:"+tmpStart,2);
-														}*/
-													}
-												}
-											}
-										}
-
-										tmpStart++;
-										tmpChar = aString.substr(tmpStart,1);
-
-										if ((seenAttributeSeparator) && (tmpStart < strLength) && (isInList(specialChars1,tmpChar)) && (!quoteOpen)) {
-											//this.logInfo("a. Found attribute '"+attribute+"' for tag '"+this.tagName+"'",2);
-											attributes.push(attribute);
-											this.explodeAttribute(attribute);
-											attribute = "";
-											seenAttributeSeparator = false;
-											tmpStart++;
-											tmpChar = aString.substr(tmpStart,1);
-										}
-									}
-
-									if ((seenAttributeSeparator) && (!quoteOpen) && (tmpStart < strLength) && (attribute.length > 0)) {
-										//this.logInfo("b. Found attribute '"+attribute+"' for tag '"+this.tagName+"'",2);
-										attributes.push(attribute);
-										this.explodeAttribute(attribute);
-										seenAttributeSeparator = false;
-										attribute = "";
-									}
-/* Removed it from the code for performance									else {
-										if ((!seenAttributeSeparator) && (tmpStart < strLength) && (attribute.length > 0)) {
-											// We might have hit some blank space.
-											// For now do nothing with it.
-										}
-									}*/
-
-									if ((tmpStart < strLength) && (tmpChar == "/")) {
-										// Found opening tag with attributes which is also closed.
-										//this.logInfo("b. Found close character '/' at end of opening tag.",2); 
-										this.messageLength = tmpStart - this.startPos + 2;
-										this.lastPos = tmpStart+1;
-										return;
-									}
-									else {
-										if (!((tmpStart < strLength) && (tmpChar == ">"))) {
-											// Found opening tag with attributes.
-//										}
-//										else {
-											// Found opening tag but is not closed and we reached end of string.
-											throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG);
-										}
-									}
-
-								}
-								else {
-									if (!((tmpStart < strLength) && (tmpChar == ">"))) {
-										// Found opening tag without attributes and not a closing character '/'
-//									}
-//									else {
-										// Found opening tag but is not closed and we reached end of string.
-										throw this.xmlError(Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG);
-									}
-								}
-						
-							}
-
-
-							var tmpChild = null;
-							while ((!tmpChild) || (!tmpChild.closed)) {
-								//this.logInfo("Going to proces content of tag '"+this.tagName+"'.startPos:"+this.startPos+", messageLength:"+this.messageLength, 2);
-								tmpChild = new mivIxml2jxon(aString, tmpPos+1, this);
-								this.messageLength = tmpChild.lastPos - this.startPos + 1;
-								tmpPos = tmpChild.lastPos;
-
-							}
-							this.lastPos = tmpPos;
-
-							
-						}
-						else {
-							throw this.xmlError(Ci.mivIxml2jxon.ERR_INVALID_TAG);
-						}
-					}
-					else {
-						// No more characters left in aString.
-						throw this.xmlError(Ci.mivIxml2jxon.ERR_INVALID_TAG);
-					}
-				}
-			}
+			else {throw Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG;}
 		}
-		else {
-			// Did not find opening character for Tag.
-			// We stop here.
-			if (aParent) {
-				//this.logInfo(" =======++++++++++");
-				aParent.addToContent(new String(aString));
-				aParent.messageLength = aParent.messageLength+aString.length; 
+		else {throw Ci.mivIxml2jxon.ERR_INVALID_TAG;}
+	}
+	else {throw Ci.mivIxml2jxon.ERR_INVALID_TAG;}
+}
+
+function hasXMLHeader(aStr, aSP)
+{
+	if (!aStr) return 0;
+
+	var pos = findCharacter(aStr, aSP, "<");
+	var strLength = aStr.length;
+	if (pos > -1) {
+		pos++;
+		var tc = aStr[pos];
+
+		if ( (pos < strLength) && (tc == "?")) {
+			pos++;
+			if (aStr.substr(pos, 4) == "xml ") {
+				var tmpPos = findString(aStr, pos, "?>");
+				if (tmpPos == -1) {throw Ci.mivIxml2jxon.ERR_INVALID_SPECIAL_TAG;}
+				else {
+					return (tmpPos+2);						
+				}
 			}
-			this.lastPos = aString.length - 1;
+			else {throw Ci.mivIxml2jxon.ERR_MISSING_SPECIAL_TAG;}
+		}
+	}
+	return 0;
+}
+
+function processXMLStringEXT(aStr, aSP, aParent, aXMLObject)
+{
+	if (!aStr) return;
+try{
+	var tmpSP = aSP;
+	var xmlHeaderPos = hasXMLHeader(aStr, aSP);
+	if (xmlHeaderPos > 0) {
+		//dump("We have an XML header. Going to strip it.\n");
+		tmpSP = xmlHeaderPos;
+	}
+
+	var pos = findCharacter(aStr, tmpSP, "<");
+	var strLength = aStr.length;
+	if (pos > -1) {
+		aXMLObject.startPos = pos;
+		let skipped = pos - tmpSP;
+		if ((skipped > 0) && (aParent)) {
+			aParent.addToContent(aStr.substr(tmpSP, skipped));
+		}
+		pos++;
+		var tc = aStr[pos];
+
+		if ( (pos < strLength) && (tc == "/")) {
+			pos++;
+			checkClosingElement(aStr, pos, aXMLObject, aParent);
 			return;
 		}
+		else {if (pos < strLength) {
+				var tmpPos = findCharacter(aStr, pos, ">");
+				if (tmpPos > -1) {
+					var tmpStart = aXMLObject.startPos + 1;
+					let tmpTagName = "";
+					tc = aStr[tmpStart];
+					while ((tmpStart < strLength) && (tc != ">") && 
+						(tc != "/") && (!(isInList(specialChars1,tc)))) {
+						tmpTagName = tmpTagName + tc;
+						tmpStart++;
+						tc = aStr[tmpStart];
+					}
+					var xmlnsPos = tmpTagName.indexOf(tsep);
+					if (xmlnsPos > -1) {
+						aXMLObject.nameSpace = tmpTagName.substr(0, xmlnsPos);
+						tmpTagName = tmpTagName.substr(xmlnsPos+1);
+					}
+					else {aXMLObject.nameSpace = "_default_";}
+					aXMLObject.tagName = tmpTagName;
+					if (aParent) {aParent.addChildTagObject(aXMLObject);}
+					if ((tmpStart < strLength) && (tc == "/")) {
+						aXMLObject.lastPos = tmpStart+1;
+						return;
+					}
+					else {if ((tmpStart < strLength) && (isInList(specialChars1,tc))) {
+							var attribute = "";
+							tmpStart++;
+							tc = aStr[tmpStart];
+							var quoteOpen = false;
+							var seenAttributeSeparator = false;
+							var quoteChar = "";
+							while ((tmpStart < strLength) && 
+								(((tc != ">") && (tc != "/")) || (quoteOpen)) ) {
+								attribute = attribute + tc;
+								if ((!seenAttributeSeparator) && (tc == "=") && (!quoteOpen)){seenAttributeSeparator = true;}
+								else {if (seenAttributeSeparator) {
+										if ((tc == '"') || (tc == "'")) {
+											if ((!quoteOpen) || ((quoteOpen) && (quoteChar == tc))) {
+												quoteOpen = !quoteOpen;
+												if (quoteOpen) {quoteChar = tc;}
+											}
+										}
+									}
+								}
+								tmpStart++;
+								tc = aStr[tmpStart];
+								if ((seenAttributeSeparator) && (tmpStart < strLength) && (isInList(specialChars1,tc)) && (!quoteOpen)) {
+									aXMLObject.explodeAttribute(attribute);
+									attribute = "";
+									seenAttributeSeparator = false;
+									tmpStart++;
+									tc = aStr[tmpStart];
+								}
+							}
+							if ((seenAttributeSeparator) && (!quoteOpen) && (tmpStart < strLength) && (attribute.length > 0)) {
+								aXMLObject.explodeAttribute(attribute);
+								seenAttributeSeparator = false;
+								attribute = "";
+							}
+							if ((tmpStart < strLength) && (tc == "/")) {
+								// Found opening tag with attributes which is also closed.
+								aXMLObject.lastPos = tmpStart+1;
+								return;
+							}
+							else {if (!((tmpStart < strLength) && (tc == ">"))) {throw Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG;}}
 
-	},
+						}
+						else {if (!((tmpStart < strLength) && (tc == ">"))) {throw Ci.mivIxml2jxon.ERR_WRONG_CLOSING_TAG;}}
+					}
+					var tmpChild = null;
+					while (((!tmpChild) || (!tmpChild.closed)) && (tmpPos)) {
+						tmpChild = new mivIxml2jxon(aStr,tmpPos+1, aXMLObject);
+						tmpPos = tmpChild.lastPos;
 
-	findCharacter: function _findCharacter(aString, aStartPos, aChar)
-	{
-		if (!aString) return -1;
-
-		var pos = aStartPos;
-		var strLength = aString.length;
-		while ((pos < strLength) && (aString.substr(pos, 1) != aChar)) {
-			pos++;
+						if ((tmpChild) && (!tmpChild.closed)) {
+							if (aStr.substr(tmpPos+1, 2) == "</") {
+								checkClosingElement(aStr, tmpPos+3, tmpChild, aXMLObject);									
+								tmpPos = tmpChild.lastPos;
+							}
+						}
+					}
+					tmpChild = null;
+					aXMLObject.lastPos = tmpPos;
+				}
+				else {throw Ci.mivIxml2jxon.ERR_INVALID_TAG;}
+			}
+			else {throw Ci.mivIxml2jxon.ERR_INVALID_TAG;}
 		}
-
-		if ((pos < strLength) && (aString.substr(pos, 1) == aChar)) {
-			return pos;
+	}
+	else {
+//dump("nothing left.\n");
+		if (aParent) {
+			aParent.addToContent(aStr);
 		}
-	
-		return -1;
-	},
+		aXMLObject.lastPos = aStr.length - 1;
+		aXMLObject.closed = true;
+	}
+}
+catch(err){ dump(" !! err:"+err+"\n");}
+}
 
-	findString: function _findString(aString, aStartPos, aNeedle)
-	{
-		if (!aString) return -1;
-
-		var pos = aStartPos;
-		var strLength = aString.length;
-		var needleLength = aNeedle.length;
-		while ((pos < strLength) && (aString.substr(pos, needleLength) != aNeedle)) {
-			pos++;
-		}
-
-		if ((pos < strLength) && (aString.substr(pos, needleLength) == aNeedle)) {
-			return pos;
-		}
-	
-		return -1;
-	},
-
-
-	logInfo: function _logInfo(message, aDebugLevel) {
-
-		return;
-
-		if (!aDebugLevel) {
-			var debugLevel = 1;
+function convertComparisonPart(a, aXMLObject){
+	var r = [];
+	var tc = a[0];
+	if ((tc == "/") || (tc == ".") || (tc == "@")) {r = aXMLObject.XPath(a);}
+	else {
+		r = [];
+		if ( (tc == "'") || (tc == '"')) {
+			r.push(a.substr(1,a.length-2));
 		}
 		else {
-			var debugLevel = aDebugLevel;
+			if (isNaN(a)) {r = aXMLObject.XPath(a);}
+			else {r.push(Number(a));}
+		}
+	}
+	return r;
+}
+
+function ifFunction(aCondition, aXMLObject){
+	var level = 0;
+	var tmpCondition = trim(aCondition);
+	var compareList = [];
+	while (tmpCondition != "") {
+		var startPos = 0;
+		var weHaveSubCondition = false;
+		if (tmpCondition[0] == "(") {
+			var subCondition = splitOnCharacter(tmpCondition.substr(1), 0, ")");
+			if (subCondition) {
+				startPos = subCondition.length;
+				weHaveSubCondition = true;
+			}
+			else {
+				throw "XPath error: Did not find closing round bracket '"+aXMLObject.tagName+"' for condition:"+aCondition;
+			}
 		}
 
-		var prefB = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
-		var storedDebugLevel = this.globalFunctions.safeGetIntPref(prefB, "extensions.1st-setup.xml2jxon", 0, true);
-		var storedDebugLevel = 1;
-		if (debugLevel <= storedDebugLevel) {
-			this.globalFunctions.LOG("[xml2jxon] "+message + " ("+this.globalFunctions.STACKshort()+")");
-		}
-	},
+		var splitPart = splitOnCharacter(tmpCondition.toLowerCase(), startPos, [" and ", " or "]);
+		var operator = null;
+		var comparison = null;
+		if (splitPart) {
+			splitPart = tmpCondition.substr(0, splitPart.length);
+			tmpCondition = tmpCondition.substr(splitPart.length + 1);
 
+			if (tmpCondition[0] == "a") {
+				operator = "and";
+				tmpCondition = tmpCondition.substr(4);
+			}
+			else {
+				operator = "or";
+				tmpCondition = tmpCondition.substr(3);
+			}
+		}
+		else {
+			splitPart = tmpCondition;
+			tmpCondition = "";
+		}
+		if (weHaveSubCondition) {
+			compareList.push( { left: subCondition, right: "", operator: operator, comparison: comparison, subCondition: subCondition} );
+		}
+		else {
+			var splitPart2 = splitOnCharacter(splitPart, 0, ["!=", "<=", ">=", "<", "=", ">"]);
+			if (splitPart2) {
+				// Get comparison type
+				var smallerThen = false;
+				var equalTo = false;
+				var biggerThen = false;
+				var splitPos2 = splitPart2.length;
+				switch (splitPart[splitPos2]) {
+					case "!":comparison = "!=";break;
+					case "<":comparison = "<";if (splitPart[splitPos2+1] == "=") comparison = "<=";break;
+					case "=":comparison = "=";break;
+					case ">":comparison = ">";if (splitPart[splitPos2+1] == "=") comparison = ">=";break;
+				}
+				compareList.push( { left: trim(splitPart2), right: trim(splitPart.substr(splitPart2.length+comparison.length)), operator: operator, comparison: comparison, subCondition: subCondition} );
+			}
+			else {
+				compareList.push( { left: trim(splitPart), right: "", operator: operator, comparison: comparison, subCondition: subCondition} );
+			}
+		}
+	}
+	var totalResult = true;
+	var lastOperator = null;
+	for (let index in compareList) {
+		var tmpResult = false;
+		if (compareList[index].subCondition) {tmpResult = ifFunction(compareList[index].left, aXMLObject);}
+		else {
+			let tmpLeft = convertComparisonPart(compareList[index].left, aXMLObject);
+			let tmpRight = convertComparisonPart(compareList[index].right, aXMLObject);
+			if (tmpLeft.length > 0) {
+				if (compareList[index].comparison) {
+					// Filter out ony the valid ones.
+					if (tmpRight.length > 0) {
+						var x = 0;
+						tmpResult = false;
+						while ((x < tmpLeft.length) && (!tmpResult)) {
+							if ((typeof tmpLeft[x] === "string") || (tmpLeft[x] instanceof String) || (typeof tmpLeft[x] === "number")) {
+								var evalConditionLeft = tmpLeft[x].toString();
+							}
+							else {
+								var evalConditionLeft = tmpLeft[x].value.toString();
+							}
+							var y = 0;
+							while ((y < tmpRight.length) && (!tmpResult)) {
+								if ((typeof tmpRight[y] === "string") || (tmpRight[y] instanceof String) || (typeof tmpRight[y] === "number")) {
+									var evalConditionRight = tmpRight[y].toString();
+								}
+								else {var evalConditionRight = tmpRight[y].value.toString();}
+								switch (compareList[index].comparison) {
+								case "!=":tmpResult = (evalConditionLeft != evalConditionRight);break;
+								case "<=":tmpResult = (evalConditionLeft <= evalConditionRight);break;
+								case ">=":tmpResult = (evalConditionLeft >= evalConditionRight);break;
+								case "<":tmpResult = (evalConditionLeft < evalConditionRight);break;
+								case "=":tmpResult = (evalConditionLeft==evalConditionRight);break;
+								case ">":tmpResult = (evalConditionLeft > evalConditionRight);break;
+								}
+								y++;
+							}
+							x++;
+						}
+					}
+				}
+				else {tmpResult = true;}
+			}
+			else {tmpResult = false;}
+			tmpLeft = null;
+			tmpRight = null;
+		}
+		switch (lastOperator) {
+		case "and":totalResult = (totalResult && tmpResult);break;
+		case "or":totalResult = (totalResult || tmpResult);break;
+		case null:totalResult = tmpResult;break;
+		}
+		if (compareList[index].operator) {
+			if ((compareList[index].operator == "and") && (!totalResult)) {return false;}
+			if ((compareList[index].operator == "or") && (totalResult)) {return true;}
+		}
+		lastOperator = compareList[index].operator;
+	}
+	return totalResult;
 }
 
 function NSGetFactory(cid) {

@@ -21,11 +21,12 @@
 
 #include "calIItemBase.idl"
 
-interface mivIxml2jxon;
-
 [scriptable, uuid(9bc0fca0-9465-11e2-9e96-0800200c9a66)]
 interface mivExchangeBaseItem : calIItemBase
 {
+	readonly attribute boolean canDelete;
+	readonly attribute boolean canModify;
+	readonly attribute boolean canRead;
 
 	readonly attribute AUTF8String subject;
 	readonly attribute AUTF8String sensitivity;
@@ -81,18 +82,22 @@ interface mivExchangeBaseItem : calIItemBase
 
 	void cloneToCalEvent(in calIItemBase aCalEvent);
 
-	attribute mivIxml2jxon exchangeData;
-	attribute uint32_t occurrenceIndex;
-	readonly attribute mivIxml2jxon updateXML;
+	attribute jsval exchangeData;
+	attribute long occurrenceIndex;
+	readonly attribute jsval updateXML;
 
 	readonly attribute boolean nonPersonalDataChanged;
 
 	readonly attribute boolean isInvitation;
 
-	mivIxml2jxon convertToExchange(); 
+	jsval convertToExchange(); 
 
 	void addMailboxAlias(in AUTF8String aAlias);
 
 	readonly attribute AUTF8String className;
+
+	void deleteItem();
+
+	void clearId([optional] in AUTF8String newId);
 
 };

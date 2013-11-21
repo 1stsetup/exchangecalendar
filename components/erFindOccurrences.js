@@ -72,9 +72,27 @@ function erFindOccurrencesRequest(aArgument, aCbOk, aCbError, aListener)
 	this.startDate = aArgument.startDate;
 	this.endDate = aArgument.endDate;
 
+try{
+	if (!this.startDate) {
+		var monthBeforeDuration = cal.createDuration("-P4W");
+
+		this.startDate = cal.now();
+		this.startDate.addDuration(monthBeforeDuration);
+	}
+dump("  -------------->>> erFindOccurrences: this.startDate="+this.startDate+"\n");
+	if (!this.endDate) {
+		var monthAfterDuration = cal.createDuration("P4W");
+
+		this.endDate = cal.now();
+		this.endDate.addDuration(monthAfterDuration);
+	}
+dump("  -------------->>> erFindOccurrences: this.endDate="+this.endDate+"\n");
+}
+catch(err){dump(" ERROR: erFindOccurrences: err:"+err+"\n");}
+
 	this.currentSearchIndex = 1;
 	this.currentRealIndex = 0;
-	this.idGroupSize = 15; // We will request in pages of 15 occurrences of the list at once
+	this.idGroupSize = 25; // We will request in pages of 50 occurrences of the list at once
 	this.items = [];
 
 	var self = this;
@@ -124,24 +142,26 @@ erFindOccurrencesRequest.prototype = {
 			occurrenceItemID.setAttribute("RecurringMasterId", this.masterID);
 			occurrenceItemID.setAttribute("ChangeKey", this.masterChangeKey);
 			occurrenceItemID.setAttribute("InstanceIndex", this.currentSearchIndex++);
+			occurrenceItemID = null;
 		}
 
 		req.addChildTagObject(itemids);
+		itemids = null;
 
 		this.parent.xml2jxon = true;
 
-		//exchWebService.commonFunctions.LOG("erFindOccurrencesRequest.execute>"+String(this.parent.makeSoapMessage(req))+"\n");
+		//dump("erFindOccurrencesRequest.execute>"+String(this.parent.makeSoapMessage(req))+"\n");
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erFindOccurrencesRequest.onSendOk>"+String(aResp)+"\n");
+		//dump("erFindOccurrencesRequest.onSendOk>"+String(aResp)+"\n");
 		var finished = false;
 		var found = false;
 
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage");
-
 		for each (var e in rm) {
 			var responseCode = e.getTagValue("m:ResponseCode");
 			switch (responseCode) {
@@ -172,12 +192,17 @@ erFindOccurrencesRequest.prototype = {
 							break;
 						}
 					}
+					tmpItems = null;
 					break;
+				case "ErrorItemNotFound":
 				case "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange" :
 					finished = true;
 					break;
 				case "ErrorInvalidIdMalformed" :
 					this.onSendError(aExchangeRequest, this.parent.ER_ERROR_FINDOCCURRENCES_INVALIDIDMALFORMED, responseCode);
+					return;
+				default:
+					this.onSendError(aExchangeRequest, this.parent.ER_ERROR_FINDOCCURRENCES_UNKNOWN, responseCode);
 					return;
 			}
 
@@ -185,7 +210,13 @@ erFindOccurrencesRequest.prototype = {
 				break;	// break the loop
 			}
 		}
-	
+		rm = null;
+
+		// This is so we do not get in an infinite loop
+		if (this.currentSearchIndex > 20000) {
+			finished = true;
+		}
+
 		if (finished) {
 			// We found our occurrence.
 			if (this.mCbOk) {
@@ -196,6 +227,10 @@ erFindOccurrencesRequest.prototype = {
 		else {
 			// We did not find the occurrence but we did not yet hit the end of the
 			// occurrence list. Request the next page.
+			if (this.mCbOk) {
+				this.mCbOk(this, this.items);
+			}
+			this.items = [];
 			this.execute();
 		}
 	},

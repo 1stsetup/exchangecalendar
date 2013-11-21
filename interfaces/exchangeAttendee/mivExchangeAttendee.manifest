@@ -1,0 +1,5 @@
+interfaces mivExchangeAttendee.xpt
+component {0bc8c910-70f4-4c5c-a2cd-e2657ca53595} mivExchangeAttendee.js
+contract @1st-setup.nl/exchange/attendee;1 {0bc8c910-70f4-4c5c-a2cd-e2657ca53595}
+
+

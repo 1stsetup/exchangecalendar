@@ -28,4 +28,6 @@ interface mivExchangeRecurrenceInfo : calIRecurrenceInfo
 	// clone always returns a mutable event
 	//mivExchangeRecurrenceInfo clone();
 
+	AUTF8String toString();
+
 };

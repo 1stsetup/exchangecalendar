@@ -60,6 +60,17 @@ interface mivExchangeCalendar : calICalendar
 
 	readonly attribute calIDateTime offlineStartDate;
 	readonly attribute calIDateTime offlineEndDate;
+	readonly attribute unsigned long long offlineEventItemCount;
+	readonly attribute unsigned long long offlineToDoItemCount;
 
 	readonly attribute AUTF8String connectionStateDescription;
+
+	readonly attribute jsval notifyObservers;
+
+	readonly attribute boolean canCreateContent;
+	readonly attribute boolean canDelete;
+	readonly attribute boolean canRead;
+	readonly attribute boolean canModify;
+
+	void removeFile(in AUTF8String aFilename);
 };

@@ -124,11 +124,13 @@ erUpdateItemRequest.prototype = {
 
 		var itemChanges = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ItemChanges xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'">'+String(this.updateReq)+'</nsMessages:ItemChanges>');
 		req.addChildTagObject(itemChanges);
+		itemChanges = null;
 
 		this.parent.xml2jxon = true;
 
 		//exchWebService.commonFunctions.LOG("erUpdateItemRequest.execute:"+String(this.parent.makeSoapMessage(req)));
                 this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
@@ -138,12 +140,14 @@ erUpdateItemRequest.prototype = {
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:UpdateItemResponse/m:ResponseMessages/m:UpdateItemResponseMessage[@ResponseClass='Success']");
 		if (rm.length == 0) {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on sending update respons.");
+			rm = null;
 			return;
 		}
 
 		var responseCode = rm[0].getTagValue("m:ResponseCode");
 		if (responseCode != "NoError") {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on sending update respons:"+responseCode);
+			rm = null;
 			return;
 		}
 
@@ -154,8 +158,12 @@ erUpdateItemRequest.prototype = {
 		}
 		else {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_ITEM_UPDATE_UNKNOWN, "Update request was ok but we did not receive any updated item details:"+String(aResp));
+			rm = null;
+			aItem = null;
 			return;
 		}
+		rm = null;
+		aItem = null;
 
 		if (this.mCbOk) {
 			this.mCbOk(this, itemId, changeKey);
