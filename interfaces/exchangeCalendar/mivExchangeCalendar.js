@@ -3707,28 +3707,28 @@ calExchangeCalendar.prototype = {
 		};
 
 		var start = null;
-		if (aCi.getTagValue("t:StartTime", null)) {
+		if (xml2json.getTagValue(aCi, "t:StartTime", null)) {
 			if (this.isVersion2007) {
-				start = cal.fromRFC3339(aCi.getTagValue("t:StartTime", null), this.globalFunctions.ecUTC());
+				start = cal.fromRFC3339(xml2json.getTagValue(aCi, "t:StartTime", null), this.globalFunctions.ecUTC());
 			}
 			else {
-				start = cal.fromRFC3339(aCi.getTagValue("t:StartTime", null), this.globalFunctions.ecDefaultTimeZone());
+				start = cal.fromRFC3339(xml2json.getTagValue(aCi, "t:StartTime", null), this.globalFunctions.ecDefaultTimeZone());
 			}
 		}
 
 		var end = null;
-		if (aCi.getTagValue("t:EndTime", null)) {
+		if (xml2json.getTagValue(aCi, "t:EndTime", null)) {
 			if (this.isVersion2007) {
-				end = cal.fromRFC3339(aCi.getTagValue("t:EndTime", null), this.globalFunctions.ecUTC());
+				end = cal.fromRFC3339(xml2json.getTagValue(aCi, "t:EndTime", null), this.globalFunctions.ecUTC());
 			}
 			else {
-				end = cal.fromRFC3339(aCi.getTagValue("t:EndTime", null), this.globalFunctions.ecDefaultTimeZone());
+				end = cal.fromRFC3339(xml2json.getTagValue(aCi, "t:EndTime", null), this.globalFunctions.ecDefaultTimeZone());
 			}
 		}
 
 //		var start = this.tryToSetDateValue(aCi.getTagValue("t:StartTime"));
 //		var end   = this.tryToSetDateValue(aCi.getTagValue("t:EndTime"));
-		var type  = types[aCi.getTagValue("t:BusyType")];
+		var type  = types[xml2json.getTagValue(aCi, "t:BusyType")];
 		return new cal.FreeBusyInterval(aCalId, type,
 					       	  start, end);
 	},
