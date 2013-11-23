@@ -2537,19 +2537,52 @@ calExchangeCalendar.prototype = {
 		var wantTodos = ((aItemFilter & Ci.calICalendar
 			.ITEM_FILTER_TYPE_TODO) != 0);
 
-		for (var index in this.itemCacheById) {
-			if (isEvent(this.itemCacheById[index])) {
-				if ( ( (this.itemCacheById[index].startDate.compare(aRangeEnd) < 1) &&
-				      (this.itemCacheById[index].endDate.compare(aRangeStart) > -1) ) ||
-					(aExporting) ) {
-					events.push(this.itemCacheById[index]);
-				} 
+		// This is by using the this.itemCacheByStartDate and this.itemCacheByEndDate index.
+		if (wantEvents) {
+
+			var startYear = aRangeStart.year;
+			var startYearday = aRangeStart.yearday;
+
+			var endYear = aRangeEnd.year;
+			var endYearday = aRangeEnd.yearday;
+			var doStop = false;
+			var ids = {};
+			while (!doStop) {
+				if ((startYear == endYear) && (startYearday == endYearday)) {doStop = true;}
+
+				if ((this.itemCacheByStartDate) && (this.itemCacheByStartDate[startYear]) && (this.itemCacheByStartDate[startYear][startYearday])) {
+					for (var itemid in this.itemCacheByStartDate[startYear][startYearday]) {
+						ids[itemid] = true;
+					}
+				}
+				if ((this.itemCacheByEndDate) && (this.itemCacheByEndDate[startYear]) && (this.itemCacheByEndDate[startYear][startYearday])) {
+					for (var itemid in this.itemCacheByEndDate[startYear][startYearday]) {
+						ids[itemid] = true;
+					}
+				}
+
+				startYearday++;
+				if (startYearday > 366) {
+					startYear++;
+					startYearday = 1;
+				}
 			}
-			else {
-				if (isToDo(this.itemCacheById[index])) {
-					if ( ((this.itemCacheById[index].isCompleted) && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_YES)) ||
-					     ((!this.itemCacheById[index].isCompleted) && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_NO)) ) {
-						tasks.push(this.itemCacheById[index]);
+			for (var itemid in ids) {
+				if (this.itemCacheById[itemid]) {
+					if (isEvent(this.itemCacheById[itemid])) {
+						events.push(this.itemCacheById[itemid])
+					}
+				}
+			}
+		}
+		else {
+			if (wantTodos) {
+				for (var index in this.itemCacheById) {
+					if (isToDo(this.itemCacheById[index])) {
+						if ( ((this.itemCacheById[index].isCompleted) && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_YES)) ||
+						     ((!this.itemCacheById[index].isCompleted) && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_NO)) ) {
+							tasks.push(this.itemCacheById[index]);
+						}
 					}
 				}
 			}
@@ -3888,7 +3921,7 @@ calExchangeCalendar.prototype = {
 		//this.observers.notify("onEndBatch");
 
 		// Reset caches.
-		this.itemCacheById = [];
+		this.itemCacheById = {};
 
 		for (var index in this.recurringMasterCache) {
 			if (this.recurringMasterCache[index]) {
@@ -3897,7 +3930,7 @@ calExchangeCalendar.prototype = {
 				delete this.recurringMasterCache[index];
 			}
 		}
-		this.recurringMasterCache = [];
+		this.recurringMasterCache = {};
 
 		if (this.startDate) {
 			var oldBeginDate = this.startDate.clone();
@@ -7583,7 +7616,8 @@ return;
 			return;
 		}
 
-			var itemDate = item.startDate || item.entryDate;
+		var itemStartDate = item.startDate || item.entryDate;
+		var itemEndDate = item.endDate || item.dueDate;
 /*if (this.itemCacheById[item.id]) { 
 	dump("addItemToCache: item.title:"+item.title+", startDate:"+itemDate+". IS AL READY IN CACHE.\n");
 }
@@ -7591,7 +7625,24 @@ else {
 	dump("addItemToCache: item.title:"+item.title+", startDate:"+itemDate+" | "+item.id+".\n");
 }*/
 
+		// Add to Id index.
 		this.itemCacheById[item.id] = item;
+
+		// Add to startDate index.
+		if (itemStartDate) {
+			if (!this.itemCacheByStartDate) this.itemCacheByStartDate = {};
+			if (!this.itemCacheByStartDate[itemStartDate.year]) this.itemCacheByStartDate[itemStartDate.year] = {};
+			if (!this.itemCacheByStartDate[itemStartDate.year][itemStartDate.yearday]) this.itemCacheByStartDate[itemStartDate.year][itemStartDate.yearday] = [];
+			this.itemCacheByStartDate[itemStartDate.year][itemStartDate.yearday][item.id] = true;
+		}
+
+		// Add to endDate index.
+		if (itemEndDate) {
+			if (!this.itemCacheByEndDate) this.itemCacheByEndDate = {};
+			if (!this.itemCacheByEndDate[itemEndDate.year]) this.itemCacheByEndDate[itemEndDate.year] = {};
+			if (!this.itemCacheByEndDate[itemEndDate.year][itemEndDate.yearday]) this.itemCacheByEndDate[itemEndDate.year][itemEndDate.yearday] = [];
+			this.itemCacheByEndDate[itemEndDate.year][itemEndDate.yearday][item.id] = true;
+		}
 	},
 
 	removeItemFromCache: function _removeItemFromCache(item)
@@ -7601,17 +7652,39 @@ else {
 			return;
 		}
 
+		var itemStartDate = item.startDate || item.entryDate;
+		var itemEndDate = item.endDate || item.dueDate;
+		// Remove from startDate index.
+		if ((itemStartDate) && (this.itemCacheByStartDate)) {
+			if ((this.itemCacheByStartDate[itemStartDate.year]) && (this.itemCacheByStartDate[itemStartDate.year][itemStartDate.yearday])) {
+				if (this.itemCacheByStartDate[itemStartDate.year][itemStartDate.yearday][item.id]) {
+					this.itemCacheByStartDate[itemStartDate.year][itemStartDate.yearday][item.id];
+					delete this.itemCacheByStartDate[itemStartDate.year][itemStartDate.yearday][item.id];
+				}
+			}
+		}
+
+		// Remove from endDate index.
+		if ((itemEndDate) && (this.itemCacheByEndDate)) {
+			if ((this.itemCacheByEndDate[itemEndDate.year]) && (this.itemCacheByEndDate[itemEndDate.year][itemEndDate.yearday])) {
+				if (this.itemCacheByEndDate[itemEndDate.year][itemEndDate.yearday][item.id]) {
+					this.itemCacheByEndDate[itemEndDate.year][itemEndDate.yearday][item.id];
+					delete this.itemCacheByEndDate[itemEndDate.year][itemEndDate.yearday][item.id];
+				}
+			}
+		}
+
 		if (this.itemCacheById[item.id]) {
 			if (this.itemCacheById[item.id].className) {
 				this.itemCacheById[item.id].deleteItem();
 			}
 			this.itemCacheById[item.id] = null;
 			delete this.itemCacheById[item.id];
-			var itemDate = item.startDate || item.entryDate;
+//			var itemDate = item.startDate || item.entryDate;
 //dump("removeItemFromCache: item.title:"+item.title+", startDate:"+itemDate+" | "+item.id+".\n");
 		}
 		else {
-			var itemDate = item.startDate || item.entryDate;
+//			var itemDate = item.startDate || item.entryDate;
 			//dump("removeItemFromCache: item.title:"+item.title+", startDate:"+itemDate+". is not in itemCache. | "+item.id+"\n");
 		}
 	},
@@ -7656,7 +7729,7 @@ else {
 		} 
 
 		// Reset caches.
-		this.itemCacheById = [];
+		this.itemCacheById = {};
 
 		for (var index in this.recurringMasterCache) {
 			if (this.recurringMasterCache[index]) {
@@ -7666,7 +7739,7 @@ else {
 				delete this.recurringMasterCache[index];
 			}
 		} 
-		this.recurringMasterCache = [];
+		this.recurringMasterCache = {};
 
 		this.meetingRequestsCache = [];
 		this.meetingCancelationsCache = [];
