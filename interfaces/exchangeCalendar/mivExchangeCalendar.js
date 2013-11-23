@@ -327,6 +327,8 @@ try{
 	this.mPrefs = null;
 
 	this.itemCacheById = {};
+	this.itemCacheByStartDate = {};
+	this.itemCacheByEndDate = {};
 	this.recurringMasterCache = {};
 	this.newMasters = {};
 	this.parentLessItems = {};
@@ -3922,6 +3924,8 @@ calExchangeCalendar.prototype = {
 
 		// Reset caches.
 		this.itemCacheById = {};
+		this.itemCacheByStartDate = {};
+		this.itemCacheByEndDate = {};
 
 		for (var index in this.recurringMasterCache) {
 			if (this.recurringMasterCache[index]) {
@@ -7730,6 +7734,8 @@ else {
 
 		// Reset caches.
 		this.itemCacheById = {};
+		this.itemCacheByStartDate = {};
+		this.itemCacheByEndDate = {};
 
 		for (var index in this.recurringMasterCache) {
 			if (this.recurringMasterCache[index]) {
