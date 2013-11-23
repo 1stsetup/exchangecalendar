@@ -7191,6 +7191,11 @@ return;
 
 			var tmpFolderProperties = this.globalFunctions.safeGetCharPref(this.prefs,"folderProperties", null);
 			if (tmpFolderProperties) {
+				this.saveToFile("folderProperties.txt", tmpFolderProperties);
+				this.prefs.deleteBranch("folderProperties");
+			}
+
+			if (tmpFolderProperties) {
 				//if (this.debug) this.logInfo("Restore folderProperties from prefs.js:"+tmpFolderProperties);
 				var tmpXML = this.globalFunctions.xmlToJxon(tmpFolderProperties);
 				this.folderProperties = tmpXML;
@@ -7409,7 +7414,8 @@ return;
 		this.notConnected = false;
 		
 		this.folderProperties = erGetFolderRequest.properties;
-		this.prefs.setCharPref("folderProperties", this.folderProperties.toString());
+		this.saveToFile("folderProperties.txt", this.folderProperties.toString());
+		//this.prefs.setCharPref("folderProperties", this.folderProperties.toString());
 
 		this.prefs.setCharPref("lastServerVersion", this.exchangeStatistics.getServerVersion(this.serverUrl));
 		this.prefs.setCharPref("lastMajorVersion", this.exchangeStatistics.getMajorVersion(this.serverUrl));
@@ -7448,7 +7454,8 @@ return;
 				this.OnlyShowAvailability = true;
 				this.folderIsNotAvailable = true;
 				this.folderProperties = null;
-				this.prefs.deleteBranch("folderProperties");
+				//this.prefs.deleteBranch("folderProperties");
+				this.removeFile("folderProperties.txt");
 				this.readOnly = true;
 				this.getOnlyFreeBusyInformation(this.lastValidRangeStart, this.lastValidRangeEnd);
 				this.startCalendarPoller();
@@ -9013,6 +9020,7 @@ function ecObserver(inCalendar)
 
 				aCalendar.removeFile("syncState.txt");
 				aCalendar.removeFile("syncInboxState.txt");
+				aCalendar.removeFile("folderProperties.txt");
 				self.unregister();
 			}
 		},
