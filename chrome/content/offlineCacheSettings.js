@@ -85,6 +85,7 @@ exchOfflineCacheSettings.prototype = {
 			
 			this._document.getElementById("exchWebService-offlineCacheproperties-totalEventsValue").value=aCalendar.offlineEventItemCount;
 			this._document.getElementById("exchWebService-offlineCacheproperties-totalTasksValue").value=aCalendar.offlineToDoItemCount;
+			this._document.getElementById("exchWebService-memoryCache-totalItems").value=aCalendar.memoryCacheItemCount;
 
 			this._document.getElementById("exchWebService-offlineCacheproperties-maintainancegroupbox").removeAttribute("collapsed");
 			this._document.getElementById("exchWebService-offlineCacheproperties-preferencesgroupbox").removeAttribute("collapsed");

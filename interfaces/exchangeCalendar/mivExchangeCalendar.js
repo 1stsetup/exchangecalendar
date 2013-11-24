@@ -2384,12 +2384,15 @@ calExchangeCalendar.prototype = {
 
 		// 2013-11-19 We now always request period from offline cache.
 /*		if (this.useOfflineCache) {
-			this.getItemsFromOfflineCache(aRangeStart, aRangeEnd, aListener);
-		}*/
-
+			if (((wantEvents) && (this.supportsEvents)) || ((wantTodos) && (this.supportsTasks))) {
+				this.getItemsFromOfflineCache(aRangeStart, aRangeEnd, aListener);
+			}
+		}
+*/
 		if ((this.useOfflineCache) && (dateChanged)) {
 			if (((wantEvents) && (this.supportsEvents)) || ((wantTodos) && (this.supportsTasks))) {
 				if (this.debug) this.logInfo("Requesting events/tasks from offline cache.");
+
 				if ((startChanged) || (endChanged)) {
 
 					if (startChanged) {
@@ -8879,6 +8882,15 @@ dump("getOccurrencesFromOfflineCache: found:"+result.length+"\n");
 		}
 
 		return "--";
+	},
+
+	get memoryCacheItemCount()
+	{
+		var result = 0;
+		for (var index in this.itemCacheById) {
+			result++;
+		}
+		return result;
 	},
 
     /**

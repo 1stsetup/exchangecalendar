@@ -62,6 +62,7 @@ interface mivExchangeCalendar : calICalendar
 	readonly attribute calIDateTime offlineEndDate;
 	readonly attribute unsigned long long offlineEventItemCount;
 	readonly attribute unsigned long long offlineToDoItemCount;
+	readonly attribute unsigned long long memoryCacheItemCount;
 
 	readonly attribute AUTF8String connectionStateDescription;
 

@@ -334,6 +334,13 @@
 									value="0" />
 
 							</hbox>
+							<hbox>
+								<label id="exchWebService-memoryCache-totalItemsLabel"
+									value="Items in memoryCache:" />
+								<label id="exchWebService-memoryCache-totalItems"
+									value="0" />
+
+							</hbox>
 						</vbox>
 					</groupbox>
 
