@@ -72,6 +72,17 @@ jobObject.prototype = {
 		}
 	},
 
+	clear: function _clear()
+	{
+		this.exchangeRequest = null;
+		this.timer.cancel();
+		this.timer = null;
+		this.state = "done";
+		this.loadBalancer = null;
+		this.job = null;
+		this.server = null
+	},
+
 }
 
 function mivExchangeLoadBalancer() {
@@ -205,7 +216,8 @@ mivExchangeLoadBalancer.prototype = {
 				else {
 					// Running job stopped.
 					this.jobsRunning--;
-					oldList[runningJob].exchangeRequest = undefined;
+					//oldList[runningJob].exchangeRequest = undefined;
+					oldList[runningJob].clear;
 					//dump(server+":running job stopped:"+this.jobsRunning+"\n");
 				}
 			}

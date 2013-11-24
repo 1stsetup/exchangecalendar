@@ -540,6 +540,10 @@ mivExchangeEvent.prototype = {
 		return updates;
 	},
 
+	preLoad: function _preLoad()
+	{
+	},
+
 };
 
 function NSGetFactory(cid) {

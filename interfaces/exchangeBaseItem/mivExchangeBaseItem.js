@@ -2891,6 +2891,12 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 			dump("Who is setting exchangeData to null:"+this.globalFunctions.STACK()+"\n");
 		}*/
 		this._exchangeData = aValue;
+
+		this.preLoad();
+	},
+
+	preLoad: function _preLoad() 
+	{
 	},
 
 	convertToExchange: function _convertToExchange() 
