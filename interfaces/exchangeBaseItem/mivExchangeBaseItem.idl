@@ -101,5 +101,6 @@ interface mivExchangeBaseItem : calIItemBase
 	void clearId([optional] in AUTF8String newId);
 
 	void preLoad();
+	void postLoad();
 
 };

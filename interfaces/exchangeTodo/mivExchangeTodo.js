@@ -94,30 +94,6 @@ mivExchangeTodo.prototype = {
 	get entryDate()
 	{
 		//this.logInfo("get entryDate 1: title:"+this.title);
-		if (!this._entryDate) {
-			this._entryDate = this.tryToSetDateValue(this.getTagValue("t:StartDate", null), this._calEvent.entryDate);
-			if (this._entryDate) {
-/*				this._entryDate.hour = 0;
-				this._entryDate.minute = 0;
-				this._entryDate.second = 0;
-				this._entryDate.isDate = false;
-*/
-				if ((this._entryDate.hour === 0) && (this._entryDate.minute === 0) && (this.dueDate) && (this.dueDate.hour === 0) && (this.dueDate.minute === 0)) {
-					// When a new task is created in outlook it will have entryDate en dueDate times set to 00:00.
-					// We change this to the start of the working day..
-					var dayStart = this.globalFunctions.safeGetIntPref(null,"calendar.view.daystarthour", 8);
-					this._entryDate.hour = dayStart;
-					this._dueDate.hour = dayStart;
-					this._calEvent.dueDate = this._dueDate.clone();
-				}
-
-				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._entryDate);
-				if (timezone) {
-					this._entryDate = this._entryDate.getInTimezone(timezone);
-				}
-				this._calEvent.entryDate = this._entryDate.clone();
-			}
-		}
 		//dump("get entryDate 2: title:"+this.title+", this._calEvent.entryDate:"+this._calEvent.entryDate+"\n");
 		return this._calEvent.entryDate;
 	},
@@ -148,16 +124,6 @@ mivExchangeTodo.prototype = {
 	get dueDate()
 	{
 		//this.logInfo("get dueDate 1: title:"+this.title);
-		if (!this._dueDate) {
-			this._dueDate = this.tryToSetDateValue(this.getTagValue("t:DueDate", null), this._calEvent.dueDate);
-			if (this._dueDate) {
-				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._dueDate);
-				if (timezone) {
-					this._dueDate = this._dueDate.getInTimezone(timezone);
-				}
-				this._calEvent.dueDate = this._dueDate.clone();
-			}
-		}
 		//dump("get dueDate 2: title:"+this.title+", this._calEvent.dueDate:"+this._calEvent.dueDate+"\n");
 		return this._calEvent.dueDate;
 	},
@@ -185,16 +151,6 @@ mivExchangeTodo.prototype = {
 	get completedDate()
 	{
 		//this.logInfo("get completedDate 1: title:"+this.title);
-		if (!this._completedDate) {
-			this._completedDate = this.tryToSetDateValue(this.getTagValue("t:CompleteDate", null), this._calEvent.completedDate);
-			if (this._completedDate) {
-				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._completedDate);
-				if (timezone) {
-					this._completedDate = this._completedDate.getInTimezone(timezone);
-				}
-				this._calEvent.completedDate = this._completedDate.clone();
-			}
-		}
 		//dump("get completedDate 2: title:"+this.title+", completedDate=="+this._calEvent.completedDate+"\n");
 		return this._calEvent.completedDate;
 	},
@@ -221,12 +177,6 @@ mivExchangeTodo.prototype = {
 	get percentComplete()
 	{
 		//this.logInfo("get percentComplete 1: title:"+this.title);
-		if (!this._percentComplete) {
-			this._percentComplete = this.getTagValue("t:PercentComplete", this._calEvent.percentComplete);
-			if (this._percentComplete) {
-				this._calEvent.percentComplete = this._percentComplete;
-			}
-		}
 		return this._calEvent.percentComplete;
 	},
 
@@ -241,10 +191,6 @@ mivExchangeTodo.prototype = {
 
 	get isCompleted()
 	{
-		if (!this._isCompleted) {
-			this._isCompleted = (this.status == "COMPLETED");
-			this._calEvent.isCompleted = this._isCompleted;
-		}
 		return this._calEvent.isCompleted;
 	},
 
@@ -260,9 +206,6 @@ mivExchangeTodo.prototype = {
 	get totalWork()
 	{
 		//this.logInfo("get totalWork 1: title:"+this.title);
-		if (!this._totalWork) {
-			this._totalWork = this.getTagValue("t:TotalWork", 0);
-		}
 		return this._totalWork;
 	},
 
@@ -279,9 +222,6 @@ mivExchangeTodo.prototype = {
 	get actualWork()
 	{
 		//this.logInfo("get actualWork 1: title:"+this.title);
-		if (!this._actualWork) {
-			this._actualWork = this.getTagValue("t:ActualWork", 0);
-		}
 		return this._actualWork;
 	},
 
@@ -298,9 +238,6 @@ mivExchangeTodo.prototype = {
 	get mileage()
 	{
 		//this.logInfo("get mileage 1: title:"+this.title);
-		if (!this._mileage) {
-			this._mileage = this.getTagValue("t:Mileage", "");
-		}
 		return this._mileage;
 	},
 
@@ -317,9 +254,6 @@ mivExchangeTodo.prototype = {
 	get billingInformation()
 	{
 		//this.logInfo("get billingInformation 1: title:"+this.title);
-		if (!this._billingInformation) {
-			this._billingInformation = this.getTagValue("t:BillingInformation", "");
-		}
 		return this._billingInformation;
 	},
 
@@ -376,17 +310,6 @@ mivExchangeTodo.prototype = {
 
 	getCompanies: function _getCompanies(aCount)
 	{
-		if (!this._companies) {
-			this._companies = [];
-			if (this._exchangeData) {
-				var tmpStr = xml2json.XPath(this.exchangeData, "/t:Companies/t:String");
-				for each(var string in tmpStr) {
-					this._companies.push(xml2json.getValue(string));
-				}
-				tmpStr = null;
-			}
-		}
-
 		if (this._newCompanies) {
 			aCount.value = this._newCompanies.length;
 			return this._newCompanies;
@@ -414,13 +337,6 @@ mivExchangeTodo.prototype = {
 
 	get duration()
 	{
-		if ((!this._duration) && (!this._newEndDate) && (!this._newStartDate)) {
-			this._duration = this.getTagValue("t:Duration", null);
-			if (this._duration) {
-				//this.logInfo("get duration: title:"+this.title+", value:"+cal.createDuration(this._duration));
-				return cal.createDuration(this._duration);
-			}
-		}
 		//this.logInfo("get duration: title:"+this.title+", value:"+this._calEvent.duration);
 		return this._calEvent.duration;
 	},
@@ -446,12 +362,6 @@ mivExchangeTodo.prototype = {
 			null: "NONE"
 		};
 
-		if ((!this._status) && (this._newStatus === undefined)) {
-			this._status = this.getTagValue("t:Status", "NotStarted");
-
-			//this._calEvent.status = statusMap[this._status];
-			this._calEvent.setProperty("STATUS", statusMap[this._status]);
-		}
 		if (this._newStatus === undefined) {
 			return statusMap[this._status];
 		}
@@ -480,10 +390,6 @@ mivExchangeTodo.prototype = {
 	//readonly attribute AUTF8String owner;
 	get owner()
 	{
-		if (!this._owner) {
-			this._owner = this.getTagValue("t:Owner", "(unknown)");
-		}
-
 		return this._owner;
 	},
 
@@ -754,6 +660,124 @@ mivExchangeTodo.prototype = {
 
 	preLoad: function _preLoad()
 	{
+		if (!this._entryDate) {
+			this._entryDate = this.tryToSetDateValue(this.getTagValue("t:StartDate", null), this._calEvent.entryDate);
+			if (this._entryDate) {
+/*				this._entryDate.hour = 0;
+				this._entryDate.minute = 0;
+				this._entryDate.second = 0;
+				this._entryDate.isDate = false;
+*/
+				if ((this._entryDate.hour === 0) && (this._entryDate.minute === 0) && (this.dueDate) && (this.dueDate.hour === 0) && (this.dueDate.minute === 0)) {
+					// When a new task is created in outlook it will have entryDate en dueDate times set to 00:00.
+					// We change this to the start of the working day..
+					var dayStart = this.globalFunctions.safeGetIntPref(null,"calendar.view.daystarthour", 8);
+					this._entryDate.hour = dayStart;
+					this._dueDate.hour = dayStart;
+					this._calEvent.dueDate = this._dueDate.clone();
+				}
+
+				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._entryDate);
+				if (timezone) {
+					this._entryDate = this._entryDate.getInTimezone(timezone);
+				}
+				this._calEvent.entryDate = this._entryDate.clone();
+			}
+		}
+
+		if (!this._dueDate) {
+			this._dueDate = this.tryToSetDateValue(this.getTagValue("t:DueDate", null), this._calEvent.dueDate);
+			if (this._dueDate) {
+				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._dueDate);
+				if (timezone) {
+					this._dueDate = this._dueDate.getInTimezone(timezone);
+				}
+				this._calEvent.dueDate = this._dueDate.clone();
+			}
+		}
+	},
+
+	postLoad: function _postLoad()
+	{
+		if (!this._completedDate) {
+			this._completedDate = this.tryToSetDateValue(this.getTagValue("t:CompleteDate", null), this._calEvent.completedDate);
+			if (this._completedDate) {
+				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._completedDate);
+				if (timezone) {
+					this._completedDate = this._completedDate.getInTimezone(timezone);
+				}
+				this._calEvent.completedDate = this._completedDate.clone();
+			}
+		}
+
+		if (!this._percentComplete) {
+			this._percentComplete = this.getTagValue("t:PercentComplete", this._calEvent.percentComplete);
+			if (this._percentComplete) {
+				this._calEvent.percentComplete = this._percentComplete;
+			}
+		}
+
+		if (!this._isCompleted) {
+			this._isCompleted = (this.status == "COMPLETED");
+			this._calEvent.isCompleted = this._isCompleted;
+		}
+
+		if (!this._totalWork) {
+			this._totalWork = this.getTagValue("t:TotalWork", 0);
+		}
+
+		if (!this._actualWork) {
+			this._actualWork = this.getTagValue("t:ActualWork", 0);
+		}
+
+		if (!this._mileage) {
+			this._mileage = this.getTagValue("t:Mileage", "");
+		}
+
+		if (!this._billingInformation) {
+			this._billingInformation = this.getTagValue("t:BillingInformation", "");
+		}
+
+		if (!this._companies) {
+			this._companies = [];
+			if (this._exchangeData) {
+				var tmpStr = xml2json.XPath(this.exchangeData, "/t:Companies/t:String");
+				for each(var string in tmpStr) {
+					this._companies.push(xml2json.getValue(string));
+				}
+				tmpStr = null;
+			}
+		}
+
+		if ((!this._duration) && (!this._newEndDate) && (!this._newStartDate)) {
+			this._duration = this.getTagValue("t:Duration", null);
+			if (this._duration) {
+				//this.logInfo("get duration: title:"+this.title+", value:"+cal.createDuration(this._duration));
+				return cal.createDuration(this._duration);
+			}
+		}
+
+		const statusMap = {
+			"NotStarted"	: "NONE",
+			"InProgress" : "IN-PROCESS",
+			"Completed"	: "COMPLETED",
+			"WaitingOnOthers"	: "NEEDS-ACTION",
+			"Deferred"	: "CANCELLED",
+			null: "NONE"
+		};
+
+		if ((!this._status) && (this._newStatus === undefined)) {
+			this._status = this.getTagValue("t:Status", "NotStarted", null);
+
+			//this._calEvent.status = statusMap[this._status];
+			this._calEvent.setProperty("STATUS", statusMap[this._status]);
+		}
+
+		if (!this._owner) {
+			this._owner = this.getTagValue("t:Owner", "(unknown)");
+		}
+
+
 	},
 
 };

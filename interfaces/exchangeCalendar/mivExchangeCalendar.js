@@ -6386,9 +6386,10 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 				.createInstance(Ci.mivExchangeEvent, this);
 
 		item.addMailboxAlias(this.mailbox);
+if (!this.superCalendar) {dump(" convertExchangeAppointmentToCalAppointment: superCalendar is null\n");}
+		item.calendar = this.superCalendar;
 		item.exchangeData = aCalendarItem;
 
-		item.calendar = this.superCalendar;
 //		item.calendar = this;
 
 		//return item;
@@ -6674,9 +6675,9 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 				.createInstance(Ci.mivExchangeTodo, this);
 
 		item.addMailboxAlias(this.mailbox);
+		item.calendar = this.superCalendar;
 		item.exchangeData = aTask;
 
-		item.calendar = this.superCalendar;
 
 		if (this.itemCacheById[item.id]) {
 			if (this.itemCacheById[item.id].changeKey == item.changeKey) {
