@@ -55,7 +55,8 @@ function findCharacter(aXMLString, aSP, aChar)
 
 	var pos = aSP;
 	var strLength = aXMLString.length;
-	while ((pos < strLength) && (aXMLString[pos] != aChar)) {
+//	while ((pos < strLength) && (aXMLString[pos] != aChar)) {
+	while ((pos < strLength) && (aXMLString.charAt(pos) != aChar)) {
 		pos++;
 	}
 
@@ -98,14 +99,16 @@ function splitOnCharacter(aXMLString, aSP, aSplitCharacter)
 	var strLen = aXMLString.length;
 	var splitCharIsArray = isArray(aSplitCharacter);
 	while ((tmpPos < strLen) && (notClosed)) {
-		if ((aXMLString[tmpPos] == "'") || (aXMLString[tmpPos] == '"')) {
+//		if ((aXMLString[tmpPos] == "'") || (aXMLString[tmpPos] == '"')) {
+		if ((aXMLString.charAt(tmpPos) == "'") || (aXMLString.charAt(tmpPos) == '"')) {
 			// We found quotes. Do they belong to our string.
 			if (notQuoteOpen) {
-				quotesUsed = aXMLString[tmpPos];
+				quotesUsed = aXMLString.charAt(tmpPos);
 				notQuoteOpen = false;
 			}
 			else {
-				if (aXMLString[tmpPos] == quotesUsed) {
+//				if (aXMLString[tmpPos] == quotesUsed) {
+				if (aXMLString.charAt(tmpPos) == quotesUsed) {
 					quotesUsed = "";
 					notQuoteOpen = true;
 				}
@@ -133,7 +136,8 @@ function splitOnCharacter(aXMLString, aSP, aSplitCharacter)
 			notClosed = false;
 		}
 		else {
-			result += aXMLString[tmpPos];
+//			result += aXMLString[tmpPos];
+			result += aXMLString.charAt(tmpPos);
 		}
 		tmpPos++;
 	}
@@ -211,11 +215,11 @@ function trim(aValue)
 {
 	var strLength = aValue.length;
 	var leftPos = 0;
-	while ((leftPos < strLength) && (aValue[leftPos] == " ")) {
+	while ((leftPos < strLength) && (aValue.charAt(leftPos) == " ")) {
 		leftPos++;
 	}
 	var rightPos = strLength-1;
-	while ((rightPos >= 0) && (aValue[rightPos] == " ")) {
+	while ((rightPos >= 0) && (aValue.charAt(rightPos) == " ")) {
 		rightPos--;
 	}
 	return aValue.substr(leftPos, rightPos - leftPos + 1);
@@ -229,7 +233,7 @@ function hasXMLHeader(aStr, aSP)
 	var strLength = aStr.length;
 	if (pos > -1) {
 		pos++;
-		var tc = aStr[pos];
+		var tc = aStr.charAt(pos);
 
 		if ( (pos < strLength) && (tc == "?")) {
 			pos++;
@@ -334,11 +338,11 @@ function ifFunction(aCondition, aJSONObject){
 				var equalTo = false;
 				var biggerThen = false;
 				var splitPos2 = splitPart2.length;
-				switch (splitPart[splitPos2]) {
+				switch (splitPart.charAt(splitPos2)) {
 					case "!":comparison = "!=";break;
-					case "<":comparison = "<";if (splitPart[splitPos2+1] == "=") comparison = "<=";break;
+					case "<":comparison = "<";if (splitPart.charAt(splitPos2+1) == "=") comparison = "<=";break;
 					case "=":comparison = "=";break;
-					case ">":comparison = ">";if (splitPart[splitPos2+1] == "=") comparison = ">=";break;
+					case ">":comparison = ">";if (splitPart.charAt(splitPos2+1) == "=") comparison = ">=";break;
 				}
 				compareList.push( { left: trim(splitPart2), right: trim(splitPart.substr(splitPart2.length+comparison.length)), operator: operator, comparison: comparison, subCondition: subCondition} );
 			}
@@ -633,7 +637,7 @@ function realSetAttributeStr(aParent, aString) {
 	var tc = av[0];
 	if ((tc == "'") || (tc == '"')) {
 		let vl = av.length;
-		if (tc == av[vl-1]) {
+		if (tc == av.charAt(vl-1)) {
 			av = av.substr(1, vl-2);
 		}
 		else {
@@ -817,7 +821,8 @@ var xml2json = {
 				}
 				pos = tmpPos + 1;
 			}
-			var tc = aXMLString[pos];
+			//var tc = aXMLString[pos];
+			var tc = aXMLString.charAt(pos);
 
 			if ( (pos < strLength) && (tc == "/")) {
 				// Found character for closing element
@@ -839,12 +844,14 @@ var xml2json = {
 					let tmpPos = findCharacter(aXMLString, pos, ">");
 					if (tmpPos > -1) {
 						let elementName = "";
-						tc = aXMLString[pos];
+						//tc = aXMLString[pos];
+						tc = aXMLString.charAt(pos);
 						while ((pos < strLength) && (tc != ">") && 
 							(tc != "/") && (!(isInList(specialChars1,tc)))) {
 							elementName = elementName + tc;
 							pos++;
-							tc = aXMLString[pos];
+							//tc = aXMLString[pos];
+							tc = aXMLString.charAt(pos);
 						}
 						currentjson = realOpeningTag(currentjson, elementName);
 
@@ -859,7 +866,8 @@ var xml2json = {
 							if ((pos < strLength) && (isInList(specialChars1,tc))) {
 								var attribute = "";
 								pos++;
-								tc = aXMLString[pos];
+								//tc = aXMLString[pos];
+								tc = aXMLString.charAt(pos);
 								var quoteOpen = false;
 								var seenAttributeSeparator = false;
 								var quoteChar = "";
@@ -878,13 +886,15 @@ var xml2json = {
 										}
 									}
 									pos++;
-									tc = aXMLString[pos];
+									//tc = aXMLString[pos];
+									tc = aXMLString.charAt(pos);
 									if ((seenAttributeSeparator) && (pos < strLength) && (isInList(specialChars1,tc)) && (!quoteOpen)) {
 										realSetAttributeStr(currentjson, attribute);
 										attribute = "";
 										seenAttributeSeparator = false;
 										pos++;
-										tc = aXMLString[pos];
+										//tc = aXMLString[pos];
+										tc = aXMLString.charAt(pos);
 									}
 								}
 								if ((seenAttributeSeparator) && (!quoteOpen) && (pos < strLength) && (attribute.length > 0)) {
@@ -896,7 +906,8 @@ var xml2json = {
 									// Found opening tag with attributes which is also closed.
 									currentjson = realClosingTag(currentjson, elementName);
 									pos++;
-									tc = aXMLString[pos];
+									//tc = aXMLString[pos];
+									tc = aXMLString.charAt(pos);
 								}
 							
 								if (!((pos < strLength) && (tc == ">"))) {
