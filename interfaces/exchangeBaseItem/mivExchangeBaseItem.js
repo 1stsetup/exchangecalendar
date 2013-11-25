@@ -2861,6 +2861,11 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		
 	},
 
+	get exchangeXML()
+	{
+		return this._exchangeXML;
+	},
+
 	preLoad: function _preLoad() 
 	{
 	},

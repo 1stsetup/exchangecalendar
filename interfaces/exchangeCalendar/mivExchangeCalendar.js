@@ -983,7 +983,7 @@ calExchangeCalendar.prototype = {
 		if (isEvent(aItem)) {	
 			// michel123
 
-			if (aItem.exchangeData) {
+			if (aItem.exchangeXML) {
 				var tmpItem = aItem.clone();
 				if (this.debug) this.logInfo("adoptItem 1 Copy/pasted item. item.id:"+tmpItem.id);
 			}
@@ -6614,7 +6614,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 					//this.observers.notify("onEndBatch");
 
 					if (!fromOfflineCache) {
-						this.addToOfflineCache(item, aCalendarItem, false);
+						this.addToOfflineCache(item, null, item.exchangeXML);
 					}
 
 					if (this.recurringMasterCache[uid]) {
@@ -6941,7 +6941,7 @@ return;
 					}
 
 					if (!fromOfflineCache) {
-						this.addToOfflineCache(item, aItems[index]);
+						this.addToOfflineCache(item, null, item.exchangeXML);
 					}
 
 				}
@@ -6953,7 +6953,7 @@ return;
 					this.singleModified(item, doNotify);
 
 					if (!fromOfflineCache) {
-						this.addToOfflineCache(item, aItems[index]);
+						this.addToOfflineCache(item, null, item.exchangeXML);
 					}
 				}
 			}
@@ -8292,7 +8292,7 @@ else {
 		}
 	},
 
-	addToOfflineCache: function _addToOfflineCache(aCalItem, aExchangeItem)
+	addToOfflineCache: function _addToOfflineCache(aCalItem, aExchangeItem, aExchangeItemXML)
 	{
 		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
@@ -8332,7 +8332,7 @@ else {
 		sqlStatement.executeStep();
 		if (sqlStatement.row.itemcount > 0) {
 			if (this.debug) this.logInfo("Going to update the item because it all ready exist.");
-			this.updateInOfflineCache(aCalItem, aExchangeItem);
+			this.updateInOfflineCache(aCalItem, aExchangeItem, aExchangeItemXML);
 			sqlStatement.finalize();
 			return;
 		}
@@ -8357,7 +8357,12 @@ else {
 			}
 		}
 		
-		var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+aCalItem.id+"', '"+aCalItem.changeKey+"', '"+startDate+"', '"+endDate+"', '"+aCalItem.uid+"', '"+this.getItemType(aCalItem)+"', '"+aCalItem.parentItem.id+"', '"+xml2json.toString(aExchangeItem).toString().replace(/\x27/g, "''")+"')";
+		if (aExchangeItemXML) {
+			var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+aCalItem.id+"', '"+aCalItem.changeKey+"', '"+startDate+"', '"+endDate+"', '"+aCalItem.uid+"', '"+this.getItemType(aCalItem)+"', '"+aCalItem.parentItem.id+"', '"+aExchangeItemXML.replace(/\x27/g, "''")+"')";
+		}
+		else {
+			var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+aCalItem.id+"', '"+aCalItem.changeKey+"', '"+startDate+"', '"+endDate+"', '"+aCalItem.uid+"', '"+this.getItemType(aCalItem)+"', '"+aCalItem.parentItem.id+"', '"+xml2json.toString(aExchangeItem).toString().replace(/\x27/g, "''")+"')";
+		}
 		if (this.noDB) return;
 		if (!this.executeQuery(sqlStr)) {
 			if (this.debug) this.logInfo("Error inserting item into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
@@ -8368,7 +8373,7 @@ else {
 		this.addAttachmentsToOfflineCache(aCalItem);
 	},
 
-	updateInOfflineCache: function _updateInOfflineCache(aCalItem, aExchangeItem)
+	updateInOfflineCache: function _updateInOfflineCache(aCalItem, aExchangeItem, aExchangeItemXML)
 	{
 		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
@@ -8456,7 +8461,12 @@ else {
 			}
 		}
 		
-		var sqlStr = "UPDATE items SET event='"+eventField+"', id='"+aCalItem.id+"', changeKey='"+aCalItem.changeKey+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+aCalItem.uid+"', type='"+this.getItemType(aCalItem)+"', parentItem='"+aCalItem.parentItem.id+"', item='"+xml2json.toString(aExchangeItem).toString().replace(/\x27/g, "''")+"' WHERE id='"+aCalItem.id+"'";
+		if (aExchangeItemXML) {
+			var sqlStr = "UPDATE items SET event='"+eventField+"', id='"+aCalItem.id+"', changeKey='"+aCalItem.changeKey+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+aCalItem.uid+"', type='"+this.getItemType(aCalItem)+"', parentItem='"+aCalItem.parentItem.id+"', item='"+aExchangeItemXML.replace(/\x27/g, "''")+"' WHERE id='"+aCalItem.id+"'";
+		}
+		else {
+			var sqlStr = "UPDATE items SET event='"+eventField+"', id='"+aCalItem.id+"', changeKey='"+aCalItem.changeKey+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+aCalItem.uid+"', type='"+this.getItemType(aCalItem)+"', parentItem='"+aCalItem.parentItem.id+"', item='"+xml2json.toString(aExchangeItem).toString().replace(/\x27/g, "''")+"' WHERE id='"+aCalItem.id+"'";
+		}
 		if (this.noDB) return;
 		if (!this.executeQuery(sqlStr)) {
 			if (this.debug) this.logInfo("Error updating item in offlineCacheDB. Error:"+this.offlineCacheDB.lastErrorString);
@@ -8537,11 +8547,11 @@ else {
 		if (this.debug) this.logInfo("Store what we have in memory cache to offline cache.");
 		dump("Store what we have in memory cache to offline cache.\n");
 		for each(var item in this.itemCacheById) {
-			this.addToOfflineCache(item, item.exchangeData);
+			this.addToOfflineCache(item, null, item.exchangeXML);
 		}
 
 		for each(var item in this.recurringMasterCache) {
-			this.addToOfflineCache(item, item.exchangeData);
+			this.addToOfflineCache(item, null, item.exchangeXML);
 		}
 
 		// Check what is missing for minimal time period.
