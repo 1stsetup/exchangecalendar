@@ -2560,11 +2560,6 @@ calExchangeCalendar.prototype = {
 						ids[itemid] = true;
 					}
 				}
-				if ((this.itemCacheByEndDate) && (this.itemCacheByEndDate[startYear]) && (this.itemCacheByEndDate[startYear][startYearday])) {
-					for (var itemid in this.itemCacheByEndDate[startYear][startYearday]) {
-						ids[itemid] = true;
-					}
-				}
 
 				startYearday++;
 				if (startYearday > 366) {
@@ -2654,53 +2649,56 @@ calExchangeCalendar.prototype = {
 
        		var self = this;
 		var doStop = false;
+		var stopNext = false;
 
 		while (!doStop) {
-			if (this.debug) this.logInfo("Getting period part of: "+startDate.toString()+" until "+endDate.toString());
-			//dump(this.name+": Getting period part of: "+startDate.toString()+" until "+endDate.toString()+"\n");
-			this.addToQueue( erFindCalendarItemsRequest, 
-				{user: this.user, 
-				 mailbox: this.mailbox,
-				 serverUrl: this.serverUrl,
-				 count: aCount,
-				 rangeStart: startDate.clone(),
-				 rangeEnd: endDate.clone(),
-				 folderBase: this.folderBase,
-				 itemFilter: aItemFilter,
-				 folderID: this.folderID,
-				 changeKey: this.changeKey,
-				 actionStart: Date.now() }, 
-				function(erFindCalendarItemsRequest, aIds, aOccurrences) { self.findCalendarItemsOK(erFindCalendarItemsRequest, aIds, aOccurrences);}, 
-				function(erFindCalendarItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erFindCalendarItemsRequest, aCode, aMsg);},
-				null);
+			if (startDate.compare(endDate) != 0) {
+				if (this.debug) this.logInfo("Getting period part of: "+startDate.toString()+" until "+endDate.toString());
+				//dump(this.name+": Getting period part of: "+startDate.toString()+" until "+endDate.toString()+"\n");
+				this.addToQueue( erFindCalendarItemsRequest, 
+					{user: this.user, 
+					 mailbox: this.mailbox,
+					 serverUrl: this.serverUrl,
+					 count: aCount,
+					 rangeStart: startDate.clone(),
+					 rangeEnd: endDate.clone(),
+					 folderBase: this.folderBase,
+					 itemFilter: aItemFilter,
+					 folderID: this.folderID,
+					 changeKey: this.changeKey,
+					 actionStart: Date.now() }, 
+					function(erFindCalendarItemsRequest, aIds, aOccurrences) { self.findCalendarItemsOK(erFindCalendarItemsRequest, aIds, aOccurrences);}, 
+					function(erFindCalendarItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erFindCalendarItemsRequest, aCode, aMsg);},
+					null);
+			}
 
-			if (findReverse) {
-				endDate = startDate.clone();
-				startDate.addDuration(offset);
-				if ((aStartDate) && (startDate.compare(aStartDate) < 1)) {
-					startDate = aStartDate.clone();
-				}
-				if (aStartDate) {
-					doStop = (endDate.compare(aStartDate) == 0);
+			if (!stopNext) {
+				if (findReverse) {
+					endDate = startDate.clone();
+					startDate.addDuration(offset);
+					if ((aStartDate) && (startDate.compare(aStartDate) < 1)) {
+						startDate = aStartDate.clone();
+						stopNext = true;
+					}
+					if (!aStartDate) {
+						doStop = true;
+					}
 				}
 				else {
-					doStop = true;
+					startDate = endDate.clone();
+					endDate.addDuration(offset);
+					if ((aEndDate) && (endDate.compare(aEndDate) > -1)) {
+						endDate = aEndDate.clone();
+						stopNext = true;
+					}
+					if (!aEndDate) {
+						doStop = true;
+					}
 				}
 			}
 			else {
-				startDate = endDate.clone();
-				endDate.addDuration(offset);
-				if ((aEndDate) && (endDate.compare(aEndDate) > -1)) {
-					endDate = aEndDate.clone();
-				}
-				if (aEndDate) {
-					doStop = (endDate.compare(aEndDate) == 0);
-				}
-				else {
-					doStop = true;
-				}
-			}
-			
+				doStop = true;
+			}			
 		}
 		if (this.debug) this.logInfo("Getting period done.");
 	},
@@ -6386,7 +6384,6 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 				.createInstance(Ci.mivExchangeEvent, this);
 
 		item.addMailboxAlias(this.mailbox);
-if (!this.superCalendar) {dump(" convertExchangeAppointmentToCalAppointment: superCalendar is null\n");}
 		item.calendar = this.superCalendar;
 		item.exchangeData = aCalendarItem;
 
@@ -7632,25 +7629,38 @@ return;
 else {
 	dump("addItemToCache: item.title:"+item.title+", startDate:"+itemDate+" | "+item.id+".\n");
 }*/
+	//dump("addItemToCache ById: item.title:"+item.title+", startDate:"+itemStartDate+", endDate:"+itemEndDate+" | "+item.id+".\n");
 
 		// Add to Id index.
 		this.itemCacheById[item.id] = item;
 
 		// Add to startDate index.
-		if (itemStartDate) {
-			if (!this.itemCacheByStartDate) this.itemCacheByStartDate = {};
-			if (!this.itemCacheByStartDate[itemStartDate.year]) this.itemCacheByStartDate[itemStartDate.year] = {};
-			if (!this.itemCacheByStartDate[itemStartDate.year][itemStartDate.yearday]) this.itemCacheByStartDate[itemStartDate.year][itemStartDate.yearday] = [];
-			this.itemCacheByStartDate[itemStartDate.year][itemStartDate.yearday][item.id] = true;
+		if ((itemStartDate) && (itemEndDate)) {
+			var startYear = itemStartDate.year;
+			var startYearDay = itemStartDate.yearday;
+			var endYear = itemEndDate.year;
+			var endYearDay = itemEndDate.yearday;
+			var doStop = false;
+
+			while (!doStop) {
+
+				if ((startYear == endYear) && (startYearDay == endYearDay)) {
+					doStop= true;
+				}
+				if (!this.itemCacheByStartDate) this.itemCacheByStartDate = {};
+				if (!this.itemCacheByStartDate[startYear]) this.itemCacheByStartDate[startYear] = {};
+				if (!this.itemCacheByStartDate[startYear][startYearDay]) this.itemCacheByStartDate[startYear][startYearDay] = [];
+	//dump(" -- addItemToCache ByStartDate: item.title:"+item.title+", startYear:"+startYear+", startYearDay:"+startYearDay+" | "+item.id+".\n");
+				this.itemCacheByStartDate[startYear][startYearDay][item.id] = true;
+
+				startYearDay++;
+				if (startYearDay > 366) {
+					startYearDay = 1;
+					startYear++;
+				}
+			}
 		}
 
-		// Add to endDate index.
-		if (itemEndDate) {
-			if (!this.itemCacheByEndDate) this.itemCacheByEndDate = {};
-			if (!this.itemCacheByEndDate[itemEndDate.year]) this.itemCacheByEndDate[itemEndDate.year] = {};
-			if (!this.itemCacheByEndDate[itemEndDate.year][itemEndDate.yearday]) this.itemCacheByEndDate[itemEndDate.year][itemEndDate.yearday] = [];
-			this.itemCacheByEndDate[itemEndDate.year][itemEndDate.yearday][item.id] = true;
-		}
 	},
 
 	removeItemFromCache: function _removeItemFromCache(item)
@@ -7663,21 +7673,30 @@ else {
 		var itemStartDate = item.startDate || item.entryDate;
 		var itemEndDate = item.endDate || item.dueDate;
 		// Remove from startDate index.
-		if ((itemStartDate) && (this.itemCacheByStartDate)) {
-			if ((this.itemCacheByStartDate[itemStartDate.year]) && (this.itemCacheByStartDate[itemStartDate.year][itemStartDate.yearday])) {
-				if (this.itemCacheByStartDate[itemStartDate.year][itemStartDate.yearday][item.id]) {
-					this.itemCacheByStartDate[itemStartDate.year][itemStartDate.yearday][item.id];
-					delete this.itemCacheByStartDate[itemStartDate.year][itemStartDate.yearday][item.id];
-				}
-			}
-		}
+		if ((itemStartDate) && (itemEndDate) && (this.itemCacheByStartDate)) {
+			var startYear = itemStartDate.year;
+			var startYearDay = itemStartDate.yearday;
+			var endYear = itemEndDate.year;
+			var endYearDay = itemEndDate.yearday;
+			var doStop = false;
 
-		// Remove from endDate index.
-		if ((itemEndDate) && (this.itemCacheByEndDate)) {
-			if ((this.itemCacheByEndDate[itemEndDate.year]) && (this.itemCacheByEndDate[itemEndDate.year][itemEndDate.yearday])) {
-				if (this.itemCacheByEndDate[itemEndDate.year][itemEndDate.yearday][item.id]) {
-					this.itemCacheByEndDate[itemEndDate.year][itemEndDate.yearday][item.id];
-					delete this.itemCacheByEndDate[itemEndDate.year][itemEndDate.yearday][item.id];
+			while (!doStop) {
+
+				if ((startYear == endYear) && (startYearDay == endYearDay)) {
+					doStop= true;
+				}
+
+				if ((this.itemCacheByStartDate[startYear]) && (this.itemCacheByStartDate[startYear][startYearDay])) {
+					if (this.itemCacheByStartDate[startYear][startYearDay][item.id]) {
+						this.itemCacheByStartDate[startYear][startYearDay][item.id] = null;
+						delete this.itemCacheByStartDate[startYear][startYearDay][item.id];
+					}
+				}
+
+				startYearDay++;
+				if (startYearDay > 366) {
+					startYearDay = 1;
+					startYear++;
 				}
 			}
 		}
