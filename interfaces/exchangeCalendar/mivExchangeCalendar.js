@@ -8522,11 +8522,11 @@ else {
 	syncExchangeToOfflineCache: function _syncExchangeToOfflineCache()
 	{
 		// This will sync the specified period from Exchange to offlineCache.
-		var monthsAfter = this.globalFunctions.safeGetIntPref(this.prefs, "ecOfflineCacheMonthsAfterToday", 1, true)*4;
-		var monthsBefore = this.globalFunctions.safeGetIntPref(this.prefs, "ecOfflineCacheMonthsBeforeToday", 1, true)*4;
+		var monthsAfter = this.globalFunctions.safeGetIntPref(this.prefs, "ecOfflineCacheMonthsAfterToday", 1, true)*31;
+		var monthsBefore = this.globalFunctions.safeGetIntPref(this.prefs, "ecOfflineCacheMonthsBeforeToday", 1, true)*31;
 
-		var monthAfterDurarion = cal.createDuration("P"+monthsAfter+"W");
-		var monthsBeforeDurarion = cal.createDuration("-P"+monthsBefore+"W");
+		var monthAfterDurarion = cal.createDuration("P"+monthsAfter+"D");
+		var monthsBeforeDurarion = cal.createDuration("-P"+monthsBefore+"D");
 
 		var startDate = cal.now();
 		var endDate = cal.now();
@@ -8535,6 +8535,7 @@ else {
 
 		// Store what we have in memory cache to offline cache.
 		if (this.debug) this.logInfo("Store what we have in memory cache to offline cache.");
+		dump("Store what we have in memory cache to offline cache.\n");
 		for each(var item in this.itemCacheById) {
 			this.addToOfflineCache(item, item.exchangeData);
 		}
@@ -8548,23 +8549,43 @@ else {
 		if (this.supportsEvents) filter |= Ci.calICalendar.ITEM_FILTER_TYPE_EVENT;
 		if (this.supportsTasks) filter |= Ci.calICalendar.ITEM_FILTER_TYPE_TODO;
 
-		if ((!this.startDate) && (!this.endDate)) {
-			if (this.debug) this.logInfo("Going to request events in the period of '"+startDate.toString()+"' until '"+endDate.toString()+"' from the exchange server to fill offlinecache.");
-			this.getItems(filter, 0, startDate, endDate, null);
-		}
-		else {
-			if ((this.startDate) && (startDate.compare(this.startDate)) < 0) {
-				if (this.debug) this.logInfo("Going to request events in the period of '"+startDate.toString()+"' until '"+this.startDate.toString()+"' from the exchange server to fill offlinecache.");
-				this.getItems(filter, 0, startDate, this.startDate, null);
+
+		if (this.supportsEvents) {
+			if ((!this.startDate) && (!this.endDate)) {
+				if (this.debug) this.logInfo("Going to request events in the period of '"+startDate.toString()+"' until '"+endDate.toString()+"' from the exchange server to fill offlinecache.");
+				//this.getItems(filter, 0, startDate, endDate, null);
+				this.requestPeriod(startDate, endDate, filter, {}, false);
+	
 			}
-			if ((this.endDate) && (endDate.compare(this.endDate) > 0)) {
-				if (this.debug) this.logInfo("Going to request events in the period of '"+this.endDate.toString()+"' until '"+endDate.toString()+"' from the exchange server to fill offlinecache.");
-				this.getItems(filter, 0, this.endDate, endDate, null);
+			else {
+				if ((this.startDate) && (startDate.compare(this.startDate)) < 0) {
+					if (this.debug) this.logInfo("Going to request events in the period of '"+startDate.toString()+"' until '"+this.startDate.toString()+"' from the exchange server to fill offlinecache.");
+					//this.getItems(filter, 0, startDate, this.startDate, null);
+					this.requestPeriod(startDate, this.startDate, filter, {}, false);
+				}
+				if ((this.endDate) && (endDate.compare(this.endDate) > 0)) {
+					if (this.debug) this.logInfo("Going to request events in the period of '"+this.endDate.toString()+"' until '"+endDate.toString()+"' from the exchange server to fill offlinecache.");
+					//this.getItems(filter, 0, this.endDate, endDate, null);
+					this.requestPeriod(this.endDate, endDate, filter, {}, false);
+				}
 			}
 		}
 
-		//this.requestPeriod(startDate, endDate, filter, null, false);
-		//this.getItems(filter, 0, startDate, endDate, null);
+		if (this.supportsTasks) {
+			if (this.debug) this.logInfo("Requesting tasks from exchange server.");
+			this.addToQueue( erFindTaskItemsRequest, 
+				{user: this.user, 
+				 mailbox: this.mailbox,
+				 serverUrl: this.serverUrl,
+				 folderBase: this.folderBase,
+				 itemFilter: filter,
+				 folderID: this.folderID,
+				 changeKey: this.changeKey,
+				 actionStart: Date.now() }, 
+				function(erFindTaskItemsRequest, aIds) { self.findTaskItemsOK(erFindTaskItemsRequest, aIds);}, 
+				function(erFindTaskItemsRequest, aCode, aMsg) { self.findTaskItemsError(erFindTaskItemsRequest, aCode, aMsg);},
+				null);
+		}
 
 	},
 
