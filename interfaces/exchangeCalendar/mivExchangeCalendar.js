@@ -1436,14 +1436,14 @@ calExchangeCalendar.prototype = {
 	        	                             Ci.calIOperationListener.MODIFY,
 	        	                             aOldItem.id,
 	        	                             aOldItem);
-			if ((!aOldItem.recurrenceInfo) || (!aNewItem.recurrenceInfo)) {
+			//if ((!aOldItem.recurrenceInfo) || (!aNewItem.recurrenceInfo)) {
 				aNewItem.id = null;  // This needs to be null otherwise additem does not see it as a new item.
 				aNewItem.clearId(null);
 
 				this.deleteItem(aOldItem, null);
 				this.addItem(aNewItem, null);
 				return null;
-			}
+			//}
 			
 		}
 
