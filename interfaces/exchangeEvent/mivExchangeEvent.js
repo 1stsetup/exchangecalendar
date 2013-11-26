@@ -98,7 +98,11 @@ mivExchangeEvent.prototype = {
 			return this._newStartDate;
 		}
 
-		return this._startDate;
+		if (this._startDate) {
+			return this._startDate;
+		}
+
+		return this._calEvent.startDate;
 	},
 
 	set startDate(aValue)
@@ -116,7 +120,11 @@ mivExchangeEvent.prototype = {
 			return this._newEndDate;
 		}
 
-		return this._endDate;
+		if (this._endDate) {
+			return this._endDate;
+		}
+
+		return this._calEvent.endDate;
 	},
 
 	set endDate(aValue)

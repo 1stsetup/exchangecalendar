@@ -764,13 +764,21 @@ catch(err){
 	get title()
 	{
 		//this.logInfo("get title: title:"+this._calEvent.title);
+		if (this._newTitle) {
+			return this._newTitle;
+		}
+
+		if (this._title) {
+			return this._title;
+		}
+
 		return this._calEvent.title;
 	},
 
 	set title(aValue)
 	{
 		//this.logInfo("set title: oldTitle:"+this.title+", newTitle:"+aValue);
-		if (aValue != this.title) {
+		if (aValue != this._title) {
 			this._newTitle = aValue;
 			this._calEvent.title = aValue;
 		}

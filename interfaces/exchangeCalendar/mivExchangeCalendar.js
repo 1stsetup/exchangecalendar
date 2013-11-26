@@ -1424,6 +1424,9 @@ calExchangeCalendar.prototype = {
 		if (((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) ||
 			((aOldItem.recurrenceInfo) && (aOldItem.calendarItemType == "RecurringMaster") && (!aNewItem.recurrenceInfo)) ||
 			((aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo) && (aOldItem.recurrenceInfo.toString() != aNewItem.recurrenceInfo.toString())) ) {
+			if (this.debug) this.logInfo(" -- aOldItem.recurrenceInfo:"+aOldItem.recurrenceInfo+", aNewItem.recurrenceInfo:"+aNewItem.recurrenceInfo);
+			if ((this.debug) && (aOldItem.recurrenceInfo)) this.logInfo(" -- aOldItem.recurrenceInfo.toString():"+aOldItem.recurrenceInfo.toString());
+			if ((this.debug) && (aNewItem.recurrenceInfo)) this.logInfo(" -- aNewItem.recurrenceInfo.toString():"+aNewItem.recurrenceInfo.toString());
 			if (this.debug) this.logInfo("modifyItem item was changed from single into recurring or from recurring into single.");
 	        	this.notifyOperationComplete(aListener,
 	        	                             Cr.NS_OK,
@@ -6103,8 +6106,8 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 		if (this.debug) this.logInfo("removeChildrenFromMaster start. Title:"+aMaster.title);
 		// Remove children of this master. They will be added later.
 		for each(var child in aMaster.getExceptions({})) {
-			aMaster.removeException(child);
 			this.notifyTheObservers("onDeleteItem", [child]);
+			aMaster.removeException(child);
 			/*if (this.itemCacheById[child.id]) {
 				this.itemCacheById[child.id].deleteItem();
 			}
@@ -6116,8 +6119,8 @@ else { dump("Exception does not exist in cache anymore.\n");}
 		}
 
 		for each(var child in aMaster.getOccurrences({})) {
-			aMaster.removeOccurrence(child);
 			this.notifyTheObservers("onDeleteItem", [child]);
+			aMaster.removeOccurrence(child);
 			/*if (this.itemCacheById[child.id]) {
 				this.itemCacheById[child.id].deleteItem();
 			}
@@ -7185,7 +7188,9 @@ return;
 							// This is a master recurrence. Also remove children.
 							if (this.debug) this.logInfo("This is Master to delete");
 							this.removeChildrenFromMaster(master);
-							this.notifyTheObservers("onDeleteItem", [master]);
+
+							this.removeFromOfflineCache(master);
+							//this.notifyTheObservers("onDeleteItem", [master]);
 							delete this.recurringMasterCache[master.uid];
 						}
 						else {
