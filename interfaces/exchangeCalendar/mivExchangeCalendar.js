@@ -1427,17 +1427,24 @@ calExchangeCalendar.prototype = {
 			if (this.debug) this.logInfo(" -- aOldItem.recurrenceInfo:"+aOldItem.recurrenceInfo+", aNewItem.recurrenceInfo:"+aNewItem.recurrenceInfo);
 			if ((this.debug) && (aOldItem.recurrenceInfo)) this.logInfo(" -- aOldItem.recurrenceInfo.toString():"+aOldItem.recurrenceInfo.toString());
 			if ((this.debug) && (aNewItem.recurrenceInfo)) this.logInfo(" -- aNewItem.recurrenceInfo.toString():"+aNewItem.recurrenceInfo.toString());
-			if (this.debug) this.logInfo("modifyItem item was changed from single into recurring or from recurring into single.");
+
+			if ((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) this.logInfo("modifyItem item was changed from single into recurring.");
+			if ((aOldItem.recurrenceInfo) && (!aNewItem.recurrenceInfo)) this.logInfo("modifyItem item was changed from recurring into single.");
+			if ((aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) this.logInfo("modifyItem recurrency was chaned for item.");
 	        	this.notifyOperationComplete(aListener,
 	        	                             Cr.NS_OK,
 	        	                             Ci.calIOperationListener.MODIFY,
 	        	                             aOldItem.id,
 	        	                             aOldItem);
-			aNewItem.id = null;  // This needs to be null otherwise additem does not see it as a new item.
-			aNewItem.clearId(null);
-			this.addItem(aNewItem, null);
-			this.deleteItem(aOldItem, null);
-			return null;
+			if ((!aOldItem.recurrenceInfo) || (!aNewItem.recurrenceInfo)) {
+				aNewItem.id = null;  // This needs to be null otherwise additem does not see it as a new item.
+				aNewItem.clearId(null);
+
+				this.deleteItem(aOldItem, null);
+				this.addItem(aNewItem, null);
+				return null;
+			}
+			
 		}
 
 
@@ -5733,6 +5740,10 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			if (!doNotCheckCache) {
 				var inItemCache = ((this.itemCacheById[item.Id]) && (this.itemCacheById[item.Id].changeKey == item.ChangeKey));
 				var inMasterCache = ((item.type == "RecurringMaster") && (this.recurringMasterCache[item.uid]) && (this.recurringMasterCache[item.uid].changeKey == item.ChangeKey));
+			}
+			else {
+				var inItemCache = false;
+				var inMasterCache = false;
 			}
 			if ((!inItemCache) && (!inMasterCache)) {
 				newIdList.push(item);
