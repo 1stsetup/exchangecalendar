@@ -181,6 +181,10 @@ erGetItemsRequest.prototype = {
 			if ((this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2010") > -1) || (this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2013") > -1 )) {
 				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:StartTimeZone'/>");
 				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:EndTimeZone'/>");
+				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:ModifiedOccurrences'/>");
+				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:DeletedOccurrences'/>");
+				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:FirstOccurrence'/>");
+				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:LastOccurrence'/>");
 			}
 			else { // Exchange2007
 				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:MeetingTimeZone'/>");
