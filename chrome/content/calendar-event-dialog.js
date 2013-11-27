@@ -95,6 +95,24 @@ exchEventDialog.prototype = {
 			var args = this._window.arguments[0];
 			var item = args.calendarEvent;
 			this.updateScreen(item, item.calendar);
+
+			if (item.bodyType == "HTML") {
+				if (this._document.getElementById("item-description")) {
+					this._document.getElementById("item-description").hidden = true;
+				}
+				if (this._document.getElementById("exchWebService-body-editor")) {
+					this._document.getElementById("exchWebService-body-editor").hidden = false;
+					this._document.getElementById("exchWebService-body-editor").content = item.getProperty("DESCRIPTION");
+				}
+			}
+			else {
+				if (this._document.getElementById("item-description")) {
+					this._document.getElementById("item-description").hidden = false;
+				}
+				if (this._document.getElementById("exchWebService-body-editor")) {
+					this._document.getElementById("exchWebService-body-editor").hidden = true;
+				}
+			}
 		}
 	},
 

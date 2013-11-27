@@ -213,7 +213,9 @@
 			this.disconnectButtons("FormatToolbar");
 			document.getAnonymousElementByAttribute(this, "anonid", "cmd_backgroundColor").removeEventListener("click", this.bgColorFunction, false);
 			document.getAnonymousElementByAttribute(this, "anonid", "cmd_fontColor").removeEventListener("click", this.fontColorFunction, false);
-			this.menuPopup.removeEventListener("command", this.menuPopupFunction, false);
+			if (this.menuPopupFunction) {
+				this.menuPopup.removeEventListener("command", this.menuPopupFunction, false);
+			}
 		]]></destructor>
 			
 			<property name="content">
@@ -304,7 +306,7 @@
 		<method name="disconnectButtons">
 			<parameter name="aAnonId" />
 			<body><![CDATA[
-			if (this.functions[aAnonId]) {
+			if ((this.functions) && (this.functions[aAnonId])) {
 				for (var name in this.functions[aAnonId]) {
 					this.disconnectButton(name, aAnonId);
 				}
