@@ -83,18 +83,25 @@ erCreateItemRequest.prototype = {
 			var SendMeetingInvitations = "SendToNone";
 		}
 		else {
-			var SendMeetingInvitations = "SendToAllAndSaveCopy";
+			// When noone else is invited we want an appointment and not a meeting
+			if ((this.argument.item) && (this.argument.item.getAttendees({}).length == 0)) {
+				var SendMeetingInvitations = "SendToNone";
+			}
+			else {
+				var SendMeetingInvitations = "SendToAllAndSaveCopy";
+			}
 		}
 
 		if (cal.isEvent(this.argument.item)) {
 			req.setAttribute("SendMeetingInvitations", SendMeetingInvitations);
 		}	
 
-		req.setAttribute("MessageDisposition", "SaveOnly");
+		// Following two are only needed for emails.
+		//req.setAttribute("MessageDisposition", "SaveOnly");
 
-		var savedItemFolderId = makeParentFolderIds2("SavedItemFolderId", this.argument);
-		req.addChildTagObject(savedItemFolderId);
-		savedItemFolderId = null;
+		//var savedItemFolderId = makeParentFolderIds2("SavedItemFolderId", this.argument);
+		//req.addChildTagObject(savedItemFolderId);
+		//savedItemFolderId = null;
 
 		var Items = exchWebService.commonFunctions.xmlToJxon('<nsMessages:Items xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'">'+String(this.createReq)+'</nsMessages:Items>');
 		req.addChildTagObject(Items);
