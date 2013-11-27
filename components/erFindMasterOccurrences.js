@@ -129,6 +129,15 @@ erFindMasterOccurrencesRequest.prototype = {
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ReminderMinutesBeforeStart");
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:EffectiveRights");
 
+		this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
+				.getService(Ci.mivExchangeStatistics);
+
+		if ((this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2010") > -1) || (this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2013") > -1 )) {
+			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:UniqueBody");
+		}
+		else { // Exchange2007
+		}
+
 		var extFieldURI;
 		extFieldURI = additionalProperties.addChildTag("ExtendedFieldURI", "nsTypes", null);
 		extFieldURI.setAttribute("DistinguishedPropertySetId", "Common");
@@ -180,13 +189,14 @@ erFindMasterOccurrencesRequest.prototype = {
 			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:UID");
 			additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:RecurrenceId");
 			
-			this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
-					.getService(Ci.mivExchangeStatistics);
-
 			if ((this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2010") > -1) || (this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2013") > -1)) {
 				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:StartTimeZone");
 				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:EndTimeZone");
-				
+				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:ModifiedOccurrences");
+				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:DeletedOccurrences");
+				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:FirstOccurrence");
+				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:FirstOccurrence");
+			
 			}
 			else { // Exchange2007
 				additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:MeetingTimeZone");

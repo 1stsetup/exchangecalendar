@@ -2711,12 +2711,13 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 			this._recurrenceInfo = null;
 		}
 
+		this._bodyType = this.getAttributeByTag("t:Body", "BodyType", "Text");
+
 		this._body = this.getTagValue("t:Body", null);
 		//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
 		if (this._body) {
 			this._calEvent.setProperty("DESCRIPTION", this._body);
 		}
-
 
 		this._dateTimeCreated = this.tryToSetDateValueUTC(this.getTagValue("t:DateTimeCreated", null), null);
 
@@ -2884,6 +2885,11 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 	convertToExchange: function _convertToExchange() 
 	{
+	},
+
+	get bodyType()
+	{
+		return this._bodyType;
 	},
 
 	//attribute long occurrenceIndex;
