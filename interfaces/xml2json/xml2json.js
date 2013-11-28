@@ -649,7 +649,7 @@ function realSetAttributeStr(aParent, aString) {
 	realSetAttribute(aParent, an, av);
 }
 
-var EXPORTED_SYMBOLS = ["xml2json", "telements", "tattributes", "tcontent"];
+var EXPORTED_SYMBOLS = ["xml2json", "telements", "tattributes", "tcontent", "convertSpecialCharatersFromXML", "convertSpecialCharatersToXML"];
 
 const tsep = ":";
 const telements = "e";

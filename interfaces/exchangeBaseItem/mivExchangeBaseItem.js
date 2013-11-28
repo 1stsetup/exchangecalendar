@@ -2717,7 +2717,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
 		if (this._body) {
 			if (this._bodyType == "HTML") {
-				this._calEvent.setProperty("DESCRIPTION", this._body);
+				this._calEvent.setProperty("DESCRIPTION", this.fromHTML2Text(this._body));
 			}
 			else {
 				this._calEvent.setProperty("DESCRIPTION", this._body);
@@ -2892,9 +2892,34 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 	{
 	},
 
+	fromHTML2Text: function _fromHTML2Text(aString)
+	{
+//dump("-."+aString+".-\n\n");
+		var html = aString.replace(/<style([\s\S]*?)<\/style>/gi, '');
+		html = html.replace(/<script([\s\S]*?)<\/script>/gi, '');
+		html = html.replace(/\n/g, '');
+		html = html.replace(/\r/g, '');
+		html = html.replace(/<\/div>/ig, '\n');
+		html = html.replace(/<\/li>/ig, '\n');
+		html = html.replace(/<li>/ig, '  *  ');
+		html = html.replace(/<\/ul>/ig, '\n');
+		html = html.replace(/<\/p>/ig, '\n');
+		html = html.replace(/<br\s*[\/]?>/gi, "\n");
+		html = html.replace(/<[^>]+>/ig, '');
+		html = html.replace(/\&nbsp\;/g, '');
+
+		return convertSpecialCharatersFromXML(html);
+	},
+
 	set body(aValue)
 	{
 		this._newBody = aValue;
+		if (this._bodyType = "HTML") {
+			this._calEvent.setProperty("DESCRIPTION", this.fromHTML2Text(aValue));
+		}
+		else {
+			this._calEvent.setProperty("DESCRIPTION", aValue);
+		}
 	},
 
 	get body()
@@ -2906,8 +2931,19 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		return this._body;
 	},
 
+	set bodyType(aValue)
+	{
+		if ((aValue != "HTML") && (aValue != "Text")) {
+			return;
+		}
+		this._newBodyType = "aValue";
+	},
+
 	get bodyType()
 	{
+		if (this._newBodyType) {
+			return this._newBodyType;
+		}
 		return this._bodyType;
 	},
 
