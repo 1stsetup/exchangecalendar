@@ -78,6 +78,11 @@ exchEventDialog.prototype = {
 			aItem.body = this._document.getElementById("exchWebService-body-editor").content;
 			aItem.bodyType = "HTML";
 		}
+		else {
+			if (aItem.bodyType == "HTML") {
+				aItem.body = this._document.getElementById("exchWebService-body-editor").content;
+			}
+		}
 
 		if (this._oldCallback) {
 			this._oldCallback(aItem, aCalendar, aOriginalItem, aIsClosing);

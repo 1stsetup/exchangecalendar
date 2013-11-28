@@ -4491,9 +4491,9 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			e.addChildTag("Sensitivity", "nsTypes", privacies[aItem.privacy]);
 		}
 
-		var body = e.addChildTag("Body", "nsTypes", aItem.getProperty('DESCRIPTION') || "");
+		//var body = e.addChildTag("Body", "nsTypes", aItem.getProperty('DESCRIPTION') || "");
 		if (aItem.bodyType == "HTML" ) {
-			var body = e.addChildTag("Body", "nsTypes", aItem.body || "");
+			var body = e.addChildTag("Body", "nsTypes", "<html>"+aItem.body+"</html>" || "");
 			body.setAttribute("BodyType", "HTML");
 		}
 		else {
@@ -4780,9 +4780,9 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			e.addChildTag("Sensitivity", "nsTypes", privacies[aItem.privacy]);
 		}
 
-		var body = e.addChildTag("Body", "nsTypes", aItem.getProperty('DESCRIPTION') || "");
+		//var body = e.addChildTag("Body", "nsTypes", aItem.getProperty('DESCRIPTION') || "");
 		if (aItem.bodyType == "HTML" ) {
-			var body = e.addChildTag("Body", "nsTypes", aItem.body || "");
+			var body = e.addChildTag("Body", "nsTypes", "<html>"+aItem.body+"</html>" || "");
 			body.setAttribute("BodyType", "HTML");
 		}
 		else {
