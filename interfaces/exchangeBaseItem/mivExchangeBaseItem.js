@@ -493,6 +493,7 @@ try {
 		}
 
 		if (this._newBody) result.setProperty("DESCRIPTION", this.getProperty("DESCRIPTION"));
+		if (this._newBody2) result.body = this.body;
 		if (this._newLocation) result.setProperty("LOCATION", this.getProperty("LOCATION"));
 		if (this._newLegacyFreeBusyStatus) result.setProperty("TRANSP", this.getProperty("TRANSP"));
 		if (this._newMyResponseType) result.setProperty("STATUS", this.getProperty("STATUS")); 
@@ -2913,7 +2914,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 	set body(aValue)
 	{
-		this._newBody = aValue;
+		this._newBody2 = aValue;
 		if (this._bodyType = "HTML") {
 			this._calEvent.setProperty("DESCRIPTION", this.fromHTML2Text(aValue));
 		}
@@ -2924,8 +2925,8 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 	get body()
 	{
-		if (this._newBody) {
-			return this._newBody;
+		if (this._newBody2) {
+			return this._newBody2;
 		}
 
 		return this._body;

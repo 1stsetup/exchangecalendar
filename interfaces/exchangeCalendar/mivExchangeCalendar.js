@@ -4492,7 +4492,14 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		var body = e.addChildTag("Body", "nsTypes", aItem.getProperty('DESCRIPTION') || "");
-		body.setAttribute("BodyType", "Text");
+		if (aItem.bodyType == "HTML" ) {
+			var body = e.addChildTag("Body", "nsTypes", aItem.body || "");
+			body.setAttribute("BodyType", "HTML");
+		}
+		else {
+			var body = e.addChildTag("Body", "nsTypes", aItem.getProperty('DESCRIPTION') || "");
+			body.setAttribute("BodyType", "Text");
+		}
 
 		var categories = aItem.getCategories({});
 		var categoriesTag = e.addChildTag("Categories", "nsTypes", null);
@@ -4774,7 +4781,15 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		}
 
 		var body = e.addChildTag("Body", "nsTypes", aItem.getProperty('DESCRIPTION') || "");
-		body.setAttribute("BodyType", "Text");
+		if (aItem.bodyType == "HTML" ) {
+			var body = e.addChildTag("Body", "nsTypes", aItem.body || "");
+			body.setAttribute("BodyType", "HTML");
+		}
+		else {
+			var body = e.addChildTag("Body", "nsTypes", aItem.getProperty('DESCRIPTION') || "");
+			body.setAttribute("BodyType", "Text");
+		}
+
 
 		var categories = aItem.getCategories({});
 		var categoriesTag = null;

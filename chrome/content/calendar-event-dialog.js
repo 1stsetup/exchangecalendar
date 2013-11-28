@@ -74,6 +74,11 @@ exchEventDialog.prototype = {
 			aItem.companies = this._document.getElementById("exchWebService-companies-count").value;
 		}
 
+		if (this.newItem) {
+			aItem.body = this._document.getElementById("exchWebService-body-editor").content;
+			aItem.bodyType = "HTML";
+		}
+
 		if (this._oldCallback) {
 			this._oldCallback(aItem, aCalendar, aOriginalItem, aIsClosing);
 		}
@@ -96,13 +101,18 @@ exchEventDialog.prototype = {
 			var item = args.calendarEvent;
 			this.updateScreen(item, item.calendar);
 
-			if (item.bodyType == "HTML") {
+			if ((item.bodyType == "HTML") || (item.bodyType === undefined)) {
 				if (this._document.getElementById("item-description")) {
 					this._document.getElementById("item-description").hidden = true;
 				}
 				if (this._document.getElementById("exchWebService-body-editor")) {
 					this._document.getElementById("exchWebService-body-editor").hidden = false;
-					this._document.getElementById("exchWebService-body-editor").content = item.body;
+					if (item.bodyType !== undefined) {
+						this._document.getElementById("exchWebService-body-editor").content = item.body;
+					}
+					else {
+						this.newItem = true;
+					}
 				}
 			}
 			else {

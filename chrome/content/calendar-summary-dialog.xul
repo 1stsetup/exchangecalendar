@@ -32,6 +32,8 @@
  * ***** BEGIN LICENSE BLOCK *****/
 -->
 
+<?xml-stylesheet href="chrome://exchangecalendar/content/calendar-summary-dialog.css" type="text/css"?>
+
 <!DOCTYPE dialog [
     <!ENTITY % eventDialogDTD SYSTEM "chrome://calendar/locale/calendar-event-dialog.dtd">
     %eventDialogDTD;
@@ -49,6 +51,8 @@
 		
 		<script type="application/javascript" src="chrome://exchangecalendar/content/calendar-summary-dialog.js" />
 		<box id="item-description-box" flex="1">
+
+		<browser id="exchWebService-body-editor" class="exchWebService-browser-class" type="content" insertafter="item-description" flex="1"/>
 
 		<commandset id="itemCommands">
 		</commandset>

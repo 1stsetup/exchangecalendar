@@ -45,13 +45,23 @@ Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/erForewardItem.js");
 
 
-if (! exchWebService) var exchWebService = {};
+//if (! exchWebService) var exchWebService = {};
 
+function exchEventSummaryDialog(aDocument, aWindow)
+{
+	this._document = aDocument;
+	this._window = aWindow;
 
-exchWebService.forewardEvent2 = {
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+}
+
+exchEventSummaryDialog.prototype = {
+
+//exchWebService.forewardEvent2 = {
 	onForward : function _onForward()
 	{	
-		var args = window.arguments[0];
+		var args = this._window.arguments[0];
 		var item = args.calendarEvent;
 		item =item.clone();
 		var calendar = item.calendar;
@@ -62,15 +72,15 @@ exchWebService.forewardEvent2 = {
 		args.item = item;
 		args.attendees =item.organizer;
 		args.calendar =calendar;
-		args.onOk = exchWebService.forewardEvent2.callOnOk;
+		args.onOk = this.callOnOk;
 		args.opener="exchWebService-onForward";
-		window.openDialog("chrome://calendar/content/calendar-event-dialog-attendees.xul","_blank", "chrome,titlebar,modal,resizable",args);
+		this._window.openDialog("chrome://calendar/content/calendar-event-dialog-attendees.xul","_blank", "chrome,titlebar,modal,resizable",args);
 		
 	},	
 	
 	callOnOk : function(attendee,organizer,startTime,endTime){
 		
-		var args = window.arguments[0];
+		var args = this._window.arguments[0];
 		var item = args.calendarEvent;
 		var calendar = item.calendar;
 		var calId = calendar.id;
@@ -78,12 +88,14 @@ exchWebService.forewardEvent2 = {
 		            .getService(Ci.nsIPrefService)
 			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+calId+".");
 		
+		var self = this;
 		var tmpObject = new erForewardItemRequest(
-			{user: exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecDomain")+"\\"+exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecUser"), 
-			mailbox: exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecMailbox"),
-			serverUrl: exchWebService.commonFunctions.safeGetCharPref(calPrefs, "ecServer"), item: item, attendees: attendee, 
+			{user: this.globalFunctions.safeGetCharPref(calPrefs, "ecDomain")+"\\"+this.globalFunctions.safeGetCharPref(calPrefs, "ecUser"), 
+			mailbox: this.globalFunctions.safeGetCharPref(calPrefs, "ecMailbox"),
+			serverUrl: this.globalFunctions.safeGetCharPref(calPrefs, "ecServer"), item: item, attendees: attendee, 
 			changeKey :  item.changeKey, description : item.getProperty("description")}, 					
-			exchWebService.forewardEvent2.erForewardItemRequestOK, exchWebService.forewardEvent2.erForewardItemRequestError);		
+			function(aForewardItemRequest, aResp){self.erForewardItemRequestOK(aForewardItemRequest, aResp);}, 
+			function(aForewardItemRequest, aCode, aMsg){self.erForewardItemRequestError(aForewardItemRequest, aCode, aMsg);});		
 	},
 
 	erForewardItemRequestOK : function _erForewardItemRequestOK(aForewardItemRequest, aResp)
@@ -98,12 +110,12 @@ exchWebService.forewardEvent2 = {
 
 	onLoad: function _onLoad()
 	{
-		if (document.getElementById("calendar-event-summary-dialog")) {
-			window.removeEventListener("load", exchWebService.forewardEvent2.onLoad, false);
-			var args = window.arguments[0];
+		if (this._document.getElementById("calendar-event-summary-dialog")) {
+			//this._window.removeEventListener("load", this.onLoad, false);
+			var args = this._window.arguments[0];
 			var item = args.calendarEvent;
 			var calendar = item.calendar;
-			var tmpButtons = document.getElementById("calendar-event-summary-dialog").getAttribute("buttons");
+			var tmpButtons = this._document.getElementById("calendar-event-summary-dialog").getAttribute("buttons");
 			if (calendar.getProperty("exchWebService.offlineOrNotConnected")) {
 				var tmpArray = tmpButtons.split(",");
 				var newArray = [];
@@ -112,16 +124,41 @@ exchWebService.forewardEvent2 = {
 						newArray.push(tmpArray[index]);
 					}
 				}
-				document.getElementById("calendar-event-summary-dialog").buttons = newArray.join(",");
+				this._document.getElementById("calendar-event-summary-dialog").buttons = newArray.join(",");
 			}
 			else {
 				if ((item.calendar.type == "exchangecalendar") && (item.responseObjects) && (item.responseObjects.ForwardItem)) {
-					document.getElementById("calendar-event-summary-dialog").buttons += ",extra1";
+					this._document.getElementById("calendar-event-summary-dialog").buttons += ",extra1";
+				}
+			}
+
+			if (item.bodyType == "HTML") {
+				if (this._document.getElementById("item-description")) {
+					this._document.getElementById("item-description").parentNode.appendChild(this._document.getElementById("exchWebService-body-editor"));
+					this._document.getElementById("item-description").hidden = true;
+				}
+				if (this._document.getElementById("exchWebService-body-editor")) {
+					this._document.getElementById("exchWebService-body-editor").hidden = false;
+					//this._document.getElementById("exchWebService-body-editor").content = item.body;
+
+					this._document.getElementById("exchWebService-body-editor").loadURI("data:text/html;charset=utf-8;base64," + btoa(item.body), null,null);
+					//this._document.getElementById("exchWebService-body-editor").loadURI("data:text/html;charset=utf-8," + item.body, null,null);
+				}
+			}
+			else {
+				if (this._document.getElementById("item-description")) {
+					this._document.getElementById("item-description").hidden = false;
+				}
+				if (this._document.getElementById("exchWebService-body-editor")) {
+					this._document.getElementById("exchWebService-body-editor").hidden = true;
 				}
 			}
 		}
 	},
 }
 
-window.addEventListener("load", exchWebService.forewardEvent2.onLoad, false);
+//this._window.addEventListener("load", exchWebService.forewardEvent2.onLoad, false);
+var tmpEventSummaryDialog = new exchEventSummaryDialog(document, window);
+window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpEventSummaryDialog.onLoad(); }, true);
+
 
