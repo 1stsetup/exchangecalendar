@@ -100,7 +100,8 @@ erGetItemsRequest.prototype = {
 
 		var itemShape = xml2json.addTag(req, "ItemShape", "nsMessages", null);
 		xml2json.addTag(itemShape, "BaseShape", "nsTypes", "IdOnly");		
-		xml2json.addTag(itemShape, "BodyType", "nsTypes", "Text");
+//		xml2json.addTag(itemShape, "BodyType", "nsTypes", "Text");
+		xml2json.addTag(itemShape, "BodyType", "nsTypes", "Best");
 
 		var additionalProperties = xml2json.addTag(itemShape, "AdditionalProperties", "nsTypes", null);
 		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ItemId'/>");

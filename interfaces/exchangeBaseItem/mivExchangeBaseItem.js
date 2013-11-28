@@ -2716,7 +2716,12 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		this._body = this.getTagValue("t:Body", null);
 		//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
 		if (this._body) {
-			this._calEvent.setProperty("DESCRIPTION", this._body);
+			if (this._bodyType == "HTML") {
+				this._calEvent.setProperty("DESCRIPTION", this._body);
+			}
+			else {
+				this._calEvent.setProperty("DESCRIPTION", this._body);
+			}
 		}
 
 		this._dateTimeCreated = this.tryToSetDateValueUTC(this.getTagValue("t:DateTimeCreated", null), null);
@@ -2885,6 +2890,20 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 	convertToExchange: function _convertToExchange() 
 	{
+	},
+
+	set body(aValue)
+	{
+		this._newBody = aValue;
+	},
+
+	get body()
+	{
+		if (this._newBody) {
+			return this._newBody;
+		}
+
+		return this._body;
 	},
 
 	get bodyType()

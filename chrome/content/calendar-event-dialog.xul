@@ -97,8 +97,8 @@
 		</row>
 
 		<row id="event-grid-description-row">
-			<textbox id="item-description" hidden="false"/>
-			<itemBodyEditor id="exchWebService-body-editor" flex="1" insertafter="item-description" disable-on-readonly="true" hidden="true"/>
+<!--			<textbox id="item-description" hidden="false"/> -->
+			<itemBodyEditor id="exchWebService-body-editor" flex="1" insertafter="item-description" disable-on-readonly="true"/>
 		</row> 
 
 		<row id="exchWebService-attachments-row"
