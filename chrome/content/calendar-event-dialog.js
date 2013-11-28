@@ -102,7 +102,7 @@ exchEventDialog.prototype = {
 				}
 				if (this._document.getElementById("exchWebService-body-editor")) {
 					this._document.getElementById("exchWebService-body-editor").hidden = false;
-					this._document.getElementById("exchWebService-body-editor").content = item.getProperty("DESCRIPTION");
+					this._document.getElementById("exchWebService-body-editor").content = item.body;
 				}
 			}
 			else {
