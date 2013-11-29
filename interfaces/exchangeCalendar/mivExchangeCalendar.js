@@ -656,7 +656,21 @@ calExchangeCalendar.prototype = {
 
 	set readOnly(aValue)
 	{
+dump("set readOnly:"+this.name+"\n");
+		this.prefs.setBoolPref("UserReadOnly", aValue);
+		this.readOnlyInternal = aValue;
+	},
 
+	get readOnly()
+	{
+		var userPref = this.globalFunctions.safeGetBoolPref(this.prefs, "UserReadOnly", false);
+		if (userPref === true) return true;
+		return this.readOnlyInternal;
+	},
+
+	set readOnlyInternal(aValue)
+	{
+dump("set readOnlyInternal:"+this.name+"\n");
 		if (this.folderProperties) {
 			var effectiveRights = this.folderProperties.XPath("/s:Envelope/s:Body/m:GetFolderResponse/m:ResponseMessages/m:GetFolderResponseMessage/m:Folders/t:CalendarFolder/t:EffectiveRights");
 			if (effectiveRights.length > 0) {
@@ -679,13 +693,16 @@ calExchangeCalendar.prototype = {
 		this._readOnly = aValue;
 
 		if (changed) {
+			var userPref = this.globalFunctions.safeGetBoolPref(this.prefs, "UserReadOnly", false);
+			if ((userPref === true) && (aValue === false)) return; // Do not change icon when use wants it readonly.
+
 			this.observers.notify("onPropertyChanged", [this.superCalendar, "readOnly", aValue, !aValue]);
 			this.observerService.notifyObservers(this, "onExchangeReadOnlyChange", this.name);  
 		}
 	},
 
 	//  attribute boolean readOnly;
-	get readOnly() {
+	get readOnlyInternal() {
 		//dump("get readOnly: name:"+this.name+", this._readOnly:"+this._readOnly+", this.notConnected:"+this.notConnected+"\n");
 		return ((this._readOnly) || (this.notConnected));
 	},
@@ -801,6 +818,7 @@ calExchangeCalendar.prototype = {
 	{
 
 		//if (this.debug) this.logInfo("setProperty. aName:"+aName+", aValue:"+aValue);
+		if (aName.indexOf("read") > -1) dump(this.name+":setProperty. aName:"+aName+", aValue:"+aValue+"\n");
 		switch (aName) {
 		case "exchangeCurrentStatus":
 			//dump("name1:"+this.name+", exchangeCurrentStatus:"+this._exchangeCurrentStatus+", newStatus:"+aValue+"\n");
@@ -875,7 +893,7 @@ calExchangeCalendar.prototype = {
 		// if aItem.id == "AAMkAGFkNzVhOGVlLTYxMDktNGU0MC05YWZjLWIzMWY1YmNmOTAzNQBGAAAAAAD9bSPYK6piTIbhfZ5n6SOXBwAfSIGbKdCWQbNg+oqR8EJMAAAA9OKyAAAfSIGbKdCWQbNg+oqR8EJMAAB8S1QtAAA=" copy back and forth between exchange to other type and exchange.
 
 	        if (this.OnlyShowAvailability) {
-			this.readOnly = true;
+			this.readOnlyInternal = true;
 			this.notifyOperationComplete(aListener,
         	                             Ci.calIErrors.OPERATION_CANCELLED,
                         	             Ci.calIOperationListener.ADD,
@@ -962,7 +980,7 @@ calExchangeCalendar.prototype = {
 		if (this.debug) this.logInfo("adoptItem()");
 
 		if ((this.readOnly) || (this.OnlyShowAvailability)) {
-			this.readOnly = true;
+			this.readOnlyInternal = true;
 			if (this.OnlyShowAvailability) {
 				this.notifyOperationComplete(aListener,
 			                             Ci.calIErrors.OPERATION_CANCELLED,
@@ -1390,7 +1408,7 @@ calExchangeCalendar.prototype = {
 		var result = Ci.calIErrors.MODIFICATION_FAILED;
 
 	        if (this.OnlyShowAvailability) {
-			this.readOnly = true;
+			this.readOnlyInternal = true;
 			this.notifyOperationComplete(aListener,
         	                             Ci.calIErrors.OPERATION_CANCELLED,
                         	             Ci.calIOperationListener.MODIFY,
@@ -1842,7 +1860,7 @@ calExchangeCalendar.prototype = {
 		if (this.debug) this.logInfo("deleteItem");
 
 	        if (this.OnlyShowAvailability) {
-			this.readOnly = true;
+			this.readOnlyInternal = true;
 			this.notifyOperationComplete(aListener,
         	                             Ci.calIErrors.OPERATION_CANCELLED,
                         	             Ci.calIOperationListener.DELETE,
@@ -7466,7 +7484,7 @@ return;
 		}
 		else {
 			if (this.debug) this.logInfo("getFolderOk: but EffectiveRights.Read != false. Trying to get all event information.");
-			this.readOnly = false;
+			this.readOnlyInternal = false;
 
 			this.setSupportedItems(aFolderClass);		
 		}
@@ -7525,7 +7543,7 @@ return;
 				this.folderProperties = null;
 				//this.prefs.deleteBranch("folderProperties");
 				this.removeFile("folderProperties.txt");
-				this.readOnly = true;
+				this.readOnlyInternal = true;
 				this.getOnlyFreeBusyInformation(this.lastValidRangeStart, this.lastValidRangeEnd);
 				this.startCalendarPoller();
 			}		
