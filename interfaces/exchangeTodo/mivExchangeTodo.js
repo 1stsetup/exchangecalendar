@@ -406,9 +406,33 @@ mivExchangeTodo.prototype = {
 		if (this._newPrivacy) {
 			this.addSetItemField(updates, "Sensitivity", this._newPrivacy);
 		}
-		if (this._newBody !== undefined) {
+
+/*		if (this._newBody !== undefined) {
 			this._nonPersonalDataChanged = true;
 			this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
+		}*/
+
+		if (this.bodyType == "HTML") {
+			if (this._newBody2 !== undefined) {
+				this._nonPersonalDataChanged = true;
+				if (this._newBody2 === null) {
+					this.addDeleteItemField(updates, "Body");
+				}
+				else {
+					this.addSetItemField(updates, "Body", this._newBody2, { BodyType: "HTML" });
+				}
+			}
+		}
+		else {
+			if (this._newBody !== undefined) {
+				this._nonPersonalDataChanged = true;
+				if (this._newBody === null) {
+					this.addDeleteItemField(updates, "Body");
+				}
+				else {
+					this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
+				}
+			}
 		}
 
 		if ((this._newPercentComplete) || ((this._newIsCompleted) && (this._newIsCompleted === true))) {

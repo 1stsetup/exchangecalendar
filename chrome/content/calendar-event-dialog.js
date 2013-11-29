@@ -74,6 +74,7 @@ exchEventDialog.prototype = {
 			aItem.companies = this._document.getElementById("exchWebService-companies-count").value;
 		}
 
+try{
 		if (this.newItem) {
 			aItem.body = this._document.getElementById("exchWebService-body-editor").content;
 			aItem.bodyType = "HTML";
@@ -83,6 +84,7 @@ exchEventDialog.prototype = {
 				aItem.body = this._document.getElementById("exchWebService-body-editor").content;
 			}
 		}
+}catch(err){dump("Error saving content\n");}
 
 		if (this._oldCallback) {
 			this._oldCallback(aItem, aCalendar, aOriginalItem, aIsClosing);
