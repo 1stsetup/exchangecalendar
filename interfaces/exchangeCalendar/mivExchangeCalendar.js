@@ -1439,9 +1439,11 @@ dump("set readOnlyInternal:"+this.name+"\n");
 			return null;
 		}
 
-		if (((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) ||
+/*		if (((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) ||
 			((aOldItem.recurrenceInfo) && (aOldItem.calendarItemType == "RecurringMaster") && (!aNewItem.recurrenceInfo)) ||
-			((aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo) && (aOldItem.recurrenceInfo.toString() != aNewItem.recurrenceInfo.toString())) ) {
+			((aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo) && (aOldItem.recurrenceInfo.toString() != aNewItem.recurrenceInfo.toString())) ) {*/
+		if (((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) ||
+			((aOldItem.recurrenceInfo) && (aOldItem.calendarItemType == "RecurringMaster") && (!aNewItem.recurrenceInfo)) ) {
 			if (this.debug) this.logInfo(" -- aOldItem.recurrenceInfo:"+aOldItem.recurrenceInfo+", aNewItem.recurrenceInfo:"+aNewItem.recurrenceInfo);
 			if ((this.debug) && (aOldItem.recurrenceInfo)) this.logInfo(" -- aOldItem.recurrenceInfo.toString():"+aOldItem.recurrenceInfo.toString());
 			if ((this.debug) && (aNewItem.recurrenceInfo)) this.logInfo(" -- aNewItem.recurrenceInfo.toString():"+aNewItem.recurrenceInfo.toString());
@@ -6665,17 +6667,16 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 					}
 
 					if (this.recurringMasterCache[uid]) {
-						this.masterCount--;
-						//dump("   xx MasterCount:"+this.masterCount+"\n");
-						this.recurringMasterCache[uid].deleteItem();
-						this.recurringMasterCache[uid] = null;
-					}
-					else {
-						if ((parentLessCounter == 0) && (!fromOfflineCache)) {
-							if (this.debug) this.logInfo("We have a new master without children. Most of the times this means we nead to request the children separately.");
+						if (this.recurringMasterCache[uid].recurrenceInfo.toString() != item.recurrenceInfo.toString()) {
+							// Recurrence info change. We are going to request all children in a known period.
+							if (this.debug) this.logInfo("Recurrence info change for master. We are going to request all children in a known period..");
+							this.masterCount--;
+							//dump("   xx MasterCount:"+this.masterCount+"\n");
+							this.recurringMasterCache[uid].deleteItem();
+							this.recurringMasterCache[uid] = null;
 							var self = this;
 							var tmpItem = { Id: item.id, ChangeKey: item.changeKey, type:"RecurringMaster"};
-/*							this.addToQueue( erFindOccurrencesRequest, 
+							this.addToQueue( erFindOccurrencesRequest, 
 								{user: this.user, 
 								 mailbox: this.mailbox,
 								 folderBase: this.folderBase,
@@ -6688,7 +6689,32 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 						 		 GUID: calExchangeCalendarGUID}, 
 								function(erGetItemsRequest, aIds) { self.findOccurrencesOK(erGetItemsRequest, aIds);}, 
 								function(erGetItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erGetItemsRequest, aCode, aMsg);},
-								null);	*/
+								null);	
+						}
+/*						this.masterCount--;
+						//dump("   xx MasterCount:"+this.masterCount+"\n");
+						this.recurringMasterCache[uid].deleteItem();
+						this.recurringMasterCache[uid] = null;*/
+					}
+					else {
+						if ((parentLessCounter == 0) && (!fromOfflineCache)) {
+							if (this.debug) this.logInfo("We have a new master without children. Most of the times this means we nead to request the children separately.");
+							var self = this;
+							var tmpItem = { Id: item.id, ChangeKey: item.changeKey, type:"RecurringMaster"};
+							this.addToQueue( erFindOccurrencesRequest, 
+								{user: this.user, 
+								 mailbox: this.mailbox,
+								 folderBase: this.folderBase,
+								 serverUrl: this.serverUrl,
+								 masterItem: tmpItem,
+								 folderID: this.folderID,
+								 changeKey: this.changeKey,
+								 startDate: this.startDate,
+								 endDate: this.endDate,
+						 		 GUID: calExchangeCalendarGUID}, 
+								function(erGetItemsRequest, aIds) { self.findOccurrencesOK(erGetItemsRequest, aIds);}, 
+								function(erGetItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erGetItemsRequest, aCode, aMsg);},
+								null);	
 
 						}
 					}
