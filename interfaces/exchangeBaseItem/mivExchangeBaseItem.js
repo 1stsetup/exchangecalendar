@@ -469,11 +469,16 @@ try {
 */
 		result.recurrenceInfo;
 		if (this._newRecurrenceInfo !== undefined) {
-			result.recurrenceInfo = this._newRecurrenceInfo;
+			if (this._newRecurrenceInfo == null) {
+				result.recurrenceInfo = this._newRecurrenceInfo;
+			}
+			else {
+				result.recurrenceInfo = this._newRecurrenceInfo.clone();
+			}
 		}
 		else {
 			if (((this._recurrenceInfo) && (this.recurrenceInfo) && (this._recurrenceInfo.toString() != this.recurrenceInfo.toString())) || (this._recurrenceInfo !== this.recurrenceInfo)) {
-				result.recurrenceInfo = this.recurrenceInfo;
+				result.recurrenceInfo = this.recurrenceInfo.clone();
 			}
 		}
 
@@ -1015,14 +1020,20 @@ try {
 		else {
 			dump("get recurrenceInfo 4: title:"+this.title+", this._calEvent.recurrenceInfo:null\n");
 		}*/
+		if (this._newRecurrenceInfo !== undefined) {
+			return this._newRecurrenceInfo;
+		}
+
+		if (this._recurrenceInfo !== undefined) {
+			return this._recurrenceInfo;
+		}
+
 		return this._calEvent.recurrenceInfo;
 	},
 
 	set recurrenceInfo(aValue)
 	{
 		//dump("set recurrenceInfo 1: title:"+this.title+", aValue:"+aValue+"\n");
-		if (!this._recurrenceInfo) this.recurrenceInfo;
-
 		if (aValue) {
 			// Lets see if something changed.
 			var infoChanged = false;

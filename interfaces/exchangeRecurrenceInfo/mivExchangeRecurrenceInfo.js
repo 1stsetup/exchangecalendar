@@ -227,14 +227,14 @@ mivExchangeRecurrenceInfo.prototype = {
   //void deleteRecurrenceItemAt(in unsigned long aIndex);
 	deleteRecurrenceItemAt: function _deleteRecurrenceItemAt(aIndex)
 	{
-		//this.logInfo("deleteRecurrenceItemAt: aIndex:"+aIndex);
+		//dump("deleteRecurrenceItemAt: aIndex:"+aIndex+"\n");
 		this._recurrenceInfo.deleteRecurrenceItemAt(aIndex);
 	},
 
   //void deleteRecurrenceItem(in calIRecurrenceItem aItem);
 	deleteRecurrenceItem: function _deleteRecurrenceItem(aItem)
 	{
-		//this.logInfo("deleteRecurrenceItem.");
+		//dump(" -- deleteRecurrenceItem.\n");
 		this._recurrenceInfo.deleteRecurrenceItem(aItem);
 	},
 
@@ -265,7 +265,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //void removeOccurrenceAt(in calIDateTime aRecurrenceId);
 	removeOccurrenceAt: function _removeOccurrenceAt(aRecurrenceId)
 	{
-		//this.logInfo("removeOccurrenceAt: aRecurrenceId:"+aRecurrenceId);
+		//dump("removeOccurrenceAt: aRecurrenceId:"+aRecurrenceId+"\n");
 		this.item.removeOccurrenceAt(aRecurrenceId);
 		this._recurrenceInfo.removeOccurrenceAt(aRecurrenceId);
 	},

@@ -818,7 +818,6 @@ dump("set readOnlyInternal:"+this.name+"\n");
 	{
 
 		//if (this.debug) this.logInfo("setProperty. aName:"+aName+", aValue:"+aValue);
-		if (aName.indexOf("read") > -1) dump(this.name+":setProperty. aName:"+aName+", aValue:"+aValue+"\n");
 		switch (aName) {
 		case "exchangeCurrentStatus":
 			//dump("name1:"+this.name+", exchangeCurrentStatus:"+this._exchangeCurrentStatus+", newStatus:"+aValue+"\n");
@@ -6556,11 +6555,11 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 				case "RecurringMaster" :
 	
 //					if (this.debug) this.logInfo(item.title+":"+item.startDate.toString()+":IsMaster, fromOfflineCache:"+fromOfflineCache);
-					dump(item.title+":"+item.startDate.toString()+":IsMaster, fromOfflineCache:"+fromOfflineCache+"\n");
+					//dump(item.title+":"+item.startDate.toString()+":IsMaster, fromOfflineCache:"+fromOfflineCache+"\n");
 
 					if ((this.recurringMasterCache[item.uid]) && (this.recurringMasterCache[item.uid].changeKey != item.changeKey)) {
 						if (this.debug) this.logInfo("We allready have this master in cache but the changeKey changed.");
-						dump("We allready have this master in cache but the changeKey changed.\n");
+						//dump("We allready have this master in cache but the changeKey changed.\n");
 
 						let ids = [];
 						let myExceptions = this.recurringMasterCache[item.uid].getExceptions({});
@@ -6581,7 +6580,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 						}
 
 						if (this.debug) this.logInfo("Going to request '"+ids.length+"' children to see if they are updated.");
-						dump("Going to request '"+ids.length+"' memorycache children to see if they are updated.\n");
+						//dump("Going to request '"+ids.length+"' memorycache children to see if they are updated.\n");
 
 						// Devide the whole in smaller request otherwise on the return answer we will flood the cpu and memory.
 						while (ids.length > 0) {
@@ -6596,7 +6595,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 					if (!fromOfflineCache) {
 						let changeKey = this.itemIsInOfflineCache(item.id);
 						if ((changeKey) && (item.changeKey != changeKey)) {
-							dump("Master is in offline cache and changeKey is different. Going to see if children have changed.\n");
+							//dump("Master is in offline cache and changeKey is different. Going to see if children have changed.\n");
 							let inOfflineCache = this.getOccurrencesFromOfflineCache(item, "RO");
 							let i = 0;
 							let ids = [];
@@ -6621,7 +6620,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 							}
 
 							if (this.debug) this.logInfo("Going to request '"+ids.length+"' offline children to see if they are updated.");
-							dump("Going to request '"+ids.length+"' offline children to see if they are updated.\n");
+							//dump("Going to request '"+ids.length+"' offline children to see if they are updated.\n");
 
 							// Devide the whole in smaller request otherwise on the return answer we will flood the cpu and memory.
 							while (ids.length > 0) {
