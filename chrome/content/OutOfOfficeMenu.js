@@ -108,13 +108,6 @@ exchToolsMenu.prototype = {
 		openContentTab(aVerbose ? "about:memory?verbose" : "about:memory", "tab", "www.1st-setup.nl");
 	},
 
-	showXML2JXonTest: function _showXML2JXonTest(){
-		aResult = { };
-		this._window.openDialog("chrome://exchangecalendar/content/xml2jxontest.xul"); 
-	
-	},
-
-
 }
 
 var tmpToolsMenu = new exchToolsMenu(document, window);

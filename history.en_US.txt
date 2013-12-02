@@ -12,8 +12,9 @@ Version 3.2.0:
 - Added Access Control List functionality of Lightning to follow user rights and permissions.
 - Russian translation is added.
 - Fixed problem with new exchange versions of Office365 and Exchange2013.
-- User can mark calendar ask readonly. This state is preserved between restarts.
+- User can mark calendar as readonly. This state is preserved between restarts.
 - Rich text editing of description (body) part for calendar items and task items.
+- Fixed problem where offline cache became out of sync.
 
 Version 3.2.0-Beta20:
 - Fixed Bug 276 - Duplicate entries, wrong hours and sometimes missing entries when viewving other calendars
