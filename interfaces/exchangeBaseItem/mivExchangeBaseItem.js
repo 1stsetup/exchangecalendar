@@ -2734,9 +2734,9 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 			else {
 				this._calEvent.setProperty("DESCRIPTION", this._body);
 				this._body = this.fromText2HTML(this._body);
-				this._bodyType = "HTML";
 			}
 		}
+		this._bodyType = "HTML";
 
 		this._dateTimeCreated = this.tryToSetDateValueUTC(this.getTagValue("t:DateTimeCreated", null), null);
 
