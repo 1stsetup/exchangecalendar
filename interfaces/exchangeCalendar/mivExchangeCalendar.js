@@ -656,7 +656,7 @@ calExchangeCalendar.prototype = {
 
 	set readOnly(aValue)
 	{
-dump("set readOnly:"+this.name+"\n");
+//dump("set readOnly:"+this.name+"\n");
 		this.prefs.setBoolPref("UserReadOnly", aValue);
 		this.readOnlyInternal = aValue;
 	},
@@ -670,7 +670,7 @@ dump("set readOnly:"+this.name+"\n");
 
 	set readOnlyInternal(aValue)
 	{
-dump("set readOnlyInternal:"+this.name+"\n");
+//dump("set readOnlyInternal:"+this.name+"\n");
 		if (this.folderProperties) {
 			var effectiveRights = this.folderProperties.XPath("/s:Envelope/s:Body/m:GetFolderResponse/m:ResponseMessages/m:GetFolderResponseMessage/m:Folders/t:CalendarFolder/t:EffectiveRights");
 			if (effectiveRights.length > 0) {
