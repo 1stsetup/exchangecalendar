@@ -2723,7 +2723,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 			this._recurrenceInfo = null;
 		}
 
-		this._bodyType = this.getAttributeByTag("t:Body", "BodyType", "Text");
+		this._bodyType = this.getAttributeByTag("t:Body", "BodyType", "HTML");
 
 		this._body = this.getTagValue("t:Body", null);
 		//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
@@ -2733,6 +2733,8 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 			}
 			else {
 				this._calEvent.setProperty("DESCRIPTION", this._body);
+				this._body = this.fromText2HTML(this._body);
+				this._bodyType = "HTML";
 			}
 		}
 
@@ -2923,6 +2925,12 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		return convertSpecialCharatersFromXML(html);
 	},
 
+	fromText2HTML: function _fromText2HTML(aString)
+	{
+		var html = aString.replace(/\n/g, '<br>');
+		return "<HTML><BODY>"+html+"</BODY></HTML>";
+	},
+
 	set body(aValue)
 	{
 		this._newBody2 = aValue;
@@ -2931,6 +2939,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		}
 		else {
 			this._calEvent.setProperty("DESCRIPTION", aValue);
+			this._newBody2 = this.fromText2HTML(aValue);
 		}
 	},
 
@@ -2938,6 +2947,10 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 	{
 		if (this._newBody2) {
 			return this._newBody2;
+		}
+
+		if (!this._body) {
+			return "<HTML><BODY></BODY></HTML>";
 		}
 
 		return this._body;
