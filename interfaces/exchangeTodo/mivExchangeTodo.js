@@ -315,6 +315,11 @@ mivExchangeTodo.prototype = {
 			return this._newCompanies;
 		}
 		
+		if (!this._companies) 
+			aCount.value = 0;
+			return [];
+		}
+
 		aCount.value = this._companies.length;
 		return this._companies;
 	},
@@ -734,43 +739,29 @@ mivExchangeTodo.prototype = {
 			}
 		}
 
-		if (!this._percentComplete) {
-			this._percentComplete = this.getTagValue("t:PercentComplete", this._calEvent.percentComplete);
-			if (this._percentComplete) {
-				this._calEvent.percentComplete = this._percentComplete;
+		this._percentComplete = this.getTagValue("t:PercentComplete", this._calEvent.percentComplete);
+		if (this._percentComplete) {
+			this._calEvent.percentComplete = this._percentComplete;
+		}
+
+		this._isCompleted = (this.status == "COMPLETED");
+		this._calEvent.isCompleted = this._isCompleted;
+
+		this._totalWork = this.getTagValue("t:TotalWork", 0);
+
+		this._actualWork = this.getTagValue("t:ActualWork", 0);
+
+		this._mileage = this.getTagValue("t:Mileage", "");
+
+		this._billingInformation = this.getTagValue("t:BillingInformation", "");
+
+		this._companies = [];
+		if (this._exchangeData) {
+			var tmpStr = xml2json.XPath(this.exchangeData, "/t:Companies/t:String");
+			for each(var string in tmpStr) {
+				this._companies.push(xml2json.getValue(string));
 			}
-		}
-
-		if (!this._isCompleted) {
-			this._isCompleted = (this.status == "COMPLETED");
-			this._calEvent.isCompleted = this._isCompleted;
-		}
-
-		if (!this._totalWork) {
-			this._totalWork = this.getTagValue("t:TotalWork", 0);
-		}
-
-		if (!this._actualWork) {
-			this._actualWork = this.getTagValue("t:ActualWork", 0);
-		}
-
-		if (!this._mileage) {
-			this._mileage = this.getTagValue("t:Mileage", "");
-		}
-
-		if (!this._billingInformation) {
-			this._billingInformation = this.getTagValue("t:BillingInformation", "");
-		}
-
-		if (!this._companies) {
-			this._companies = [];
-			if (this._exchangeData) {
-				var tmpStr = xml2json.XPath(this.exchangeData, "/t:Companies/t:String");
-				for each(var string in tmpStr) {
-					this._companies.push(xml2json.getValue(string));
-				}
-				tmpStr = null;
-			}
+			tmpStr = null;
 		}
 
 		if ((!this._duration) && (!this._newEndDate) && (!this._newStartDate)) {
