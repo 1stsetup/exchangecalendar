@@ -95,6 +95,16 @@ try{
 	{
 		//onLoad();
 
+		if (this._window.arguments[0].calendarEvent.calendar.type != "exchangecalendar") {
+			if (this._document.getElementById("item-description")) {
+				this._document.getElementById("item-description").hidden = false;
+			}
+			if (this._document.getElementById("exchWebService-body-editor")) {
+				this._document.getElementById("exchWebService-body-editor").hidden = true;
+			}
+			return;
+		}
+
 		if (this._initialized) return;
 
 		this._oldCallback = this._window.onAcceptCallback;
