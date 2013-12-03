@@ -315,7 +315,7 @@ mivExchangeTodo.prototype = {
 			return this._newCompanies;
 		}
 		
-		if (!this._companies) 
+		if (!this._companies) {
 			aCount.value = 0;
 			return [];
 		}
