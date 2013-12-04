@@ -2657,6 +2657,25 @@ calExchangeCalendar.prototype = {
 		if (this.debug) this.logInfo("Getting period from: "+aStartDate+" until "+aEndDate);
 		//dump(this.name+": Getting period from: "+aStartDate+" until "+aEndDate+"\n");
 
+      		var self = this;
+		this.addToQueue( erFindCalendarItemsRequest, 
+			{user: this.user, 
+			 mailbox: this.mailbox,
+			 serverUrl: this.serverUrl,
+			 count: aCount,
+			 rangeStart: aStartDate.clone(),
+			 rangeEnd: aEndDate.clone(),
+			 folderBase: this.folderBase,
+			 itemFilter: aItemFilter,
+			 folderID: this.folderID,
+			 changeKey: this.changeKey,
+			 actionStart: Date.now() }, 
+			function(erFindCalendarItemsRequest, aIds, aOccurrences) { self.findCalendarItemsOK(erFindCalendarItemsRequest, aIds, aOccurrences);}, 
+			function(erFindCalendarItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erFindCalendarItemsRequest, aCode, aMsg);},
+			null);
+
+		return;
+
 		if (findReverse) {
 			var endDate = aEndDate.clone();
 			var startDate = endDate.clone();

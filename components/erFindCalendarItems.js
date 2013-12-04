@@ -250,7 +250,6 @@ erFindCalendarItemsRequest.prototype = {
 					this.occurrenceIds = [];
 					this.ids = [];
 
-					// Lets do a new request to the exchange server but with the startdate set to the last enddate.
 					this.execute(); 
 					return;
 				}
