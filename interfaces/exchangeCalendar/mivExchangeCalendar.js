@@ -1441,11 +1441,15 @@ calExchangeCalendar.prototype = {
 /*		if (((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) ||
 			((aOldItem.recurrenceInfo) && (aOldItem.calendarItemType == "RecurringMaster") && (!aNewItem.recurrenceInfo)) ||
 			((aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo) && (aOldItem.recurrenceInfo.toString() != aNewItem.recurrenceInfo.toString())) ) {*/
+			if (this.debug) this.logInfo("1 -- aOldItem.recurrenceInfo:"+aOldItem.recurrenceInfo+", aNewItem.recurrenceInfo:"+aNewItem.recurrenceInfo);
+			if ((this.debug) && (aOldItem.recurrenceInfo)) this.logInfo("1 -- aOldItem.recurrenceInfo.toString():"+aOldItem.recurrenceInfo.toString());
+			if ((this.debug) && (aNewItem.recurrenceInfo)) this.logInfo("1 -- aNewItem.recurrenceInfo.toString():"+aNewItem.recurrenceInfo.toString());
+
 		if (((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) ||
 			((aOldItem.recurrenceInfo) && (aOldItem.calendarItemType == "RecurringMaster") && (!aNewItem.recurrenceInfo)) ) {
-			if (this.debug) this.logInfo(" -- aOldItem.recurrenceInfo:"+aOldItem.recurrenceInfo+", aNewItem.recurrenceInfo:"+aNewItem.recurrenceInfo);
-			if ((this.debug) && (aOldItem.recurrenceInfo)) this.logInfo(" -- aOldItem.recurrenceInfo.toString():"+aOldItem.recurrenceInfo.toString());
-			if ((this.debug) && (aNewItem.recurrenceInfo)) this.logInfo(" -- aNewItem.recurrenceInfo.toString():"+aNewItem.recurrenceInfo.toString());
+			if (this.debug) this.logInfo("2 -- aOldItem.recurrenceInfo:"+aOldItem.recurrenceInfo+", aNewItem.recurrenceInfo:"+aNewItem.recurrenceInfo);
+			if ((this.debug) && (aOldItem.recurrenceInfo)) this.logInfo("2 -- aOldItem.recurrenceInfo.toString():"+aOldItem.recurrenceInfo.toString());
+			if ((this.debug) && (aNewItem.recurrenceInfo)) this.logInfo("2 -- aNewItem.recurrenceInfo.toString():"+aNewItem.recurrenceInfo.toString());
 
 			if ((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) this.logInfo("modifyItem item was changed from single into recurring.");
 			if ((aOldItem.recurrenceInfo) && (!aNewItem.recurrenceInfo)) this.logInfo("modifyItem item was changed from recurring into single.");
