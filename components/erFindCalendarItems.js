@@ -80,6 +80,9 @@ function erFindCalendarItemsRequest(aArgument, aCbOk, aCbError, aListener)
 	this.serverUrl = aArgument.serverUrl;
 	this.rangeStart = aArgument.rangeStart;
 	this.rangeEnd = aArgument.rangeEnd;
+dump(aArgument.folderBase+": this.rangeStart:"+this.rangeStart+"\n");
+dump(aArgument.folderBase+": this.rangeEnd:"+this.rangeEnd+"\n");
+
 	this.count = aArgument.count;
 	this.folderID = aArgument.folderID;
 	this.folderBase = aArgument.folderBase;
@@ -200,6 +203,10 @@ erFindCalendarItemsRequest.prototype = {
 					for (var index=0; index < calendarItems.length; index++) {
 						this.itemsFound++;
 						var uid = xml2json.getTagValue(calendarItems[index], "t:UID", "");
+
+dump("  ** title:"+xml2json.getTagValue(calendarItems[index], "t:Subject", "<NOP>")+"\n");
+dump("  ** Start:"+xml2json.getTagValue(calendarItems[index], "t:Start", "<NOP>")+"\n");
+dump("  ** CalendarItemType:"+xml2json.getTagValue(calendarItems[index], "t:CalendarItemType", "<NOP>")+"\n\n");
 
 						switch (xml2json.getTagValue(calendarItems[index], "t:CalendarItemType")) {
 							case "Occurrence" :
