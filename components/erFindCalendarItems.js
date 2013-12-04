@@ -92,9 +92,8 @@ function erFindCalendarItemsRequest(aArgument, aCbOk, aCbError, aListener)
 	this.occurrenceIds = [];
 	this.ids = [];
 
-	this.newStartDate = null;
-
 	this.itemsFound = 0;
+	this.offset = 0;
 	this.isRunning = true;
 	this.execute();
 }
@@ -122,27 +121,38 @@ erFindCalendarItemsRequest.prototype = {
 		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ItemClass'/>");
 		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:Subject'/>");
 
-		var view = xml2json.addTag(req, "CalendarView", "nsMessages", null); 
+		var pageView = xml2json.addTag(req, "IndexedPageItemView", "nsMessages", null); 
+		xml2json.setAttribute(pageView, "MaxEntriesReturned", "5");
+		xml2json.setAttribute(pageView, "BasePoint", "Beginning");
+		xml2json.setAttribute(pageView, "Offset", this.offset);
 
-		if (this.newStartDate) {
-				xml2json.setAttribute(view, "StartDate", this.newStartDate);
+		var restriction = xml2json.addTag(req, "Restriction", "nsMessages", null); 
+
+		var andObj = xml2json.addTag(restriction, "And", "nsTypes", null);
+
+		var isGreaterThanOrEqualTo = xml2json.addTag(andObj, "IsGreaterThanOrEqualTo", "nsTypes", null);
+		var fieldUri = xml2json.addTag(isGreaterThanOrEqualTo, "FieldURI", "nsTypes", null);
+		xml2json.setAttribute(fieldUri, "FieldURI", "calendar:End");
+		var fieldURIOrConstant = xml2json.addTag(isGreaterThanOrEqualTo, "FieldURIOrConstant", "nsTypes", null);
+		var constant = xml2json.addTag(fieldURIOrConstant, "Constant", "nsTypes", null);
+		if (this.rangeStart) {
+			xml2json.setAttribute(constant, "Value", convDate(this.rangeStart));
 		}
 		else {
-			if (this.rangeStart) {
-				xml2json.setAttribute(view, "StartDate", convDate(this.rangeStart));
-			}
-			else {
-				xml2json.setAttribute(view, "StartDate", "1900-01-01T00:00:00-00:00");
-			}
+			xml2json.setAttribute(constant, "Value", "1900-01-01T00:00:00-00:00");
 		}
 
+		var isLessThanOrEqualTo = xml2json.addTag(andObj, "IsLessThanOrEqualTo", "nsTypes", null);
+		fieldUri = xml2json.addTag(isLessThanOrEqualTo, "FieldURI", "nsTypes", null);
+		xml2json.setAttribute(fieldUri, "FieldURI", "calendar:Start");
+		fieldURIOrConstant = xml2json.addTag(isLessThanOrEqualTo, "FieldURIOrConstant", "nsTypes", null);
+		constant = xml2json.addTag(fieldURIOrConstant, "Constant", "nsTypes", null);
 		if (this.rangeEnd) {
-			xml2json.setAttribute(view, "EndDate", convDate(this.rangeEnd));
+			xml2json.setAttribute(constant, "Value", convDate(this.rangeEnd));
 		}
 		else {
-			xml2json.setAttribute(view, "EndDate", "2300-01-01T00:00:00-00:00");
+			xml2json.setAttribute(constant, "Value", "2300-01-01T00:00:00-00:00");
 		}
-		xml2json.setAttribute(view, "MaxEntriesReturned", "1");
 
 		view = null;
 
@@ -181,14 +191,15 @@ erFindCalendarItemsRequest.prototype = {
 		if (rm.length > 0) {
 			var rootFolder = xml2json.getTag(rm[0], "m:RootFolder");
 			if (rootFolder) {
-					if (this.newStartDate) exchWebService.commonFunctions.LOG("next run because previous did not contain all items.");
+					this.offset = xml2json.getAttribute(rootFolder, "IndexedPagingOffset");
+					exchWebService.commonFunctions.LOG(" -- Next IndexedPagingOffset:"+this.offset+".");
+					//dump(" -- Next IndexedPagingOffset:"+this.offset+"\n");
+
 					// Process results.
 					var calendarItems = xml2json.XPath(rootFolder, "/t:Items/t:CalendarItem");
 					for (var index=0; index < calendarItems.length; index++) {
 						this.itemsFound++;
 						var uid = xml2json.getTagValue(calendarItems[index], "t:UID", "");
-
-						this.newStartDate = xml2json.getTagValue(calendarItems[index], "t:End");
 
 						switch (xml2json.getTagValue(calendarItems[index], "t:CalendarItemType")) {
 							case "Occurrence" :
@@ -217,15 +228,16 @@ erFindCalendarItemsRequest.prototype = {
 					}
 					calendarItems = null;
 
-				if ((xml2json.getAttribute(rootFolder, "IncludesLastItemInRange") == "true") || (this.itemsFound == xml2json.getAttribute(rootFolder, "TotalItemsInView"))) {
+//				if ((xml2json.getAttribute(rootFolder, "IncludesLastItemInRange") == "true") || (this.itemsFound == xml2json.getAttribute(rootFolder, "TotalItemsInView"))) {
+				if ((xml2json.getAttribute(rootFolder, "IncludesLastItemInRange") == "true")) {
 					// We are done.
-					exchWebService.commonFunctions.LOG("erFindCalendarItems: retrieved:"+xml2json.getAttribute(rootFolder, "TotalItemsInView")+" items. Includes last item in range.");
-					dump("erFindCalendarItems: retrieved:"+this.itemsFound+" items. TotalItemsInView:"+xml2json.getAttribute(rootFolder, "TotalItemsInView")+" items. Includes last item in range.\n");
+					exchWebService.commonFunctions.LOG("erFindCalendarItems: retrieved:"+this.itemsFound+" items. TotalItemsInView:"+xml2json.getAttribute(rootFolder, "TotalItemsInView")+" items. Includes last item in range.");
+					//dump("erFindCalendarItems: retrieved:"+this.itemsFound+" items. TotalItemsInView:"+xml2json.getAttribute(rootFolder, "TotalItemsInView")+" items. Includes last item in range.\n");
 				}
 				else {
 					// We return the result to be processed.
-					exchWebService.commonFunctions.LOG("erFindCalendarItems: retrieved:"+xml2json.getAttribute(rootFolder, "TotalItemsInView")+" items. Last item not in range so going for another run.");
-					dump("erFindCalendarItems: retrieved:"+this.itemsFound+" items. TotalItemsInView:"+xml2json.getAttribute(rootFolder, "TotalItemsInView")+" items. Last item not in range so going for another run.\n");
+					exchWebService.commonFunctions.LOG("erFindCalendarItems: retrieved:"+this.itemsFound+" items. TotalItemsInView:"+xml2json.getAttribute(rootFolder, "TotalItemsInView")+" items. Last item not in range so going for another run.");
+					//dump("erFindCalendarItems: retrieved:"+this.itemsFound+" items. TotalItemsInView:"+xml2json.getAttribute(rootFolder, "TotalItemsInView")+" items. Last item not in range so going for another run.\n");
 					if (this.mCbOk) {
 						var occurrenceList = [];
 						for (var index in this.occurrences) {
@@ -284,6 +296,7 @@ erFindCalendarItemsRequest.prototype = {
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)
 	{
+dump(" @@@ onSendError aCode:"+aCode+", aMsg:"+aMsg+" @@@\n");
 		this.isRunning = false;
 		if (this.mCbError) {
 			this.mCbError(this, aCode, aMsg);
