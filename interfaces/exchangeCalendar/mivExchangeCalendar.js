@@ -2657,7 +2657,7 @@ calExchangeCalendar.prototype = {
 		if (this.debug) this.logInfo("Getting period from: "+aStartDate+" until "+aEndDate);
 		//dump(this.name+": Getting period from: "+aStartDate+" until "+aEndDate+"\n");
 
-      		var self = this;
+/*      		var self = this;
 		this.addToQueue( erFindCalendarItemsRequest, 
 			{user: this.user, 
 			 mailbox: this.mailbox,
@@ -2674,7 +2674,7 @@ calExchangeCalendar.prototype = {
 			function(erFindCalendarItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erFindCalendarItemsRequest, aCode, aMsg);},
 			null);
 
-		return;
+		return;*/
 
 		if (findReverse) {
 			var endDate = aEndDate.clone();
