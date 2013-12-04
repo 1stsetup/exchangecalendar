@@ -99,9 +99,9 @@ erCreateItemRequest.prototype = {
 		// Following two are only needed for emails.
 		//req.setAttribute("MessageDisposition", "SaveOnly");
 
-		//var savedItemFolderId = makeParentFolderIds2("SavedItemFolderId", this.argument);
-		//req.addChildTagObject(savedItemFolderId);
-		//savedItemFolderId = null;
+		var savedItemFolderId = makeParentFolderIds2("SavedItemFolderId", this.argument);
+		req.addChildTagObject(savedItemFolderId);
+		savedItemFolderId = null;
 
 		var Items = exchWebService.commonFunctions.xmlToJxon('<nsMessages:Items xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'">'+String(this.createReq)+'</nsMessages:Items>');
 		req.addChildTagObject(Items);
