@@ -2927,7 +2927,8 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 	fromText2HTML: function _fromText2HTML(aString)
 	{
-		var html = aString.replace(/\n/g, '<br>');
+		var html = convertSpecialCharatersToXML(aString);
+		html = html.replace(/\n/g, '<br>');
 		return "<HTML><BODY>"+html+"</BODY></HTML>";
 	},
 
