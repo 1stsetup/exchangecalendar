@@ -279,9 +279,12 @@ exchAttachments.prototype = {
 			var first = true;
 			for (var index in attachments) {
 				this.globalFunctions.LOG("  -- processing attachment: "+index);
-				this.addAttachment(attachments[index], first);
-				if (first) {
-					first = false;
+//dump("aAttachment.uri:"+attachments[index].uri.spec+"\n");
+				if (attachments[index].uri.spec.indexOf("isinline=true") == -1) {
+					this.addAttachment(attachments[index], first);
+					if (first) {
+						first = false;
+					}
 				}
 			}
 

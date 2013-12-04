@@ -140,7 +140,7 @@ exchEventSummaryDialog.prototype = {
 				if (this._document.getElementById("exchWebService-body-editor")) {
 					this._document.getElementById("exchWebService-body-editor").hidden = false;
 					//this._document.getElementById("exchWebService-body-editor").content = item.body;
-
+//dump("item.body:"+item.body+"\n");
 					this._document.getElementById("exchWebService-body-editor").loadURI("data:text/html;charset=utf-8;base64," + btoa(item.body), null,null);
 					//this._document.getElementById("exchWebService-body-editor").loadURI("data:text/html;charset=utf-8," + item.body, null,null);
 				}

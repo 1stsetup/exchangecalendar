@@ -2856,7 +2856,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 //				if (this.debug) this.logInfo(" -- Attachment: name="+fileAttachment.getTagValue("t:Name"));
 				var newAttachment = cal.createAttachment();
 				newAttachment.setParameter("X-AttachmentId",xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id")); 
-				newAttachment.uri = cal.makeURL("http://somewhere/?id="+encodeURIComponent(xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id"))+"&name="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Name"))+"&size="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Size", ""))+"&calendarid="+encodeURIComponent(this.calendar.id));
+				newAttachment.uri = cal.makeURL("http://somewhere/?id="+encodeURIComponent(xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id"))+"&name="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Name"))+"&size="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Size", ""))+"&calendarid="+encodeURIComponent(this.calendar.id)+"&isinline="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:IsInline", "false"))+"&contentid="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:ContentId", "false")));
 
 				//if (this.debug) this.logInfo("New attachment URI:"+this.serverUrl+"/?id="+encodeURIComponent(xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
 
