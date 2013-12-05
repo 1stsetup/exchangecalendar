@@ -117,6 +117,7 @@ try{
 			var args = this._window.arguments[0];
 			var item = args.calendarEvent;
 			this.updateScreen(item, item.calendar);
+//dump("event.dialog: item.exchangeXML:"+item.exchangeXML+"\n");
 
 			if ((item.bodyType == "HTML") || (item.bodyType === undefined)) {
 				if (this._document.getElementById("item-description")) {
