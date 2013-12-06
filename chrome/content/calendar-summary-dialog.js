@@ -132,6 +132,8 @@ exchEventSummaryDialog.prototype = {
 				}
 			}
 
+			//Cc["@mozilla.org/consoleservice;1"]
+	                //     .getService(Ci.nsIConsoleService).logStringMessage(item.exchangeXML);
 //dump("summary.dialog: item.exchangeXML:"+item.exchangeXML+"\n");
 			if (item.bodyType == "HTML") {
 				if (this._document.getElementById("item-description")) {

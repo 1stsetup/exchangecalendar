@@ -117,6 +117,9 @@ try{
 			var args = this._window.arguments[0];
 			var item = args.calendarEvent;
 			this.updateScreen(item, item.calendar);
+			//Cc["@mozilla.org/consoleservice;1"]
+	                //     .getService(Ci.nsIConsoleService).logStringMessage(item.exchangeXML);
+
 //dump("event.dialog: item.exchangeXML:"+item.exchangeXML+"\n");
 
 			if ((item.bodyType == "HTML") || (item.bodyType === undefined)) {
