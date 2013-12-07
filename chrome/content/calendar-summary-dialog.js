@@ -164,7 +164,8 @@ exchEventSummaryDialog.prototype = {
 		args.item = item;
 		args.attendees =item.organizer;
 		args.calendar =calendar;
-		args.onOk = this.callOnOk;
+		var self = this;
+		args.onOk = function(attendee,organizer,startTime,endTime) { self.callOnOk(attendee,organizer,startTime,endTime);};
 		args.opener="exchWebService-onForward";
 		this._window.openDialog("chrome://calendar/content/calendar-event-dialog-attendees.xul","_blank", "chrome,titlebar,modal,resizable",args);
 		
@@ -184,8 +185,9 @@ exchEventSummaryDialog.prototype = {
 		var tmpObject = new erForewardItemRequest(
 			{user: this.globalFunctions.safeGetCharPref(calPrefs, "ecDomain")+"\\"+this.globalFunctions.safeGetCharPref(calPrefs, "ecUser"), 
 			mailbox: this.globalFunctions.safeGetCharPref(calPrefs, "ecMailbox"),
-			serverUrl: this.globalFunctions.safeGetCharPref(calPrefs, "ecServer"), item: item, attendees: attendee, 
-			changeKey :  item.changeKey, description : item.getProperty("description")}, 					
+			serverUrl: this.globalFunctions.safeGetCharPref(calPrefs, "ecServer"), 
+			item: item, 
+			attendees: attendee}, 
 			function(aForewardItemRequest, aResp){self.erForewardItemRequestOK(aForewardItemRequest, aResp);}, 
 			function(aForewardItemRequest, aCode, aMsg){self.erForewardItemRequestError(aForewardItemRequest, aCode, aMsg);});		
 	},

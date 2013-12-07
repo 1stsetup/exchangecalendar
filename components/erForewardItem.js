@@ -47,6 +47,8 @@ Cu.import("resource://exchangecalendar/ecFunctions.js");
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/soapFunctions.js");
 
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+
 var EXPORTED_SYMBOLS = ["erForewardItemRequest"];
 
 function erForewardItemRequest(aArgument, aCbOk, aCbError, aListener)
@@ -85,25 +87,28 @@ erForewardItemRequest.prototype = {
 		for each (let emailId in this.argument.attendees) 
                 { 
                         var email = new String(emailId); 
+dump("emailId:"+emailId+"\n");
+//michel@verbraak.org >> Michel Verbraak <michel@verbraak.org>
                         var start = email.indexOf('<'); 
-                        var end = email.indexOf('>'); 
 			if(start<0){
 				toRecipients.addChildTag("Mailbox", "nsTypes", null).addChildTag("EmailAddress", "nsTypes", email);
 			}
 			else{
-				toRecipients.addChildTag("Mailbox", "nsTypes", null).addChildTag("EmailAddress", "nsTypes", email.slice(start+1,end));
+				email = email.substr(start+1);
+	                        var end = email.indexOf('>'); 
+				toRecipients.addChildTag("Mailbox", "nsTypes", null).addChildTag("EmailAddress", "nsTypes", email.substr(0,end));
 			}
                 }
 		
 		var referenceItemId = forwardItem.addChildTag("ReferenceItemId", "nsTypes", null);
 		referenceItemId.setAttribute("Id", this.argument.item.id);
-		referenceItemId.setAttribute("ChangeKey", this.argument.changeKey);
+		referenceItemId.setAttribute("ChangeKey", this.argument.item.changeKey);
 
-		forwardItem.addChildTag("NewBodyContent", "nsTypes", this.argument.description).setAttribute("BodyType", "Text");
+		forwardItem.addChildTag("NewBodyContent", "nsTypes", this.argument.item.body).setAttribute("BodyType", "HTML");
 
 		this.parent.xml2jxon = true;
 		
-		//exchWebService.commonFunctions.LOG("erForewardItemRequest.execute>"+String(this.parent.makeSoapMessage(req)));
+		//dump("erForewardItemRequest.execute>"+String(this.parent.makeSoapMessage(req))+"\n");
  
                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 		req = null;
