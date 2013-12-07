@@ -87,8 +87,6 @@ erForewardItemRequest.prototype = {
 		for each (let emailId in this.argument.attendees) 
                 { 
                         var email = new String(emailId); 
-dump("emailId:"+emailId+"\n");
-//michel@verbraak.org >> Michel Verbraak <michel@verbraak.org>
                         var start = email.indexOf('<'); 
 			if(start<0){
 				toRecipients.addChildTag("Mailbox", "nsTypes", null).addChildTag("EmailAddress", "nsTypes", email);
