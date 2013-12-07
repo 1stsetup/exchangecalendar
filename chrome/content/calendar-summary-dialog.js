@@ -47,6 +47,98 @@ Cu.import("resource://exchangecalendar/erForewardItem.js");
 
 //if (! exchWebService) var exchWebService = {};
 
+function exchEventSummaryBrowserProgressListener(aDialog)
+{
+	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+				.getService(Ci.mivFunctions);
+	this.dialog = aDialog;
+}
+
+exchEventSummaryBrowserProgressListener.prototype = {
+
+	QueryInterface: XPCOMUtils.generateQI([Ci.nsISupportsWeakReference,
+						Ci.nsIWebProgressListener,
+						Ci.nsISupports]),
+
+	GetWeakReference: function _GetWeakReference()
+	{
+			Cc["@mozilla.org/consoleservice;1"]
+	                     .getService(Ci.nsIConsoleService).logStringMessage("GetWeakReference");
+		return null;
+	},
+
+//void onLocationChange(in nsIWebProgress aWebProgress, in nsIRequest aRequest, in nsIURI aLocation, [optional] in unsigned long aFlags);
+	onLocationChange: function _onLocationChange(aWebProgress, aRequest, aLocation, aFlags)
+	{
+			var flagStr = "("+aFlags+")";
+			if (aFlags & 0x1) flagStr += ",LOCATION_CHANGE_SAME_DOCUMENT";
+			if (aFlags & 0x2) flagStr += ",LOCATION_CHANGE_ERROR_PAGE";
+			if (aLocation) {
+			Cc["@mozilla.org/consoleservice;1"]
+	                     .getService(Ci.nsIConsoleService).logStringMessage("onLocationChange: aLocation.spec:"+aLocation.spec+", aFlags:"+flagStr);
+			}
+			else {
+			Cc["@mozilla.org/consoleservice;1"]
+	                     .getService(Ci.nsIConsoleService).logStringMessage("onLocationChange: aLocation:"+aLocation+", aFlags:"+flagStr);
+			}
+	},
+
+//void onProgressChange(in nsIWebProgress aWebProgress, in nsIRequest aRequest, in long aCurSelfProgress, in long aMaxSelfProgress, in long aCurTotalProgress, in long aMaxTotalProgress);
+	onProgressChange: function _onProgressChange(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress)
+	{
+			Cc["@mozilla.org/consoleservice;1"]
+	                     .getService(Ci.nsIConsoleService).logStringMessage("onProgressChange: aCurSelfProgress:"+aCurSelfProgress+", aMaxSelfProgress:"+aMaxSelfProgress+", aCurTotalProgress:"+aCurTotalProgress+", aMaxTotalProgress:"+aMaxTotalProgress);
+			if ((aCurSelfProgress == aMaxSelfProgress) && (this.dialog)) {
+				this.dialog.removeTmpFile();
+			}
+	},
+
+//void onSecurityChange(in nsIWebProgress aWebProgress, in nsIRequest aRequest, in unsigned long aState);
+	onSecurityChange: function _onSecurityChange(aWebProgress, aRequest, aState)
+	{
+			var flagStr = "("+aState+")";
+			if (aState & 0x1) flagStr += ",STATE_IS_BROKEN";
+			if (aState & 0x2) flagStr += ",STATE_IS_SECURE";
+			if (aState & 0x4) flagStr += ",STATE_IS_INSECURE";
+			if (aState & 0x10000) flagStr += ",STATE_SECURE_MED";
+			if (aState & 0x20000) flagStr += ",STATE_SECURE_LOW";
+			if (aState & 0x40000) flagStr += ",STATE_SECURE_HIGH";
+			if (aState & 0x100000) flagStr += ",STATE_IDENTITY_EV_TOPLEVEL";
+			
+			Cc["@mozilla.org/consoleservice;1"]
+	                     .getService(Ci.nsIConsoleService).logStringMessage("onSecurityChange: aState:"+flagStr);
+	},
+
+//void onStateChange(in nsIWebProgress aWebProgress, in nsIRequest aRequest, in unsigned long aStateFlags, in nsresult aStatus);
+	onStateChange: function _onStateChange(aWebProgress, aRequest, aStateFlags, aStatus)
+	{
+			var flagStr = "("+aStateFlags+")";
+			if (aStateFlags & 0x1) flagStr += ",STATE_START";
+			if (aStateFlags & 0x2) flagStr += ",STATE_REDIRECTING";
+			if (aStateFlags & 0x4) flagStr += ",STATE_TRANSFERRING";
+			if (aStateFlags & 0x8) flagStr += ",STATE_NEGOTIATING";
+			if (aStateFlags & 0x10) flagStr += ",STATE_STOP";
+			if (aStateFlags & 0x10000) flagStr += ",STATE_IS_REQUEST";
+			if (aStateFlags & 0x20000) flagStr += ",STATE_IS_DOCUMENT";
+			if (aStateFlags & 0x40000) flagStr += ",STATE_IS_NETWORK";
+			if (aStateFlags & 0x80000) flagStr += ",STATE_IS_WINDOW";
+			if (aStateFlags & 0x1000000) flagStr += ",STATE_RESTORING";
+
+			Cc["@mozilla.org/consoleservice;1"]
+	                     .getService(Ci.nsIConsoleService).logStringMessage("onStateChange: aStateFlags:"+flagStr+", aStatus:"+aStatus);
+
+	},
+
+//void onStatusChange(in nsIWebProgress aWebProgress, in nsIRequest aRequest, in nsresult aStatus, in wstring aMessage);
+	onStatusChange: function _onStatusChange(aWebProgress, aRequest, aStatus, aMessage)
+	{
+			Cc["@mozilla.org/consoleservice;1"]
+	                     .getService(Ci.nsIConsoleService).logStringMessage("onStatusChange: aStatus:"+aStatus+", aMessage:"+aMessage);
+	},
+
+
+}
+
 function exchEventSummaryDialog(aDocument, aWindow)
 {
 	this._document = aDocument;
@@ -108,6 +200,51 @@ exchEventSummaryDialog.prototype = {
 		alert(aCode+":"+aMsg);
 	},
 
+	removeTmpFile: function _removeTmpFile()
+	{
+		if ((this.tmpFile) && (this.tmpFile.exists())) {
+			//dump("Removing tmp file:"+this.tmpFile.path+"\n");
+			this.tmpFile.remove(false);
+		}
+	},
+
+	saveToFile: function _saveToFile(aContent, aItem)
+	{
+		var file = Cc["@mozilla.org/file/directory_service;1"]
+				.getService(Ci.nsIProperties)
+				.get("ProfD", Ci.nsIFile);
+		file.append("exchange-data");
+		if ( !file.exists() || !file.isDirectory() ) {
+			file.create(Ci.nsIFile.DIRECTORY_TYPE, 0777);  
+		}
+
+		file.append("tmp");
+		if ( !file.exists() || !file.isDirectory() ) {
+			file.create(Ci.nsIFile.DIRECTORY_TYPE, 0777);  
+		}
+
+		file.append(this.globalFunctions.getUUID()+".html");
+
+		if (file.exists()) {
+			file.remove(false);
+		}
+
+//		file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0777);  
+
+		var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].  
+				 createInstance(Components.interfaces.nsIFileOutputStream);  
+		foStream.init(file, 0x02 | 0x08 | 0x20, 0777, 0);  
+
+		var converter = Components.classes["@mozilla.org/intl/converter-output-stream;1"].
+				createInstance(Components.interfaces.nsIConverterOutputStream);
+		converter.init(foStream, "UTF-8", 0, 0);
+		converter.writeString(aContent);
+		converter.close(); // this closes foStream
+		  
+		this.tmpFile = file;
+		return file;
+	},
+
 	onLoad: function _onLoad()
 	{
 		if (this._document.getElementById("calendar-event-summary-dialog")) {
@@ -143,8 +280,13 @@ exchEventSummaryDialog.prototype = {
 				if (this._document.getElementById("exchWebService-body-editor")) {
 					this._document.getElementById("exchWebService-body-editor").hidden = false;
 					//this._document.getElementById("exchWebService-body-editor").content = item.body;
-					this._document.getElementById("exchWebService-body-editor").loadURI("data:text/html;charset=utf-8;base64," + btoa(item.body), null,null);
-					//this._document.getElementById("exchWebService-body-editor").loadURI("data:text/html;charset=utf-8," + item.body, null,null);
+
+					var tmpListener = new exchEventSummaryBrowserProgressListener(this);
+					this._document.getElementById("exchWebService-body-editor").webProgress.addProgressListener(tmpListener, 0xff);
+try{
+					var filename = this.saveToFile(item.body, item);
+					this._document.getElementById("exchWebService-body-editor").loadURI("file://" + filename.path, null,null);
+}catch(err){dump("loadURI err:"+err+"\n");}
 				}
 			}
 			else {

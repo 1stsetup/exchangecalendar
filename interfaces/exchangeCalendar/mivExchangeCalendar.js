@@ -3122,6 +3122,17 @@ calExchangeCalendar.prototype = {
 
 			this.getSyncState();
 
+			//dump(this.name+": Going to load testdata ("+this.id+")\n");
+			var testData = this.loadFromFile("testitem");
+			if (testData) {
+				var testJSON = xml2json.newJSON();
+				xml2json.parseXML(testJSON, testData);
+				var tmpItems = [testJSON[telements][0]];
+try{
+				this.updateCalendar(null, tmpItems, true, false);
+}catch(err){dump(this.name+": Testdata error:"+err+"\n");}
+				dump("Loaded testdata\n");
+			}
 		}
 		return true;
 
