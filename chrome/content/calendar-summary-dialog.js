@@ -89,7 +89,7 @@ exchEventSummaryBrowserProgressListener.prototype = {
 			Cc["@mozilla.org/consoleservice;1"]
 	                     .getService(Ci.nsIConsoleService).logStringMessage("onProgressChange: aCurSelfProgress:"+aCurSelfProgress+", aMaxSelfProgress:"+aMaxSelfProgress+", aCurTotalProgress:"+aCurTotalProgress+", aMaxTotalProgress:"+aMaxTotalProgress);
 			if ((aCurSelfProgress == aMaxSelfProgress) && (this.dialog)) {
-				this.dialog.removeTmpFile();
+				//this.dialog.removeTmpFile(); // Will be done by the DOMContentLoaded event.
 			}
 	},
 
@@ -203,7 +203,7 @@ exchEventSummaryDialog.prototype = {
 	removeTmpFile: function _removeTmpFile()
 	{
 		if ((this.tmpFile) && (this.tmpFile.exists())) {
-			//dump("Removing tmp file:"+this.tmpFile.path+"\n");
+			dump("Removing tmp file:"+this.tmpFile.path+"\n");
 			this.tmpFile.remove(false);
 		}
 	},
@@ -245,8 +245,30 @@ exchEventSummaryDialog.prototype = {
 		return file;
 	},
 
+	onLoadedData: function _onLoadedData(aStr)
+	{
+		this._document.getElementById("exchWebService-body-editor").removeEventListener("DOMContentLoaded",arguments.callee,true);
+		dump("onLoadedData:\n");
+		this.removeTmpFile();
+	},
+
+	browserLoad: function _browserLoad(aStr, aItem)
+	{
+		this._document.getElementById("exchWebService-body-editor").removeEventListener("load",this.browserLoadFunction,true);
+		dump("browserLoad:\n");
+		var self = this;
+		this._document.getElementById("exchWebService-body-editor").addEventListener("DOMContentLoaded", function(aEvent){ self.onLoadedData(aEvent);}, true);
+		var tmpListener = new exchEventSummaryBrowserProgressListener(this);
+		this._document.getElementById("exchWebService-body-editor").addProgressListener(tmpListener, 0x1ff);
+try{
+		var filename = this.saveToFile(aItem.body, aItem);
+		this._document.getElementById("exchWebService-body-editor").loadURI("file://" + filename.path, null,"utf-8");
+}catch(err){dump("loadURI err:"+err+"\n");}
+	},
+
 	onLoad: function _onLoad()
 	{
+		dump("onLoad\n");
 		if (this._document.getElementById("calendar-event-summary-dialog")) {
 			//this._window.removeEventListener("load", this.onLoad, false);
 			var args = this._window.arguments[0];
@@ -281,12 +303,10 @@ exchEventSummaryDialog.prototype = {
 					this._document.getElementById("exchWebService-body-editor").hidden = false;
 					//this._document.getElementById("exchWebService-body-editor").content = item.body;
 
-					var tmpListener = new exchEventSummaryBrowserProgressListener(this);
-					this._document.getElementById("exchWebService-body-editor").webProgress.addProgressListener(tmpListener, 0xff);
-try{
-					var filename = this.saveToFile(item.body, item);
-					this._document.getElementById("exchWebService-body-editor").loadURI("file://" + filename.path, null,null);
-}catch(err){dump("loadURI err:"+err+"\n");}
+					// We Wait until the browser object has been loaded completely.
+					var self = this;
+					this.browserLoadFunction = function(aEvent){ self.browserLoad(aEvent, item);}
+					this._document.getElementById("exchWebService-body-editor").addEventListener("load", this.browserLoadFunction, true);
 				}
 			}
 			else {
