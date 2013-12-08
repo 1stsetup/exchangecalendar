@@ -842,7 +842,11 @@ catch(err){
 	//attribute AUTF8String status;
 	get status()
 	{
-		this.logInfo("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
+		//this.logInfo("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
+		if (this._newStatus !== undefined) {
+			return this._newStatus;
+		}
+
 		return this._calEvent.status;
 	},
 
@@ -1770,7 +1774,7 @@ try {
 		case "Occurrence":
 		case "Exception":
 			var tmpStartDate = this.startDate || this.entryDate;
-			var tmpEndDate = this.endDate || this.entryDate;
+			var tmpEndDate = this.endDate || this.dueDate;
 			if ( ((aStartDate === null) || (!tmpStartDate) || (tmpStartDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (!tmpEndDate) || (tmpEndDate.compare(aEndDate) < 0)) ) {
 				//this.logInfo("getOccurrencesBetween 0a: inserting myself into list.");
 				occurrences.push(this);
