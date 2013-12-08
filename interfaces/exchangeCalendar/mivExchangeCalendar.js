@@ -6457,41 +6457,8 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 		this.saveCredentials(erGetMasterOccurrenceIdRequest.argument);
 	},
 
-	convertExchangeAppointmentToCalAppointment: function _convertExchangeAppointmentToCalAppointment(aCalendarItem, isMeetingRequest, erGetItemsRequest, doNotify, fromOfflineCache)
+	convertExchangeItemtoCalItem: function _convertExchangeItemtoCalItem(aCalendarItem, item, fromOfflineCache, isMeetingRequest)
 	{
-		if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment:"+String(aCalendarItem), 2);
-
-		//var item = createEvent();
-		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
-				.createInstance(Ci.mivExchangeEvent, this);
-
-		item.addMailboxAlias(this.mailbox);
-		item.calendar = this.superCalendar;
-		item.exchangeData = aCalendarItem;
-
-//		item.calendar = this;
-
-		//return item;
-
-		if (!doNotify) {
-			doNotify = false;
-		}
-
-		//item.id = this.tryToSetValue(aCalendarItem.getAttributeByTag("t:ItemId", "Id"), item.id);
-		if (! item.id) {
-			if (this.debug) this.logInfo("Item.id is missing. this is a required field.");
-			item.deleteItem();
-			item = null;
-			//dump("convertExchangeAppointmentToCalAppointment. Item.id is missing. this is a required field.\n");
-			return null;
-		}
-		//item.setProperty("X-ChangeKey", aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey"));
-		if ((erGetItemsRequest) && (erGetItemsRequest.argument.occurrenceIndexes) && (erGetItemsRequest.argument.occurrenceIndexes[item.id])) {
-			if (this.debug) this.logInfo(" Muriel:"+erGetItemsRequest.argument.occurrenceIndexes[item.id]+", title:"+item.title);
-			item.occurrenceIndex = erGetItemsRequest.argument.occurrenceIndexes[item.id];
-			//setProperty("X-OccurrenceIndex", erGetItemsRequest.argument.occurrenceIndexes[item.id]+"");
-		}
-		
 		var uid = item.uid;
 
 		if (this.itemCacheById[item.id]) {
@@ -6516,35 +6483,18 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 			}
 		}
 		
-
-		if (! item.startDate) {
-			if (this.debug) this.logInfo("We have an empty startdate. Skipping this item.");
-			item.deleteItem();
-			item = null;
-			//dump("convertExchangeAppointmentToCalAppointment. We have an empty startdate. Skipping this item.\n");
-			return null;
-		}
-
-		if (! item.endDate) {
-			if (this.debug) this.logInfo("We have an empty enddate. Skipping this item.");
-			item.deleteItem();
-			item = null;
-			//dump("convertExchangeAppointmentToCalAppointment. We have an empty enddate. Skipping this item.\n");
-			return null;
-		}
-
 		item.setProperty("DTSTAMP", this.tryToSetDateValue(xml2json.getTagValue(aCalendarItem, "t:DateTimeReceived")));
 
 		if (!isMeetingRequest) {
 			//if (this.debug) this.logInfo(" == item.title:"+item.title+", calendarItemType:"+aCalendarItem.getTagValue("t:CalendarItemType"));
 			switch (item.calendarItemType) {
 				case "Exception" :
-					if (this.debug) this.logInfo("@1:"+item.startDate.toString()+":IsException");
+					if (this.debug) this.logInfo("@1:"+(item.startDate || item.entryDate)+":IsException");
 					item.setProperty("X-RecurringType", "RE");
 					var master = this.recurringMasterCache[uid];
 					if (master) {
 						// We allready have a master in Cache.
-						if (this.debug) this.logInfo("Found master for exception:"+master.title+", date:"+master.startDate.toString());
+						if (this.debug) this.logInfo("Found master for exception:"+master.title+", date:"+(master.startDate || master.entryDate));
 						master.addException(item);
 					}
 					else {
@@ -6562,13 +6512,13 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 
 					break;
 				case "Occurrence" :
-					if (this.debug) this.logInfo("@1:"+item.startDate.toString()+":IsOccurrence");
+					if (this.debug) this.logInfo("@1:"+(item.startDate || item.entryDate)+":IsOccurrence");
 					item.setProperty("X-RecurringType", "RO");
 					// This is a occurrence. Try to find the master and link recurrenceinfo.
 					var master = this.recurringMasterCache[uid];
 					if (master) {
 						// We allready have a master in Cache.
-						if (this.debug) this.logInfo("Found master for occurrence:"+master.title+", date:"+master.startDate.toString());
+						if (this.debug) this.logInfo("Found master for occurrence:"+master.title+", date:"+(master.startDate || master.entryDate));
 
 						master.addOccurrence(item);
 					}
@@ -6588,8 +6538,8 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 					break;
 				case "RecurringMaster" :
 	
-//					if (this.debug) this.logInfo(item.title+":"+item.startDate.toString()+":IsMaster, fromOfflineCache:"+fromOfflineCache);
-					//dump(item.title+":"+item.startDate.toString()+":IsMaster, fromOfflineCache:"+fromOfflineCache+"\n");
+//					if (this.debug) this.logInfo(item.title+":"+(item.startDate || item.entryDate)+":IsMaster, fromOfflineCache:"+fromOfflineCache);
+					//dump(item.title+":"+(item.startDate || item.entryDate)+":IsMaster, fromOfflineCache:"+fromOfflineCache+"\n");
 
 					if ((this.recurringMasterCache[item.uid]) && (this.recurringMasterCache[item.uid].changeKey != item.changeKey)) {
 						if (this.debug) this.logInfo("We allready have this master in cache but the changeKey changed.");
@@ -6717,8 +6667,8 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 								 masterItem: tmpItem,
 								 folderID: this.folderID,
 								 changeKey: this.changeKey,
-								 startDate: this.startDate,
-								 endDate: this.endDate,
+								 startDate: this.startDate || this.entryDate,
+								 endDate: this.endDate || this.dueDate,
 						 		 GUID: calExchangeCalendarGUID}, 
 								function(erGetItemsRequest, aIds) { self.findOccurrencesOK(erGetItemsRequest, aIds);}, 
 								function(erGetItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erGetItemsRequest, aCode, aMsg);},
@@ -6742,8 +6692,8 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 								 masterItem: tmpItem,
 								 folderID: this.folderID,
 								 changeKey: this.changeKey,
-								 startDate: this.startDate,
-								 endDate: this.endDate,
+								 startDate: this.startDate || this.entryDate,
+								 endDate: this.endDate || this.dueDate,
 						 		 GUID: calExchangeCalendarGUID}, 
 								function(erGetItemsRequest, aIds) { self.findOccurrencesOK(erGetItemsRequest, aIds);}, 
 								function(erGetItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erGetItemsRequest, aCode, aMsg);},
@@ -6767,10 +6717,63 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 		}
 
 		return item;
-
 	},
 
-	convertExchangeTaskToCalTask: function _convertExchangeTaskToCalTask(aTask, erGetItemsRequest)
+	convertExchangeAppointmentToCalAppointment: function _convertExchangeAppointmentToCalAppointment(aCalendarItem, isMeetingRequest, erGetItemsRequest, doNotify, fromOfflineCache)
+	{
+		if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment:"+String(aCalendarItem), 2);
+
+		//var item = createEvent();
+		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
+				.createInstance(Ci.mivExchangeEvent, this);
+
+		item.addMailboxAlias(this.mailbox);
+		item.calendar = this.superCalendar;
+		item.exchangeData = aCalendarItem;
+
+//		item.calendar = this;
+
+		//return item;
+
+		if (!doNotify) {
+			doNotify = false;
+		}
+
+		//item.id = this.tryToSetValue(aCalendarItem.getAttributeByTag("t:ItemId", "Id"), item.id);
+		if (! item.id) {
+			if (this.debug) this.logInfo("Item.id is missing. this is a required field.");
+			item.deleteItem();
+			item = null;
+			//dump("convertExchangeAppointmentToCalAppointment. Item.id is missing. this is a required field.\n");
+			return null;
+		}
+		//item.setProperty("X-ChangeKey", aCalendarItem.getAttributeByTag("t:ItemId", "ChangeKey"));
+		if ((erGetItemsRequest) && (erGetItemsRequest.argument.occurrenceIndexes) && (erGetItemsRequest.argument.occurrenceIndexes[item.id])) {
+			if (this.debug) this.logInfo(" Muriel:"+erGetItemsRequest.argument.occurrenceIndexes[item.id]+", title:"+item.title);
+			item.occurrenceIndex = erGetItemsRequest.argument.occurrenceIndexes[item.id];
+			//setProperty("X-OccurrenceIndex", erGetItemsRequest.argument.occurrenceIndexes[item.id]+"");
+		}
+		
+		if (! item.startDate) {
+			if (this.debug) this.logInfo("We have an empty startdate. Skipping this item.");
+			item.deleteItem();
+			item = null;
+			//dump("convertExchangeAppointmentToCalAppointment. We have an empty startdate. Skipping this item.\n");
+			return null;
+		}
+
+		if (! item.endDate) {
+			if (this.debug) this.logInfo("We have an empty enddate. Skipping this item.");
+			item.deleteItem();
+			item = null;
+			//dump("convertExchangeAppointmentToCalAppointment. We have an empty enddate. Skipping this item.\n");
+			return null;
+		}
+
+		return this.convertExchangeItemtoCalItem(aCalendarItem, item, fromOfflineCache, isMeetingRequest);
+	},
+
+	convertExchangeTaskToCalTask: function _convertExchangeTaskToCalTask(aTask, erGetItemsRequest, fromOfflineCache)
 	{
 		if (this.debug) this.logInfo("convertExchangeTaskToCalTask:"+xml2json.toString(aTask), 2);
 		//var item = createTodo();
@@ -6781,15 +6784,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 		item.calendar = this.superCalendar;
 		item.exchangeData = aTask;
 
-
-		if (this.itemCacheById[item.id]) {
-			if (this.itemCacheById[item.id].changeKey == item.changeKey) {
-				if (this.debug) this.logInfo("Task item is allready in cache and the id and changeKey are the same. Skipping it.");
-				item.deleteItem();
-				item = null;
-				return null;
-			}
-		}
+		return this.convertExchangeItemtoCalItem(aTask, item, fromOfflineCache, false);
 
 		// See if this is a delegated task.
 /*		var isNotAccepted = 0;
@@ -6835,7 +6830,6 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 			item.setProperty("X-exchWebService-IsTeamTask",aTask.getTagValue("t:IsTeamTask"));
 		}
 */		
-		return item;
 	},
 
 	convertExchangeUserAvailabilityToCalAppointment: function _convertExchangeUserAvailabilityToCalAppointment(aCalendarEvent)
@@ -6967,7 +6961,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 				return this.convertExchangeAppointmentToCalAppointment(aExchangeItem, false, erGetItemsRequest, doNotify, fromOfflineCache);
 				break;
 			case "IPM.Task" :
-				return this.convertExchangeTaskToCalTask(aExchangeItem, erGetItemsRequest);
+				return this.convertExchangeTaskToCalTask(aExchangeItem, erGetItemsRequest, fromOfflineCache);
 				break;
 			default :
 				if (aExchangeItem.tagName == "CalendarEvent") {
