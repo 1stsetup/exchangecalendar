@@ -1037,14 +1037,14 @@ try {
 
 	set recurrenceInfo(aValue)
 	{
-		//dump("set recurrenceInfo 1: title:"+this.title+", aValue:"+aValue+"\n");
+		dump("set recurrenceInfo 1: title:"+this.title+", this.recurrenceInfo:"+this.recurrenceInfo+", aValue:"+aValue+"\n");
 		if (aValue) {
 			// Lets see if something changed.
 			var infoChanged = false;
-			if (this._calEvent.recurrenceInfo) {
-				if (this._calEvent.recurrenceInfo.countRecurrenceItems() == aValue.countRecurrenceItems()) 
+			if (this.recurrenceInfo) {
+				if (this.recurrenceInfo.countRecurrenceItems() == aValue.countRecurrenceItems()) 
 				{
-					var oldRecurrenceItems = this._calEvent.recurrenceInfo.getRecurrenceItems({});
+					var oldRecurrenceItems = this.recurrenceInfo.getRecurrenceItems({});
 					var newRecurrenceItems = aValue.getRecurrenceItems({});
 					// See if the oldReccurrenceItems exists in the new
 					var allOldExist = true;
@@ -1069,22 +1069,24 @@ try {
 					infoChanged = true;
 				}
 			}
+			else {
+				infoChanged = true;
+			}
 			if (infoChanged) {
+				dump("set recurrenceInfo 2: recurrenceinfo changed.\n"); 
 				this._newRecurrenceInfo = aValue.clone();
+				this._calEvent.recurrenceInfo = aValue.clone();
+			}
+			else {
+				dump("set recurrenceInfo 3: recurrenceinfo changed.\n"); 
 			}
 		}
 		else {
-			if (this._calEvent.recurrenceInfo) {
-				this._newRecurrenceInfo = aValue;
-			}
-		}
-
-		if (aValue) {
-			this._calEvent.recurrenceInfo = aValue.clone();
-		}
-		else {
+			dump("set recurrenceInfo 2: recurrenceinfo changed.\n"); 
+			this._newRecurrenceInfo = aValue;
 			this._calEvent.recurrenceInfo = aValue;
 		}
+
 	},
 
 	//readonly attribute calIDateTime recurrenceStartDate;
