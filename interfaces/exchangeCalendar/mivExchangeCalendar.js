@@ -1445,7 +1445,7 @@ calExchangeCalendar.prototype = {
 			if ((this.debug) && (aOldItem.recurrenceInfo)) this.logInfo("1 -- aOldItem.recurrenceInfo.toString():"+aOldItem.recurrenceInfo.toString());
 			if ((this.debug) && (aNewItem.recurrenceInfo)) this.logInfo("1 -- aNewItem.recurrenceInfo.toString():"+aNewItem.recurrenceInfo.toString());
 
-		if (((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) ||
+/*		if (((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) ||
 			((aOldItem.recurrenceInfo) && (aOldItem.calendarItemType == "RecurringMaster") && (!aNewItem.recurrenceInfo)) ) {
 			if (this.debug) this.logInfo("2 -- aOldItem.recurrenceInfo:"+aOldItem.recurrenceInfo+", aNewItem.recurrenceInfo:"+aNewItem.recurrenceInfo);
 			if ((this.debug) && (aOldItem.recurrenceInfo)) this.logInfo("2 -- aOldItem.recurrenceInfo.toString():"+aOldItem.recurrenceInfo.toString());
@@ -1468,8 +1468,24 @@ calExchangeCalendar.prototype = {
 				return null;
 			//}
 			
-		}
+		}*/
 
+		if ((aOldItem.recurrenceInfo) && (aOldItem.calendarItemType == "RecurringMaster") && (!aNewItem.recurrenceInfo)) {
+			// Changed from recurring into single
+			// Removed children from offline cache.
+			this.removeChildrenFromMasterInOfflineCache(aOldItem);
+			this.removeFromOfflineCache(aOldItem);
+			this.removeChildrenFromMaster(aOldItem);
+			this.recurringMasterCache[aOldItem.uid] = null;
+			delete this.recurringMasterCache[aOldItem.uid];
+		}
+		else {
+			if ((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) {
+				// Changed from single into recurring.
+				this.removeFromOfflineCache(aOldItem);
+				this.removeItemFromCache(aOldItem);
+			}
+		}
 
 	        if (!aNewItem) {
 	            throw Cr.NS_ERROR_INVALID_ARG;
@@ -6488,6 +6504,8 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 		if (!isMeetingRequest) {
 			//if (this.debug) this.logInfo(" == item.title:"+item.title+", calendarItemType:"+aCalendarItem.getTagValue("t:CalendarItemType"));
 			switch (item.calendarItemType) {
+				case "Single" :
+					break;
 				case "Exception" :
 					if (this.debug) this.logInfo("@1:"+(item.startDate || item.entryDate)+":IsException");
 					item.setProperty("X-RecurringType", "RE");
@@ -8629,6 +8647,26 @@ else {
 			if (this.debug) this.logInfo("Removed item from offlineCacheDB. Title:"+aCalItem.title);
 		}
 		this.removeAttachmentsFromOfflineCache(aCalItem);
+	},
+
+	removeChildrenFromMasterInOfflineCache: function _removeChildrenFromMasterInOfflineCache(aMaster)
+	{
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
+			return;
+		}
+
+		var sqlStr = "DELETE FROM items WHERE uid='"+aMaster.uid+"' and type <> 'M'";
+		if (this.noDB) return;
+		if (!this.executeQuery(sqlStr)) {
+			if (this.debug) this.logInfo("Error deleting children from offlineCacheDB. Error:"+this.offlineCacheDB.lastErrorString);
+		}
+		else {
+			if (this.debug) this.logInfo("Removed children from offlineCacheDB. Title:"+aMaster.title);
+		}
+
+		// We have to remove the attachments from offline cache for each child.
+		this.removeAttachmentsFromOfflineCache(aMaster);
+
 	},
 
 	syncExchangeToOfflineCache: function _syncExchangeToOfflineCache()
