@@ -52,7 +52,12 @@
 		<script type="application/javascript" src="chrome://exchangecalendar/content/calendar-summary-dialog.js" />
 		<box id="item-description-box" flex="1">
 
-		<browser id="exchWebService-body-editor" class="exchWebService-browser-class" type="content-targetable" insertafter="item-description" flex="1"/>
+		<browser id="exchWebService-body-editor" 
+			class="exchWebService-browser-class" 
+			type="content-targetable" 
+			insertafter="item-description" 
+			onclick = "return tmpEventSummaryDialog.onClick(event);"
+			flex="1"/>
 
 		<commandset id="itemCommands">
 		</commandset>
