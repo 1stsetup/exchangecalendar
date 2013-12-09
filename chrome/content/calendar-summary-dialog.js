@@ -247,6 +247,38 @@ exchEventSummaryDialog.prototype = {
 		return file;
 	},
 
+	onMouseOver: function _onMouseOver(event)
+	{
+		var ceParams = this.hrefAndLinkNodeForClickEvent(event);
+		if (!ceParams)	{
+			return true;
+		}
+
+		var href = ceParams.href;
+
+		dump("onMouseEnter: href='"+href+"'\n");
+		this.mouseEnterHRef = href;
+		this._document.getElementById("exchWebService-summary-description-label").value = href;
+		this._document.getElementById("exchWebService-body-editor").setAttribute("tooltip", "exchWebService-summary-description-tooltip");
+	},
+
+	onMouseOut: function _onMouseOut(event)
+	{
+		var ceParams = this.hrefAndLinkNodeForClickEvent(event);
+		if (!ceParams)	{
+			return true;
+		}
+
+		var href = ceParams.href;
+
+		if (href != this.mouseEnterHRef) {
+			return true;
+		}
+
+		dump("onMouseLeave: href='"+href+"'\n");
+		this._document.getElementById("exchWebService-body-editor").removeAttribute("tooltip");
+	},
+
 	onLoadedData: function _onLoadedData(aStr)
 	{
 		this._document.getElementById("exchWebService-body-editor").removeEventListener("DOMContentLoaded",arguments.callee,true);
@@ -266,6 +298,9 @@ try{
 		var filename = this.saveToFile(aItem.body, aItem);
 		this._document.getElementById("exchWebService-body-editor").loadURI("file://" + filename.path, null,"utf-8");
 }catch(err){dump("loadURI err:"+err+"\n");}
+
+		this._document.getElementById("exchWebService-body-editor").addEventListener("mouseover", function(aEvent){ self.onMouseOver(aEvent);}, false);
+		this._document.getElementById("exchWebService-body-editor").addEventListener("mouseout", function(aEvent){ self.onMouseOut(aEvent);}, false);
 	},
 
 	onLoad: function _onLoad()
