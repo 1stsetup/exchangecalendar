@@ -15,6 +15,7 @@ Version 3.2.0:
 - User can mark calendar as readonly. This state is preserved between restarts.
 - Rich text editing of description (body) part for calendar items and task items.
 - Fixed problem where offline cache became out of sync.
+- You can click on links in the description text of invitation and read-only events/tasks
 
 Version 3.2.0-Beta20:
 - Fixed Bug 276 - Duplicate entries, wrong hours and sometimes missing entries when viewving other calendars
