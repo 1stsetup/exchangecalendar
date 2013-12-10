@@ -205,7 +205,7 @@ exchEventSummaryDialog.prototype = {
 	removeTmpFile: function _removeTmpFile()
 	{
 		if ((this.tmpFile) && (this.tmpFile.exists())) {
-			dump("Removing tmp file:"+this.tmpFile.path+"\n");
+			//dump("Removing tmp file:"+this.tmpFile.path+"\n");
 			this.tmpFile.remove(false);
 		}
 	},
@@ -217,12 +217,12 @@ exchEventSummaryDialog.prototype = {
 				.get("ProfD", Ci.nsIFile);
 		file.append("exchange-data");
 		if ( !file.exists() || !file.isDirectory() ) {
-			file.create(Ci.nsIFile.DIRECTORY_TYPE, 0777);  
+			file.create(Ci.nsIFile.DIRECTORY_TYPE, this.globalFunctions.fromOctal("0777"));  
 		}
 
 		file.append("tmp");
 		if ( !file.exists() || !file.isDirectory() ) {
-			file.create(Ci.nsIFile.DIRECTORY_TYPE, 0777);  
+			file.create(Ci.nsIFile.DIRECTORY_TYPE, this.globalFunctions.fromOctal("0777"));  
 		}
 
 		file.append(this.globalFunctions.getUUID()+".html");
@@ -231,11 +231,11 @@ exchEventSummaryDialog.prototype = {
 			file.remove(false);
 		}
 
-//		file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0777);  
+//		file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, this.globalFunctions.fromOctal("0777"));  
 
 		var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].  
 				 createInstance(Components.interfaces.nsIFileOutputStream);  
-		foStream.init(file, 0x02 | 0x08 | 0x20, 0777, 0);  
+		foStream.init(file, 0x02 | 0x08 | 0x20, this.globalFunctions.fromOctal("0777"), 0);  
 
 		var converter = Components.classes["@mozilla.org/intl/converter-output-stream;1"].
 				createInstance(Components.interfaces.nsIConverterOutputStream);
@@ -256,10 +256,12 @@ exchEventSummaryDialog.prototype = {
 
 		var href = ceParams.href;
 
-		dump("onMouseEnter: href='"+href+"'\n");
+		//dump("onMouseEnter: href='"+href+"'\n");
 		this.mouseEnterHRef = href;
 		this._document.getElementById("exchWebService-summary-description-label").value = href;
 		this._document.getElementById("exchWebService-body-editor").setAttribute("tooltip", "exchWebService-summary-description-tooltip");
+		event.preventDefault();
+		return true;
 	},
 
 	onMouseOut: function _onMouseOut(event)
@@ -275,29 +277,31 @@ exchEventSummaryDialog.prototype = {
 			return true;
 		}
 
-		dump("onMouseLeave: href='"+href+"'\n");
+		//dump("onMouseLeave: href='"+href+"'\n");
 		this._document.getElementById("exchWebService-body-editor").removeAttribute("tooltip");
+		event.preventDefault();
+		return true;
 	},
 
 	onLoadedData: function _onLoadedData(aStr)
 	{
 		this._document.getElementById("exchWebService-body-editor").removeEventListener("DOMContentLoaded",arguments.callee,true);
-		dump("onLoadedData:\n");
+		//dump("onLoadedData:\n");
 		this.removeTmpFile();
 	},
 
 	browserLoad: function _browserLoad(aStr, aItem)
 	{
 		this._document.getElementById("exchWebService-body-editor").removeEventListener("load",this.browserLoadFunction,true);
-		dump("browserLoad:\n");
+		//dump("browserLoad:\n");
 		var self = this;
 		this._document.getElementById("exchWebService-body-editor").addEventListener("DOMContentLoaded", function(aEvent){ self.onLoadedData(aEvent);}, true);
 		var tmpListener = new exchEventSummaryBrowserProgressListener(this);
-		this._document.getElementById("exchWebService-body-editor").addProgressListener(tmpListener, 0x1ff);
 try{
+		this._document.getElementById("exchWebService-body-editor").addProgressListener(tmpListener, 0x1ff);
 		var filename = this.saveToFile(aItem.body, aItem);
 		this._document.getElementById("exchWebService-body-editor").loadURI("file://" + filename.path, null,"utf-8");
-}catch(err){dump("loadURI err:"+err+"\n");}
+}catch(err){dump("browserLoad: loadURI err:"+err+"\n");}
 
 		this._document.getElementById("exchWebService-body-editor").addEventListener("mouseover", function(aEvent){ self.onMouseOver(aEvent);}, false);
 		this._document.getElementById("exchWebService-body-editor").addEventListener("mouseout", function(aEvent){ self.onMouseOut(aEvent);}, false);
@@ -305,7 +309,7 @@ try{
 
 	onLoad: function _onLoad()
 	{
-		dump("onLoad\n");
+		//dump("onLoad\n");
 		if (this._document.getElementById("calendar-event-summary-dialog")) {
 			//this._window.removeEventListener("load", this.onLoad, false);
 			var args = this._window.arguments[0];
@@ -337,6 +341,7 @@ try{
 					this._document.getElementById("item-description").hidden = true;
 				}
 				if (this._document.getElementById("exchWebService-body-editor")) {
+					this._document.getElementById("item-description-box").hidden = false;
 					this._document.getElementById("exchWebService-body-editor").hidden = false;
 					//this._document.getElementById("exchWebService-body-editor").content = item.body;
 

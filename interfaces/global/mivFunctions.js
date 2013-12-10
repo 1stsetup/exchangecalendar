@@ -840,6 +840,18 @@ mivFunctions.prototype = {
 		calManager.registerCalendar(newCal);
 	},
 
+	fromOctal: function _fromOctal(aStr)
+	{
+		var len = aStr.length;
+		var result = 0;
+		var counter = 0;
+		while (len > 0) {
+			result += aStr[len-1]*Math.pow(8,counter);
+			counter++;
+			len--;
+		}
+		return result;
+	},
 }
 
 function NSGetFactory(cid) {
