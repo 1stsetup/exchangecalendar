@@ -1472,25 +1472,6 @@ calExchangeCalendar.prototype = {
 			
 		}*/
 
-		if ((aOldItem.recurrenceInfo) && (aOldItem.calendarItemType == "RecurringMaster") && (!aNewItem.recurrenceInfo)) {
-			// Changed from recurring into single
-			// Removed children from offline cache.
-			this.removeChildrenFromMasterInOfflineCache(aOldItem);
-			this.removeFromOfflineCache(aOldItem);
-			this.removeChildrenFromMaster(aOldItem);
-			this.recurringMasterCache[aOldItem.uid] = null;
-			delete this.recurringMasterCache[aOldItem.uid];
-			this.recurringMasterCacheById[aOldItem.id] = null;
-			delete this.recurringMasterCacheById[aOldItem];
-		}
-		else {
-			if ((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) {
-				// Changed from single into recurring.
-				this.removeFromOfflineCache(aOldItem);
-				this.removeItemFromCache(aOldItem);
-			}
-		}
-
 	        if (!aNewItem) {
 	            throw Cr.NS_ERROR_INVALID_ARG;
 	        }
@@ -6511,6 +6492,29 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 			//if (this.debug) this.logInfo(" == item.title:"+item.title+", calendarItemType:"+aCalendarItem.getTagValue("t:CalendarItemType"));
 			switch (item.calendarItemType) {
 				case "Single" :
+					// Check if this item.id has existed as master. This could be a change from master to single.
+					var offlineMasterData = null;
+					if (!fromOfflineCache) {
+						offlineMasterData = this.masterIsInOfflineCache(item.id);
+					}
+
+					if ((this.recurringMasterCacheById[item.id]) || (offlineMasterData)) {
+						if (this.debug) this.logInfo("Item has changed from master into single. Going to remove it and it's children.");
+
+						let masterUID = null;						
+						if (offlineMasterData) {
+							masterUID = offlineMasterData.uid;
+						}
+						else {
+							masterUID = this.recurringMasterCacheById[item.id].uid;
+						}
+
+						this.removeChildrenFromMaster(this.recurringMasterCache[masterUID]);
+
+						this.removeFromOfflineCache(this.recurringMasterCache[masterUID]);
+						delete this.recurringMasterCacheById[item.id];
+						delete this.recurringMasterCache[masterUID];
+					}
 					break;
 				case "Exception" :
 					if (this.debug) this.logInfo("@1:"+(item.startDate || item.entryDate)+":IsException");
@@ -6564,6 +6568,14 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 	
 //					if (this.debug) this.logInfo(item.title+":"+(item.startDate || item.entryDate)+":IsMaster, fromOfflineCache:"+fromOfflineCache);
 					//dump(item.title+":"+(item.startDate || item.entryDate)+":IsMaster, fromOfflineCache:"+fromOfflineCache+"\n");
+
+					// Check if this item existed previously as a Single item and is not converted into a master.
+					if (this.itemCacheById[item.id]) {
+						if (this.debug) this.logInfo("We allready have this master in the single itemcache. single changed into master. Removing ");
+						this.notifyTheObservers("onDeleteItem", [this.itemCacheById[item.id]]);
+						this.removeFromOfflineCache(item);
+						this.removeItemFromCache(this.itemCacheById[item.id]);
+					}
 
 					if ((this.recurringMasterCache[item.uid]) && (this.recurringMasterCache[item.uid].changeKey != item.changeKey)) {
 						if (this.debug) this.logInfo("We allready have this master in cache but the changeKey changed.");
@@ -8748,6 +8760,59 @@ else {
 		}
 
 	},
+
+	masterIsInOfflineCache: function _masterIsInOfflineCache(aId) {
+		if (this.debug) this.logInfo("masterIsInOfflineCache: aId:"+aId);
+		if (!aId) return null;
+
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
+			return null;
+		}
+
+		var result = null;
+
+		var sqlStr = "SELECT id, uid, changeKey FROM items WHERE id = '"+aId+"' AND type='M'";
+
+		if (this.debug) this.logInfo("sql-query:"+sqlStr, 1);
+		try {
+			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
+		}
+		catch(exc) {
+			if (this.debug) this.logInfo("Error on createStatement. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString+", Exception:"+exc+". ("+sqlStr+")");
+			return null;
+		}
+
+		var doContinue = true;
+		try {
+			while (doContinue) {
+				doContinue = sqlStatement.executeStep();
+
+				if (doContinue) {
+					if (this.debug) this.logInfo("Found item in offline Cache.");
+
+					// Check if this item is not in the itemCache already.
+					result = {changeKey: sqlStatement.row.changeKey, uid: sqlStatement.row.uid };
+				}
+			}
+		}
+		finally {  
+			sqlStatement.reset();
+		}
+
+		if (this.debug) this.logInfo("masterIsInOfflineCache: Retreived uid:'"+result.uid+"', changeKey:'"+result.changeKey+"' from offline cache.");
+		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
+
+			if (result) {
+				return result;
+			}
+		}
+		else {
+			if (this.debug) this.logInfo("masterIsInOfflineCache: Error executing Query. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString);
+			return null;
+		}
+		return null;
+	},
+
 
 	itemIsInOfflineCache: function _itemIsInOfflineCache(aId) {
 		if (this.debug) this.logInfo("itemIsInOfflineCache: aId:"+aId);
