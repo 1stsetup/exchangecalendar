@@ -454,7 +454,7 @@ mivExchangeTodo.prototype = {
 					null: "NotStarted" };
 
 			this._newStatus = statuses[aValue];
-			//this._calEvent.status = aValue;
+			this._calEvent.status = aValue;
 			this._calEvent.setProperty("STATUS", aValue);
 		}
 	},
@@ -814,15 +814,14 @@ mivExchangeTodo.prototype = {
 			null: "NONE"
 		};
 
-		if ((!this._status) && (this._newStatus === undefined)) {
-			this._status = this.getTagValue("t:Status", "NotStarted", null);
+		this._status = this.getTagValue("t:Status", "NotStarted");
+		this._calEvent.status = statusMap[this._status];
+		this._calEvent.setProperty("STATUS", statusMap[this._status]);
 
-			//this._calEvent.status = statusMap[this._status];
-			this._calEvent.setProperty("STATUS", statusMap[this._status]);
-		}
-
-		this._isCompleted = (this.status == "COMPLETED");
+		this._isCompleted = (this._status == "Completed");
 		this._calEvent.isCompleted = this._isCompleted;
+
+		dump("postLoad: title:"+this.title+", this._percentComplete:"+this._percentComplete+", isCompleted:"+this.isCompleted+", getProperty:"+this._calEvent.getProperty("STATUS")+", this.status:"+this.status+", entryDate:"+this.entryDate+"\n");
 
 		this._totalWork = this.getTagValue("t:TotalWork", 0);
 

@@ -415,6 +415,7 @@ try {
 		//result.exchangeData = this._exchangeData;
 
 		result.cloneToCalEvent(this._calEvent);
+
 		if (this._newId !== undefined) result.id = this._newId;
 
 		if (this.contractID == "@1st-setup.nl/exchange/calendarevent;1") {
@@ -446,7 +447,7 @@ try {
 					null: "NONE"
 				};
 
-				result.setProperty("STATUS", statusMap[this._newStatus]);
+				result.status = statusMap[this._newStatus];
 			}
 		}
 		if (this._newAlarm !== undefined) {
@@ -1183,6 +1184,7 @@ try {
 			if (this._className == "mivExchangeEvent") {
 			}
 			else {
+		        	dump("get property STATUS: title:"+this.title+", name:"+name+", isCompleted:"+this.isCompleted+", value:"+this._calEvent.getProperty(name)+", this.status:"+this.status+", entryDate:"+this.entryDate+"\n");
 				return this.status;
 			}
 			break;
@@ -1258,7 +1260,7 @@ try {
 			break;
 		case "STATUS": 
 			//this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
-			//dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
+			dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
 			if (this.className == "mivExchangeEvent") {
 				if (value != this.getProperty(name)) {
 					switch (value) {
@@ -1282,6 +1284,7 @@ try {
 			}
 			else {
 				this.status = value;
+				return;
 			}
 			break;
 		case "X-MOZ-SEND-INVITATIONS": 
