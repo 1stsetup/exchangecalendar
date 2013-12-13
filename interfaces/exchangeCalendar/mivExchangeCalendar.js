@@ -330,6 +330,7 @@ try{
 	this.itemCacheByStartDate = {};
 	this.itemCacheByEndDate = {};
 	this.recurringMasterCache = {};
+	this.recurringMasterCacheById ={};
 	this.newMasters = {};
 	this.parentLessItems = {};
 
@@ -1351,6 +1352,7 @@ calExchangeCalendar.prototype = {
 		// Because we do not want it to be visible and the previous modify made it visible.
 //miv		this.notifyTheObservers("onDeleteItem", [aModifiedMaster]);
 		this.recurringMasterCache[aModifiedMaster.uid] = aModifiedMaster;
+		this.recurringMasterCacheById[aModifiedMaster.id] = aModifiedMaster;
 	},
 
 	/**
@@ -1478,6 +1480,8 @@ calExchangeCalendar.prototype = {
 			this.removeChildrenFromMaster(aOldItem);
 			this.recurringMasterCache[aOldItem.uid] = null;
 			delete this.recurringMasterCache[aOldItem.uid];
+			this.recurringMasterCacheById[aOldItem.id] = null;
+			delete this.recurringMasterCacheById[aOldItem];
 		}
 		else {
 			if ((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) {
@@ -4015,6 +4019,7 @@ try{
 			}
 		}
 		this.recurringMasterCache = {};
+		this.recurringMasterCacheById = {};
 
 		if (this.startDate) {
 			var oldBeginDate = this.startDate.clone();
@@ -4693,6 +4698,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 					if (this.debug) this.logInfo("we have recurrence info");
 					//aItem.setProperty("X-CalendarItemType", "RecurringMaster");
 					this.recurringMasterCache[aItem.id] = aItem;
+					this.recurringMasterCacheById[aItem.id] = aItem;
 				}
 				else {
 					//aItem.setProperty("X-CalendarItemType", "Single");
@@ -6675,6 +6681,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 							//dump("   xx MasterCount:"+this.masterCount+"\n");
 							this.recurringMasterCache[uid].deleteItem();
 							this.recurringMasterCache[uid] = null;
+							this.recurringMasterCacheById[item.id] = null;
 							var self = this;
 							var tmpItem = { Id: item.id, ChangeKey: item.changeKey, type:"RecurringMaster"};
 							this.addToQueue( erFindOccurrencesRequest, 
@@ -6722,6 +6729,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 
 					this.masterCount++;
 					this.recurringMasterCache[uid] = item;
+					this.recurringMasterCacheById[item.id] = item;
 					//dump("   :: MasterCount:"+this.masterCount+"\n");
 
 					if (this.debug) this.logInfo("This is a master it will not be put into the normal items cache list.");
@@ -7307,6 +7315,7 @@ return;
 							this.removeFromOfflineCache(master);
 							//this.notifyTheObservers("onDeleteItem", [master]);
 							delete this.recurringMasterCache[master.uid];
+							delete this.recurringMasterCacheById[master.id];
 						}
 						else {
 							if (this.debug) this.logInfo("Do not know what you are trying to delete !!!");
@@ -7889,6 +7898,7 @@ else {
 			}
 		} 
 		this.recurringMasterCache = {};
+		this.recurringMasterCacheById = {};
 
 		this.meetingRequestsCache = [];
 		this.meetingCancelationsCache = [];
