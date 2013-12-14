@@ -821,7 +821,7 @@ mivExchangeTodo.prototype = {
 		this._isCompleted = (this._status == "Completed");
 		this._calEvent.isCompleted = this._isCompleted;
 
-		dump("postLoad: title:"+this.title+", this._percentComplete:"+this._percentComplete+", isCompleted:"+this.isCompleted+", getProperty:"+this._calEvent.getProperty("STATUS")+", this.status:"+this.status+", entryDate:"+this.entryDate+"\n");
+		//dump("postLoad: title:"+this.title+", this._percentComplete:"+this._percentComplete+", isCompleted:"+this.isCompleted+", getProperty:"+this._calEvent.getProperty("STATUS")+", this.status:"+this.status+", entryDate:"+this.entryDate+"\n");
 
 		this._totalWork = this.getTagValue("t:TotalWork", 0);
 

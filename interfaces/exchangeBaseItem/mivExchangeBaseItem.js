@@ -1184,7 +1184,7 @@ try {
 			if (this._className == "mivExchangeEvent") {
 			}
 			else {
-		        	dump("get property STATUS: title:"+this.title+", name:"+name+", isCompleted:"+this.isCompleted+", value:"+this._calEvent.getProperty(name)+", this.status:"+this.status+", entryDate:"+this.entryDate+"\n");
+		        	//dump("get property STATUS: title:"+this.title+", name:"+name+", isCompleted:"+this.isCompleted+", value:"+this._calEvent.getProperty(name)+", this.status:"+this.status+", entryDate:"+this.entryDate+"\n");
 				return this.status;
 			}
 			break;
@@ -1260,7 +1260,7 @@ try {
 			break;
 		case "STATUS": 
 			//this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
-			dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
+			//dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
 			if (this.className == "mivExchangeEvent") {
 				if (value != this.getProperty(name)) {
 					switch (value) {
