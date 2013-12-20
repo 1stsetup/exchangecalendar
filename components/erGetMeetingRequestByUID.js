@@ -44,6 +44,8 @@ Cu.import("resource://exchangecalendar/ecFunctions.js");
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/soapFunctions.js");
 
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+
 const MAPI_PidLidTaskAccepted = "33032";
 const MAPI_PidLidTaskLastUpdate = "33045";
 const MAPI_PidLidTaskHistory = "33050";
@@ -85,18 +87,34 @@ erGetMeetingRequestByUIDRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erGetMeetingRequestByUIDRequest.execute\n");
 
-		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:FindItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
-		req.setAttribute("Traversal", "Shallow");
+		//var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:FindItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		//req.setAttribute("Traversal", "Shallow");
 
-		var itemShape = req.addChildTag("ItemShape", "nsMessages", null); 
-		itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");
-		itemShape.addChildTag("BodyType", "nsTypes", "Text");
+		var root = xml2json.newJSON();
+		xml2json.parseXML(root, '<nsMessages:FindItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var req = root[telements][0];
+		xml2json.setAttribute(req, "Traversal", "Shallow");
 
+		//var itemShape = req.addChildTag("ItemShape", "nsMessages", null); 
+		//itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");
+		//itemShape.addChildTag("BodyType", "nsTypes", "Text");
 
-		var restr = exchWebService.commonFunctions.xmlToJxon('<nsMessages:Restriction xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
-		var isEqualTo = restr.addChildTag("IsEqualTo", "nsTypes", null);
-		isEqualTo.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemClass");
-		isEqualTo.addChildTag("FieldURIOrConstant", "nsTypes", null).addChildTag("Constant", "nsTypes", null).setAttribute("Value", "IPM.Schedule.Meeting.Request");
+		var itemShape = xml2json.addTag(req, "ItemShape", "nsMessages", null);
+		xml2json.addTag(itemShape, "BaseShape", "nsTypes", "AllProperties");		
+		xml2json.addTag(itemShape, "BodyType", "nsTypes", "Best");
+
+		//var restr = exchWebService.commonFunctions.xmlToJxon('<nsMessages:Restriction xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		//var isEqualTo = restr.addChildTag("IsEqualTo", "nsTypes", null);
+		//isEqualTo.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemClass");
+		//isEqualTo.addChildTag("FieldURIOrConstant", "nsTypes", null).addChildTag("Constant", "nsTypes", null).setAttribute("Value", "IPM.Schedule.Meeting.Request");
+
+		var restriction = xml2json.addTag(req, "Restriction", "nsMessages", null); 
+		var isEqualTo = xml2json.addTag(restriction, "IsEqualTo", "nsTypes", null);
+		var fieldUri = xml2json.addTag(isEqualTo, "FieldURI", "nsTypes", null);
+		xml2json.setAttribute(fieldUri, "FieldURI", "item:ItemClass");
+		var fieldURIOrConstant = xml2json.addTag(isEqualTo, "FieldURIOrConstant", "nsTypes", null);
+		var constant = xml2json.addTag(fieldURIOrConstant, "Constant", "nsTypes", null);
+		xml2json.setAttribute(constant, "Value", "IPM.Schedule.Meeting.Request");
 
 		/*var and = restr.addChildTag("And", "nsTypes", null);
 		var isEqualTo1 = and.addChildTag("IsEqualTo", "nsTypes", null);
@@ -107,17 +125,22 @@ erGetMeetingRequestByUIDRequest.prototype = {
 		isEqualTo2.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:UID");
 		isEqualTo2.addChildTag("FieldURIOrConstant", "nsTypes", null).addChildTag("Constant", "nsTypes", null).setAttribute("Value", this.argument.uid);*/
 
-		req.addChildTagObject(restr);
-		restr = null;
+		//req.addChildTagObject(restr);
+		//restr = null;
 
-		var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
-		req.addChildTagObject(parentFolder);
+		//var parentFolder = makeParentFolderIds2("ParentFolderIds", this.argument);
+		//req.addChildTagObject(parentFolder);
+		//parentFolder = null;
+
+		var parentFolder = makeParentFolderIds3("ParentFolderIds", this.argument);
+		xml2json.addTagObject(req,parentFolder);
 		parentFolder = null;
 
-		this.parent.xml2jxon = true;
+		this.parent.xml2json = true;
 
-		//exchWebService.commonFunctions.LOG("erGetMeetingRequestByUIDRequest.execute:"+String(this.parent.makeSoapMessage(req)));
-                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		//exchWebService.commonFunctions.LOG("erGetMeetingRequestByUIDRequest.execute:"+String(this.parent.makeSoapMessage2(req)));
+                //this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+                this.parent.sendRequest(this.parent.makeSoapMessage2(req), this.serverUrl);
 		req = null;
 	},
 
@@ -125,14 +148,16 @@ erGetMeetingRequestByUIDRequest.prototype = {
 	{
 		//exchWebService.commonFunctions.LOG("erGetMeetingRequestByUIDRequest.onSendOk:"+String(aResp));
 
-		var rm = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:ResponseCode");
+		//var rm = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:ResponseCode");
+		var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:ResponseCode");
 
 		if (rm.length == 0) {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field responsecode");
 			return;
 		}
 
-		var responseCode = rm[0].value;
+		//var responseCode = rm[0].value;
+		var responseCode = xml2json.getValue(rm[0]);
 		rm = null;
 
 		if (responseCode != "NoError") {
@@ -140,18 +165,21 @@ erGetMeetingRequestByUIDRequest.prototype = {
 			return;
 		}
 
-		var rootFolder = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:RootFolder");
+		//var rootFolder = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:RootFolder");
+		var rootFolder = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:RootFolder");
 		if (rootFolder.length == 0) {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Respons does not contain expected field rootfolder");
 			return;
 		}
 
-		var totalItemsInView = rootFolder[0].getAttribute("TotalItemsInView", 0);
-		var includesLastItemInRange = rootFolder[0].getAttribute("IncludesLastItemInRange", "true");
+		//var totalItemsInView = rootFolder[0].getAttribute("TotalItemsInView", 0);
+		var totalItemsInView = xml2json.getAttribute(rootFolder[0], "TotalItemsInView", 0);
+		//var includesLastItemInRange = rootFolder[0].getAttribute("IncludesLastItemInRange", "true");
+		var includesLastItemInRange = xml2json.getAttribute(rootFolder[0], "IncludesLastItemInRange", "true");
 
 		var aMeetingRequests = [];
-		for each(var tmpItem in rootFolder[0].XPath("/t:Items/*")) {
-			if (tmpItem.getTagValue("t:UID") == this.argument.uid) {
+		for each(var tmpItem in xml2json.XPath(rootFolder[0],"/t:Items/*")) {
+			if (xml2json.getTagValue(tmpItem, "t:UID") == this.argument.uid) {
 				aMeetingRequests.push(tmpItem);
 			}
 		}

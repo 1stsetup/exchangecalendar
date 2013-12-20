@@ -2497,6 +2497,16 @@ calExchangeCalendar.prototype = {
 			return;
 		}
 
+/* We started the inbox poller again in the normal place
+		if ((this.syncInboxState) && (!this.weAreInboxSyncing)) {
+			if ((this.folderBase == "calendar") && (!this.folderID)) {
+
+				// Start the inbox poller to check for meetinginvitations or cancelations.
+				this.checkInbox();
+			}
+		}
+*/
+
 		// 2013-11-19 Going to request getitems period from exchange.
 		if (!dateChanged) {
 			if (this.debug) this.logInfo("No dateChanged. Not going to request items from server.");
@@ -2509,14 +2519,6 @@ calExchangeCalendar.prototype = {
 		}
 
       		var self = this;
-
-		if ((this.syncInboxState) && (!this.weAreInboxSyncing)) {
-			if ((this.folderBase == "calendar") && (!this.folderID)) {
-
-				// Start the inbox poller to check for meetinginvitations or cancelations.
-				this.checkInbox();
-			}
-		}
 
 		// 2013-11-19 Going to request getitems period from exchange.
 /*		if ((wantEvents) && (this.supportsEvents)) {
@@ -3112,14 +3114,16 @@ calExchangeCalendar.prototype = {
 				this.saveToFile("syncState.txt", this.syncState);
 				this.prefs.deleteBranch("syncState");
 			}
+
+/* Disabled as on startup we do not wish to use old syncstate until we get some offline caching implemented for this (2013-12-20)
 			this.syncInboxState = this.globalFunctions.safeGetCharPref(this.prefs,"syncInboxState", "");
 			if (this.syncInboxState != "") {
 				this.saveToFile("syncInboxState.txt", this.syncInboxState);
 				this.prefs.deleteBranch("syncInboxState");
 			}
-
+*/
 			this.syncState = this.loadFromFile("syncState.txt");
-			this.syncInboxState = this.loadFromFile("syncInboxState.txt");
+//			this.syncInboxState = this.loadFromFile("syncInboxState.txt");
 
 			this.getSyncState();
 
@@ -3301,7 +3305,7 @@ try{
 
 	checkInbox: function _checkInbox()
 	{
-		//if (this.debug) this.logInfo("checkInbox 1.");
+		if (this.debug) this.logInfo("checkInbox 1.");
 
 		if (this.isOffline) return;
 
@@ -3329,11 +3333,17 @@ try{
 
 	syncInbox: function _syncInbox()
 	{
-		//if (this.debug) this.logInfo("syncInbox 1.");
+		if (this.debug) this.logInfo("syncInbox 1.");
 
 		if (this.isOffline) return;
 
-		if ((this.weAreInboxSyncing) || (!this.doPollInbox)) {
+		if ((this.folderBase != "calendar") || (this.folderID)) {
+			if (this.debug) this.logInfo("syncInbox 2.");
+			return;
+		}
+
+		if ((this.weAreInboxSyncing) || (!this.doPollInbox) || (this.OnlyShowAvailability)) {
+			if (this.debug) this.logInfo("syncInbox 3.");
 			return;
 		}
 
@@ -3381,7 +3391,8 @@ try{
 	{
 		var self = this;
 
-		if (this.debug) this.logInfo("Going to remove responseItem:"+aResponse.getTagValue("t:Subject")+" from:"+aResponse.getTag("t:Sender").getTag("t:Mailbox").getTagValue("t:Name")+" ("+aResponse.getTag("t:Sender").getTag("t:Mailbox").getTagValue("t:EmailAddress")+")");
+//		if (this.debug) this.logInfo("Going to remove responseItem:"+xml2json.getAttributeByTag(aResponse, "t:Subject")+" from:"+aResponse.getTag("t:Sender").getTag("t:Mailbox").getTagValue("t:Name")+" ("+aResponse.getTag("t:Sender").getTag("t:Mailbox").getTagValue("t:EmailAddress")+")");
+		if (this.debug) this.logInfo("Going to remove responseItem:"+xml2json.getAttributeByTag(aResponse, "t:Subject"));
 		this.addToQueue( erDeleteItemRequest, 
 			{user: this.user, 
 			 mailbox: this.mailbox,
@@ -3389,8 +3400,8 @@ try{
 			 serverUrl: this.serverUrl,
 			 item: null,
 			 folderID: null,
-			 id: aResponse.getAttributeByTag("t:ItemId", "Id"),
-			 changeKey: aResponse.getAttributeByTag("t:ItemId", "ChangeKey"),
+			 id: xml2json.getAttributeByTag(aResponse, "t:ItemId", "Id"),
+			 changeKey: xml2json.getAttributeByTag(aResponse, "t:ItemId", "ChangeKey"),
 			 itemType: "response"}, 
 			function(erDeleteItemRequest) { self.removeMeetingItemOk(erDeleteItemRequest);}, 
 			function(erDeleteItemRequest, aCode, aMsg) { self.removeMeetingItemError(erDeleteItemRequest, aCode, aMsg);},
@@ -3414,7 +3425,7 @@ try{
 
 	syncInboxOK: function _syncInboxOK(erSyncInboxRequest, creations, updates, deletions, syncState)
 	{
-		//if (this.debug) this.logInfo("syncInboxOk.");
+		if (this.debug) this.logInfo("syncInboxOk.");
 		this.notConnected = false;
 		this.saveCredentials(erSyncFolderItemsRequest.argument);
 
@@ -3452,7 +3463,7 @@ try{
 		for each (var request in creations.meetingrequests) {
 			var meetingItem = this.convertExchangeAppointmentToCalAppointment(request, true);
 			if (meetingItem) {
-				if (this.debug) this.logInfo(" -- MeetingRequest creation:"+ meetingItem.title+", UID:"+request.getTagValue("t:UID")+",id:"+meetingItem.id+",changeKey:"+meetingItem.changeKey);
+				if (this.debug) this.logInfo(" -- MeetingRequest creation:"+ meetingItem.title+", UID:"+meetingItem.uid+",id:"+meetingItem.id+",changeKey:"+meetingItem.changeKey);
 				meetingItem.setProperty("X-MEETINGREQUEST", true);
 				meetingItem.setProperty("STATUS", "NONE")
 				//this.meetingRequestsCache[request.getTagValue("t:UID")] = meetingItem;
@@ -3463,7 +3474,7 @@ try{
 		for each (var update in updates.meetingrequests) {
 			var meetingItem = this.convertExchangeAppointmentToCalAppointment(update, true);
 			if (meetingItem) {
-				if (this.debug) this.logInfo(" -- MeetingRequest update:"+ meetingItem.title+", UID:"+update.getTagValue("t:UID")+",id:"+meetingItem.id+",changeKey:"+meetingItem.changeKey);
+				if (this.debug) this.logInfo(" -- MeetingRequest update:"+ meetingItem.title+", UID:"+meetingItem.uid+",id:"+meetingItem.id+",changeKey:"+meetingItem.changeKey);
 				meetingItem.setProperty("X-MEETINGREQUEST", true);
 				
 				if ((this.meetingRequestsCache[update.id]) && (this.meetingRequestsCache[update.id].uid == meetingItem.uid)) {
@@ -3480,7 +3491,7 @@ try{
 		for each (var deletion in deletions.meetingrequests) {
 			var meetingItem = this.convertExchangeAppointmentToCalAppointment(deletion, true);
 			if (meetingItem) {
-				if (this.debug) this.logInfo(" -- MeetingRequest deletion:"+ meetingItem.title+", UID:"+deletion.getTagValue("t:UID")+",id:"+meetingItem.id+",changeKey:"+meetingItem.changeKey);
+				if (this.debug) this.logInfo(" -- MeetingRequest deletion:"+ meetingItem.title+", UID:"+meetingItem.uid+",id:"+meetingItem.id+",changeKey:"+meetingItem.changeKey);
 				meetingItem.setProperty("X-MEETINGREQUEST", true);
 				this.removeFromMeetingRequestCache(deletion.id);			
 				this.meetingrequestAnswered[deletion.id] = false;
@@ -3504,7 +3515,7 @@ try{
 					this.meetingCancelationsCache[update.id] = meetingItem;
 				}
 				else {
-					if (this.debug) this.logInfo("WE DO NOT HAVE AN MEETING IN CACHE FOR THIS UPDATE!!!!. PLEASE REPORT");
+					if (this.debug) this.logInfo("WE DO NOT HAVE A MEETING IN CACHE FOR THIS UPDATE!!!!. PLEASE REPORT");
 				}
 			}
 		}
@@ -3712,21 +3723,21 @@ try{
 		// Process Meetingresponses
 		// Save responses into cache and remove request for which we received a cancelation.
 		for each (var response in creations.meetingResponses) {
-			this.meetingResponsesCache[response.getAttributeByTag("t:ItemId","Id")] = response;
+			this.meetingResponsesCache[xml2json.getAttributeByTag(response, "t:ItemId","Id")] = response;
 		}
 
 		for each (var response in updates.meetingResponses) {
-			if (this.meetingResponsesCache[response.getAttributeByTag("t:ItemId","Id")]) {
-				this.meetingResponsesCache[response.getAttributeByTag("t:ItemId","Id")] = response;
+			if (this.meetingResponsesCache[xml2json.getAttributeByTag(response, "t:ItemId","Id")]) {
+				this.meetingResponsesCache[xml2json.getAttributeByTag(response, "t:ItemId","Id")] = response;
 			}
 			else {
-				if (this.debug) this.logInfo("WE DO NOT HAVE AN RESPONSE IN CACHE FOR THIS UPDATE!!!!. PLEASE REPORT");
+				if (this.debug) this.logInfo("WE DO NOT HAVE A RESPONSE IN CACHE FOR THIS UPDATE!!!!. PLEASE REPORT");
 			}
 		}
 
 		for each (var response in deletions.meetingResponses) {
-			if (this.meetingResponsesCache[response.getAttributeByTag("t:ItemId","Id")]) {
-				delete this.meetingResponsesCache[response.getAttributeByTag("t:ItemId","Id")];
+			if (this.meetingResponsesCache[xml2json.getAttributeByTag(response, "t:ItemId","Id")]) {
+				delete this.meetingResponsesCache[xml2json.getAttributeByTag(response, "t:ItemId","Id")];
 			}
 		}
 
@@ -3734,7 +3745,7 @@ try{
 		if (this.doAutoRemoveInvitationResponse1) {
 			for each(var response in this.meetingResponsesCache) {
 				// Check if we have this meeting 
-				var tmpUID = response.getTagValue("t:UID");
+				var tmpUID = xml2json.getTagValue(response, "t:UID");
 				var inCalendar = false;
 
 				// First check recurring Masters
@@ -3758,7 +3769,7 @@ try{
 					if (!iAmOrganizer) {
 						// Remove the response in the inbox. Do not update calendar.
 						this.removeResponseItem(response);
-						delete this.meetingResponsesCache[response.getAttributeByTag("t:ItemId","Id")];
+						delete this.meetingResponsesCache[xml2json.getAttributeByTag(response, "t:ItemId","Id")];
 					}
 				}				
 			}
@@ -3768,7 +3779,7 @@ try{
 			this.refresh();
 		}
 
-//		if (this.debug) this.logInfo("syncInboxOK: left with meetingRequests:"+requestCount+", meetingCancelations:"+cancelationCount);
+		if (this.debug) this.logInfo("syncInboxOK: left with meetingRequests:"+requestCount+", meetingCancelations:"+cancelationCount);
 
 		this.startSyncInboxPoller();
 	},
@@ -3786,6 +3797,7 @@ try{
 
 	syncInboxError: function _syncInboxError(erSyncFolderItemsRequest, aCode, aMsg)
 	{
+		if (this.debug) this.logInfo("syncInboxError");
 		this.saveCredentials(erSyncFolderItemsRequest.argument);
 		this.notConnected = true;
 		this.weAreInboxSyncing = false;
@@ -7249,6 +7261,7 @@ return;
 				if (!this.firstSyncDone) { 
 					this.firstSyncDone = true;
 					if (this.debug) this.logInfo("First sync is done. Normal operation is starting.");
+					this.startSyncInboxPoller();
 				}
 
 				return;
