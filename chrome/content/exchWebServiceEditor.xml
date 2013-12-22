@@ -208,6 +208,12 @@
 				this.editorKeyPressFunction = function(aEvent) { self.onKeyPressEditor(aEvent);};
 				this.editorElement.addEventListener("keyup", this.editorKeyPressFunction, true);
 
+				this.editorMouseOver = function(aEvent) { self.onMouseOver(aEvent);};
+				this.editorMouseOut = function(aEvent) { self.onMouseOut(aEvent);};
+
+				this.editorElement.addEventListener("mouseover", this.editorMouseOver , false);
+				this.editorElement.addEventListener("mouseout", this.editorMouseOut, false);
+
 			}
 
 			this.atomService = Components.classes["@mozilla.org/atom-service;1"].getService(Components.interfaces.nsIAtomService);
@@ -249,6 +255,11 @@
 			if (this.editorElement) {
 				this.editorElement.removeEventListener("click", this.editorClickFunction, false);
 				this.editorElement.removeEventListener("keyup", this.editorKeyPressFunction, false);
+
+				this.editorElement.removeEventListener("dblclick", this.editorDblClickFunction, true);
+
+				this.editorElement.removeEventListener("mouseover", this.editorMouseOver , false);
+				this.editorElement.removeEventListener("mouseout", this.editorMouseOut, false);
 			}
 			this.disconnectButtons("FormatToolbar");
 			document.getAnonymousElementByAttribute(this, "anonid", "cmd_backgroundColor").removeEventListener("click", this.bgColorFunction, false);
@@ -256,9 +267,9 @@
 			if (this.menuPopupFunction) {
 				this.menuPopup.removeEventListener("command", this.menuPopupFunction, false);
 			}
-			document.getAnonymousElementByAttribute(this, "anonid", "cmd_add_link").addEventListener("click", this.addLinkFunction, true);
-			document.getAnonymousElementByAttribute(this, "anonid", "cmd_remove_link").addEventListener("click", this.removeLinkFunction, true);
-			document.getAnonymousElementByAttribute(this, "anonid", "cmd_edit_link").addEventListener("click", this.editLinkFunction, true);
+			document.getAnonymousElementByAttribute(this, "anonid", "cmd_add_link").removeEventListener("click", this.addLinkFunction, true);
+			document.getAnonymousElementByAttribute(this, "anonid", "cmd_remove_link").removeEventListener("click", this.removeLinkFunction, true);
+			document.getAnonymousElementByAttribute(this, "anonid", "cmd_edit_link").removeEventListener("click", this.editLinkFunction, true);
 		]]></destructor>
 			
 			<property name="content">
@@ -520,6 +531,41 @@
 					this.editLink();
 				}
 			}
+
+		]]></body>
+		</method>
+		
+		<method name="onMouseOver">
+			<parameter name="aEvent" />
+			<body><![CDATA[
+			if (aEvent) {
+				var ceParams = this.hrefAndLinkNodeForClickEvent(aEvent);
+				if (ceParams) {
+					this.mouseEnterHRef = ceParams.href;
+					this.setAttribute("tooltiptext", "ctrl+click to follow link:"+ceParams.href);
+					aEvent.preventDefault();
+					return true;
+				}
+			}
+			return true;
+		]]></body>
+		</method>
+		
+		<method name="onMouseOut">
+			<parameter name="aEvent" />
+			<body><![CDATA[
+			if (aEvent) {
+				var ceParams = this.hrefAndLinkNodeForClickEvent(aEvent);
+				if (ceParams) {
+					if (ceParams.href != this.mouseEnterHRef) {
+						return true;
+					}
+					this.removeAttribute("tooltiptext");
+					aEvent.preventDefault();
+					return true;
+				}
+			}
+			return false;
 
 		]]></body>
 		</method>
