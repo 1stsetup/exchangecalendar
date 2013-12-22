@@ -52,12 +52,6 @@
 		<script type="application/javascript" src="chrome://exchangecalendar/content/calendar-summary-dialog.js" />
 		<box id="item-description-box" flex="1">
 
-	<popupset id="exchWebService-summary-description-popupset">
-		<tooltip id="exchWebService-summary-description-tooltip">
-			<label id="exchWebService-summary-description-label" value="href"/>
-		</tooltip>  
-	</popupset>
-
 		<browser id="exchWebService-body-editor" 
 			class="exchWebService-browser-class" 
 			type="content-targetable" 

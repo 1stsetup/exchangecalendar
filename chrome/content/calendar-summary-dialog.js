@@ -258,8 +258,8 @@ exchEventSummaryDialog.prototype = {
 
 		//dump("onMouseEnter: href='"+href+"'\n");
 		this.mouseEnterHRef = href;
-		this._document.getElementById("exchWebService-summary-description-label").value = href;
-		this._document.getElementById("exchWebService-body-editor").setAttribute("tooltip", "exchWebService-summary-description-tooltip");
+		//this._document.getElementById("exchWebService-summary-description-label").value = href;
+		this._document.getElementById("exchWebService-body-editor").setAttribute("tooltiptext", href);
 		event.preventDefault();
 		return true;
 	},
@@ -278,7 +278,7 @@ exchEventSummaryDialog.prototype = {
 		}
 
 		//dump("onMouseLeave: href='"+href+"'\n");
-		this._document.getElementById("exchWebService-body-editor").removeAttribute("tooltip");
+		this._document.getElementById("exchWebService-body-editor").removeAttribute("tooltiptext");
 		event.preventDefault();
 		return true;
 	},
