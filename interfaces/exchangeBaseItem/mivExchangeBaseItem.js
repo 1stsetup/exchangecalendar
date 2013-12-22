@@ -1038,7 +1038,7 @@ try {
 
 	set recurrenceInfo(aValue)
 	{
-		dump("set recurrenceInfo 1: title:"+this.title+", this.recurrenceInfo:"+this.recurrenceInfo+", aValue:"+aValue+"\n");
+		//dump("set recurrenceInfo 1: title:"+this.title+", this.recurrenceInfo:"+this.recurrenceInfo+", aValue:"+aValue+"\n");
 		if (aValue) {
 			// Lets see if something changed.
 			var infoChanged = false;
@@ -1074,16 +1074,16 @@ try {
 				infoChanged = true;
 			}
 			if (infoChanged) {
-				dump("set recurrenceInfo 2: recurrenceinfo changed.\n"); 
+				//dump("set recurrenceInfo 2: recurrenceinfo changed.\n"); 
 				this._newRecurrenceInfo = aValue.clone();
 				this._calEvent.recurrenceInfo = aValue.clone();
 			}
 			else {
-				dump("set recurrenceInfo 3: recurrenceinfo changed.\n"); 
+				//dump("set recurrenceInfo 3: recurrenceinfo changed.\n"); 
 			}
 		}
 		else {
-			dump("set recurrenceInfo 2: recurrenceinfo changed.\n"); 
+			//dump("set recurrenceInfo 2: recurrenceinfo changed.\n"); 
 			this._newRecurrenceInfo = aValue;
 			this._calEvent.recurrenceInfo = aValue;
 		}
