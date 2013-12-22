@@ -3444,8 +3444,6 @@ try{
 			this.refresh();
 		}
 
-		this.weAreInboxSyncing = false;
-
 		// Do something with the output.
 		if ((this.syncInboxState) && (syncState == this.syncInboxState)) {
 			this.logError("Same syncState received.");
@@ -3455,73 +3453,96 @@ try{
 		//this.prefs.setCharPref("syncInboxState", syncState);
 		this.saveToFile("syncInboxState.txt", syncState);
 
+		if ((creations.meetingrequests.length == 0) && (updates.meetingrequests.length == 0) && (deletions.meetingrequests.length == 0) && 
+			(creations.meetingCancellations.length == 0) && (updates.meetingCancellations.length == 0) && (deletions.meetingCancellations.length == 0) && 
+			(creations.meetingResponses.length == 0) && (updates.meetingResponses.length == 0) && (deletions.meetingResponses.length == 0)) {
+			if (this.debug) this.logInfo("syncInboxOk: No new, changed or deleted meetingrequests, meetingCancellations and meetingresponses.");
+			this.weAreInboxSyncing = false;
+			this.startSyncInboxPoller();
+
+			return;
+		}
+
 		// Do something with the results.
 //		if (this.debug) this.logInfo("syncInboxOK meetingrequests: Creation:"+creations.meetingrequests.length+", Updates:"+updates.meetingrequests.length+", Deletions:"+deletions.meetingrequests.length);
 //		if (this.debug) this.logInfo("syncInboxOK meetingCancellations: Creation:"+creations.meetingCancellations.length+", Updates:"+updates.meetingCancellations.length+", Deletions:"+deletions.meetingCancellations.length);
 
 		// Save requests into cache.
-		for each (var request in creations.meetingrequests) {
-			var meetingItem = this.convertExchangeAppointmentToCalAppointment(request, true);
-			if (meetingItem) {
-				if (this.debug) this.logInfo(" -- MeetingRequest creation:"+ meetingItem.title+", UID:"+meetingItem.uid+",id:"+meetingItem.id+",changeKey:"+meetingItem.changeKey);
-				meetingItem.setProperty("X-MEETINGREQUEST", true);
-				meetingItem.setProperty("STATUS", "NONE")
-				//this.meetingRequestsCache[request.getTagValue("t:UID")] = meetingItem;
-				this.meetingRequestsCache[meetingItem.id] = meetingItem;
-			}
-		}
-
-		for each (var update in updates.meetingrequests) {
-			var meetingItem = this.convertExchangeAppointmentToCalAppointment(update, true);
-			if (meetingItem) {
-				if (this.debug) this.logInfo(" -- MeetingRequest update:"+ meetingItem.title+", UID:"+meetingItem.uid+",id:"+meetingItem.id+",changeKey:"+meetingItem.changeKey);
-				meetingItem.setProperty("X-MEETINGREQUEST", true);
-				
-				if ((this.meetingRequestsCache[update.id]) && (this.meetingRequestsCache[update.id].uid == meetingItem.uid)) {
-					if (this.debug) this.logInfo("2 modifing  meeting request:"+update.id);
-//					this.meetingRequestsCache[update.getTagValue("t:UID")] = meetingItem;
+		if (creations.meetingrequests.length > 0) {
+			for each (var request in creations.meetingrequests) {
+				var meetingItem = this.convertExchangeAppointmentToCalAppointment(request, true);
+				if (meetingItem) {
+					if (this.debug) this.logInfo(" -- MeetingRequest creation:"+ meetingItem.title+", UID:"+meetingItem.uid+",id:"+meetingItem.id+",changeKey:"+meetingItem.changeKey);
+					meetingItem.setProperty("X-MEETINGREQUEST", true);
+					meetingItem.setProperty("STATUS", "NONE")
+					//this.meetingRequestsCache[request.getTagValue("t:UID")] = meetingItem;
 					this.meetingRequestsCache[meetingItem.id] = meetingItem;
 				}
-				else {
-					if (this.debug) this.logInfo("WE DO NOT HAVE AN MEETING IN CACHE FOR THIS UPDATE!!!!. PLEASE REPORT");
+			}
+		}
+
+		if (updates.meetingrequests.length > 0) {
+			for each (var update in updates.meetingrequests) {
+				var meetingItem = this.convertExchangeAppointmentToCalAppointment(update, true);
+				if (meetingItem) {
+					if (this.debug) this.logInfo(" -- MeetingRequest update:"+ meetingItem.title+", UID:"+meetingItem.uid+",id:"+meetingItem.id+",changeKey:"+meetingItem.changeKey);
+					meetingItem.setProperty("X-MEETINGREQUEST", true);
+				
+					if ((this.meetingRequestsCache[update.id]) && (this.meetingRequestsCache[update.id].uid == meetingItem.uid)) {
+						if (this.debug) this.logInfo("2 modifing  meeting request:"+update.id);
+	//					this.meetingRequestsCache[update.getTagValue("t:UID")] = meetingItem;
+						this.meetingRequestsCache[meetingItem.id] = meetingItem;
+					}
+					else {
+						if (this.debug) this.logInfo("WE DO NOT HAVE AN MEETING IN CACHE FOR THIS UPDATE!!!!. PLEASE REPORT");
+					}
 				}
 			}
 		}
 
-		for each (var deletion in deletions.meetingrequests) {
-			var meetingItem = this.convertExchangeAppointmentToCalAppointment(deletion, true);
-			if (meetingItem) {
-				if (this.debug) this.logInfo(" -- MeetingRequest deletion:"+ meetingItem.title+", UID:"+meetingItem.uid+",id:"+meetingItem.id+",changeKey:"+meetingItem.changeKey);
-				meetingItem.setProperty("X-MEETINGREQUEST", true);
-				this.removeFromMeetingRequestCache(deletion.id);			
-				this.meetingrequestAnswered[deletion.id] = false;
+		if (deletions.meetingrequests.length > 0) {
+			for each (var deletion in deletions.meetingrequests) {
+				var meetingItem = this.convertExchangeAppointmentToCalAppointment(deletion, true);
+				if (meetingItem) {
+					if (this.debug) this.logInfo(" -- MeetingRequest deletion:"+ meetingItem.title+", UID:"+meetingItem.uid+",id:"+meetingItem.id+",changeKey:"+meetingItem.changeKey);
+					meetingItem.setProperty("X-MEETINGREQUEST", true);
+					this.removeFromMeetingRequestCache(deletion.id);			
+					this.meetingrequestAnswered[deletion.id] = false;
+				}
 			}
 		}
 
 		// Save cancelations into cache and remove request for which we received a cancelation.
-		for each (var request in creations.meetingCancellations) {
-			var cancelItem = this.convertExchangeAppointmentToCalAppointment(request, true);
-			if (cancelItem) {
-				cancelItem.setProperty("X-MEETINGCANCELATION", true);
-				this.meetingCancelationsCache[request.id] = cancelItem;
-			}
-		}
-
-		for each (var update in updates.meetingCancellations) {
-			var cancelItem = this.convertExchangeAppointmentToCalAppointment(update, true);
-			if (cancelItem) {
-				cancelItem.setProperty("X-MEETINGCANCELATION", true);
-				if (this.meetingCancelationsCache[update.id].uid == cancelItem.uid) {
-					this.meetingCancelationsCache[update.id] = meetingItem;
-				}
-				else {
-					if (this.debug) this.logInfo("WE DO NOT HAVE A MEETING IN CACHE FOR THIS UPDATE!!!!. PLEASE REPORT");
+		if (creations.meetingCancellations.length > 0) {
+			for each (var request in creations.meetingCancellations) {
+				var cancelItem = this.convertExchangeAppointmentToCalAppointment(request, true);
+				if (cancelItem) {
+					if (this.debug) this.logInfo(" -- MeetingCancelation creation:"+ cancelItem.title+", UID:"+cancelItem.uid+",id:"+cancelItem.id+",changeKey:"+cancelItem.changeKey);
+					cancelItem.setProperty("X-MEETINGCANCELATION", true);
+					this.meetingCancelationsCache[request.id] = cancelItem;
 				}
 			}
 		}
 
-		for each (var deletion in deletions.meetingCancellations) {
-			delete this.meetingCancelationsCache[deletion.id];
+		if (updates.meetingCancellations.length > 0) {
+			for each (var update in updates.meetingCancellations) {
+				var cancelItem = this.convertExchangeAppointmentToCalAppointment(update, true);
+				if (cancelItem) {
+					cancelItem.setProperty("X-MEETINGCANCELATION", true);
+					if (this.meetingCancelationsCache[update.id].uid == cancelItem.uid) {
+						this.meetingCancelationsCache[update.id] = meetingItem;
+					}
+					else {
+						if (this.debug) this.logInfo("WE DO NOT HAVE A MEETING IN CACHE FOR THIS UPDATE!!!!. PLEASE REPORT");
+					}
+				}
+			}
+		}
+
+		if (deletions.meetingCancellations.length > 0) {
+			for each (var deletion in deletions.meetingCancellations) {
+				delete this.meetingCancelationsCache[deletion.id];
+			}
 		}
 
 		var requestCount = 0;
@@ -3609,6 +3630,7 @@ try{
 				}*/
 			}
 		}
+		
 		for each (var index in this.meetingCancelationsCache) {
 			if (index) {
 				// Remove cancelation for which we do not have an calendaritem.
@@ -3774,6 +3796,8 @@ try{
 				}				
 			}
 		}
+
+		this.weAreInboxSyncing = false;
 
 		if ((requestCount > 0) || (cancelationCount > 0)) {
 			this.refresh();
@@ -6475,7 +6499,6 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 	convertExchangeItemtoCalItem: function _convertExchangeItemtoCalItem(aCalendarItem, item, fromOfflineCache, isMeetingRequest)
 	{
 		var uid = item.uid;
-
 		if (this.itemCacheById[item.id]) {
 			if (this.itemCacheById[item.id].changeKey == item.changeKey) {
 				//if (this.debug) this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
@@ -6771,7 +6794,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 
 	convertExchangeAppointmentToCalAppointment: function _convertExchangeAppointmentToCalAppointment(aCalendarItem, isMeetingRequest, erGetItemsRequest, doNotify, fromOfflineCache)
 	{
-		if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment:"+String(aCalendarItem), 2);
+		if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment:"+xml2json.toString(aCalendarItem), 2);
 
 		//var item = createEvent();
 		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
@@ -7261,7 +7284,7 @@ return;
 				if (!this.firstSyncDone) { 
 					this.firstSyncDone = true;
 					if (this.debug) this.logInfo("First sync is done. Normal operation is starting.");
-					this.startSyncInboxPoller();
+					//this.startSyncInboxPoller();
 				}
 
 				return;
