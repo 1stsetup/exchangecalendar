@@ -97,7 +97,11 @@
 		</row>
 
 		<row id="event-grid-description-row">
-			<itemBodyEditor id="exchWebService-body-editor" flex="1" insertafter="item-description" disable-on-readonly="true"/>
+			<itemBodyEditor id="exchWebService-body-editor" 
+				flex="1" 
+				insertafter="item-description" 
+				ondblclick = "return tmpEventDialog.onDblClick(event);"
+				disable-on-readonly="true"/>
 		</row> 
 
 		<row id="exchWebService-attachments-row"

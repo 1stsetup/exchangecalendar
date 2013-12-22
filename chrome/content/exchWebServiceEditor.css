@@ -76,6 +76,24 @@ toolbarbutton.align-justify-button {
   width: 32px;
 }
 
+toolbarbutton.addlink-button { 
+  list-style-image: url("chrome://exchangecalendar/skin/chain--plus.png");
+  height: 32px;
+  width: 32px;
+}
+
+toolbarbutton.removelink-button { 
+  list-style-image: url("chrome://exchangecalendar/skin/chain--minus.png");
+  height: 32px;
+  width: 32px;
+}
+
+toolbarbutton.editlink-button { 
+  list-style-image: url("chrome://exchangecalendar/skin/chain--pencil.png");
+  height: 32px;
+  width: 32px;
+}
+
 editor.exchWebService-editor {
   background-color: white;
   border-style: solid;

@@ -852,6 +852,7 @@ mivFunctions.prototype = {
 		}
 		return result;
 	},
+
 }
 
 function NSGetFactory(cid) {

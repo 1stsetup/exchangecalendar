@@ -14,11 +14,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- *  Exchange 2007/2010 Contacts.
- *  For Thunderbird.
+ * == Exchange 2007/2010 Calendar and Tasks Provider.
+ * == For Thunderbird with the Lightning add-on.
  *
- * Author: Deepak Kumar
- * email: deepk2u@gmail.com
+ * Author: Michel Verbraak (info@1st-setup.nl)
+ * Website: http://www.1st-setup.nl/wordpress/?page_id=133
+ * email: exchangecalendar@extensions.1st-setup.nl
  *
  *
  * ***** BEGIN LICENSE BLOCK *****/
@@ -148,6 +149,29 @@
 					autoCheck="false"
 					connect="true"
 					state="state_attribute"/>
+				<xul:toolbarbutton anonid="cmd_add_link"
+					class="addlink-button"
+					tooltiptext="Add link"
+					type="checkbox"
+					autoCheck="false"
+					connect="false"
+					state="state_attribute"/>
+				<xul:toolbarbutton anonid="cmd_edit_link"
+					class="editlink-button"
+					tooltiptext="Edit link"
+					type="checkbox"
+					autoCheck="false"
+					connect="false"
+					state="state_attribute"
+					hidden="true"/>
+				<xul:toolbarbutton anonid="cmd_remove_link"
+					class="removelink-button"
+					tooltiptext="Remove link"
+					type="checkbox"
+					autoCheck="false"
+					connect="false"
+					state="state_attribute"
+					hidden="true"/>
 			</xul:toolbar>
 		</xul:toolbox>
 		<xul:toolbox anonid="FormatToolbox" mode="icons">
@@ -175,7 +199,7 @@
 			var self=this;
 			if (this.editorElement) {
 				this.commandManager = this.editorElement.commandManager;
-				this.editorClickFunction = function() { self.onClickEditor();};
+				this.editorClickFunction = function(aEvent) { self.onClickEditor(aEvent);};
 				this.editorElement.addEventListener("click", this.editorClickFunction, true);
 
 				this.editorKeyPressFunction = function(aEvent) { self.onKeyPressEditor(aEvent);};
@@ -203,6 +227,19 @@
 			this.menuPopup = document.getAnonymousElementByAttribute(this, "anonid", "fontFaceSelect");
 			this.menuPopup.addEventListener("command", this.menuPopupFunction, true);
 			this.fillFontFace();
+
+			this.addLinkFunction = function(){ self.addLink();};
+			var addLinkElement = document.getAnonymousElementByAttribute(this, "anonid", "cmd_add_link")
+			addLinkElement.addEventListener("click", this.addLinkFunction, true);
+
+			this.removeLinkFunction = function(){ self.removeLink();};
+			var removeLinkElement = document.getAnonymousElementByAttribute(this, "anonid", "cmd_remove_link")
+			removeLinkElement.addEventListener("click", this.removeLinkFunction, true);
+
+			this.editLinkFunction = function(){ self.editLink();};
+			var editLinkElement = document.getAnonymousElementByAttribute(this, "anonid", "cmd_edit_link")
+			editLinkElement.addEventListener("click", this.editLinkFunction, true);
+
 		]]></constructor>
 
 		<destructor><![CDATA[
@@ -216,6 +253,9 @@
 			if (this.menuPopupFunction) {
 				this.menuPopup.removeEventListener("command", this.menuPopupFunction, false);
 			}
+			document.getAnonymousElementByAttribute(this, "anonid", "cmd_add_link").addEventListener("click", this.addLinkFunction, true);
+			document.getAnonymousElementByAttribute(this, "anonid", "cmd_remove_link").addEventListener("click", this.removeLinkFunction, true);
+			document.getAnonymousElementByAttribute(this, "anonid", "cmd_edit_link").addEventListener("click", this.editLinkFunction, true);
 		]]></destructor>
 			
 			<property name="content">
@@ -337,14 +377,73 @@
 		<method name="onKeyPressEditor">
 			<parameter name="aEvent" />
 			<body><![CDATA[
+if (aEvent) {
+dump("aEvent.keyCode:"+aEvent.keyCode+"\n");
+}
 			if ( ( (aEvent.keyCode > 36) && (aEvent.keyCode < 41) ) || (aEvent.keyCode == 33) || (aEvent.keyCode == 34)) {
-				this.onClickEditor();
+				this.onClickEditor(aEvent);
+			}
+		]]></body>
+		</method>
+
+		<method name="hrefAndLinkNodeForClickEvent">
+			<parameter name="event" />
+			<body><![CDATA[
+			{
+				var href = "";
+				var isKeyCommand = (event.type == "command");
+				var linkNode = isKeyCommand ? document.commandDispatcher.focusedElement
+							: event.originalTarget;
+dump("event.type:"+event.type+"\n");
+dump("event.originalTarget:"+event.originalTarget+"\n");
+dump("linkNode:"+linkNode+"\n");
+				while (linkNode instanceof Element) {
+					if (linkNode instanceof HTMLAnchorElement ||
+					  linkNode instanceof HTMLAreaElement ||
+					  linkNode instanceof HTMLLinkElement) {
+						href = linkNode.href;
+						if (href)
+						  break;
+					}
+					// Try MathML href
+					else if (linkNode.namespaceURI == "http://www.w3.org/1998/Math/MathML" &&
+					       linkNode.hasAttribute("href")) {
+						href = linkNode.getAttribute("href");
+						href = makeURLAbsolute(linkNode.baseURI, href);
+						break;
+					}
+					// Try simple XLink
+					else if (linkNode.hasAttributeNS("http://www.w3.org/1999/xlink", "href")) {
+						href = linkNode.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+						href = makeURLAbsolute(linkNode.baseURI, href);
+						break;
+					}
+					linkNode = linkNode.parentNode;
+				}
+dump("href:"+href+"\n");
+				return href ? {href: href, linkNode: linkNode} : null;
 			}
 		]]></body>
 		</method>
 
 		<method name="onClickEditor">
+			<parameter name="aEvent" />
 			<body><![CDATA[
+			if (aEvent) {
+				this.ceParams = this.hrefAndLinkNodeForClickEvent(aEvent);
+				if (this.ceParams) {
+					// We have a link active.
+					document.getAnonymousElementByAttribute(this, "anonid", "cmd_add_link").hidden = true;
+					document.getAnonymousElementByAttribute(this, "anonid", "cmd_edit_link").hidden = false;
+					document.getAnonymousElementByAttribute(this, "anonid", "cmd_remove_link").hidden = false;
+				}
+				else {
+					document.getAnonymousElementByAttribute(this, "anonid", "cmd_add_link").hidden = false;
+					document.getAnonymousElementByAttribute(this, "anonid", "cmd_edit_link").hidden = true;
+					document.getAnonymousElementByAttribute(this, "anonid", "cmd_remove_link").hidden = true;
+				}
+			}
+
 			for (var aStore in this.functions) {
 				for (var aAnonId in this.functions[aStore]) {
 					this.setButtonState(aAnonId);
@@ -510,6 +609,41 @@
 				}
 //				this.setButtonState(aAnonId);
 				this.onClickEditor();
+			}
+		]]></body>
+		</method>
+
+		<method name="addLink">
+			<body><![CDATA[
+dump("addLink\n");
+				var result = window.prompt("Link URL:", "http://");
+				if (result) {
+					//this.ceParams.linkNode.setAttribute("href", result);
+				}
+		]]></body>
+		</method>
+
+		<method name="removeLink">
+			<body><![CDATA[
+dump("removeLink\n");
+			if (this.ceParams) {
+				var parent = this.ceParams.linkNode.parentElement;
+				while (this.ceParams.linkNode.firstChild) {
+					parent.insertBefore(this.ceParams.linkNode.firstChild, this.ceParams.linkNode);
+				}
+				parent.removeChild(this.ceParams.linkNode);
+			}
+		]]></body>
+		</method>
+
+		<method name="editLink">
+			<body><![CDATA[
+dump("editLink\n");
+			if (this.ceParams) {
+				var result = window.prompt("Link URL:", this.ceParams.href);
+				if (result) {
+					this.ceParams.linkNode.setAttribute("href", result);
+				}
 			}
 		]]></body>
 		</method>
