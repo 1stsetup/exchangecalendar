@@ -100,7 +100,6 @@
 			<itemBodyEditor id="exchWebService-body-editor" 
 				flex="1" 
 				insertafter="item-description" 
-				ondblclick = "return tmpEventDialog.onDblClick(event);"
 				disable-on-readonly="true"/>
 		</row> 
 
