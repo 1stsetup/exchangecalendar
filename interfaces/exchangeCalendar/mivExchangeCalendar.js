@@ -7806,6 +7806,7 @@ return;
 else {
 	dump("addItemToCache: item.title:"+item.title+", startDate:"+itemDate+" | "+item.id+".\n");
 }*/
+		if (this.debug) this.logInfo("addItemToCache ById: item.title:"+item.title+", startDate:"+itemStartDate+", endDate:"+itemEndDate+" | "+item.id+".");
 	//dump("addItemToCache ById: item.title:"+item.title+", startDate:"+itemStartDate+", endDate:"+itemEndDate+" | "+item.id+".\n");
 
 		// Add to Id index.
@@ -7827,6 +7828,7 @@ else {
 				if (!this.itemCacheByStartDate) this.itemCacheByStartDate = {};
 				if (!this.itemCacheByStartDate[startYear]) this.itemCacheByStartDate[startYear] = {};
 				if (!this.itemCacheByStartDate[startYear][startYearDay]) this.itemCacheByStartDate[startYear][startYearDay] = [];
+		if (this.debug) this.logInfo(" -- addItemToCache ByStartDate: item.title:"+item.title+", startYear:"+startYear+", startYearDay:"+startYearDay+" | "+item.id+".",2);
 	//dump(" -- addItemToCache ByStartDate: item.title:"+item.title+", startYear:"+startYear+", startYearDay:"+startYearDay+" | "+item.id+".\n");
 				this.itemCacheByStartDate[startYear][startYearDay][item.id] = true;
 
@@ -8835,7 +8837,7 @@ else {
 			sqlStatement.reset();
 		}
 
-		if (this.debug) this.logInfo("masterIsInOfflineCache: Retreived uid:'"+result.uid+"', changeKey:'"+result.changeKey+"' from offline cache.");
+		if ((this.debug) && (result)) this.logInfo("masterIsInOfflineCache: Retreived uid:'"+result.uid+"', changeKey:'"+result.changeKey+"' from offline cache.");
 		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
 
 			if (result) {
