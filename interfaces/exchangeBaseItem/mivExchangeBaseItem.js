@@ -2516,7 +2516,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		this._reminderIsSet = (this.getTagValue("t:ReminderIsSet", "false") == "true");
 
 		if (this.className == "mivExchangeEvent") {
-			this._calendarItemType = this.getTagValue("t:CalendarItemType", null);
+			this._calendarItemType = this.getTagValue("t:CalendarItemType", undefined);
 		}
 		else {
 			this._calendarItemType = "Task";
@@ -2540,7 +2540,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 		this._changeKey = this.getAttributeByTag("t:ItemId", "ChangeKey", null);
 
-		this._uid = this.getTagValue("t:UID", null);
+		this._uid = this.getTagValue("t:UID", undefined);
 
 		this._itemClass = this.getTagValue("t:ItemClass", null);
 
