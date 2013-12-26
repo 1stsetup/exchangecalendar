@@ -50,6 +50,8 @@ Cu.import("resource://exchangecalendar/soapFunctions.js");
 
 Cu.import("resource://exchangecalendar/erGetMasterOccurrenceId.js");
 
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+
 var EXPORTED_SYMBOLS = ["erFindOccurrencesRequest"];
 
 function erFindOccurrencesRequest(aArgument, aCbOk, aCbError, aListener)
@@ -124,65 +126,77 @@ erFindOccurrencesRequest.prototype = {
 
 	execute: function _execute()
 	{
-		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		//var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var root = xml2json.newJSON();
+		xml2json.parseXML(root, '<nsMessages:GetItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var req = root[telements][0];
 
-		var itemShape = req.addChildTag("ItemShape", "nsMessages", null);
-		itemShape.addChildTag("BaseShape", "nsTypes", "IdOnly"); 
+		//var itemShape = req.addChildTag("ItemShape", "nsMessages", null);
+		//itemShape.addChildTag("BaseShape", "nsTypes", "IdOnly"); 
 
-		var additionalProperties = itemShape.addChildTag("AdditionalProperties", "nsTypes", null);
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:UID");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:CalendarItemType");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:Start");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "calendar:End");
-		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:ItemClass");
+		var itemShape = xml2json.addTag(req, "ItemShape", "nsMessages", null);
+		xml2json.addTag(itemShape, "BaseShape", "nsTypes", "IdOnly");		
+
+		var additionalProperties = xml2json.addTag(itemShape, "AdditionalProperties", "nsTypes", null);
+		let fieldURI = xml2json.addTag(additionalProperties, "FieldURI", "nsTypes", null);
+		xml2json.setAttribute(fieldURI, "FieldURI", "calendar:UID");
+		fieldURI = xml2json.addTag(additionalProperties, "FieldURI", "nsTypes", null);
+		fieldURI = xml2json.setAttribute(fieldURI, "FieldURI", "calendar:CalendarItemType");
+		fieldURI = xml2json.addTag(additionalProperties, "FieldURI", "nsTypes", null);
+		fieldURI = xml2json.setAttribute(fieldURI, "FieldURI", "calendar:Start");
+		fieldURI = xml2json.addTag(additionalProperties, "FieldURI", "nsTypes", null);
+		fieldURI = xml2json.setAttribute(fieldURI, "FieldURI", "calendar:End");
+		fieldURI = xml2json.addTag(additionalProperties, "FieldURI", "nsTypes", null);
+		fieldURI = xml2json.setAttribute(fieldURI, "FieldURI", "item:ItemClass");
 
 		var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:ItemIds xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var itemids = xml2json.addTag(req, "ItemIds", "nsMessages", null); 
 		for (var x = 0; x < this.idGroupSize; x++) {
-			var occurrenceItemID = itemids.addChildTag("OccurrenceItemId", "nsTypes", null);
-			occurrenceItemID.setAttribute("RecurringMasterId", this.masterID);
-			occurrenceItemID.setAttribute("ChangeKey", this.masterChangeKey);
-			occurrenceItemID.setAttribute("InstanceIndex", this.currentSearchIndex++);
+			var occurrenceItemID = xml2json.addTag(itemids, "OccurrenceItemId", "nsTypes", null);
+			xml2json.setAttribute(occurrenceItemID, "RecurringMasterId", this.masterID);
+			xml2json.setAttribute(occurrenceItemID, "ChangeKey", this.masterChangeKey);
+			xml2json.setAttribute(occurrenceItemID, "InstanceIndex", this.currentSearchIndex++);
 			occurrenceItemID = null;
 		}
 
-		req.addChildTagObject(itemids);
 		itemids = null;
 
-		this.parent.xml2jxon = true;
+		this.parent.xml2json = true;
 
 		//dump("erFindOccurrencesRequest.execute>"+String(this.parent.makeSoapMessage(req))+"\n");
-                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+                this.parent.sendRequest(this.parent.makeSoapMessage2(req), this.serverUrl);
 		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//dump("erFindOccurrencesRequest.onSendOk>"+String(aResp)+"\n");
+		//dump("erFindOccurrencesRequest.onSendOk>"+xml2json.toString(aResp)+"\n");
 		var finished = false;
 		var found = false;
 
-		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage");
+		//var rm = aResp.XPath("/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage");
+		var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage");
 		for each (var e in rm) {
-			var responseCode = e.getTagValue("m:ResponseCode");
+			var responseCode = xml2json.getTagValue(e, "m:ResponseCode");
 			switch (responseCode) {
 				case "ErrorCalendarOccurrenceIsDeletedFromRecurrence" :
 					this.currentRealIndex++;
 					break;
 				case "NoError":
-					var tmpItems = e.XPath("/m:Items/*");
+					var tmpItems = xml2json.XPath(e, "/m:Items/*");
 					for each (var tmpItem in tmpItems) {
 						this.currentRealIndex++;
-						var startDate = cal.fromRFC3339(tmpItem.getTagValue("t:Start"), cal.UTC()).getInTimezone(cal.UTC()); 
-						var endDate = cal.fromRFC3339(tmpItem.getTagValue("t:End"), cal.UTC()).getInTimezone(cal.UTC()); 
+						var startDate = cal.fromRFC3339(xml2json.getTagValue(tmpItem, "t:Start"), cal.UTC()).getInTimezone(cal.UTC()); 
+						var endDate = cal.fromRFC3339(xml2json.getTagValue(tmpItem, "t:End"), cal.UTC()).getInTimezone(cal.UTC()); 
 						if ((this.startDate.compare(endDate) < 1) &&
 						    (this.endDate.compare(startDate) > -1) ) {
 							// We found our occurrence
-							this.items.push({Id: tmpItem.getAttributeByTag("t:ItemId","Id"),
-						  ChangeKey: tmpItem.getAttributeByTag("t:ItemId", "ChangeKey"),
-						  type: tmpItem.getTagValue("t:CalendarItemType"),
-						  uid: tmpItem.getTagValue("t:UID"),
-						  start: tmpItem.getTagValue("t:Start"),
-						  end: tmpItem.getTagValue("t:End"),
+							this.items.push({Id: xml2json.getAttributeByTag(tmpItem, "t:ItemId","Id"),
+						  ChangeKey: xml2json.getAttributeByTag(tmpItem, "t:ItemId", "ChangeKey"),
+						  type: xml2json.getTagValue(tmpItem, "t:CalendarItemType"),
+						  uid: xml2json.getTagValue(tmpItem, "t:UID"),
+						  start: xml2json.getTagValue(tmpItem, "t:Start"),
+						  end: xml2json.getTagValue(tmpItem, "t:End"),
 						  index: this.currentRealIndex});
 						}
 
