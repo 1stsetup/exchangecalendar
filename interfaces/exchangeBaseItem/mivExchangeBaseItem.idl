@@ -62,6 +62,8 @@ interface mivExchangeBaseItem : calIItemBase
 	readonly attribute AUTF8String endTimeZoneName;
 	readonly attribute AUTF8String endTimeZoneId;
 	readonly attribute AUTF8String conferenceType;
+	readonly attribute AUTF8String mimeContent;
+	readonly attribute AUTF8String mimeContentCharacterSet;
 	readonly attribute boolean allowNewTimeProposal;
 	attribute AUTF8String body;
 	readonly attribute AUTF8String bodyType;

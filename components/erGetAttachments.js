@@ -40,6 +40,8 @@ Cu.import("resource://exchangecalendar/ecFunctions.js");
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/soapFunctions.js");
 
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+
 var EXPORTED_SYMBOLS = ["erGetAttachmentsRequest"];
 
 function erGetAttachmentsRequest(aArgument, aCbOk, aCbError, aListener)
@@ -69,28 +71,40 @@ erGetAttachmentsRequest.prototype = {
 	{
 //		exchWebService.commonFunctions.LOG("erGetAttachmentsRequest.execute");
 
-		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetAttachment xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		//var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:GetAttachment xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var root = xml2json.newJSON();
+		xml2json.parseXML(root, '<nsMessages:GetAttachment xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var req = root[telements][0];
 
-		var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:AttachmentIds xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var attachmentShape = xml2json.addTag(req, "AttachmentShape", "nsMessages", null);
+		xml2json.addTag(attachmentShape, "IncludeMimeContent", "nsTypes", "true");
+		//var additionalProperties = xml2json.addTag(attachmentShape, "AdditionalProperties", "nsTypes", null);
+		//var fieldURI = xml2json.addTag(additionalProperties, "FieldURI", "nsTypes", null);
+		//xml2json.setAttribute(fieldURI, "FieldURI" , "attachment:contentId");
+
+		//var itemids = exchWebService.commonFunctions.xmlToJxon('<nsMessages:AttachmentIds xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		var itemids = xml2json.addTag(req, "AttachmentIds", "nsMessages", null);
 		for (var index in this.attachmentIds) {
-			itemids.addChildTag("AttachmentId", "nsTypes", null).setAttribute("Id", this.attachmentIds[index]);
+			let attachmentId = xml2json.addTag(itemids, "AttachmentId", "nsTypes", null);
+			xml2json.setAttribute(attachmentId, "Id", this.attachmentIds[index]);
 		}
 
-		req.addChildTagObject(itemids);
+		//req.addChildTagObject(itemids);
 		itemids = null;
 
-		this.parent.xml2jxon = true;
+		this.parent.xml2json = true;
 
-		//exchWebService.commonFunctions.LOG("erGetAttachmentsRequest.execute:"+this.parent.makeSoapMessage(req));
-                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		//dump("erGetAttachmentsRequest.execute:"+this.parent.makeSoapMessage2(req)+"\n\n");
+                this.parent.sendRequest(this.parent.makeSoapMessage2(req), this.serverUrl);
 		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//exchWebService.commonFunctions.LOG("erGetAttachmentsRequest.onSendOk: "+String(aResp));
+		//dump("erGetAttachmentsRequest.onSendOk: "+xml2json.toString(aResp)+"\n\n");
 
-		var rm = aResp.XPath("/s:Envelope/s:Body/m:GetAttachmentResponse/m:ResponseMessages/m:GetAttachmentResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']/m:Attachments/*");
+		//var rm = aResp.XPath("/s:Envelope/s:Body/m:GetAttachmentResponse/m:ResponseMessages/m:GetAttachmentResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']/m:Attachments/*");
+		var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:GetAttachmentResponse/m:ResponseMessages/m:GetAttachmentResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']/m:Attachments/*");
 
 		if (rm.length == 0) {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on getting Attachment.");
@@ -100,9 +114,12 @@ erGetAttachmentsRequest.prototype = {
 
 		var attachments = [];
 		for each (var e in rm) {
-			attachments.push( { id: e.getAttributeByTag("t:AttachmentId","Id"),
-				      name: e.getTagValue("t:Name"),
-				      content: e.getTagValue("t:Content")}
+			attachments.push( { id: xml2json.getAttributeByTag(e, "t:AttachmentId","Id"),
+				      name: xml2json.getTagValue(e, "t:Name"),
+				      content: xml2json.getTagValue(e, "t:Content"),
+					contentId: xml2json.getTagValue(e, "t:ContentId"),
+					contentType: xml2json.getTagValue(e, "t:ContentType"),
+					attachment: e}
 				);
 		} 
 		rm = null;
@@ -115,6 +132,7 @@ erGetAttachmentsRequest.prototype = {
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)
 	{
+		dump("erGetAttachmentsRequest.onSendError: aCode:"+aCode+", aMsg:"+aMsg+"\n\n");
 		this.isRunning = false;
 		if (this.mCbError) {
 			this.mCbError(this, aCode, aMsg);

@@ -2149,6 +2149,16 @@ try {
 		return this._endTimeZoneId;
 	},
 
+	get mimeContent()
+	{
+		return this._mimeContent;
+	},
+
+	get mimeContentCharacterSet()
+	{
+		return this._mimeContentCharacterSet;
+	},
+
 	//readonly attribute AUTF8String conferenceType;
 	get conferenceType()
 	{
@@ -2455,6 +2465,11 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		this._title = this.subject;
 		if (this._title) {
 			this._calEvent.title = this._title;
+		}
+
+		this._mimeContent = this.getTagValue("t:MimeContent", null);
+		if (this._mimeContent) {
+			this._mimeContentCharacterSet = xml2json.getAttribute(this.getTag("t:MimeContent"), "CharacterSet");
 		}
 
 		this._id = this.getAttributeByTag("t:ItemId", "Id", null);

@@ -301,7 +301,7 @@ exchEventSummaryDialog.prototype = {
 				 listener: aListener});
 	},
 
-	loadInlineAttachment: function _loadInLineAttachment(aNode, aAttachmentId, aCalendarId)
+	loadInlineAttachment: function _loadInLineAttachment(aAttachmentId, aCalendarId, inlineCount)
 	{
 		var prefs = "extensions.exchangecalendar@extensions.1st-setup.nl."+aCalendarId+".";
 
@@ -319,52 +319,91 @@ exchEventSummaryDialog.prototype = {
 			{user: username, 
 			 serverUrl:  serverUrl ,
 			 attachmentIds: [aAttachmentId]}, 
-			function(aExchangeRequest, aAttachments){self.onDownloadAttachmentOk(aExchangeRequest, aAttachments, aNode);}, 
-			function(aExchangeRequest, aCode, aMsg) {self.onDownloadAttachmentError(aExchangeRequest, aCode, aMsg, aNode);},
+			function(aExchangeRequest, aAttachments){self.onDownloadAttachmentOk(aExchangeRequest, aAttachments, inlineCount);}, 
+			function(aExchangeRequest, aCode, aMsg) {self.onDownloadAttachmentError(aExchangeRequest, aCode, aMsg, inlineCount);},
 			null);
 	},
 
-	onDownloadAttachmentOk: function _onDownloadAttachmentOk(aExchangeRequest, aAttachments, aNode)
+	loadImage: function _loadImage(aImageNode, aAttachment)
+	{
+		this.globalFunctions.LOG(" == Going to decode:"+aAttachment.name);
+		this.globalFunctions.LOG(" == content:"+aAttachment.content.length+" bytes");  
+		var fileData = window.atob(aAttachment.content);
+		this.globalFunctions.LOG(" == Decoded:"+aAttachment.name);
+
+		var file = Cc["@mozilla.org/file/directory_service;1"].  
+				getService(Ci.nsIProperties).  
+				get("TmpD", Ci.nsIFile); 
+		var tmpName = this.globalFunctions.getUUID();
+		file.append(tmpName);  
+
+		//file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0666);  
+		// do whatever you need to the created file  
+		this.globalFunctions.LOG(" == new tmp filename:"+file.path);  
+
+		var stream = Cc["@mozilla.org/network/safe-file-output-stream;1"].  
+				createInstance(Ci.nsIFileOutputStream);  
+		stream.init(file, 0x04 | 0x08 | 0x20, 384, 0); // readwrite, create, truncate  
+
+		this.globalFunctions.LOG(" == writing file:"+file.path);  
+		this.globalFunctions.LOG(" == writing:"+fileData.length+" bytes");  
+		stream.write(fileData, fileData.length);  
+		if (stream instanceof Ci.nsISafeOutputStream) {  
+			stream.finish();  
+		}
+		// Dispose of the converted data in memory;
+		//delete fileData;
+
+		this.globalFunctions.LOG(" == written file:"+file.path);  
+		this.globalFunctions.LOG(" == written:"+fileData.length+" bytes");  
+
+		if (aImageNode) {
+			this.globalFunctions.LOG(" == Telling image to load file.");
+			aImageNode.src = "file://"+file.path;
+			this.imageCache[aAttachment.id] = file;
+//dump("2. broswer innerhtml:"+this._document.getElementById("exchWebService-body-editor").contentDocument.body.outerHTML+"\n");
+		}
+		else {
+//dump(" loadImage: no aImageNoded\n");
+		}
+	},
+
+	onDownloadAttachmentOk: function _onDownloadAttachmentOk(aExchangeRequest, aAttachments, inlineCount)
 	{
 		this.globalFunctions.LOG("exchWebService.attachments.onDownloadAttachmentOk:"+aAttachments.length);
 
+		this.inlineImages = this._document.getElementById("exchWebService-body-editor").contentDocument.images;
+//dump("1. broswer innerhtml:"+this._document.getElementById("exchWebService-body-editor").contentDocument.body.outerHTML+"\n");
+//dump("this.inlineImages.length:"+this.inlineImages.length+"\n");
+
 		if (aAttachments.length > 0) {
 			for (var index in aAttachments) {
-				this.globalFunctions.LOG(" == Going to decode:"+aAttachments[index].name);
-				this.globalFunctions.LOG(" == content:"+aAttachments[index].content.length+" bytes");  
-				var fileData = window.atob(aAttachments[index].content);
-				this.globalFunctions.LOG(" == Decoded:"+aAttachments[index].name);
-
-				var file = Cc["@mozilla.org/file/directory_service;1"].  
-						getService(Ci.nsIProperties).  
-						get("TmpD", Ci.nsIFile);  
-				file.append(encodeURIComponent(aAttachments[index].id));  
-
-				//file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0666);  
-				// do whatever you need to the created file  
-				this.globalFunctions.LOG(" == new tmp filename:"+file.path);  
-
-				var stream = Cc["@mozilla.org/network/safe-file-output-stream;1"].  
-						createInstance(Ci.nsIFileOutputStream);  
-				stream.init(file, 0x04 | 0x08 | 0x20, 384, 0); // readwrite, create, truncate  
-              
-				this.globalFunctions.LOG(" == writing file:"+file.path);  
-				this.globalFunctions.LOG(" == writing:"+fileData.length+" bytes");  
-				stream.write(fileData, fileData.length);  
-				if (stream instanceof Ci.nsISafeOutputStream) {  
-					stream.finish();  
+				if (aAttachments[index].contentId) {
+				// Find the image this attachment is for.
+					for (var i = 0; i < this.inlineImages.length; i++) {
+						if (this.inlineImages[i].hasAttribute("src")) {
+							var contentId = this.inlineImages[i].getAttribute("src")
+							dump("img src:"+contentId+"\n");
+							if (contentId.indexOf("cid:") == 0) {
+								// We have a contentId as image source. Lets see if we have a matching inline attachment.
+								dump("We have a contentId as image source. Lets see if we have a matching inline attachment.\n");
+								contentId = contentId.substr(4);
+								if (contentId == aAttachments[index].contentId) {
+									this.loadImage(this.inlineImages[i], aAttachments[index]);
+								}
+							}
+						}
+					}
 				}
-				// Dispose of the converted data in memory;
-				//delete fileData;
-
-				this.globalFunctions.LOG(" == written file:"+file.path);  
-				this.globalFunctions.LOG(" == written:"+fileData.length+" bytes");  
-
-				if (aNode) {
-					this.globalFunctions.LOG(" == Telling image to load file.");
-					aNode.setAttribute("src", file.path);
-					this.imageCache[aAttachments[index].id] = file;
-				}
+				else {
+					if (inlineCount < this.inlineImages.length) {
+						this.loadImage(this.inlineImages[inlineCount], aAttachments[index]);
+					}
+					else {
+						dump("inlineCount > this.inlineImages.length\n");
+						dump("Attachment has no contentId:"+JSON.stringify(aAttachments[index].attachment)+"\n\n");
+					}
+				}		
 			}
 		}
 	},
@@ -381,38 +420,25 @@ exchEventSummaryDialog.prototype = {
 		this.removeTmpFile();
 
 		// Lets see if we have images.
-		var images = this._document.getElementById("exchWebService-body-editor").contentDocument.getElementsByTagName("img");
-
 		var args = this._window.arguments[0];
 		var item = args.calendarEvent;
 		var attachments = item.getAttachments({});
-dump("attachments.length:"+attachments.length+"\n");
+//dump("attachments.length:"+attachments.length+"\n");
 		var inlineAttachments = {};
+		var inlineCount = 0;
 		for (var i = 0; i < attachments.length; i++) {
+//dump(" -- uri:"+attachments[i].uri.spec+"\n");
 			let getParams = this.globalFunctions.splitUriGetParams(attachments[i].uri);
 
 			if (getParams.isinline == "true") {
-				if (getParams.contentid != "<NOPE>") {
-					inlineAttachments[getParams.contentid] = {id:getParams.id, calendarid:getParams.calendarid};
-				}
+				dump(" -- attachment is inline\n");
+				this.loadInlineAttachment(getParams.id, getParams.calendarid, inlineCount);
+				inlineCount++;
 			}
 		}		
 
-dump("images.length:"+images.length+"\n");
-		for (var i = 0; i < images.length; i++) {
-			if (images[i].hasAttribute("src")) {
-				var contentId = images[i].getAttribute("src")
-				//dump("img src:"+contentId+"\n");
-				if (contentId.indexOf("cid:") == 0) {
-					// We have a contentId as image source. Lets see if we have a matching inline attachment.
-					contentId = contentId.substr(4);
-					if (inlineAttachments[contentId]) {
-						//dump(" -- image attachement url:"+inlineAttachments[contentId].id+"\n");
-						this.loadInlineAttachment(images[i], inlineAttachments[contentId].id, inlineAttachments[contentId].calendarid);
-					}
-				}
-			}
-		}
+//dump("item.mimeContent:"+item.mimeContent+"\n\n");
+//dump("item.exchangeXML:"+item.exchangeXML+"\n\n");
 	},
 
 	browserLoad: function _browserLoad(aStr, aItem)
@@ -553,6 +579,9 @@ try{
 			}
 			return true;
 		}
+
+		if (!ceParams) return true;
+
 		var href = ceParams.href;
 
 		try {

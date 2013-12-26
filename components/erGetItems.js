@@ -128,6 +128,7 @@ erGetItemsRequest.prototype = {
 		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ReminderIsSet'/>");
 		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ReminderMinutesBeforeStart'/>");
 		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:EffectiveRights'/>");
+		//xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:MimeContent'/>");
 
 		this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
 				.getService(Ci.mivExchangeStatistics);
