@@ -3122,7 +3122,10 @@ calExchangeCalendar.prototype = {
 				this.prefs.deleteBranch("syncInboxState");
 			}
 */
-			this.syncState = this.loadFromFile("syncState.txt");
+
+			if (this.useOfflineCache) {
+				this.syncState = this.loadFromFile("syncState.txt");
+			}
 //			this.syncInboxState = this.loadFromFile("syncInboxState.txt");
 
 			this.getSyncState();
