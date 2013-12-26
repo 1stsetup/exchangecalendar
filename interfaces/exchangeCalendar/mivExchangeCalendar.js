@@ -339,7 +339,6 @@ try{
 
 	this.syncState = null;
 	this.syncInboxState = null;
-	this.syncBusy = false;
 	this._weAreSyncing = false;
 	this.firstSyncDone = false;
 
@@ -349,6 +348,7 @@ try{
 	this.meetingResponsesCache = [];
 
 	this.getItemSyncQueue = [];
+	this.getItemsSyncQueue = [];
 	this.processItemSyncQueueBusy = false;
 
 	this.offlineTimer = null;
@@ -2274,6 +2274,15 @@ calExchangeCalendar.prototype = {
 				      null,
 				      null);
 			}
+			return;
+		}
+
+		if (!this.firstSyncDone) {
+			this.getItemsSyncQueue.push({itemFilter: aItemFilter, 
+						count: aCount,
+                                    		rangeStart: aRangeStart, 
+						rangeEnd: aRangeEnd,
+						listener: aListener});
 			return;
 		}
 
@@ -6054,7 +6063,6 @@ if (this.debug) this.logInfo("getTaskItemsOK 2");
 		}
 
 		if (aItems.length == 0) {
-			this.syncBusy = false;
 			this.processItemSyncQueue();
 
 			return;
@@ -6075,8 +6083,6 @@ if (this.debug) this.logInfo("getTaskItemsOK 3");
 
 if (this.debug) this.logInfo("getTaskItemsOK 4");
 
-		this.syncBusy = false;
-
 		this.processItemSyncQueue();
 
 	},
@@ -6086,8 +6092,6 @@ if (this.debug) this.logInfo("getTaskItemsOK 4");
 //		if (this.debug) this.logInfo("getTaskItemsError: aMsg:"+ aMsg);
 		this.saveCredentials(erGetItemsRequest.argument);
 		this.notConnected = true;
-
-		this.syncBusy = false;
 
 		this.processItemSyncQueue();
 
@@ -6501,7 +6505,10 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 
 	convertExchangeItemtoCalItem: function _convertExchangeItemtoCalItem(aCalendarItem, item, fromOfflineCache, isMeetingRequest)
 	{
+		//dump("1. uid:"+item.uid+", it:"+item.calendarItemType+", t:"+item.title+", sd:"+item.startDate+"\n");
 		var uid = item.uid;
+		if (!uid) return null;
+
 		if (this.itemCacheById[item.id]) {
 			if (this.itemCacheById[item.id].changeKey == item.changeKey) {
 				//if (this.debug) this.logInfo("Item is allready in cache and the id and changeKey are the same. Skipping it.");
@@ -6615,8 +6622,14 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 						this.removeItemFromCache(this.itemCacheById[item.id]);
 					}
 
+//					if ((this.recurringMasterCache[item.uid]) && (this.recurringMasterCache[item.uid].id == item.id) && (this.recurringMasterCache[item.uid].changeKey != item.changeKey)) {
 					if ((this.recurringMasterCache[item.uid]) && (this.recurringMasterCache[item.uid].changeKey != item.changeKey)) {
 						if (this.debug) this.logInfo("We allready have this master in cache but the changeKey changed.");
+						if (this.recurringMasterCache[item.uid].id != item.id) {
+							dump(" @#@# THIS IS WEARD id do not match. @@@!!\n");
+							dump(" item.title:"+item.title+", startDate:"+item.startDate+", calendarItemType:"+item.calendarItemType+"\n");
+							dump(" this.recurringMasterCache[item.uid].title:"+this.recurringMasterCache[item.uid].title+", startDate:"+this.recurringMasterCache[item.uid].startDate+", calendarItemType:"+this.recurringMasterCache[item.uid].calendarItemType+"\n");
+						}
 						//dump("We allready have this master in cache but the changeKey changed.\n");
 
 						let ids = [];
@@ -6726,7 +6739,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 					if (this.recurringMasterCache[uid]) {
 						if (this.recurringMasterCache[uid].recurrenceInfo.toString() != item.recurrenceInfo.toString()) {
 							// Recurrence info change. We are going to request all children in a known period.
-							if (this.debug) this.logInfo("Recurrence info change for master. We are going to request all children in a known period..");
+							if (this.debug) this.logInfo(this.name+": ("+item.title+") Recurrence info change for master. We are going to request all children in a known period..");
 							this.masterCount--;
 							//dump("   xx MasterCount:"+this.masterCount+"\n");
 							this.recurringMasterCache[uid].deleteItem();
@@ -6755,8 +6768,11 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 						this.recurringMasterCache[uid] = null;*/
 					}
 					else {
-						if ((parentLessCounter == 0) && (!fromOfflineCache)) {
+						if ((parentLessCounter == 0) && (!fromOfflineCache) && (this.syncState)) {
 							if (this.debug) this.logInfo("We have a new master without children. Most of the times this means we nead to request the children separately.");
+							dump(this.name+": ("+item.title+") We have a new master without children. Most of the times this means we nead to request the children separately.\n");
+							dump("     -- this.startDate:"+this.startDate+", this.endDate:"+this.endDate+"\n");
+							//this.requestPeriod(this.startDate, this.endDate, Ci.calICalendar.ITEM_FILTER_TYPE_EVENT, 0, false);
 							var self = this;
 							var tmpItem = { Id: item.id, ChangeKey: item.changeKey, type:"RecurringMaster"};
 							this.addToQueue( erFindOccurrencesRequest, 
@@ -6779,6 +6795,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 
 					this.masterCount++;
 					this.recurringMasterCache[uid] = item;
+					//dump("** Add to this.recurringMasterCache: title:"+item.title+", item.startDate:"+item.startDate+"\n");
 					this.recurringMasterCacheById[item.id] = item;
 					//dump("   :: MasterCount:"+this.masterCount+"\n");
 
@@ -7255,136 +7272,111 @@ return;
 		this.saveCredentials(erSyncFolderItemsRequest.argument);
 		this.notConnected = false;
 
-		if (this.debug) this.logInfo("syncFolderItemsOK: Creation:"+creations.length+", Updates:"+updates.length+", Deletions:"+deletions.length);
+		if (this.debug) this.logInfo("syncFolderItemsOK: Creation:"+creations.length+", Updates:"+updates.length+", Deletions:"+deletions.length+", syncState:"+syncState);
 
 		if ((creations.length > 0) || (updates.length > 0) || (deletions.length > 0)) {
 			this.addActivity(calGetString("calExchangeCalendar", "syncFolderEventMessage", [creations.length, updates.length, deletions.length, this.name], "exchangecalendar"), "", erSyncFolderItemsRequest.argument.actionStart, Date.now());
 		}
 
-		if (!this.syncState) {
-			// This was the first time. we now save the syncState;
-			this.syncState = syncState;
-			//this.prefs.setCharPref("syncState", syncState);
-			this.saveToFile("syncState.txt", syncState);
-			this.weAreSyncing = false;
-			this.processItemSyncQueue();
-		}
-		else {
-			this.weAreSyncing = false;
-			if ((creations.length == 0) && (updates.length == 0) && (deletions.length == 0)) {
-				// Nothing was changed. 
-				//if (this.debug) this.logInfo("Sync finished. Nothing finished.");
-				this.syncState = syncState;
-				//this.prefs.setCharPref("syncState", syncState);
-				this.saveToFile("syncState.txt", syncState);
+		if (syncState) {
 
-				if (this.getItemSyncQueue.length > 0) {
-					if (this.debug) this.logInfo("We have "+this.getItemSyncQueue.length+" items in this.getItemSyncQueue");
-				}
-
-				this.processItemSyncQueue();
-
-				if (!this.firstSyncDone) { 
-					this.firstSyncDone = true;
-					if (this.debug) this.logInfo("First sync is done. Normal operation is starting.");
-					//this.startSyncInboxPoller();
-				}
-
-				return;
-			}
-
-			this.syncBusy = true;
-
-			// Do something with the output.
 			if ((this.syncState) && (syncState == this.syncState)) {
 				this.logError("Same syncState received.");
 			}
 
-//			this.syncState = syncState;
-//			this.prefs.setCharPref("syncState", syncState);
-
-			var self = this;
-
-			var changes = [];
-			for each(var creation in creations) { changes.push(creation); }
-			for each(var update in updates) { changes.push(update); }
-			if (changes.length > 0) {
-				this.addToQueue( erGetItemsRequest, 
-					{user: this.user, 
-					 mailbox: this.mailbox,
-					 folderBase: this.folderBase,
-					 serverUrl: this.serverUrl,
-					 ids: changes,
-					 folderID: this.folderID,
-					 changeKey: this.changeKey,
-					 folderClass: this.folderClass,
-					 GUID: calExchangeCalendarGUID,
-					 syncState: syncState }, 
-					function(erGetItemsRequest, aIds, aItemErrors) { self.getTaskItemsOK(erGetItemsRequest, aIds, aItemErrors);}, 
-					function(erGetItemsRequest, aCode, aMsg) { self.getTaskItemsError(erGetItemsRequest, aCode, aMsg);},
-					null);
-			}
-			else {
-				this.syncState = syncState;
-				//this.prefs.setCharPref("syncState", syncState);
-				this.saveToFile("syncState.txt", syncState);
-			}
-
-			if (deletions.length > 0) {
-				for each (var deleted in deletions) {
-					var item = this.itemCacheById[deleted.Id];
-					if ((item) && (item.calendarItemType != "RecurringMaster")) {
-						// We have this one. Remove it.
-						if (this.debug) this.logInfo("Going to remove an item");
-						// Single item or occurrence.
-						if (item.parentItem.id == item.id) {
-							if (this.debug) this.logInfo("This is a Single to delete. Title:"+item.title+", calendarItemType:"+item.calendarItemType);
-						}
-						else {
-							if (this.debug) this.logInfo("This is a Occurrence or Exception to delete. THIS SHOULD NEVER HAPPEN.");
-						}
-						this.notifyTheObservers("onDeleteItem", [item]);
-						/*this.itemCacheById[item.id].deleteItem();
-						this.itemCacheById[item.id] = null;
-						delete this.itemCacheById[item.id];*/
-						this.removeItemFromCache(item);
-
-					}
-					else {
-						// Find matching master record.
-						var master;
-						for (var index in this.recurringMasterCache) {
-							if ((this.recurringMasterCache[index]) && (this.recurringMasterCache[index].id == deleted.Id)) {
-								master = this.recurringMasterCache[index]
-							}
-						}
-						if (master) {
-							// This is a master recurrence. Also remove children.
-							if (this.debug) this.logInfo("This is Master to delete");
-							this.removeChildrenFromMaster(master);
-
-							this.removeFromOfflineCache(master);
-							//this.notifyTheObservers("onDeleteItem", [master]);
-							delete this.recurringMasterCache[master.uid];
-							delete this.recurringMasterCacheById[master.id];
-						}
-						else {
-							if (this.debug) this.logInfo("Do not know what you are trying to delete !!!");
-						}
-					}
-				}
-				this.syncBusy = false;
-
-				this.processItemSyncQueue();
-
-			}
-
-			if (!this.firstSyncDone) { 
-				this.firstSyncDone = true;
-				if (this.debug) this.logInfo("First sync is done. Normal operation is starting.");
-			}
+			// This was the first time. we now save the syncState;
+			this.syncState = syncState;
+			this.saveToFile("syncState.txt", syncState);
+			this.weAreSyncing = false;
 
 		}
+
+		var self = this;
+
+		var changes = [];
+		for each(var creation in creations) { changes.push(creation); }
+		for each(var update in updates) { changes.push(update); }
+		if (changes.length > 0) {
+			this.addToQueue( erGetItemsRequest, 
+				{user: this.user, 
+				 mailbox: this.mailbox,
+				 folderBase: this.folderBase,
+				 serverUrl: this.serverUrl,
+				 ids: changes,
+				 folderID: this.folderID,
+				 changeKey: this.changeKey,
+				 folderClass: this.folderClass,
+				 GUID: calExchangeCalendarGUID,
+				 syncState: syncState }, 
+				function(erGetItemsRequest, aIds, aItemErrors) { self.getTaskItemsOK(erGetItemsRequest, aIds, aItemErrors);}, 
+				function(erGetItemsRequest, aCode, aMsg) { self.getTaskItemsError(erGetItemsRequest, aCode, aMsg);},
+				null);
+		}
+
+		if (!syncState) return;
+
+		if (deletions.length > 0) {
+			for each (var deleted in deletions) {
+				var item = this.itemCacheById[deleted.Id];
+				if ((item) && (item.calendarItemType != "RecurringMaster")) {
+					// We have this one. Remove it.
+					if (this.debug) this.logInfo("Going to remove an item");
+					// Single item or occurrence.
+					if (item.parentItem.id == item.id) {
+						if (this.debug) this.logInfo("This is a Single to delete. Title:"+item.title+", calendarItemType:"+item.calendarItemType);
+					}
+					else {
+						if (this.debug) this.logInfo("This is a Occurrence or Exception to delete. THIS SHOULD NEVER HAPPEN.");
+					}
+					this.notifyTheObservers("onDeleteItem", [item]);
+					/*this.itemCacheById[item.id].deleteItem();
+					this.itemCacheById[item.id] = null;
+					delete this.itemCacheById[item.id];*/
+					this.removeItemFromCache(item);
+
+				}
+				else {
+					// Find matching master record.
+					var master;
+					for (var index in this.recurringMasterCache) {
+						if ((this.recurringMasterCache[index]) && (this.recurringMasterCache[index].id == deleted.Id)) {
+							master = this.recurringMasterCache[index]
+						}
+					}
+					if (master) {
+						// This is a master recurrence. Also remove children.
+						if (this.debug) this.logInfo("This is Master to delete");
+						this.removeChildrenFromMaster(master);
+
+						this.removeFromOfflineCache(master);
+						//this.notifyTheObservers("onDeleteItem", [master]);
+						delete this.recurringMasterCache[master.uid];
+						delete this.recurringMasterCacheById[master.id];
+					}
+					else {
+						if (this.debug) this.logInfo("Do not know what you are trying to delete !!!");
+					}
+				}
+			}
+		}
+
+		if (!this.firstSyncDone) { 
+			this.firstSyncDone = true;
+			if (this.debug) this.logInfo("First sync is done. Normal operation is starting.");
+
+			while (this.getItemsSyncQueue.length > 0) {
+				let getItemsReq = this.getItemsSyncQueue.shift();
+				this.getItems(getItemsReq.itemFilter, getItemsReq.count, getItemsReq.rangeStart, getItemsReq.rangeEnd, getItemsReq.listener);
+			}
+			if (this.debug) this.logInfo("First sync is done. Processed getItemsSyncQueue.");
+		}
+
+		if (this.getItemSyncQueue.length > 0) {
+			if (this.debug) this.logInfo("We have "+this.getItemSyncQueue.length+" items in this.getItemSyncQueue");
+			this.processItemSyncQueue();
+		}
+
+
 
 	},
 
@@ -8844,6 +8836,7 @@ else {
 		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
 
 			if (result) {
+				if (this.debug) this.logInfo("masterIsInOfflineCache: found in offline cache aId:"+aId+", changeKey:"+result.changeKey);
 				return result;
 			}
 		}
