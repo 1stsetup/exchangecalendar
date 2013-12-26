@@ -146,6 +146,11 @@ function exchEventSummaryDialog(aDocument, aWindow)
 
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 				.getService(Ci.mivFunctions);
+
+	this.loadBalancer = Cc["@1st-setup.nl/exchange/loadbalancer;1"]  
+	                          .getService(Ci.mivExchangeLoadBalancer); 
+
+	this.imageCache = {};
 }
 
 exchEventSummaryDialog.prototype = {
@@ -283,11 +288,131 @@ exchEventSummaryDialog.prototype = {
 		return true;
 	},
 
+	addToQueue: function _addToQueue(aRequest, aArgument, aCbOk, aCbError, aListener)
+	{
+		var args = this._window.arguments[0];
+		var item = args.calendarEvent;
+
+		this.loadBalancer.addToQueue({ calendar: item.calendar,
+				 ecRequest:aRequest,
+				 arguments: aArgument,
+				 cbOk: aCbOk,
+				 cbError: aCbError,
+				 listener: aListener});
+	},
+
+	loadInlineAttachment: function _loadInLineAttachment(aNode, aAttachmentId, aCalendarId)
+	{
+		var prefs = "extensions.exchangecalendar@extensions.1st-setup.nl."+aCalendarId+".";
+
+		var serverUrl = this.globalFunctions.safeGetCharPref(null, prefs+"ecServer", "");
+		var username = this.globalFunctions.safeGetCharPref(null, prefs+"ecUser", "");
+		var domain = this.globalFunctions.safeGetCharPref(null, prefs+"ecDomain", "");
+		if (username.indexOf("@") == -1) {
+			if (domain != "") {
+				username = domain+"\\"+username;
+			}
+		}
+
+		var self = this;
+		this.addToQueue(erGetAttachmentsRequest,
+			{user: username, 
+			 serverUrl:  serverUrl ,
+			 attachmentIds: [aAttachmentId]}, 
+			function(aExchangeRequest, aAttachments){self.onDownloadAttachmentOk(aExchangeRequest, aAttachments, aNode);}, 
+			function(aExchangeRequest, aCode, aMsg) {self.onDownloadAttachmentError(aExchangeRequest, aCode, aMsg, aNode);},
+			null);
+	},
+
+	onDownloadAttachmentOk: function _onDownloadAttachmentOk(aExchangeRequest, aAttachments, aNode)
+	{
+		this.globalFunctions.LOG("exchWebService.attachments.onDownloadAttachmentOk:"+aAttachments.length);
+
+		if (aAttachments.length > 0) {
+			for (var index in aAttachments) {
+				this.globalFunctions.LOG(" == Going to decode:"+aAttachments[index].name);
+				this.globalFunctions.LOG(" == content:"+aAttachments[index].content.length+" bytes");  
+				var fileData = window.atob(aAttachments[index].content);
+				this.globalFunctions.LOG(" == Decoded:"+aAttachments[index].name);
+
+				var file = Cc["@mozilla.org/file/directory_service;1"].  
+						getService(Ci.nsIProperties).  
+						get("TmpD", Ci.nsIFile);  
+				file.append(encodeURIComponent(aAttachments[index].id));  
+
+				//file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0666);  
+				// do whatever you need to the created file  
+				this.globalFunctions.LOG(" == new tmp filename:"+file.path);  
+
+				var stream = Cc["@mozilla.org/network/safe-file-output-stream;1"].  
+						createInstance(Ci.nsIFileOutputStream);  
+				stream.init(file, 0x04 | 0x08 | 0x20, 384, 0); // readwrite, create, truncate  
+              
+				this.globalFunctions.LOG(" == writing file:"+file.path);  
+				this.globalFunctions.LOG(" == writing:"+fileData.length+" bytes");  
+				stream.write(fileData, fileData.length);  
+				if (stream instanceof Ci.nsISafeOutputStream) {  
+					stream.finish();  
+				}
+				// Dispose of the converted data in memory;
+				//delete fileData;
+
+				this.globalFunctions.LOG(" == written file:"+file.path);  
+				this.globalFunctions.LOG(" == written:"+fileData.length+" bytes");  
+
+				if (aNode) {
+					this.globalFunctions.LOG(" == Telling image to load file.");
+					aNode.setAttribute("src", file.path);
+					this.imageCache[aAttachments[index].id] = file;
+				}
+			}
+		}
+	},
+
+	onDownloadAttachmentError: function _onDownloadAttachmentError(aExchangeRequest, aCode, aMsg, aNode)
+	{
+		this.globalFunctions.LOG("onDownloadAttachmentError: aCode:"+aCode+", aMsg:"+aMsg);
+	},
+
 	onLoadedData: function _onLoadedData(aStr)
 	{
 		this._document.getElementById("exchWebService-body-editor").removeEventListener("DOMContentLoaded",arguments.callee,true);
 		//dump("onLoadedData:\n");
 		this.removeTmpFile();
+
+		// Lets see if we have images.
+		var images = this._document.getElementById("exchWebService-body-editor").contentDocument.getElementsByTagName("img");
+
+		var args = this._window.arguments[0];
+		var item = args.calendarEvent;
+		var attachments = item.getAttachments({});
+dump("attachments.length:"+attachments.length+"\n");
+		var inlineAttachments = {};
+		for (var i = 0; i < attachments.length; i++) {
+			let getParams = this.globalFunctions.splitUriGetParams(attachments[i].uri);
+
+			if (getParams.isinline == "true") {
+				if (getParams.contentid != "<NOPE>") {
+					inlineAttachments[getParams.contentid] = {id:getParams.id, calendarid:getParams.calendarid};
+				}
+			}
+		}		
+
+dump("images.length:"+images.length+"\n");
+		for (var i = 0; i < images.length; i++) {
+			if (images[i].hasAttribute("src")) {
+				var contentId = images[i].getAttribute("src")
+				//dump("img src:"+contentId+"\n");
+				if (contentId.indexOf("cid:") == 0) {
+					// We have a contentId as image source. Lets see if we have a matching inline attachment.
+					contentId = contentId.substr(4);
+					if (inlineAttachments[contentId]) {
+						//dump(" -- image attachement url:"+inlineAttachments[contentId].id+"\n");
+						this.loadInlineAttachment(images[i], inlineAttachments[contentId].id, inlineAttachments[contentId].calendarid);
+					}
+				}
+			}
+		}
 	},
 
 	browserLoad: function _browserLoad(aStr, aItem)
@@ -447,10 +572,19 @@ try{
 		event.preventDefault();
 		return true;
 	},
+
+	unLoad: function _unLoad(aEvent)
+	{
+		//dump("unLoading window:"+aEvent.type+"\n");
+		for each(var cachedImage in this.imageCache) {
+			cachedImage.remove(false);
+		}
+	},
 }
 
 //this._window.addEventListener("load", exchWebService.forewardEvent2.onLoad, false);
 var tmpEventSummaryDialog = new exchEventSummaryDialog(document, window);
 window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpEventSummaryDialog.onLoad(); }, true);
+window.addEventListener("DOMWindowClose", function (aEvent) { window.removeEventListener("DOMWindowClose",arguments.callee,false); tmpEventSummaryDialog.unLoad(aEvent); }, true);
 
 
