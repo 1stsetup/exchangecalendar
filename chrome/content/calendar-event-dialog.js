@@ -77,8 +77,8 @@ exchEventDialog.prototype = {
 
 try{
 		if (this.newItem) {
-			aItem.body = this._document.getElementById("exchWebService-body-editor").content;
 			aItem.bodyType = "HTML";
+			aItem.body = this._document.getElementById("exchWebService-body-editor").content;
 		}
 		else {
 			if (aItem.bodyType == "HTML") {
@@ -107,7 +107,6 @@ try{
 		}
 
 		if (this._initialized) return;
-
 		this._oldCallback = this._window.onAcceptCallback;
 		var self = this;
 		this._window.onAcceptCallback = function(aItem, aCalendar, aOriginalItem, aIsClosing) { self.onAcceptCallback(aItem, aCalendar, aOriginalItem, aIsClosing); };
@@ -134,6 +133,17 @@ try{
 					}
 					else {
 						this.newItem = true;
+						if (item.body) {
+							if ((item.body.indexOf("<BODY>") > -1) || (item.body.indexOf("<body>") > -1)) {
+								this._document.getElementById("exchWebService-body-editor").content = item.body;
+							}
+							else {
+								this._document.getElementById("exchWebService-body-editor").content = this.globalFunctions.fromText2HTML(item.getProperty("DESCRIPTION"));
+							}
+						}
+						else {
+							this._document.getElementById("exchWebService-body-editor").content = this.globalFunctions.fromText2HTML(item.getProperty("DESCRIPTION"));
+						}
 					}
 				}
 			}

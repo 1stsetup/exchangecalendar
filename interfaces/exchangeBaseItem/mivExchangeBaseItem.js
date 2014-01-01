@@ -2933,7 +2933,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 	set body(aValue)
 	{
 		this._newBody2 = aValue;
-		if (this._bodyType == "HTML") {
+		if (this.bodyType == "HTML") {
 			this._calEvent.setProperty("DESCRIPTION", this.globalFunctions.fromHTML2Text(aValue));
 		}
 		else {
@@ -2960,7 +2960,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		if ((aValue != "HTML") && (aValue != "Text")) {
 			return;
 		}
-		this._newBodyType = "aValue";
+		this._newBodyType = aValue;
 	},
 
 	get bodyType()
