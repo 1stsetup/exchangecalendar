@@ -7391,6 +7391,10 @@ return;
 		if (deletions.length > 0) {
 			for each (var deleted in deletions) {
 				var item = this.itemCacheById[deleted.Id];
+				if ((!item) && (this.useOfflineCache)) {
+					// It could be that the item is not yet loaded from offlineCache. We do this now.
+					item = this.getItemFromOfflineCache(deleted.Id);
+				}
 				if ((item) && (item.calendarItemType != "RecurringMaster")) {
 					// We have this one. Remove it.
 					if (this.debug) this.logInfo("Going to remove an item");
@@ -7406,7 +7410,7 @@ return;
 					this.itemCacheById[item.id] = null;
 					delete this.itemCacheById[item.id];*/
 					this.removeItemFromCache(item);
-
+					this.removeFromOfflineCache(item);
 				}
 				else {
 					// Find matching master record.
@@ -9165,6 +9169,64 @@ dump("getOccurrencesFromOfflineCache: found:"+result.length+"\n");
 		}
 		return null;
 	},
+
+	getItemFromOfflineCache: function _getItemFromOfflineCache(aId) {
+		if (this.debug) this.logInfo("getItemFromOfflineCache: aId:"+aId);
+		if (!aId) return null;
+
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
+			return null;
+		}
+
+		var result = null;
+
+		var sqlStr = "SELECT item FROM items WHERE id = '"+aId+"'";
+
+		if (this.debug) this.logInfo("sql-query:"+sqlStr, 1);
+		try {
+			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
+		}
+		catch(exc) {
+			if (this.debug) this.logInfo("Error on createStatement. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString+", Exception:"+exc+". ("+sqlStr+")");
+			return null;
+		}
+
+		var doContinue = true;
+		try {
+			while (doContinue) {
+				doContinue = sqlStatement.executeStep();
+
+				if (doContinue) {
+					if (this.debug) this.logInfo("Found item in offline Cache.");
+
+					// Check if this item is not in the itemCache already.
+					var root = xml2json.newJSON();
+					xml2json.parseXML(root, sqlStatement.row.item);
+					result = this.convertExchangeToCal(root[telements][0], null, false, true);
+					if (!result) {
+						if (this.debug) this.logInfo("getItemFromOfflineCache: Could not convert exchange XML into Cal item.!! item:"+sqlStatement.row.item);
+					}
+				}
+			}
+		}
+		finally {  
+			sqlStatement.reset();
+		}
+
+		if (this.debug) this.logInfo("getItemFromOfflineCache: Retreived item from offline cache.");
+		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
+
+			if (result) {
+				return result;
+			}
+		}
+		else {
+			if (this.debug) this.logInfo("getItemFromOfflineCache: Error executing Query. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString);
+			return null;
+		}
+		return null;
+	},
+
 
 	set isOffline(aValue)
 	{
