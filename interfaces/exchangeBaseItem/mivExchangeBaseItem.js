@@ -2753,11 +2753,11 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
 		if (this._body) {
 			if (this._bodyType == "HTML") {
-				this._calEvent.setProperty("DESCRIPTION", this.fromHTML2Text(this._body));
+				this._calEvent.setProperty("DESCRIPTION", this.globalFunctions.fromHTML2Text(this._body));
 			}
 			else {
 				this._calEvent.setProperty("DESCRIPTION", this._body);
-				this._body = this.fromText2HTML(this._body);
+				this._body = this.globalFunctions.fromText2HTML(this._body);
 			}
 		}
 		this._bodyType = "HTML";
@@ -2930,41 +2930,15 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 	{
 	},
 
-	fromHTML2Text: function _fromHTML2Text(aString)
-	{
-//dump("-."+aString+".-\n\n");
-		var html = aString.replace(/<style([\s\S]*?)<\/style>/gi, '');
-		html = html.replace(/<script([\s\S]*?)<\/script>/gi, '');
-		html = html.replace(/\n/g, '');
-		html = html.replace(/\r/g, '');
-		html = html.replace(/<\/div>/ig, '\n');
-		html = html.replace(/<\/li>/ig, '\n');
-		html = html.replace(/<li>/ig, '  *  ');
-		html = html.replace(/<\/ul>/ig, '\n');
-		html = html.replace(/<\/p>/ig, '\n');
-		html = html.replace(/<br\s*[\/]?>/gi, "\n");
-		html = html.replace(/<[^>]+>/ig, '');
-		html = html.replace(/\&nbsp\;/g, '');
-
-		return convertSpecialCharatersFromXML(html);
-	},
-
-	fromText2HTML: function _fromText2HTML(aString)
-	{
-		var html = convertSpecialCharatersToXML(aString);
-		html = html.replace(/\n/g, '<br>');
-		return "<HTML><BODY>"+html+"</BODY></HTML>";
-	},
-
 	set body(aValue)
 	{
 		this._newBody2 = aValue;
-		if (this._bodyType = "HTML") {
-			this._calEvent.setProperty("DESCRIPTION", this.fromHTML2Text(aValue));
+		if (this._bodyType == "HTML") {
+			this._calEvent.setProperty("DESCRIPTION", this.globalFunctions.fromHTML2Text(aValue));
 		}
 		else {
 			this._calEvent.setProperty("DESCRIPTION", aValue);
-			this._newBody2 = this.fromText2HTML(aValue);
+			this._newBody2 = this.globalFunctions.fromText2HTML(aValue);
 		}
 	},
 

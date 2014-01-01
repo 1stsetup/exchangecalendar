@@ -89,4 +89,7 @@ interface mivFunctions : nsISupports
   void addCalendarById(in AUTF8String aId);
 
   unsigned long fromOctal(in AUTF8String aStr);
+
+  AUTF8String fromHTML2Text(in AUTF8String aStr);
+  AUTF8String fromText2HTML(in AUTF8String aStr);
 };
