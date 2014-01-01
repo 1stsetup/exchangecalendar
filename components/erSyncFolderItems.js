@@ -100,27 +100,16 @@ erSyncFolderItemsRequest.prototype = {
 		//exchWebService.commonFunctions.LOG("erSyncFolderItemsRequest.execute\n");
 		this.runs++;
 
-		//var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:SyncFolderItems xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 		var root = xml2json.newJSON();
 		xml2json.parseXML(root, '<nsMessages:SyncFolderItems xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 		var req = root[telements][0];
 
-		//var itemShape = req.addChildTag("ItemShape", "nsMessages", null);
-		//itemShape.addChildTag("BaseShape", "nsTypes", "IdOnly");
-
 		var itemShape = xml2json.addTag(req, "ItemShape", "nsMessages", null);
 		xml2json.addTag(itemShape, "BaseShape", "nsTypes", "IdOnly");
-
-		if (this.getSyncState) {
-			var additionalProperties = xml2json.addTag(itemShape, "AdditionalProperties", "nsTypes", null);
-			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:CalendarItemType'/>");
-		}
-
 		itemShape = null;
 
 		var parentFolder = makeParentFolderIds3("SyncFolderId", this.argument);
 		xml2json.addTagObject(req,parentFolder);
-		//req.addChildTagObject(parentFolder);
 		parentFolder = null;
 	
 		if ((aSyncState) && (aSyncState != "")) {
@@ -128,7 +117,7 @@ erSyncFolderItemsRequest.prototype = {
 		}
 
 		if (this.getSyncState) {
-			xml2json.addTag(req, "MaxChangesReturned", "nsMessages", "250");
+			xml2json.addTag(req, "MaxChangesReturned", "nsMessages", "512");
 		}
 		else {
 			xml2json.addTag(req, "MaxChangesReturned", "nsMessages", "25");
@@ -150,7 +139,6 @@ erSyncFolderItemsRequest.prototype = {
 	{
 		//dump("erSyncFolderItemsRequest.onSendOk:"+xml2json.toString(aResp));
 try{
-		//var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 		var rm = xml2json.XPath(aResp,"/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
 		if (rm.length > 0) {
@@ -158,14 +146,10 @@ try{
 
 			var lastItemInRange = xml2json.getTagValue(rm[0], "m:IncludesLastItemInRange");
 
+			if (this.getSyncState === false) {
 				var createItems = xml2json.XPath(rm[0], "/m:Changes/t:Create");
 				for each (var creation in createItems) {
-					if (this.getSyncState) {
-						var calendarItems = xml2json.XPath(creation, "/t:CalendarItem[t:CalendarItemType='RecurringMaster']/t:ItemId");
-					}
-					else {
-						var calendarItems = xml2json.XPath(creation, "/t:CalendarItem/t:ItemId");
-					}
+					var calendarItems = xml2json.XPath(creation, "/t:CalendarItem/t:ItemId");
 					for each (var calendarItem in calendarItems) {
 						this.creations.push({Id: xml2json.getAttribute(calendarItem, "Id").toString(),
 							  ChangeKey: xml2json.getAttribute(calendarItem, "ChangeKey").toString()});
@@ -180,7 +164,6 @@ try{
 				}
 				createItems = null;
 
-			if (!this.getSyncState) {
 				var updateItems = xml2json.XPath(rm[0], "/m:Changes/t:Update");
 				for each (var update in updateItems) {
 					var calendarItems = xml2json.XPath(update, "/t:CalendarItem/t:ItemId");
@@ -204,21 +187,14 @@ try{
 					  ChangeKey: xml2json.getAttribute(deleted, "ChangeKey").toString()});
 				}
 				deleteItems = null;
+
+				rm = null;
+				aResp = null;
 			}
 
-			rm = null;
-			aResp = null;
-
 			if (lastItemInRange == "false") {
-				if (!this.getSyncState) {
-					if (this.mCbOk) {
-						this.mCbOk(this, this.creations, this.updates, this.deletions, syncState);
-					}
-				}
-				else {
-					if (this.mCbOk) {
-						this.mCbOk(this, this.creations, this.updates, this.deletions, null);
-					}
+				if ((this.mCbOk) && (this.getSyncState === false)) {
+					this.mCbOk(this, this.creations, this.updates, this.deletions, syncState);
 				}
 				this.creations = [];
 				this.updates = [];
