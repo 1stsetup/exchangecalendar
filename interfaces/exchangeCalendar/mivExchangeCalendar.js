@@ -6806,7 +6806,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 								function(erFindCalendarItemsRequest, aIds, aOccurrences) { self.findCalendarItemsOK(erFindCalendarItemsRequest, aIds, aOccurrences);}, 
 								function(erFindCalendarItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erFindCalendarItemsRequest, aCode, aMsg);},
 								null);
-						}  // lucienne
+						} 
 					}
 
 					this.masterCount++;
