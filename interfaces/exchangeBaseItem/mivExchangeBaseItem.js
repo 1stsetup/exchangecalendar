@@ -382,6 +382,30 @@ mivExchangeBaseItem.prototype = {
 		this._isMutable = false;
 	},
 
+
+	typeString: function _typeString(o) {
+		if (typeof o != 'object')
+			return typeof o;
+
+		if (o === null)
+			return "null";
+	  //object, array, function, date, regexp, string, number, boolean, error
+		var internalClass = Object.prototype.toString.call(o)
+		                                       .match(/\[object\s(\w+)\]/)[1];
+		return internalClass.toLowerCase();
+	},
+
+	cloneFrom: function _cloneFrom(aItem)
+	{
+		/*for(var index in aItem) {
+			if ((this.typeString(aItem[index]) != "function") && (index.substr(0,1) == "_")) {
+				dump("aItem."+index+"="+aItem[index]+"\n");
+			}
+		}*/
+		dump(" mivExchangeBaseItem: cloneFrom 1 \n");
+		dump(" mivExchangeBaseItem: cloneFrom 2 \n");
+	},
+
 	// clone always returns a mutable event
 	//calIItemBase clone();
 	clone: function _clone()
@@ -398,23 +422,26 @@ try {
 					.createInstance(Ci.mivExchangeTodo);
 		}
 
+		//result.cloneFrom(this);
+
 		for each(var alias in this.mailboxAliases) {
 			result.addMailboxAlias(alias);
 		}
-		result.calendar = this.calendar;
+		//result.calendar = this.calendar;
 
-		if (this._exchangeXML) {
+/*		if (this._exchangeXML) {
 			var tmpExchangeData = xml2json.newJSON();
 			xml2json.parseXML(tmpExchangeData, this._exchangeXML);
 			result.exchangeData = tmpExchangeData[telements][0];
 			tmpExchangeData = null;
 		}
 		else {
-		}
+		}*/
 
 		//result.exchangeData = this._exchangeData;
 
 		result.cloneToCalEvent(this._calEvent);
+		result.cloneFrom(this);
 
 		if (this._newId !== undefined) result.id = this._newId;
 
@@ -498,8 +525,14 @@ try {
 			}
 		}
 
+		if (this._newBodyType) result.bodyType = this.bodyType;
+
+		dump(" clone AA1 this._body:"+this._body+"\n");
+		dump(" clone AA1 this._newBody:"+this._newBody+"\n");
+		dump(" clone AA1 this._newBody2:"+this._newBody2+"\n");
 		if (this._newBody) result.setProperty("DESCRIPTION", this.getProperty("DESCRIPTION"));
 		if (this._newBody2) result.body = this.body;
+		dump(" clone AA2\n");
 		if (this._newLocation) result.setProperty("LOCATION", this.getProperty("LOCATION"));
 		if (this._newLegacyFreeBusyStatus) result.setProperty("TRANSP", this.getProperty("TRANSP"));
 		if (this._newMyResponseType) result.setProperty("STATUS", this.getProperty("STATUS")); 
@@ -1079,11 +1112,11 @@ try {
 				this._calEvent.recurrenceInfo = aValue.clone();
 			}
 			else {
-				//dump("set recurrenceInfo 3: recurrenceinfo changed.\n"); 
+				//dump("set recurrenceInfo 3: recurrenceinfo did not change.\n"); 
 			}
 		}
 		else {
-			//dump("set recurrenceInfo 2: recurrenceinfo changed.\n"); 
+			//dump("set recurrenceInfo 4: recurrenceinfo changed.\n"); 
 			this._newRecurrenceInfo = aValue;
 			this._calEvent.recurrenceInfo = aValue;
 		}
@@ -1881,7 +1914,7 @@ try {
 		//this.logInfo("cloneToCalEvent: start: this.calendarItemType:"+this.calendarItemType);
 		this._calEvent = aCalEvent.clone();
 
-		var alarms = aCalEvent.getAlarms({});
+/*		var alarms = aCalEvent.getAlarms({});
 		if (alarms.length > 0) {
 			this._alarm = alarms[0].clone();
 			this._reminderIsSet = true;
@@ -1922,7 +1955,7 @@ try {
 			}
 //dump("cloneToCalEvent: offset="+offset.inSeconds+"\n");
 			this._reminderMinutesBeforeStart = (offset.inSeconds / 60) * -1;
-		}
+		}*/
 	},
 
 	//readonly attribute AUTF8String subject;
@@ -2908,7 +2941,8 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 		this.postLoad();
 
-		this._exchangeXML = xml2json.toString(this._exchangeData);
+		//this._exchangeXML = xml2json.toString(this._exchangeData);
+		this._exchangeXML = true;
 		this._exchangeData = null;
 		
 	},
@@ -2932,6 +2966,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 	set body(aValue)
 	{
+		dump("set body aValue:"+aValue+"\n");
 		this._newBody2 = aValue;
 		if (this.bodyType == "HTML") {
 			this._calEvent.setProperty("DESCRIPTION", this.globalFunctions.fromHTML2Text(aValue));

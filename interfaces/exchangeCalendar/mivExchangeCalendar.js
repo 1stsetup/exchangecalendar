@@ -7207,7 +7207,7 @@ return;
 					}
 
 					if (!fromOfflineCache) {
-						this.addToOfflineCache(item, null, item.exchangeXML);
+						this.addToOfflineCache(item, null, xml2json.toString(aItems[index]));
 					}
 
 				}
@@ -7219,7 +7219,7 @@ return;
 					this.singleModified(item, doNotify);
 
 					if (!fromOfflineCache) {
-						this.addToOfflineCache(item, null, item.exchangeXML);
+						this.addToOfflineCache(item, null, xml2json.toString(aItems[index]));
 					}
 				}
 			}
