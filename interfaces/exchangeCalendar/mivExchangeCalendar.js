@@ -6774,7 +6774,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 							dump("     -- this.startDate:"+this.startDate+", this.endDate:"+this.endDate+"\n");
 							//this.requestPeriod(this.startDate, this.endDate, Ci.calICalendar.ITEM_FILTER_TYPE_EVENT, 0, false);
 							var self = this;
-							var tmpItem = { Id: item.id, ChangeKey: item.changeKey, type:"RecurringMaster"};
+							/*var tmpItem = { Id: item.id, ChangeKey: item.changeKey, type:"RecurringMaster"};
 							this.addToQueue( erFindOccurrencesRequest, 
 								{user: this.user, 
 								 mailbox: this.mailbox,
@@ -6788,9 +6788,25 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 						 		 GUID: calExchangeCalendarGUID}, 
 								function(erGetItemsRequest, aIds) { self.findOccurrencesOK(erGetItemsRequest, aIds);}, 
 								function(erGetItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erGetItemsRequest, aCode, aMsg);},
-								null);	
+								null);	*/
 
-						}
+							this.addToQueue( erFindCalendarItemsRequest, 
+								{user: this.user, 
+								 mailbox: this.mailbox,
+								 serverUrl: this.serverUrl,
+								 count: 0,
+								 rangeStart: this.startDate || this.entryDate,
+								 rangeEnd: this.endDate || this.dueDate,
+								 folderBase: this.folderBase,
+								 itemFilter: Ci.calICalendar.ITEM_FILTER_TYPE_EVENT,
+								 folderID: this.folderID,
+								 changeKey: this.changeKey,
+								 actionStart: Date.now(),
+								 uid: item.uid }, 
+								function(erFindCalendarItemsRequest, aIds, aOccurrences) { self.findCalendarItemsOK(erFindCalendarItemsRequest, aIds, aOccurrences);}, 
+								function(erFindCalendarItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erFindCalendarItemsRequest, aCode, aMsg);},
+								null);
+						}  // lucienne
 					}
 
 					this.masterCount++;
