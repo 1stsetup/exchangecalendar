@@ -94,31 +94,15 @@ mivExchangeTodo.prototype = {
 	get entryDate()
 	{
 		//this.logInfo("get entryDate 1: title:"+this.title);
-		if (!this._entryDate) {
-			this._entryDate = this.tryToSetDateValue(this.getTagValue("t:StartDate", null), this._calEvent.entryDate);
-			if (this._entryDate) {
-/*				this._entryDate.hour = 0;
-				this._entryDate.minute = 0;
-				this._entryDate.second = 0;
-				this._entryDate.isDate = false;
-*/
-				if ((this._entryDate.hour === 0) && (this._entryDate.minute === 0) && (this.dueDate) && (this.dueDate.hour === 0) && (this.dueDate.minute === 0)) {
-					// When a new task is created in outlook it will have entryDate en dueDate times set to 00:00.
-					// We change this to the start of the working day..
-					var dayStart = this.globalFunctions.safeGetIntPref(null,"calendar.view.daystarthour", 8);
-					this._entryDate.hour = dayStart;
-					this._dueDate.hour = dayStart;
-					this._calEvent.dueDate = this._dueDate.clone();
-				}
-
-				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._entryDate);
-				if (timezone) {
-					this._entryDate = this._entryDate.getInTimezone(timezone);
-				}
-				this._calEvent.entryDate = this._entryDate.clone();
-			}
-		}
 		//dump("get entryDate 2: title:"+this.title+", this._calEvent.entryDate:"+this._calEvent.entryDate+"\n");
+		if (this._newEntryDate !== undefined) {
+			return this._newEntryDate;
+		}
+
+		if (this._entryDate !== undefined) {
+			return this._entryDate;
+		}
+
 		return this._calEvent.entryDate;
 	},
 
@@ -148,17 +132,15 @@ mivExchangeTodo.prototype = {
 	get dueDate()
 	{
 		//this.logInfo("get dueDate 1: title:"+this.title);
-		if (!this._dueDate) {
-			this._dueDate = this.tryToSetDateValue(this.getTagValue("t:DueDate", null), this._calEvent.dueDate);
-			if (this._dueDate) {
-				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._dueDate);
-				if (timezone) {
-					this._dueDate = this._dueDate.getInTimezone(timezone);
-				}
-				this._calEvent.dueDate = this._dueDate.clone();
-			}
-		}
 		//dump("get dueDate 2: title:"+this.title+", this._calEvent.dueDate:"+this._calEvent.dueDate+"\n");
+		if (this._newDueDate !== undefined) {
+			return this._newDueDate;
+		}
+
+		if (this._dueDate !== undefined) {
+			return this._dueDate;
+		}
+
 		return this._calEvent.dueDate;
 	},
 
@@ -185,17 +167,15 @@ mivExchangeTodo.prototype = {
 	get completedDate()
 	{
 		//this.logInfo("get completedDate 1: title:"+this.title);
-		if (!this._completedDate) {
-			this._completedDate = this.tryToSetDateValue(this.getTagValue("t:CompleteDate", null), this._calEvent.completedDate);
-			if (this._completedDate) {
-				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._completedDate);
-				if (timezone) {
-					this._completedDate = this._completedDate.getInTimezone(timezone);
-				}
-				this._calEvent.completedDate = this._completedDate.clone();
-			}
-		}
 		//dump("get completedDate 2: title:"+this.title+", completedDate=="+this._calEvent.completedDate+"\n");
+		if (this._newCompletedDate !== undefined) {
+			return this._newCompletedDate;
+		}
+
+		if (this._completedDate !== undefined) {
+			return this._completedDate;
+		}
+
 		return this._calEvent.completedDate;
 	},
 
@@ -221,12 +201,14 @@ mivExchangeTodo.prototype = {
 	get percentComplete()
 	{
 		//this.logInfo("get percentComplete 1: title:"+this.title);
-		if (!this._percentComplete) {
-			this._percentComplete = this.getTagValue("t:PercentComplete", this._calEvent.percentComplete);
-			if (this._percentComplete) {
-				this._calEvent.percentComplete = this._percentComplete;
-			}
+		if (this._newPercentComplete !== undefined) {
+			return this._newPercentComplete;
 		}
+
+		if (this._percentComplete !== undefined) {
+			return this._percentComplete;
+		}
+
 		return this._calEvent.percentComplete;
 	},
 
@@ -241,10 +223,14 @@ mivExchangeTodo.prototype = {
 
 	get isCompleted()
 	{
-		if (!this._isCompleted) {
-			this._isCompleted = (this.status == "COMPLETED");
-			this._calEvent.isCompleted = this._isCompleted;
+		if (this._newIsCompleted !== undefined) {
+			return this._newIsCompleted;
 		}
+
+		if (this._isCompleted !== undefined) {
+			return this._isCompleted;
+		}
+
 		return this._calEvent.isCompleted;
 	},
 
@@ -260,9 +246,10 @@ mivExchangeTodo.prototype = {
 	get totalWork()
 	{
 		//this.logInfo("get totalWork 1: title:"+this.title);
-		if (!this._totalWork) {
-			this._totalWork = this.getTagValue("t:TotalWork", 0);
+		if (this._newTotalWork !== undefined) {
+			return this._newTotalWork;
 		}
+
 		return this._totalWork;
 	},
 
@@ -279,9 +266,10 @@ mivExchangeTodo.prototype = {
 	get actualWork()
 	{
 		//this.logInfo("get actualWork 1: title:"+this.title);
-		if (!this._actualWork) {
-			this._actualWork = this.getTagValue("t:ActualWork", 0);
+		if (this._newActualWork !== undefined) {
+			return this._newActualWork;
 		}
+
 		return this._actualWork;
 	},
 
@@ -298,9 +286,10 @@ mivExchangeTodo.prototype = {
 	get mileage()
 	{
 		//this.logInfo("get mileage 1: title:"+this.title);
-		if (!this._mileage) {
-			this._mileage = this.getTagValue("t:Mileage", "");
+		if (this._newMileage !== undefined) {
+			return this._newMileage;
 		}
+
 		return this._mileage;
 	},
 
@@ -317,9 +306,10 @@ mivExchangeTodo.prototype = {
 	get billingInformation()
 	{
 		//this.logInfo("get billingInformation 1: title:"+this.title);
-		if (!this._billingInformation) {
-			this._billingInformation = this.getTagValue("t:BillingInformation", "");
+		if (this._newBillingInformation !== undefined) {
+			return this._newBillingInformation;
 		}
+
 		return this._billingInformation;
 	},
 
@@ -376,22 +366,16 @@ mivExchangeTodo.prototype = {
 
 	getCompanies: function _getCompanies(aCount)
 	{
-		if (!this._companies) {
-			this._companies = [];
-			if (this._exchangeData) {
-				var tmpStr = xml2json.XPath(this.exchangeData, "/t:Companies/t:String");
-				for each(var string in tmpStr) {
-					this._companies.push(xml2json.getValue(string));
-				}
-				tmpStr = null;
-			}
-		}
-
 		if (this._newCompanies) {
 			aCount.value = this._newCompanies.length;
 			return this._newCompanies;
 		}
 		
+		if (!this._companies) {
+			aCount.value = 0;
+			return [];
+		}
+
 		aCount.value = this._companies.length;
 		return this._companies;
 	},
@@ -414,14 +398,15 @@ mivExchangeTodo.prototype = {
 
 	get duration()
 	{
-		if ((!this._duration) && (!this._newEndDate) && (!this._newStartDate)) {
-			this._duration = this.getTagValue("t:Duration", null);
-			if (this._duration) {
-				//this.logInfo("get duration: title:"+this.title+", value:"+cal.createDuration(this._duration));
-				return cal.createDuration(this._duration);
-			}
-		}
 		//this.logInfo("get duration: title:"+this.title+", value:"+this._calEvent.duration);
+		if (this._newDuration !== undefined) {
+			return this._newDuration;
+		}
+
+		if (this._duration !== undefined) {
+			return this._duration;
+		}
+
 		return this._calEvent.duration;
 	},
 
@@ -446,18 +431,15 @@ mivExchangeTodo.prototype = {
 			null: "NONE"
 		};
 
-		if ((!this._status) && (this._newStatus === undefined)) {
-			this._status = this.getTagValue("t:Status", "NotStarted");
-
-			//this._calEvent.status = statusMap[this._status];
-			this._calEvent.setProperty("STATUS", statusMap[this._status]);
-		}
-		if (this._newStatus === undefined) {
-			return statusMap[this._status];
-		}
-		else {
+		if (this._newStatus !== undefined) {
 			return statusMap[this._newStatus];
 		}
+
+		if (this._status !== undefined) {
+			return statusMap[this._status];
+		}
+
+		return this._calEvent.status;
 	},
 
 	set status(aValue)
@@ -472,7 +454,7 @@ mivExchangeTodo.prototype = {
 					null: "NotStarted" };
 
 			this._newStatus = statuses[aValue];
-			//this._calEvent.status = aValue;
+			this._calEvent.status = aValue;
 			this._calEvent.setProperty("STATUS", aValue);
 		}
 	},
@@ -480,10 +462,6 @@ mivExchangeTodo.prototype = {
 	//readonly attribute AUTF8String owner;
 	get owner()
 	{
-		if (!this._owner) {
-			this._owner = this.getTagValue("t:Owner", "(unknown)");
-		}
-
 		return this._owner;
 	},
 
@@ -500,9 +478,33 @@ mivExchangeTodo.prototype = {
 		if (this._newPrivacy) {
 			this.addSetItemField(updates, "Sensitivity", this._newPrivacy);
 		}
-		if (this._newBody !== undefined) {
+
+/*		if (this._newBody !== undefined) {
 			this._nonPersonalDataChanged = true;
 			this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
+		}*/
+
+		if (this.bodyType == "HTML") {
+			if (this._newBody2 !== undefined) {
+				this._nonPersonalDataChanged = true;
+				if (this._newBody2 === null) {
+					this.addDeleteItemField(updates, "Body");
+				}
+				else {
+					this.addSetItemField(updates, "Body", this._newBody2, { BodyType: "HTML" });
+				}
+			}
+		}
+		else {
+			if (this._newBody !== undefined) {
+				this._nonPersonalDataChanged = true;
+				if (this._newBody === null) {
+					this.addDeleteItemField(updates, "Body");
+				}
+				else {
+					this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
+				}
+			}
 		}
 
 		if ((this._newPercentComplete) || ((this._newIsCompleted) && (this._newIsCompleted === true))) {
@@ -750,6 +752,107 @@ mivExchangeTodo.prototype = {
 
 		//dump("todo updates:"+updates.toString()+"\n");
 		return updates;
+	},
+
+	preLoad: function _preLoad()
+	{
+		this._entryDate = this.tryToSetDateValue(this.getTagValue("t:StartDate", null), this._calEvent.entryDate);
+		if (this._entryDate) {
+/*				this._entryDate.hour = 0;
+			this._entryDate.minute = 0;
+			this._entryDate.second = 0;
+			this._entryDate.isDate = false;
+*/
+			if ((this._entryDate.hour === 0) && (this._entryDate.minute === 0) && (this.dueDate) && (this.dueDate.hour === 0) && (this.dueDate.minute === 0)) {
+				// When a new task is created in outlook it will have entryDate en dueDate times set to 00:00.
+				// We change this to the start of the working day..
+				var dayStart = this.globalFunctions.safeGetIntPref(null,"calendar.view.daystarthour", 8);
+				this._entryDate.hour = dayStart;
+				this._dueDate.hour = dayStart;
+				this._calEvent.dueDate = this._dueDate.clone();
+			}
+
+			var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._entryDate);
+			if (timezone) {
+				this._entryDate = this._entryDate.getInTimezone(timezone);
+			}
+			this._calEvent.entryDate = this._entryDate.clone();
+		}
+
+		this._dueDate = this.tryToSetDateValue(this.getTagValue("t:DueDate", null), this._calEvent.dueDate);
+		if (this._dueDate) {
+			var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._dueDate);
+			if (timezone) {
+				this._dueDate = this._dueDate.getInTimezone(timezone);
+			}
+			this._calEvent.dueDate = this._dueDate.clone();
+		}
+	},
+
+	postLoad: function _postLoad()
+	{
+		this._completedDate = this.tryToSetDateValue(this.getTagValue("t:CompleteDate", null), this._calEvent.completedDate);
+		if (this._completedDate) {
+			var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._completedDate);
+			if (timezone) {
+				this._completedDate = this._completedDate.getInTimezone(timezone);
+			}
+			this._calEvent.completedDate = this._completedDate.clone();
+		}
+
+		this._percentComplete = this.getTagValue("t:PercentComplete", this._calEvent.percentComplete);
+		if (this._percentComplete) {
+			this._calEvent.percentComplete = this._percentComplete;
+		}
+
+		const statusMap = {
+			"NotStarted"	: "NONE",
+			"InProgress" : "IN-PROCESS",
+			"Completed"	: "COMPLETED",
+			"WaitingOnOthers"	: "NEEDS-ACTION",
+			"Deferred"	: "CANCELLED",
+			null: "NONE"
+		};
+
+		this._status = this.getTagValue("t:Status", "NotStarted");
+		this._calEvent.status = statusMap[this._status];
+		this._calEvent.setProperty("STATUS", statusMap[this._status]);
+
+		this._isCompleted = (this._status == "Completed");
+		this._calEvent.isCompleted = this._isCompleted;
+
+		//dump("postLoad: title:"+this.title+", this._percentComplete:"+this._percentComplete+", isCompleted:"+this.isCompleted+", getProperty:"+this._calEvent.getProperty("STATUS")+", this.status:"+this.status+", entryDate:"+this.entryDate+"\n");
+
+		this._totalWork = this.getTagValue("t:TotalWork", 0);
+
+		this._actualWork = this.getTagValue("t:ActualWork", 0);
+
+		this._mileage = this.getTagValue("t:Mileage", "");
+
+		this._billingInformation = this.getTagValue("t:BillingInformation", "");
+
+		this._companies = [];
+		if (this._exchangeData) {
+			var tmpStr = xml2json.XPath(this.exchangeData, "/t:Companies/t:String");
+			for each(var string in tmpStr) {
+				this._companies.push(xml2json.getValue(string));
+			}
+			tmpStr = null;
+		}
+
+		if ((!this._duration) && (!this._newEndDate) && (!this._newStartDate)) {
+			this._duration = this.getTagValue("t:Duration", null);
+			if (this._duration) {
+				//this.logInfo("get duration: title:"+this.title+", value:"+cal.createDuration(this._duration));
+				return cal.createDuration(this._duration);
+			}
+		}
+
+		if (!this._owner) {
+			this._owner = this.getTagValue("t:Owner", "(unknown)");
+		}
+
+
 	},
 
 };

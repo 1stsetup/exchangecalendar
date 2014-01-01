@@ -401,12 +401,22 @@ try {
 		for each(var alias in this.mailboxAliases) {
 			result.addMailboxAlias(alias);
 		}
-//		result.exchangeData = this._exchangeData;
-		result.exchangeData = this.exchangeData;
+		result.calendar = this.calendar;
+
+		if (this._exchangeXML) {
+			var tmpExchangeData = xml2json.newJSON();
+			xml2json.parseXML(tmpExchangeData, this._exchangeXML);
+			result.exchangeData = tmpExchangeData[telements][0];
+			tmpExchangeData = null;
+		}
+		else {
+		}
+
+		//result.exchangeData = this._exchangeData;
 
 		result.cloneToCalEvent(this._calEvent);
+
 		if (this._newId !== undefined) result.id = this._newId;
-		result.calendar = this.calendar;
 
 		if (this.contractID == "@1st-setup.nl/exchange/calendarevent;1") {
 			if (this._newStartDate !== undefined) result.startDate = this.startDate.clone();
@@ -437,7 +447,7 @@ try {
 					null: "NONE"
 				};
 
-				result.setProperty("STATUS", statusMap[this._newStatus]);
+				result.status = statusMap[this._newStatus];
 			}
 		}
 		if (this._newAlarm !== undefined) {
@@ -460,11 +470,16 @@ try {
 */
 		result.recurrenceInfo;
 		if (this._newRecurrenceInfo !== undefined) {
-			result.recurrenceInfo = this._newRecurrenceInfo;
+			if (this._newRecurrenceInfo == null) {
+				result.recurrenceInfo = this._newRecurrenceInfo;
+			}
+			else {
+				result.recurrenceInfo = this._newRecurrenceInfo.clone();
+			}
 		}
 		else {
 			if (((this._recurrenceInfo) && (this.recurrenceInfo) && (this._recurrenceInfo.toString() != this.recurrenceInfo.toString())) || (this._recurrenceInfo !== this.recurrenceInfo)) {
-				result.recurrenceInfo = this.recurrenceInfo;
+				result.recurrenceInfo = this.recurrenceInfo.clone();
 			}
 		}
 
@@ -484,6 +499,7 @@ try {
 		}
 
 		if (this._newBody) result.setProperty("DESCRIPTION", this.getProperty("DESCRIPTION"));
+		if (this._newBody2) result.body = this.body;
 		if (this._newLocation) result.setProperty("LOCATION", this.getProperty("LOCATION"));
 		if (this._newLegacyFreeBusyStatus) result.setProperty("TRANSP", this.getProperty("TRANSP"));
 		if (this._newMyResponseType) result.setProperty("STATUS", this.getProperty("STATUS")); 
@@ -596,9 +612,9 @@ catch(err){
 	//readonly attribute AUTF8String hashId;
 	get hashId()
 	{
-		this.id;
-		this.recurrenceId;
-		this.calendar;
+		//this.id;
+		//this.recurrenceId;
+		//this.calendar;
 		return this._calEvent.hashId;
 
 /*		 this._hashId = [encodeURIComponent(this.id),
@@ -626,7 +642,7 @@ catch(err){
 
 	get canDelete()
 	{
-		if (this.aclEntry) {
+		if (this._canDelete !== undefined) {
 			return this._canDelete;
 		}
 		return true;
@@ -634,15 +650,16 @@ catch(err){
 
 	get canModify()
 	{
-		if (this.aclEntry) {
+		if (this._canModify !== undefined) {
 			return this._canModify;
 		}
+
 		return true;
 	},
 
 	get canRead()
 	{
-		if (this.aclEntry) {
+		if (this._canRead !== undefined) {
 			return this._canRead;
 		}
 		return true;
@@ -654,25 +671,6 @@ catch(err){
 	//readonly attribute calIItemACLEntry aclEntry;
 	get aclEntry()
 	{
-		if (!this._effectiveRights) {
-
-			this._effectiveRights = this.getTag("t:EffectiveRights", null);
-
-			if (this._effectiveRights) {
-				this._canDelete = (xml2json.getTagValue(this._effectiveRights, "t:Delete", "false") == "true");
-				this._canModify = (xml2json.getTagValue(this._effectiveRights, "t:Modify", "false") == "true");
-				this._canRead = (xml2json.getTagValue(this._effectiveRights, "t:Read", "false") == "true");
-			}
-			else {
-				this._canDelete = this.calendar.canCreateContent;
-				this._canModify = this.calendar.canCreateContent;
-				this._canRead = this.calendar.canRead;
-			}
-
-			this._effectiveRights = null;
-			this._effectiveRights = true;
-		}
-
 		var result = {
 					calendarEntry : this.calendar.aclEntry,
 					userCanModify : ((this._canModify) || (this._canDelete)),
@@ -709,9 +707,6 @@ catch(err){
 	//readonly attribute calIDateTime lastModifiedTime;
 	get lastModifiedTime()
 	{
-		if (!this._lastModifiedTime) {
-			this._lastModifiedTime = this.tryToSetDateValueUTC(this.getTagValue("t:LastModifiedTime", null), null);
-		}
 		//this.logInfo("get lastModifiedTime: title:"+this.title+", value:"+this._lastModifiedTime);
 		return this._lastModifiedTime;
 	},
@@ -733,6 +728,7 @@ catch(err){
 
 	set calendar(aValue)
 	{
+		this._calendar = aValue;
 		this._calEvent.calendar = aValue;
 	},
 
@@ -740,12 +736,6 @@ catch(err){
 	//attribute AUTF8String id;
 	get id()
 	{
-		if (this._id === undefined) {
-			this._id = this.getAttributeByTag("t:ItemId", "Id", null);
-			if (this._id) {
-				this._calEvent.id = this._id;
-			}
-		}
 		//dump("get id: title:"+this.title+", _id:"+this._id+", id:"+this._calEvent.id+"\n");
 		//return this._calEvent.id;
 		return this._id;
@@ -780,20 +770,22 @@ catch(err){
 	//attribute AUTF8String title;
 	get title()
 	{
-		if (!this._title) {
-			this._title = this.subject;
-			if (this._title) {
-				this._calEvent.title = this._title;
-			}
-		}
 		//this.logInfo("get title: title:"+this._calEvent.title);
+		if (this._newTitle) {
+			return this._newTitle;
+		}
+
+		if (this._title) {
+			return this._title;
+		}
+
 		return this._calEvent.title;
 	},
 
 	set title(aValue)
 	{
 		//this.logInfo("set title: oldTitle:"+this.title+", newTitle:"+aValue);
-		if (aValue != this.title) {
+		if (aValue != this._title) {
 			this._newTitle = aValue;
 			this._calEvent.title = aValue;
 		}
@@ -803,20 +795,6 @@ catch(err){
 	//attribute short priority;
 	get priority()
 	{
-		if (!this._priority) {
-			this._priority = this.getTagValue("t:Importance");
-			switch(this._priority) {
-				case "Low" : 
-					this._calEvent.priority = 9;
-					break;
-				case "Normal" : 
-					this._calEvent.priority = 5;
-					break;
-				case "High" : 
-					this._calEvent.priority = 1;
-					break;
-			}
-		}
 		//this.logInfo("get priority: title:"+this.title+", value:"+this._calEvent.priority);
 		return this._calEvent.priority;
 	},
@@ -844,28 +822,6 @@ catch(err){
 	//attribute AUTF8String privacy;
 	get privacy()
 	{
-		if (!this._privacy) {
-			this._privacy = this.sensitivity;
-			if (this._privacy != null) {
-				switch(this._privacy) {
-					case "Normal" : 
-						this._calEvent.privacy = "PUBLIC";
-						break;
-					case "Confidential" : 
-						this._calEvent.privacy = "CONFIDENTIAL";
-						break;
-					case "Personal" : 
-						this._calEvent.privacy = "PRIVATE";
-						break;
-					case "Private" : 
-						this._calEvent.privacy = "PRIVATE";
-						break;
-					default :
-						this._calEvent.privacy = "PUBLIC";
-				}
-				this.setProperty("CLASS", this._calEvent.privacy);
-			}
-		}
 		//this.logInfo("get privacy: title:"+this.title+", value:"+this._calEvent.privacy);
 		return this._calEvent.privacy;
 	},
@@ -887,7 +843,11 @@ catch(err){
 	//attribute AUTF8String status;
 	get status()
 	{
-		this.logInfo("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
+		//this.logInfo("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
+		if (this._newStatus !== undefined) {
+			return this._newStatus;
+		}
+
 		return this._calEvent.status;
 	},
 
@@ -969,73 +929,6 @@ catch(err){
 			return [];
 		}
 
-		if (this._alarm === undefined) {
-			this._alarm = null;
-			this._calEvent.clearAlarms();
-			switch (this.className) {
-			case "mivExchangeTodo":
-				if ((this.reminderIsSet) && (this.calendarItemType != "RecurringMaster")) {
-					this.logInfo("Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType);
-					//dump("Creating alarm in getAlarms: title:"+this.title+", this.reminderDueBy:"+this.reminderDueBy+"\n");
-					var alarm = cal.createAlarm();
-					alarm.action = "DISPLAY";
-					alarm.repeat = 0;
-					if (this.reminderDueBy) {
-						alarm.alarmDate = this.reminderDueBy.clone().getInTimezone(this.globalFunctions.ecDefaultTimeZone());
-						alarm.related = Ci.calIAlarm.ALARM_RELATED_ABSOLUTE;
-
-						this.logInfo("Alarm set with an alarmDate of "+alarm.alarmDate+".");
-					}
-					else {
-						var alarmOffset = cal.createDuration();
-						alarmOffset.minutes = -1 * this.reminderMinutesBeforeStart;
-
-						// This is a bug fix for when the offset is more than a year)
-						if (alarmOffset.minutes < (-60*24*365)) {
-							alarmOffset.minutes = -5;
-						}
-						alarmOffset.normalize();
-
-						alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
-						alarm.offset = alarmOffset;
-
-						this.logInfo("Alarm set with an offset of "+alarmOffset.minutes+" minutes from the start");
-					}
-
-					this._alarm = alarm.clone();
-					this._calEvent.addAlarm(alarm);
-				}
-				break;
-			case "mivExchangeEvent":
-			//	if ((this.reminderIsSet) && (this.reminderDueBy.compare(this.startDate) < 1) && (this.calendarItemType != "RecurringMaster")) {
-				if (this.reminderIsSet) {
-					var alarm = cal.createAlarm();
-					alarm.action = "DISPLAY";
-					alarm.repeat = 0;
-
-					var alarmOffset = cal.createDuration();
-					alarmOffset.minutes = -1 * this.reminderMinutesBeforeStart;
-
-					// This is a bug fix for when the offset is more than a year)
-					if (alarmOffset.minutes < (-60*24*365)) {
-						alarmOffset.minutes = -5;
-					}
-					alarmOffset.normalize();
-
-					alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
-					alarm.offset = alarmOffset;
-
- 					//dump("getAlarms: Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType+", alarm.offset="+alarmOffset.minutes+"\n");
-					this._alarm = alarm.clone();
-					this._calEvent.addAlarm(alarm);
-				}
-				else {
-					//dump("getAlarms: no alarm info in exchangeData.\n");
-				}
-				break;
-			}
-		}
-
 		return this._calEvent.getAlarms(count);
 	},
 
@@ -1091,47 +984,6 @@ catch(err){
 	get alarmLastAck()
 	{
 		//dump("get alarmLastAck. this._alarmLastAck:"+this._alarmLastAck+"\n");
-		if (!this._alarmLastAck) {
-			try {
-				this._alarmLastAck = this.reminderSignalTime.clone();
-			}
-			catch(err){
-				this._alarmLastAck = this.tryToSetDateValueUTC("2030-01-01T00:00:00Z", null);
-			}
-			if (!this._alarmLastAck) {
-				this._alarmLastAck = this.tryToSetDateValueUTC("2030-01-01T00:00:00Z", null);
-			}
-
-			switch (this.calendarItemType) {
-			case "Exception":
-			case "Occurrence":
-				if (this.startDate) {
-					if (this.reminderDueBy) {
-						switch (this.reminderDueBy.compare(this.startDate)) {
-						case -1:
-							this._alarmLastAck = null;
-							break;					
-						case 0:
-							this._alarmLastAck.addDuration(cal.createDuration('-PT1S'));
-							break;					
-						case 1:
-							this._alarmLastAck = this.startDate.clone();
-							break;					
-						}
-					}
-					else {
-						this._alarmLastAck = null;
-					}
-				}
-				break;
-			case "Single":
-				this._alarmLastAck.addDuration(cal.createDuration('-PT1S'));
-				break;
-			default:
-				//dump("get alarmLastAck: this.calendarItemType:"+this.calendarItemType+"\n");
-			}
-			this._calEvent.alarmLastAck = this._alarmLastAck;
-		}
 		//dump("get alarmLastAck: title:"+this.title+", alarmLastAck:"+this._calEvent.alarmLastAck+"\n");
 		return this._calEvent.alarmLastAck;
 	},
@@ -1163,53 +1015,6 @@ try {
 	//attribute calIRecurrenceInfo recurrenceInfo;
 	get recurrenceInfo()
 	{
-		if ((this._recurrenceInfo === undefined) && (this.exchangeData)) {
-			var recurrence = xml2json.XPath(this.exchangeData, "/t:Recurrence/*");
-			if (recurrence.length > 0) {
-				//this.logInfo("Recurrence::"+recurrence);
-				var recrule = this.readRecurrenceRule(recurrence);
-				recurrence = null;
-	
-				if (recrule) {
-					this.logInfo("get recurrenceInfo 1: title:"+this.title+", recrule:"+recrule);
-					//var recurrenceInfo = cal.createRecurrenceInfo(this);
-					this._recurrenceInfo = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
-								.createInstance(Ci.mivExchangeRecurrenceInfo);
-
-					this._recurrenceInfo.item = this;
-
-					this._recurrenceInfo.setRecurrenceItems(1, [recrule]);
-
-					this._calEvent.recurrenceInfo = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
-								.createInstance(Ci.mivExchangeRecurrenceInfo);
-
-					this._calEvent.recurrenceInfo.item = this;
-
-					this._calEvent.recurrenceInfo.setRecurrenceItems(1, [recrule]);
-
-					//this.parentItem = this;
-
-				}
-				else {
-					this._recurrenceInfo = null;
-//if( this.title == "SE overleg") {
-//					dump("get recurrenceInfo 2: title:"+this.title+", recurrence.length="+recurrence.length+", recrule:null, recurrence="+this.exchangeData.toString()+"\n");
-//}
-				}
-			}
-			else {
-				//dump("No Recurrence tag. this.title:"+this.title+"\n -- "+xml2json.toString(this.exchangeData)+"\n\n");
-				this._recurrenceInfo = null;
-			}
-		}
-		else {
-			if (this._recurrenceInfo) {
-				this.logInfo("get recurrenceInfo 0: title:"+this.title+", we al ready have recurrenceinfo.");
-			}
-/*			if (!this.exchangeData) {
-				dump("get recurrenceInfo 0: title:"+this.title+", we do not have _exchangeData. this.exchangeData:"+this.exchangeData+"\n");
-			}*/
-		}
 
 		// For debugging
 /*		var recurrenceInfo = this._calEvent.recurrenceInfo;
@@ -1220,21 +1025,27 @@ try {
 		else {
 			dump("get recurrenceInfo 4: title:"+this.title+", this._calEvent.recurrenceInfo:null\n");
 		}*/
+		if (this._newRecurrenceInfo !== undefined) {
+			return this._newRecurrenceInfo;
+		}
+
+		if (this._recurrenceInfo !== undefined) {
+			return this._recurrenceInfo;
+		}
+
 		return this._calEvent.recurrenceInfo;
 	},
 
 	set recurrenceInfo(aValue)
 	{
-		//dump("set recurrenceInfo 1: title:"+this.title+", aValue:"+aValue+"\n");
-		if (!this._recurrenceInfo) this.recurrenceInfo;
-
+		//dump("set recurrenceInfo 1: title:"+this.title+", this.recurrenceInfo:"+this.recurrenceInfo+", aValue:"+aValue+"\n");
 		if (aValue) {
 			// Lets see if something changed.
 			var infoChanged = false;
-			if (this._calEvent.recurrenceInfo) {
-				if (this._calEvent.recurrenceInfo.countRecurrenceItems() == aValue.countRecurrenceItems()) 
+			if (this.recurrenceInfo) {
+				if (this.recurrenceInfo.countRecurrenceItems() == aValue.countRecurrenceItems()) 
 				{
-					var oldRecurrenceItems = this._calEvent.recurrenceInfo.getRecurrenceItems({});
+					var oldRecurrenceItems = this.recurrenceInfo.getRecurrenceItems({});
 					var newRecurrenceItems = aValue.getRecurrenceItems({});
 					// See if the oldReccurrenceItems exists in the new
 					var allOldExist = true;
@@ -1259,22 +1070,24 @@ try {
 					infoChanged = true;
 				}
 			}
+			else {
+				infoChanged = true;
+			}
 			if (infoChanged) {
+				//dump("set recurrenceInfo 2: recurrenceinfo changed.\n"); 
 				this._newRecurrenceInfo = aValue.clone();
+				this._calEvent.recurrenceInfo = aValue.clone();
+			}
+			else {
+				//dump("set recurrenceInfo 3: recurrenceinfo changed.\n"); 
 			}
 		}
 		else {
-			if (this._calEvent.recurrenceInfo) {
-				this._newRecurrenceInfo = aValue;
-			}
-		}
-
-		if (aValue) {
-			this._calEvent.recurrenceInfo = aValue.clone();
-		}
-		else {
+			//dump("set recurrenceInfo 2: recurrenceinfo changed.\n"); 
+			this._newRecurrenceInfo = aValue;
 			this._calEvent.recurrenceInfo = aValue;
 		}
+
 	},
 
 	//readonly attribute calIDateTime recurrenceStartDate;
@@ -1358,88 +1171,24 @@ try {
 			this._calEvent.setProperty(name, this.percentComplete);
 			break;
 		case "DESCRIPTION": 
-			if (!this._body) {
-				this._body = this.getTagValue("t:Body", null);
-				//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
-				if (this._body) {
-					this._calEvent.setProperty(name, this._body);
-				}
-			}
 			break;
 		case "CREATED": 
-			if (!this._created) {
-				this._created = this.dateTimeCreated;
-				//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
-				if (this._created) {
-					this._calEvent.setProperty(name, this._created);
-				}
-			}
 			break;
 		case "LOCATION": 
 			if ((this.location) && (!this._newLocation)) this._calEvent.setProperty(name, this.location);
 			break;
 		case "TRANSP": 
-			if (!this._newLegacyFreeBusyStatus) {
-				switch (this.legacyFreeBusyStatus) {
-				case "Free" : 
-					this._calEvent.setProperty(name, "TRANSPARENT");
-					break;
-				case "Busy" : 
-				case "Tentative" : 
-				case "OOF" : 
-					this._calEvent.setProperty(name, "OPAQUE");
-					break;
-				}
-			}
 			break;
 		case "STATUS": 
 		        //dump("get property STATUS: title:"+this.title+", name:"+name+", value:"+this._calEvent.getProperty(name)+", startDate:"+this.startDate+"\n");
 			if (this._className == "mivExchangeEvent") {
-				if (!this._myResponseType) {
-					if (this.isCancelled) {
-						this._calEvent.setProperty(name, "CANCELLED");
-					}
-					else {
-						switch (this.myResponseType) {
-						case "Unknown" : 
-							this._calEvent.setProperty(name, "NONE");
-							break;
-						case "Organizer" : 
-							this._calEvent.setProperty(name, "CONFIRMED");
-							break;
-						case "Tentative" : 
-							this._calEvent.setProperty(name, "TENTATIVE");
-							break;
-						case "Accept" : 
-							this._calEvent.setProperty(name, "CONFIRMED");
-							break;
-						case "Decline" : 
-							this._calEvent.setProperty(name, "CANCELLED");
-							break;
-						case "NoResponseReceived" : 
-							this._calEvent.setProperty(name, "NONE");
-							break;
-						default:
-							//this._calEvent.setProperty(name, "NONE");
-							break;
-						}
-					}
-				}
 			}
 			else {
+		        	//dump("get property STATUS: title:"+this.title+", name:"+name+", isCompleted:"+this.isCompleted+", value:"+this._calEvent.getProperty(name)+", this.status:"+this.status+", entryDate:"+this.entryDate+"\n");
 				return this.status;
 			}
 			break;
 		case "X-MOZ-SEND-INVITATIONS": 
-			if ( ((this.responseObjects) && ((this.responseObjects.AcceptItem) ||
-			    (this.responseObjects.TentativelyAcceptItem) ||
-			    (this.responseObjects.DeclineItem)) ) ||
-			    (this.type == "MeetingRequest")) {
-				this._calEvent.setProperty(name, true);
-			}
-			else {
-				this._calEvent.setProperty(name, false);
-			}
 			break;
 		case "CLASS":
 			this.privacy; // preload
@@ -1535,6 +1284,7 @@ try {
 			}
 			else {
 				this.status = value;
+				return;
 			}
 			break;
 		case "X-MOZ-SEND-INVITATIONS": 
@@ -1700,15 +1450,6 @@ try {
 	//attribute calIAttendee organizer;
 	get organizer()
 	{
-		if (!this._organizer) {
-//			this._organizer = this.createAttendee(this.getTag("t:Organizer"), "CHAIR");
-			this._organizer = this.createAttendee(this.getTag("t:Organizer"), null);
-			if (this._organizer) {
-				this._organizer.isOrganizer = true;
-				this._calEvent.organizer = this._organizer;
-			}
-		}
-
 		//this.logInfo("get organizer: title:"+this.title+", value:"+this._calEvent.organizer);
 		return this._calEvent.organizer;
 	},
@@ -1739,31 +1480,6 @@ try {
 	getAttendees: function _getAttendees(count)
 	{
 		//this.logInfo("getAttendees: title:"+this.title);
-		if ((this._attendees === undefined) && (this.exchangeData)) {
-			this._attendees = [];
-			var tmpAttendee;
-
-			this._calEvent.removeAllAttendees();
-
-			var attendees = xml2json.XPath(this.exchangeData, "/t:RequiredAttendees/t:Attendee")
-			for each (var at in attendees) {
-				tmpAttendee = this.createAttendee(at, "REQ-PARTICIPANT");
-				this._calEvent.addAttendee(tmpAttendee);
-				//dump("getAttendees: title:"+this.title+", adding required attendee.id:"+tmpAttendee.id+"\n");
-				this._attendees.push(tmpAttendee.clone());
-				this._reqParticipants = true;
-			}
-			attendees = null;
-			attendees = xml2json.XPath(this.exchangeData, "/t:OptionalAttendees/t:Attendee")
-			for each (var at in attendees) {
-				tmpAttendee = this.createAttendee(at, "OPT-PARTICIPANT");
-				this._calEvent.addAttendee(tmpAttendee);
-				//dump("getAttendees: title:"+this.title+", adding optional attendee.id:"+tmpAttendee.id+"\n");
-				this._attendees.push(tmpAttendee.clone());
-				this._optParticipants = true;
-			}
-			attendees = null;
-		}
 		return this._calEvent.getAttendees(count);
 	},
 
@@ -1914,25 +1630,6 @@ try {
 	getAttachments: function _getAttachments(count)
 	{
 		//this.logInfo("getAttachments: title:"+this.title);
-		if ((!this._attachments) && (this.exchangeData)) {
-			this._attachments = [];
-			if (this.hasAttachments) {
-	//			if (this.debug) this.logInfo("Title:"+aItem.title+"Attachments:"+aExchangeItem.getTagValue("Attachments"));
-				var fileAttachments = xml2json.XPath(this.exchangeData, "/t:Attachments/t:FileAttachment");
-				for each(var fileAttachment in fileAttachments) {
-	//				if (this.debug) this.logInfo(" -- Attachment: name="+fileAttachment.getTagValue("t:Name"));
-					var newAttachment = cal.createAttachment();
-					newAttachment.setParameter("X-AttachmentId",xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id")); 
-					newAttachment.uri = cal.makeURL("http://somewhere/?id="+encodeURIComponent(xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id"))+"&name="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Name"))+"&size="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Size", ""))+"&calendarid="+encodeURIComponent(this.calendar.id));
-
-					//if (this.debug) this.logInfo("New attachment URI:"+this.serverUrl+"/?id="+encodeURIComponent(xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
-
-					this._attachments.push(newAttachment.clone());
-					this._calEvent.addAttachment(newAttachment);
-				}
-				fileAttachments = null;
-			} 
-		}
 		return this._calEvent.getAttachments(count);
 	},
 
@@ -1984,15 +1681,6 @@ try {
 	getCategories: function _getCategories(aCount)
 	{
 		//this.logInfo("getCategories: title:"+this.title+"\n");
-		if ((!this._categories) && (this.exchangeData)) {
-			this._categories = [];
-			var strings = xml2json.XPath(this.exchangeData, "/t:Categories/t:String");
-			for each (var cat in strings) {
-				this._categories.push(xml2json.getValue(cat));
-			}
-			strings = null;
-			this._calEvent.setCategories(this._categories.length, this._categories);
-		}
 		return this._calEvent.getCategories(aCount);
 	},
 
@@ -2091,7 +1779,7 @@ try {
 		case "Occurrence":
 		case "Exception":
 			var tmpStartDate = this.startDate || this.entryDate;
-			var tmpEndDate = this.endDate || this.entryDate;
+			var tmpEndDate = this.endDate || this.dueDate;
 			if ( ((aStartDate === null) || (!tmpStartDate) || (tmpStartDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (!tmpEndDate) || (tmpEndDate.compare(aEndDate) < 0)) ) {
 				//this.logInfo("getOccurrencesBetween 0a: inserting myself into list.");
 				occurrences.push(this);
@@ -2170,13 +1858,6 @@ try {
 	//attribute calIDateTime recurrenceId;
 	get recurrenceId()
 	{
-		if (!this._recurrenceId) {
-			this._recurrenceId = this.tryToSetDateValueUTC(this.getTagValue("t:RecurrenceId", null), this._calEvent.recurrenceId);
-			if (this._recurrenceId) {
-				this._recurrenceId.isDate = true;
-				this._calEvent.recurrenceId = this._recurrenceId;
-			}
-		}
 		//this.logInfo("get recurrenceId: title:"+this.title+", value:"+this._calEvent.recurrenceId);
 		return this._calEvent.recurrenceId;
 	},
@@ -2240,165 +1921,91 @@ try {
 				break;
 			}
 //dump("cloneToCalEvent: offset="+offset.inSeconds+"\n");
-			this.reminderMinutesBeforeStart = (offset.inSeconds / 60) * -1;
+			this._reminderMinutesBeforeStart = (offset.inSeconds / 60) * -1;
 		}
 	},
 
 	//readonly attribute AUTF8String subject;
 	get subject()
 	{
-		if (this._subject === undefined) {
-			this._subject = this.getTagValue("t:Subject", null);
-		}
 		return this._subject;
 	},
 
 	//readonly attribute AUTF8String sensitivity;
 	get sensitivity()
 	{
-		if (!this._sensitivity) {
-			this._sensitivity = this.getTagValue("t:Sensitivity", null);
-		}
 		return this._sensitivity;
 	},
 
 	//readonly attribute calIDateTime dateTimeReceived;
 	get dateTimeReceived()
 	{
-		if (!this._dateTimeReceived) {
-			this._dateTimeReceived = this.tryToSetDateValueUTC(this.getTagValue("t:DateTimeReceived", null), null);
-		}
 		return this._dateTimeReceived;
 	},
 
 	//readonly attribute calIDateTime dateTimeSent;
 	get dateTimeSent()
 	{
-		if (!this._dateTimeSent) {
-			this._dateTimeSent = this.tryToSetDateValueUTC(this.getTagValue("t:DateTimeSent", null), null);
-		}
 		return this._dateTimeSent;
 	},
 
 	//readonly attribute calIDateTime dateTimeCreated;
 	get dateTimeCreated()
 	{
-		if (!this._dateTimeCreated) {
-			this._dateTimeCreated = this.tryToSetDateValueUTC(this.getTagValue("t:DateTimeCreated", null), null);
-		}
 		return this._dateTimeCreated;
 	},
 
 	//readonly attribute calIDateTime reminderDueBy;
 	get reminderDueBy()
 	{
-		if (!this._reminderDueBy) {
-			this._reminderDueBy = this.tryToSetDateValueUTC(this.getTagValue("t:ReminderDueBy", null), null);
-		}
 		return this._reminderDueBy;
 	},
 
 	//readonly attribute calIDateTime reminderSignalTime;
 	get reminderSignalTime()
 	{
-		if ((!this._reminderSignalTime) && (this.exchangeData)) {
-			var tmpObject = xml2json.XPath(this.exchangeData, "/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']");
-			if (tmpObject.length > 0) {
-//dump(this.title+"| /t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']:"+tmpObject[0].getTagValue("t:Value", null)+"\n");
-				this._reminderSignalTime = this.tryToSetDateValueUTC(xml2json.getTagValue(tmpObject[0], "t:Value", null), null);
-//dump(this.title+"| this._reminderSignalTime:"+this._reminderSignalTime+"\n");
-//dump(this.title+"| this._reminderSignalTime.icalString:"+this._reminderSignalTime.icalString+"\n");
-//dump(this.title+"| this.calendarItemType:"+this.calendarItemType+"\n");
-
-				//this.logInfo("Setting X-MOZ-SNOOZE-TIME by data in exchangedata", -1);
-				if (this.className == "mivExchangeEvent") {
-					switch (this.calendarItemType) {
-					case "RecurringMaster":
-						this._xMozSnoozeTime = this._reminderSignalTime.icalString;
-						break;
-					case "Single":
-
-						this._calEvent.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
-						//this.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
-						this._xMozSnoozeTime = this._reminderSignalTime.icalString;
-						break;
-					default:
-						//this.logInfo("Would like to set X-MOZ-SNOOZE-TIME for this.calendarItemType:"+this.calendarItemType);
-					}
-				}
-
-				if (this.className == "mivExchangeTodo") {
-					//dump("reminderSignalTime: title:"+this.title+", this.reminderSignalTime:"+this._reminderSignalTime+"\n");
-					this._calEvent.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
-					//this.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
-					this._xMozSnoozeTime = this._reminderSignalTime.icalString;
-				}
-			}
-			tmpObject = null;
-		}
 		return this._reminderSignalTime;
 	},
 
 	//readonly attribute boolean reminderIsSet;
 	get reminderIsSet()
 	{
-		if (!this._reminderIsSet) {
-			this._reminderIsSet = (this.getTagValue("t:ReminderIsSet", "false") == "true");
-		}
 		return this._reminderIsSet;
 	},
 
 	//readonly attribute long reminderMinutesBeforeStart;
 	get reminderMinutesBeforeStart()
 	{
-		if (!this._reminderMinutesBeforeStart) {
-			this._reminderMinutesBeforeStart = this.getTagValue("t:ReminderMinutesBeforeStart", 0);
-		}
 		return this._reminderMinutesBeforeStart;
 	},
 
 	//readonly attribute long size;
 	get size()
 	{
-		if (!this._size) {
-			this._size = this.getTagValue("t:Size", 0);
-		}
 		return this._size;
 	},
 
 	//readonly attribute calIDateTime originalStart;
 	get originalStart()
 	{
-		if (!this._originalStart) {
-			this._originalStart = this.tryToSetDateValueUTC(this.getTagValue("t:OriginalStart", null), null);
-		}
 		return this._originalStart;
 	},
 
 	//readonly attribute boolean isAllDayEvent;
 	get isAllDayEvent()
 	{
-		if (!this._isAllDayEvent) {
-			this._isAllDayEvent = (this.getTagValue("t:IsAllDayEvent", "false") == "true");
-		}
 		return this._isAllDayEvent;
 	},
 
 	//readonly attribute AUTF8String legacyFreeBusyStatus;
 	get legacyFreeBusyStatus()
 	{
-		if (!this._legacyFreeBusyStatus) {
-			this._legacyFreeBusyStatus = this.getTagValue("t:LegacyFreeBusyStatus", null);
-		}
 		return this._legacyFreeBusyStatus;
 	},
 
 	//readonly attribute AUTF8String location;
 	get location()
 	{
-		if (!this._location) {
-			this._location = this.getTagValue("t:Location", null);
-		}
 		return this._location;
 	},
 
@@ -2406,9 +2013,6 @@ try {
 	//readonly attribute AUTF8String changeKey;
 	get changeKey()
 	{
-		if (!this._changeKey) {
-			this._changeKey = this.getAttributeByTag("t:ItemId", "ChangeKey", null);
-		}
 		return this._changeKey;
 	},
 
@@ -2416,9 +2020,6 @@ try {
 	//readonly attribute AUTF8String uid;
 	get uid()
 	{
-		if (!this._uid) {
-			this._uid = this.getTagValue("t:UID", null);
-		}
 		return this._uid;
 	},
 
@@ -2426,14 +2027,6 @@ try {
 	//readonly attribute AUTF8String calendarItemType;
 	get calendarItemType()
 	{
-		if (!this._calendarItemType) {
-			if (this.className == "mivExchangeEvent") {
-				this._calendarItemType = this.getTagValue("t:CalendarItemType", null);
-			}
-			else {
-				this._calendarItemType = "Task";
-			}
-		}
 		//dump("get calendarItemType: title:"+this.title+", this._calendarItemType:"+this._calendarItemType+", startdate="+this.startDate.toString()+"\n");
 		return this._calendarItemType;
 	},
@@ -2442,9 +2035,6 @@ try {
 	//readonly attribute AUTF8String itemClass;
 	get itemClass()
 	{
-		if (!this._itemClass) {
-			this._itemClass = this.getTagValue("t:ItemClass", null);
-		}
 		return this._itemClass;
 	},
 
@@ -2452,9 +2042,6 @@ try {
 	//readonly attribute boolean isCancelled;
 	get isCancelled()
 	{
-		if (!this._isCancelled) {
-			this._isCancelled = (this.getTagValue("t:IsCancelled", "false") == "true");
-		}
 		return this._isCancelled;
 	},
 
@@ -2462,9 +2049,6 @@ try {
 	//readonly attribute boolean isMeeting;
 	get isMeeting()
 	{
-		if (!this._isMeeting) {
-			this._isMeeting = (this.getTagValue("t:IsMeeting", "false") == "true");
-		}
 		return this._isMeeting;
 	},
 
@@ -2472,18 +2056,12 @@ try {
 	//readonly attribute boolean hasAttachments;
 	get hasAttachments()
 	{
-		if (!this._hasAttachments) {
-			this._hasAttachments = (this.getTagValue("t:HasAttachments", "false") == "true");
-		}
 		return this._hasAttachments;
 	},
 
 	//readonly attribute boolean isRecurring;
 	get isRecurring()
 	{
-		if (!this._isRecurring) {
-			this._isRecurring = (this.getTagValue("t:IsRecurring", "false") == "true");
-		}
 		return this._isRecurring;
 	},
 
@@ -2510,18 +2088,12 @@ try {
 	//readonly attribute boolean meetingRequestWasSent;
 	get meetingRequestWasSent()
 	{
-		if (!this._meetingRequestWasSent) {
-			this._meetingRequestWasSent = (this.getTagValue("t:MeetingRequestWasSent", "false") == "true");
-		}
 		return this._meetingRequestWasSent;
 	},
 
 	//readonly attribute boolean isResponseRequested;
 	get isResponseRequested()
 	{
-		if (!this._isResponseRequested) {
-			this._isResponseRequested = (this.getTagValue("t:IsResponseRequested", "false") == "true");
-		}
 		return this._isResponseRequested;
 	},
 
@@ -2533,11 +2105,6 @@ try {
 			return this._newMyResponseType;
 		}
 		
-		if (!this._myResponseType) {
-			this._myResponseType = this.getTagValue("t:MyResponseType", "NoResponseReceived");
-			//dump(" 11 myResponseType:"+this._myResponseType+"\n");
-		}
-
 		return this._myResponseType;
 	},
 
@@ -2549,72 +2116,58 @@ try {
 	//readonly attribute AUTF8String timeZone;
 	get timeZone()
 	{
-		if (!this._timeZone) {
-			this._timeZone = this.getTagValue("t:TimeZone", null);
-		}
 		return this._timeZone;
 	},
 
 	//readonly attribute AUTF8String MeetingTimeZone;
 	get meetingTimeZone()
 	{
-		if (!this._meetingTimeZone) {
-			this._meetingTimeZone = this.getAttributeByTag("t:MeetingTimeZone", "TimeZoneName", null);
-		}
 		return this._meetingTimeZone;
 	},
 
 	//readonly attribute AUTF8String startTimeZoneName;
 	get startTimeZoneName()
 	{
-		if (!this._startTimeZoneName) {
-			this._startTimeZoneName = this.getAttributeByTag("t:StartTimeZone", "Name", null);
-		}
 		return this._startTimeZoneName;
 	},
 
 	//readonly attribute AUTF8String startTimeZoneId;
 	get startTimeZoneId()
 	{
-		if (!this._startTimeZoneId) {
-			this._startTimeZoneId = this.getAttributeByTag("t:StartTimeZone", "Id", null);
-		}
 		return this._startTimeZoneId;
 	},
 
 	//readonly attribute AUTF8String endTimeZoneName;
 	get endTimeZoneName()
 	{
-		if (!this._endTimeZoneName) {
-			this._endTimeZoneName = this.getAttributeByTag("t:EndTimeZone", "Name", null);
-		}
 		return this._endTimeZoneName;
 	},
 
 	//readonly attribute AUTF8String endTimeZoneId;
 	get endTimeZoneId()
 	{
-		if (!this._endTimeZoneId) {
-			this._endTimeZoneId = this.getAttributeByTag("t:EndTimeZone", "Id", null);
-		}
 		return this._endTimeZoneId;
+	},
+
+	get mimeContent()
+	{
+		return this._mimeContent;
+	},
+
+	get mimeContentCharacterSet()
+	{
+		return this._mimeContentCharacterSet;
 	},
 
 	//readonly attribute AUTF8String conferenceType;
 	get conferenceType()
 	{
-		if (!this._conferenceType) {
-			this._conferenceType = this.getTagValue("t:ConferenceType", null);
-		}
 		return this._conferenceType;
 	},
 
 	//readonly attribute boolean allowNewTimeProposal;
 	get allowNewTimeProposal()
 	{
-		if (!this._allowNewTimeProposal) {
-			this._allowNewTimeProposal = (this.getTagValue("t:AllowNewTimeProposal", "false") == "true");
-		}
 		return this._allowNewTimeProposal;
 	},
 
@@ -2623,9 +2176,6 @@ try {
 	//readonly attribute AUTF8String type;
 	get type()
 	{
-		if ((!this._type) && (this.exchangeData)) {
-			this._type = this.exchangeData.tagName;
-		}
 		return this._type;
 	},
 
@@ -2634,9 +2184,6 @@ try {
 	//readonly attribute AUTF8String parentId;
 	get parentId()
 	{
-		if (!this._parentId) {
-			this._parentId = this.getAttributeByTag("t:ParentFolderId", "Id", null);
-		}
 		return this._parentId;
 	},
 
@@ -2645,9 +2192,6 @@ try {
 	//readonly attribute AUTF8String parentChangeKey;
 	get parentChangeKey()
 	{
-		if (!this._parentChangeKey) {
-			this._parentChangeKey = this.getAttributeByTag("t:ParentFolderId", "ChangeKey", null);
-		}
 		return this._parentChangeKey;
 	},
 
@@ -2668,16 +2212,6 @@ try {
 	*/
 	get responseObjects()
 	{
-		if ((!this._responseObjects) && (this.exchangeData)) {
-			this._responseObjects = {};
-
-			var responseObjects = xml2json.XPath(this.exchangeData, "/t:ResponseObjects/*");
-			for each (var prop in responseObjects) {
-				this._responseObjects[prop.tagName] = true;
-			}
-			responseObjects = null;
-		}
-
 		return this._responseObjects;
 	},
 
@@ -2888,14 +2422,553 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		//dump("exchangeData:"+aValue.toString()+"\n\n");
 
 		this.initialize();
+
+		if (this._calendar) {
+			this.calendar = this._calendar;
+		}
+
 /*		if (aValue === null) {
 			dump("Who is setting exchangeData to null:"+this.globalFunctions.STACK()+"\n");
 		}*/
 		this._exchangeData = aValue;
+
+		this._isAllDayEvent = (this.getTagValue("t:IsAllDayEvent", "false") == "true");
+
+		this._startTimeZoneId = this.getAttributeByTag("t:StartTimeZone", "Id", null);
+
+		this._meetingTimeZone = this.getAttributeByTag("t:MeetingTimeZone", "TimeZoneName", null);
+
+		this._timeZone = this.getTagValue("t:TimeZone", null);
+
+		this._endTimeZoneId = this.getAttributeByTag("t:EndTimeZone", "Id", null);
+
+		this._effectiveRights = this.getTag("t:EffectiveRights", null);
+
+		if (this._effectiveRights) {
+			this._canDelete = (xml2json.getTagValue(this._effectiveRights, "t:Delete", "false") == "true");
+			this._canModify = (xml2json.getTagValue(this._effectiveRights, "t:Modify", "false") == "true");
+			this._canRead = (xml2json.getTagValue(this._effectiveRights, "t:Read", "false") == "true");
+		}
+		else {
+			this._canDelete = this.calendar.canCreateContent;
+			this._canModify = this.calendar.canCreateContent;
+			this._canRead = this.calendar.canRead;
+		}
+
+		this._effectiveRights = null;
+		this._effectiveRights = true;
+
+		this._lastModifiedTime = this.tryToSetDateValueUTC(this.getTagValue("t:LastModifiedTime", null), null);
+
+		this._subject = this.getTagValue("t:Subject", null);
+
+		this._title = this.subject;
+		if (this._title) {
+			this._calEvent.title = this._title;
+		}
+
+		this._mimeContent = this.getTagValue("t:MimeContent", null);
+		if (this._mimeContent) {
+			this._mimeContentCharacterSet = xml2json.getAttribute(this.getTag("t:MimeContent"), "CharacterSet");
+		}
+
+		this._id = this.getAttributeByTag("t:ItemId", "Id", null);
+		if (this._id) {
+			this._calEvent.id = this._id;
+		}
+
+		this._priority = this.getTagValue("t:Importance", null);
+		switch(this._priority) {
+			case "Low" : 
+				this._calEvent.priority = 9;
+				break;
+			case "Normal" : 
+				this._calEvent.priority = 5;
+				break;
+			case "High" : 
+				this._calEvent.priority = 1;
+				break;
+		}
+
+		this._sensitivity = this.getTagValue("t:Sensitivity", null);
+
+		this._privacy = this.sensitivity;
+		if (this._privacy != null) {
+			switch(this._privacy) {
+				case "Normal" : 
+					this._calEvent.privacy = "PUBLIC";
+					break;
+				case "Confidential" : 
+					this._calEvent.privacy = "CONFIDENTIAL";
+					break;
+				case "Personal" : 
+					this._calEvent.privacy = "PRIVATE";
+					break;
+				case "Private" : 
+					this._calEvent.privacy = "PRIVATE";
+					break;
+				default :
+					this._calEvent.privacy = "PUBLIC";
+			}
+			this.setProperty("CLASS", this._calEvent.privacy);
+		}
+
+		this._reminderIsSet = (this.getTagValue("t:ReminderIsSet", "false") == "true");
+
+		if (this.className == "mivExchangeEvent") {
+			this._calendarItemType = this.getTagValue("t:CalendarItemType", undefined);
+		}
+		else {
+			this._calendarItemType = "Task";
+		}
+
+		this._reminderDueBy = this.tryToSetDateValueUTC(this.getTagValue("t:ReminderDueBy", null), null);
+
+		this._reminderMinutesBeforeStart = this.getTagValue("t:ReminderMinutesBeforeStart", 0);
+
+		this._reminderDueBy = this.tryToSetDateValueUTC(this.getTagValue("t:ReminderDueBy", null), null);
+
+		this._dateTimeReceived = this.tryToSetDateValueUTC(this.getTagValue("t:DateTimeReceived", null), null);
+
+		this._dateTimeSent = this.tryToSetDateValueUTC(this.getTagValue("t:DateTimeSent", null), null);
+
+		this._size = this.getTagValue("t:Size", 0);
+
+		this._originalStart = this.tryToSetDateValueUTC(this.getTagValue("t:OriginalStart", null), null);
+
+		this._location = this.getTagValue("t:Location", null);
+
+		this._changeKey = this.getAttributeByTag("t:ItemId", "ChangeKey", null);
+
+		this._uid = this.getTagValue("t:UID", undefined);
+
+		this._itemClass = this.getTagValue("t:ItemClass", null);
+
+		this._isMeeting = (this.getTagValue("t:IsMeeting", "false") == "true");
+
+		this._isRecurring = (this.getTagValue("t:IsRecurring", "false") == "true");
+
+		this._meetingRequestWasSent = (this.getTagValue("t:MeetingRequestWasSent", "false") == "true");
+
+		this._isResponseRequested = (this.getTagValue("t:IsResponseRequested", "false") == "true");
+
+		this._myResponseType = this.getTagValue("t:MyResponseType", "NoResponseReceived");
+
+		this._startTimeZoneName = this.getAttributeByTag("t:StartTimeZone", "Name", null);
+
+		this._endTimeZoneName = this.getAttributeByTag("t:EndTimeZone", "Name", null);
+
+		this._conferenceType = this.getTagValue("t:ConferenceType", null);
+
+		this._allowNewTimeProposal = (this.getTagValue("t:AllowNewTimeProposal", "false") == "true");
+
+		this._parentId = this.getAttributeByTag("t:ParentFolderId", "Id", null);
+
+		this._parentChangeKey = this.getAttributeByTag("t:ParentFolderId", "ChangeKey", null);
+
+		this.preLoad();
+
+		// Do the initializaton of this one.
+
+		this._alarm = null;
+		this._calEvent.clearAlarms();
+		switch (this.className) {
+		case "mivExchangeTodo":
+			if ((this.reminderIsSet) && (this.calendarItemType != "RecurringMaster")) {
+				this.logInfo("Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType);
+				//dump("Creating alarm in getAlarms: title:"+this.title+", this.reminderDueBy:"+this.reminderDueBy+"\n");
+				var alarm = cal.createAlarm();
+				alarm.action = "DISPLAY";
+				alarm.repeat = 0;
+				if (this.reminderDueBy) {
+					alarm.alarmDate = this.reminderDueBy.clone().getInTimezone(this.globalFunctions.ecDefaultTimeZone());
+					alarm.related = Ci.calIAlarm.ALARM_RELATED_ABSOLUTE;
+
+					this.logInfo("Alarm set with an alarmDate of "+alarm.alarmDate+".");
+				}
+				else {
+					var alarmOffset = cal.createDuration();
+					alarmOffset.minutes = -1 * this.reminderMinutesBeforeStart;
+
+					// This is a bug fix for when the offset is more than a year)
+					if (alarmOffset.minutes < (-60*24*365)) {
+						alarmOffset.minutes = -5;
+					}
+					alarmOffset.normalize();
+
+					alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
+					alarm.offset = alarmOffset;
+
+					this.logInfo("Alarm set with an offset of "+alarmOffset.minutes+" minutes from the start");
+				}
+
+				this._alarm = alarm.clone();
+				this._calEvent.addAlarm(alarm);
+			}
+			break;
+		case "mivExchangeEvent":
+		//	if ((this.reminderIsSet) && (this.reminderDueBy.compare(this.startDate) < 1) && (this.calendarItemType != "RecurringMaster")) {
+			if (this.reminderIsSet) {
+				var alarm = cal.createAlarm();
+				alarm.action = "DISPLAY";
+				alarm.repeat = 0;
+
+				var alarmOffset = cal.createDuration();
+				alarmOffset.minutes = -1 * this.reminderMinutesBeforeStart;
+
+				// This is a bug fix for when the offset is more than a year)
+				if (alarmOffset.minutes < (-60*24*365)) {
+					alarmOffset.minutes = -5;
+				}
+				alarmOffset.normalize();
+
+				alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
+				alarm.offset = alarmOffset;
+
+				//dump("getAlarms: Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType+", alarm.offset="+alarmOffset.minutes+"\n");
+				this._alarm = alarm.clone();
+				this._calEvent.addAlarm(alarm);
+			}
+			else {
+				//dump("getAlarms: no alarm info in exchangeData.\n");
+			}
+			break;
+		}
+
+		var tmpObject = this.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']");
+		if (tmpObject.length > 0) {
+//dump(this.title+"| /t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']:"+tmpObject[0].getTagValue("t:Value", null)+"\n");
+			this._reminderSignalTime = this.tryToSetDateValueUTC(xml2json.getTagValue(tmpObject[0], "t:Value", null), null);
+//dump(this.title+"| this._reminderSignalTime:"+this._reminderSignalTime+"\n");
+//dump(this.title+"| this._reminderSignalTime.icalString:"+this._reminderSignalTime.icalString+"\n");
+//dump(this.title+"| this.calendarItemType:"+this.calendarItemType+"\n");
+
+			//this.logInfo("Setting X-MOZ-SNOOZE-TIME by data in exchangedata", -1);
+			if (this.className == "mivExchangeEvent") {
+				switch (this.calendarItemType) {
+				case "RecurringMaster":
+					this._xMozSnoozeTime = this._reminderSignalTime.icalString;
+					break;
+				case "Single":
+
+					this._calEvent.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
+					//this.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
+					this._xMozSnoozeTime = this._reminderSignalTime.icalString;
+					break;
+				default:
+					//this.logInfo("Would like to set X-MOZ-SNOOZE-TIME for this.calendarItemType:"+this.calendarItemType);
+				}
+			}
+
+			if (this.className == "mivExchangeTodo") {
+				//dump("reminderSignalTime: title:"+this.title+", this.reminderSignalTime:"+this._reminderSignalTime+"\n");
+				this._calEvent.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
+				//this.setProperty("X-MOZ-SNOOZE-TIME", this._reminderSignalTime.icalString);
+				this._xMozSnoozeTime = this._reminderSignalTime.icalString;
+			}
+		}
+		tmpObject = null;
+
+		try {
+			this._alarmLastAck = this.reminderSignalTime.clone();
+		}
+		catch(err){
+			this._alarmLastAck = this.tryToSetDateValueUTC("2030-01-01T00:00:00Z", null);
+		}
+		if (!this._alarmLastAck) {
+			this._alarmLastAck = this.tryToSetDateValueUTC("2030-01-01T00:00:00Z", null);
+		}
+
+		switch (this.calendarItemType) {
+		case "Exception":
+		case "Occurrence":
+			if (this.startDate) {
+				if (this.reminderDueBy) {
+					switch (this.reminderDueBy.compare(this.startDate)) {
+					case -1:
+						this._alarmLastAck = null;
+						break;					
+					case 0:
+						this._alarmLastAck.addDuration(cal.createDuration('-PT1S'));
+						break;					
+					case 1:
+						this._alarmLastAck = this.startDate.clone();
+						break;					
+					}
+				}
+				else {
+					this._alarmLastAck = null;
+				}
+			}
+			break;
+		case "Single":
+			this._alarmLastAck.addDuration(cal.createDuration('-PT1S'));
+			break;
+		default:
+			//dump("get alarmLastAck: this.calendarItemType:"+this.calendarItemType+"\n");
+		}
+		this._calEvent.alarmLastAck = this._alarmLastAck;
+
+		var recurrence = this.XPath("/t:Recurrence/*");
+		if (recurrence.length > 0) {
+			//this.logInfo("Recurrence::"+recurrence);
+			var recrule = this.readRecurrenceRule(recurrence);
+			recurrence = null;
+
+			if (recrule) {
+				this.logInfo("get recurrenceInfo 1: title:"+this.title+", recrule:"+recrule);
+				//var recurrenceInfo = cal.createRecurrenceInfo(this);
+				this._recurrenceInfo = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
+							.createInstance(Ci.mivExchangeRecurrenceInfo);
+
+				this._recurrenceInfo.item = this;
+
+				this._recurrenceInfo.setRecurrenceItems(1, [recrule]);
+
+				this._calEvent.recurrenceInfo = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
+							.createInstance(Ci.mivExchangeRecurrenceInfo);
+
+				this._calEvent.recurrenceInfo.item = this;
+
+				this._calEvent.recurrenceInfo.setRecurrenceItems(1, [recrule]);
+
+				//this.parentItem = this;
+
+			}
+			else {
+				this._recurrenceInfo = null;
+//if( this.title == "SE overleg") {
+//					dump("get recurrenceInfo 2: title:"+this.title+", recurrence.length="+recurrence.length+", recrule:null, recurrence="+this.exchangeData.toString()+"\n");
+//}
+			}
+		}
+		else {
+			//dump("No Recurrence tag. this.title:"+this.title+"\n -- "+xml2json.toString(this.exchangeData)+"\n\n");
+			this._recurrenceInfo = null;
+		}
+
+		this._bodyType = this.getAttributeByTag("t:Body", "BodyType", "HTML");
+
+		this._body = this.getTagValue("t:Body", null);
+		//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
+		if (this._body) {
+			if (this._bodyType == "HTML") {
+				this._calEvent.setProperty("DESCRIPTION", this.globalFunctions.fromHTML2Text(this._body));
+			}
+			else {
+				this._calEvent.setProperty("DESCRIPTION", this._body);
+				this._body = this.globalFunctions.fromText2HTML(this._body);
+			}
+		}
+		this._bodyType = "HTML";
+
+		this._dateTimeCreated = this.tryToSetDateValueUTC(this.getTagValue("t:DateTimeCreated", null), null);
+
+		this._created = this.dateTimeCreated;
+		//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
+		if (this._created) {
+			this._calEvent.setProperty("CREATED", this._created);
+		}
+
+		this._legacyFreeBusyStatus = this.getTagValue("t:LegacyFreeBusyStatus", null);
+
+		switch (this.legacyFreeBusyStatus) {
+		case "Free" : 
+			this._calEvent.setProperty("TRANSP", "TRANSPARENT");
+			break;
+		case "Busy" : 
+		case "Tentative" : 
+		case "OOF" : 
+			this._calEvent.setProperty("TRANSP", "OPAQUE");
+			break;
+		}
+
+		this._isCancelled = (this.getTagValue("t:IsCancelled", "false") == "true");
+
+		if (this._className == "mivExchangeEvent") {
+			if (!this._myResponseType) {
+				if (this.isCancelled) {
+					this._calEvent.setProperty("STATUS", "CANCELLED");
+				}
+				else {
+					switch (this.myResponseType) {
+					case "Unknown" : 
+						this._calEvent.setProperty("STATUS", "NONE");
+						break;
+					case "Organizer" : 
+						this._calEvent.setProperty("STATUS", "CONFIRMED");
+						break;
+					case "Tentative" : 
+						this._calEvent.setProperty("STATUS", "TENTATIVE");
+						break;
+					case "Accept" : 
+						this._calEvent.setProperty("STATUS", "CONFIRMED");
+						break;
+					case "Decline" : 
+						this._calEvent.setProperty("STATUS", "CANCELLED");
+						break;
+					case "NoResponseReceived" : 
+						this._calEvent.setProperty("STATUS", "NONE");
+						break;
+					default:
+						//this._calEvent.setProperty("STATUS", "NONE");
+						break;
+					}
+				}
+			}
+		}
+
+
+		this._responseObjects = {};
+
+		var responseObjects = this.XPath("/t:ResponseObjects/*");
+		for each (var prop in responseObjects) {
+			this._responseObjects[prop.tagName] = true;
+		}
+		responseObjects = null;
+
+		this._type = this._exchangeData.tagName;
+
+		if ( ((this.responseObjects) && ((this.responseObjects.AcceptItem) ||
+		    (this.responseObjects.TentativelyAcceptItem) ||
+		    (this.responseObjects.DeclineItem)) ) ||
+		    (this.type == "MeetingRequest")) {
+			this._calEvent.setProperty("X-MOZ-SEND-INVITATIONS", true);
+		}
+		else {
+			this._calEvent.setProperty("X-MOZ-SEND-INVITATIONS", false);
+		}
+
+//		this._organizer = this.createAttendee(this.getTag("t:Organizer"), "CHAIR");
+		this._organizer = this.createAttendee(this.getTag("t:Organizer"), null);
+		if (this._organizer) {
+			this._organizer.isOrganizer = true;
+			this._calEvent.organizer = this._organizer;
+		}
+
+		this._attendees = [];
+		var tmpAttendee;
+
+		this._calEvent.removeAllAttendees();
+
+		var attendees = this.XPath("/t:RequiredAttendees/t:Attendee")
+		for each (var at in attendees) {
+			tmpAttendee = this.createAttendee(at, "REQ-PARTICIPANT");
+			this._calEvent.addAttendee(tmpAttendee);
+			//dump("getAttendees: title:"+this.title+", adding required attendee.id:"+tmpAttendee.id+"\n");
+			this._attendees.push(tmpAttendee.clone());
+			this._reqParticipants = true;
+		}
+		attendees = null;
+		attendees = this.XPath("/t:OptionalAttendees/t:Attendee")
+		for each (var at in attendees) {
+			tmpAttendee = this.createAttendee(at, "OPT-PARTICIPANT");
+			this._calEvent.addAttendee(tmpAttendee);
+			//dump("getAttendees: title:"+this.title+", adding optional attendee.id:"+tmpAttendee.id+"\n");
+			this._attendees.push(tmpAttendee.clone());
+			this._optParticipants = true;
+		}
+		attendees = null;
+
+		this._hasAttachments = (this.getTagValue("t:HasAttachments", "false") == "true");
+
+		this._attachments = [];
+		if (this.hasAttachments) {
+//			if (this.debug) this.logInfo("Title:"+aItem.title+"Attachments:"+aExchangeItem.getTagValue("Attachments"));
+			var fileAttachments = this.XPath("/t:Attachments/t:FileAttachment");
+			for each(var fileAttachment in fileAttachments) {
+//				if (this.debug) this.logInfo(" -- Attachment: name="+fileAttachment.getTagValue("t:Name"));
+				var newAttachment = cal.createAttachment();
+				newAttachment.setParameter("X-AttachmentId",xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id")); 
+				newAttachment.uri = cal.makeURL("http://somewhere/?id="+encodeURIComponent(xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id"))+"&name="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Name"))+"&size="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Size", ""))+"&calendarid="+encodeURIComponent(this.calendar.id)+"&isinline="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:IsInline", "false"))+"&contentid="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:ContentId", "<NOPE>")));
+
+				//if (this.debug) this.logInfo("New attachment URI:"+this.serverUrl+"/?id="+encodeURIComponent(xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
+
+				this._attachments.push(newAttachment.clone());
+				this._calEvent.addAttachment(newAttachment);
+			}
+			fileAttachments = null;
+		} 
+
+		this._categories = [];
+		var strings = this.XPath("/t:Categories/t:String");
+		for each (var cat in strings) {
+			this._categories.push(xml2json.getValue(cat));
+		}
+		strings = null;
+		this._calEvent.setCategories(this._categories.length, this._categories);
+
+		this._recurrenceId = this.tryToSetDateValueUTC(this.getTagValue("t:RecurrenceId", null), this._calEvent.recurrenceId);
+		if (this._recurrenceId) {
+			this._recurrenceId.isDate = true;
+			this._calEvent.recurrenceId = this._recurrenceId;
+		}
+
+		// End of afterPre initialization
+
+		this.postLoad();
+
+		this._exchangeXML = xml2json.toString(this._exchangeData);
+		this._exchangeData = null;
+		
+	},
+
+	get exchangeXML()
+	{
+		return this._exchangeXML;
+	},
+
+	preLoad: function _preLoad() 
+	{
+	},
+
+	postLoad: function _postLoad()
+	{
 	},
 
 	convertToExchange: function _convertToExchange() 
 	{
+	},
+
+	set body(aValue)
+	{
+		this._newBody2 = aValue;
+		if (this.bodyType == "HTML") {
+			this._calEvent.setProperty("DESCRIPTION", this.globalFunctions.fromHTML2Text(aValue));
+		}
+		else {
+			this._calEvent.setProperty("DESCRIPTION", aValue);
+			this._newBody2 = this.globalFunctions.fromText2HTML(aValue);
+		}
+	},
+
+	get body()
+	{
+		if (this._newBody2) {
+			return this._newBody2;
+		}
+
+		if (!this._body) {
+			return "<HTML><BODY></BODY></HTML>";
+		}
+
+		return this._body;
+	},
+
+	set bodyType(aValue)
+	{
+		if ((aValue != "HTML") && (aValue != "Text")) {
+			return;
+		}
+		this._newBodyType = aValue;
+	},
+
+	get bodyType()
+	{
+		if (this._newBodyType) {
+			return this._newBodyType;
+		}
+		return this._bodyType;
 	},
 
 	//attribute long occurrenceIndex;
@@ -3728,6 +3801,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		}
 
 		mbox = null;
+		aElement = null;
 		return attendee;
 	},
 
@@ -3763,10 +3837,19 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		return aDefault;
 	},
 
+	XPath: function _XPath(aString)
+	{
+		if (this._exchangeData) {
+			return xml2json.XPath(this._exchangeData, aString);
+		}
+
+		return [];
+	},
+
 	getTag: function _getTag(aTagName)
 	{
-		if (this.exchangeData) {
-			return xml2json.getTag(this.exchangeData, aTagName);
+		if (this._exchangeData) {
+			return xml2json.getTag(this._exchangeData, aTagName);
 		}
 
 		return null;
@@ -3774,17 +3857,17 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 	getTags: function _getTags(aTagName)
 	{
-		if (this.exchangeData) {
-			return xml2json.getTags(this.exchangeData, aTagName);
+		if (this._exchangeData) {
+			return xml2json.getTags(this._exchangeData, aTagName);
 		}
 
-		return null;
+		return [];
 	},
 
 	getTagValue: function _getTagValue(aTagName, aDefaultValue)
 	{
-		if (this.exchangeData) {
-			return xml2json.getTagValue(this.exchangeData, aTagName, aDefaultValue);
+		if (this._exchangeData) {
+			return xml2json.getTagValue(this._exchangeData, aTagName, aDefaultValue);
 		}
 
 		return aDefaultValue;
@@ -3793,8 +3876,8 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	getAttributeByTag: function _getAttributeByTag(aTagName, aAttribute, aDefaultValue)
 	{
 		//dump("getAttributeByTag 1: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute+"\n");
-		if (this.exchangeData) {
-			return xml2json.getAttributeByTag(this.exchangeData, aTagName, aAttribute, aDefaultValue);
+		if (this._exchangeData) {
+			return xml2json.getAttributeByTag(this._exchangeData, aTagName, aAttribute, aDefaultValue);
 		}
 		//this.logInfo("getAttributeByTag 3: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
 

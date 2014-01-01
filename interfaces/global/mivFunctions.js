@@ -31,6 +31,7 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource:///modules/Services.jsm");
 
 Cu.import("resource://interfaces/xml2jxon/mivIxml2jxon.js");
+Cu.import("resource://interfaces/xml2json/xml2json.js");
 
 function mivFunctions()
 {
@@ -839,6 +840,51 @@ mivFunctions.prototype = {
 
 		calManager.registerCalendar(newCal);
 	},
+
+	fromOctal: function _fromOctal(aStr)
+	{
+		var len = aStr.length;
+		var result = 0;
+		var counter = 0;
+		while (len > 0) {
+			result += aStr[len-1]*Math.pow(8,counter);
+			counter++;
+			len--;
+		}
+		return result;
+	},
+
+	fromHTML2Text: function _fromHTML2Text(aString)
+	{
+//dump("-."+aString+".-\n\n");
+		var html = aString.replace(/<style([\s\S]*?)<\/style>/gi, '');
+		html = html.replace(/<script([\s\S]*?)<\/script>/gi, '');
+		html = html.replace(/\n/g, '');
+		html = html.replace(/\r/g, '');
+		html = html.replace(/<\/div>/ig, '\n');
+		html = html.replace(/<\/li>/ig, '\n');
+		html = html.replace(/<li>/ig, '  *  ');
+		html = html.replace(/<\/ul>/ig, '\n');
+		html = html.replace(/<\/p>/ig, '\n');
+		html = html.replace(/<br\s*[\/]?>/gi, "\n");
+		html = html.replace(/<[^>]+>/ig, '');
+		html = html.replace(/\&nbsp\;/g, '');
+
+		return convertSpecialCharatersFromXML(html);
+	},
+
+	fromText2HTML: function _fromText2HTML(aString)
+	{
+		var html = convertSpecialCharatersToXML(aString);
+		if (html) {
+			html = html.replace(/\n/g, '<br>');
+		}
+		else {
+			html = "";
+		}
+		return "<HTML><BODY>"+html+"</BODY></HTML>";
+	},
+
 
 }
 

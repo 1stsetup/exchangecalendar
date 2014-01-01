@@ -87,4 +87,9 @@ interface mivFunctions : nsISupports
 
   AUTF8String copyCalendarSettings(in AUTF8String aFromId, [optional] in AUTF8String aToId);
   void addCalendarById(in AUTF8String aId);
+
+  unsigned long fromOctal(in AUTF8String aStr);
+
+  AUTF8String fromHTML2Text(in AUTF8String aStr);
+  AUTF8String fromText2HTML(in AUTF8String aStr);
 };

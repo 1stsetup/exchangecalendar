@@ -63,13 +63,6 @@ mivExchangeRecurrenceInfo.prototype = {
 						Ci.calIRecurrenceInfo,
 						Ci.nsIClassInfo]),
 
-	//nsrefcnt Release();
-	Release: function _Release()
-	{
-		this._refCount--;
-		return this._refCount;
-	},
-
 	// Attributes from nsIClassInfo
 
 	classDescription: "RecurrenceInfo object for Exchange recurring master.",
@@ -234,14 +227,14 @@ mivExchangeRecurrenceInfo.prototype = {
   //void deleteRecurrenceItemAt(in unsigned long aIndex);
 	deleteRecurrenceItemAt: function _deleteRecurrenceItemAt(aIndex)
 	{
-		//this.logInfo("deleteRecurrenceItemAt: aIndex:"+aIndex);
+		//dump("deleteRecurrenceItemAt: aIndex:"+aIndex+"\n");
 		this._recurrenceInfo.deleteRecurrenceItemAt(aIndex);
 	},
 
   //void deleteRecurrenceItem(in calIRecurrenceItem aItem);
 	deleteRecurrenceItem: function _deleteRecurrenceItem(aItem)
 	{
-		//this.logInfo("deleteRecurrenceItem.");
+		//dump(" -- deleteRecurrenceItem.\n");
 		this._recurrenceInfo.deleteRecurrenceItem(aItem);
 	},
 
@@ -272,7 +265,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //void removeOccurrenceAt(in calIDateTime aRecurrenceId);
 	removeOccurrenceAt: function _removeOccurrenceAt(aRecurrenceId)
 	{
-		//this.logInfo("removeOccurrenceAt: aRecurrenceId:"+aRecurrenceId);
+		//dump("removeOccurrenceAt: aRecurrenceId:"+aRecurrenceId+"\n");
 		this.item.removeOccurrenceAt(aRecurrenceId);
 		this._recurrenceInfo.removeOccurrenceAt(aRecurrenceId);
 	},
@@ -445,7 +438,10 @@ mivExchangeRecurrenceInfo.prototype = {
 			if (ritem instanceof Ci.calIRecurrenceRule) {
 				if (ritem) {
 					//dump(" ;;;; ritem:"+ritem.icalProperty.icalString+"\n");
-					result += ritem.icalProperty.icalString;
+
+					// RRULE:FREQ=DAILY;UNTIL=20131203T121500Z  ---> RRULE:FREQ=DAILY;UNTIL=20131203T000000Z
+					//dump(" ---- ritem:"+ritem.icalProperty.icalString.replace(/RRULE:(.*);UNTIL=(\d*)T(\d*)Z/, "RRULE:$1;UNTIL=$2T000000Z")+"\n");
+					result += ritem.icalProperty.icalString.replace(/RRULE:(.*);UNTIL=(\d*)T(\d*)Z/, "RRULE:$1;UNTIL=$2T000000Z");
 				}
 				else {
 					//this.logInfo(" ;;;; ritem: null !!!!!!!!!!!!!!");

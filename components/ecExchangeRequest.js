@@ -581,6 +581,60 @@ catch(err){
 		}
 	},
 
+	saveToFile: function _saveToFile(aFilename, aContent)
+	{
+		var file = Cc["@mozilla.org/file/directory_service;1"]
+				.getService(Components.interfaces.nsIProperties)
+				.get("ProfD", Components.interfaces.nsIFile);
+		file.append("exchange-data");
+		if ( !file.exists() || !file.isDirectory() ) {
+			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);  
+		}
+
+		file.append("responses");
+		if ( !file.exists() || !file.isDirectory() ) {
+			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);  
+		}
+
+		if (!this.fileCount) {
+			this.fileCount = 0;
+		}
+		else {
+			this.fileCount++;
+		}
+
+		if (this.fileCount < 10) {
+			file.append(this.uuid+"-00"+this.fileCount+"."+aFilename);
+		}
+		else {
+			if (this.fileCount < 100) {
+				file.append(this.uuid+"-0"+this.fileCount+"."+aFilename);
+			}
+			else {
+				file.append(this.uuid+"-"+this.fileCount+"."+aFilename);
+			}
+		}
+
+		if (file.exists()) {
+			file.remove(false);
+		}
+
+//		file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0777);  
+
+		var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].  
+				 createInstance(Components.interfaces.nsIFileOutputStream);  
+		foStream.init(file, 0x02 | 0x08 | 0x20, 0777, 0);  
+
+		var converter = Components.classes["@mozilla.org/intl/converter-output-stream;1"].
+				createInstance(Components.interfaces.nsIConverterOutputStream);
+		converter.init(foStream, "UTF-8", 0, 0);
+		converter.writeString(aContent);
+		converter.close(); // this closes foStream
+		  
+		return 0;
+	},
+
+
 	onLoad:function _onLoad(evt) 
 	{
 		let xmlReq = this.mXmlReq;
@@ -608,7 +662,7 @@ catch(err){
 		}
 
 		var xml = xmlReq.responseText; // bug 270553
-
+		//this.saveToFile("onload.xml", xml);
 
 // Removed following as this is no longer a problem as we are not using E4X anymore.
 //		xml = xml.replace(/&#x10;/g, ""); // BUG 61 remove hexadecimal code 0x10. It will fail in xml conversion.

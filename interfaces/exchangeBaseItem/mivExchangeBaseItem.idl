@@ -62,7 +62,11 @@ interface mivExchangeBaseItem : calIItemBase
 	readonly attribute AUTF8String endTimeZoneName;
 	readonly attribute AUTF8String endTimeZoneId;
 	readonly attribute AUTF8String conferenceType;
+	readonly attribute AUTF8String mimeContent;
+	readonly attribute AUTF8String mimeContentCharacterSet;
 	readonly attribute boolean allowNewTimeProposal;
+	attribute AUTF8String body;
+	attribute AUTF8String bodyType;
 
 	readonly attribute AUTF8String type;
 	readonly attribute AUTF8String parentId;
@@ -83,6 +87,7 @@ interface mivExchangeBaseItem : calIItemBase
 	void cloneToCalEvent(in calIItemBase aCalEvent);
 
 	attribute jsval exchangeData;
+	readonly attribute AUTF8String exchangeXML;
 	attribute long occurrenceIndex;
 	readonly attribute jsval updateXML;
 
@@ -99,5 +104,8 @@ interface mivExchangeBaseItem : calIItemBase
 	void deleteItem();
 
 	void clearId([optional] in AUTF8String newId);
+
+	void preLoad();
+	void postLoad();
 
 };

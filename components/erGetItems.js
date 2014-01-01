@@ -100,7 +100,8 @@ erGetItemsRequest.prototype = {
 
 		var itemShape = xml2json.addTag(req, "ItemShape", "nsMessages", null);
 		xml2json.addTag(itemShape, "BaseShape", "nsTypes", "IdOnly");		
-		xml2json.addTag(itemShape, "BodyType", "nsTypes", "Text");
+//		xml2json.addTag(itemShape, "BodyType", "nsTypes", "Text");
+		xml2json.addTag(itemShape, "BodyType", "nsTypes", "Best");
 
 		var additionalProperties = xml2json.addTag(itemShape, "AdditionalProperties", "nsTypes", null);
 		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ItemId'/>");
@@ -127,6 +128,16 @@ erGetItemsRequest.prototype = {
 		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ReminderIsSet'/>");
 		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ReminderMinutesBeforeStart'/>");
 		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:EffectiveRights'/>");
+		//xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:MimeContent'/>");
+
+		this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
+				.getService(Ci.mivExchangeStatistics);
+
+		if ((this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2010") > -1) || (this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2013") > -1 )) {
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:UniqueBody'/>");
+		}
+		else { // Exchange2007
+		}
 
 		var extFieldURI;
 		extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
@@ -175,12 +186,13 @@ erGetItemsRequest.prototype = {
 			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:UID'/>");
 			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:RecurrenceId'/>");
 
-			this.exchangeStatistics = Cc["@1st-setup.nl/exchange/statistics;1"]
-					.getService(Ci.mivExchangeStatistics);
-
 			if ((this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2010") > -1) || (this.exchangeStatistics.getServerVersion(this.serverUrl).indexOf("Exchange2013") > -1 )) {
 				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:StartTimeZone'/>");
 				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:EndTimeZone'/>");
+				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:ModifiedOccurrences'/>");
+				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:DeletedOccurrences'/>");
+				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:FirstOccurrence'/>");
+				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:LastOccurrence'/>");
 			}
 			else { // Exchange2007
 				xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='calendar:MeetingTimeZone'/>");
@@ -298,7 +310,7 @@ erGetItemsRequest.prototype = {
 			var i = 0;
 			while (i < rmErrorSearch.length) {
 				if (xml2json.getAttribute(rmErrorSearch[i], "ResponseClass", "") == "Error") {
-					dump("Found an get item with error answer. id:"+this.requestedItemId[i]+"\n");
+					//dump("Found an get item with error answer. id:"+this.requestedItemId[i]+"\n");
 					rmErrors.push(this.requestedItemId[i]);
 				}
 				i++;

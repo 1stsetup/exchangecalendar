@@ -92,37 +92,21 @@ mivExchangeEvent.prototype = {
 	get startDate()
 	{
 		//this.logInfo("get startdate 1: title:"+this.title);
-		if (!this._startDate) {
-			this._startDate = this.tryToSetDateValue(this.getTagValue("t:Start", null), this._calEvent.startDate);
-			if (this._startDate) {
-				if (this.isAllDayEvent) this._startDate.isDate = true;
-
-				if (this.startTimeZoneId) {
-					var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._startDate);
-				}
-				else {
-					if (this.meetingTimeZone) {
-						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone, this._startDate);
-					}
-					else {
-						if (this.timeZone) {
-							var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone, this._startDate);
-						}
-					}
-				}
-				if (timezone) {
-					this._startDate = this._startDate.getInTimezone(timezone);
-				}
-				this._calEvent.startDate = this._startDate.clone();
-			}
-		}
 		//this.logInfo("get startdate 2: title:"+this.title+", startdate=="+this._calEvent.startDate);
+
+		if (this._newStartDate) {
+			return this._newStartDate;
+		}
+
+		if (this._startDate) {
+			return this._startDate;
+		}
+
 		return this._calEvent.startDate;
 	},
 
 	set startDate(aValue)
 	{
-		//dump("set startdate: title:"+this.title+", aValue:"+aValue+"\n");
 		if (aValue.toString() != this.startDate.toString()) {
 			this._newStartDate = aValue;
 			this._calEvent.startDate = aValue;
@@ -131,30 +115,15 @@ mivExchangeEvent.prototype = {
 
 	get endDate()
 	{
-		if (!this._endDate) {
-			this._endDate = this.tryToSetDateValue(this.getTagValue("t:End", null), this._calEvent.endDate);
-			if (this._endDate) {
-				if (this.isAllDayEvent) this._endDate.isDate = true;
-				if (this.endTimeZoneId) {
-					var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:EndTimeZone"), "", this._endDate);
-				}
-				else {
-					if (this.meetingTimeZone) {
-						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone, this._endDate);
-					}
-					else {
-						if (this.timeZone) {
-							var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone, this._endDate);
-						}
-					}
-				}
-				if (timezone) {
-					this._endDate = this._endDate.getInTimezone(timezone);
-				}
-				this._calEvent.endDate = this._endDate.clone();
-			}
-		}
 		//this.logInfo("get endDate: title:"+this.title+", endDate=="+this._calEvent.endDate, -1);
+		if (this._newEndDate) {
+			return this._newEndDate;
+		}
+
+		if (this._endDate) {
+			return this._endDate;
+		}
+
 		return this._calEvent.endDate;
 	},
 
@@ -169,13 +138,6 @@ mivExchangeEvent.prototype = {
 
 	get duration()
 	{
-		if ((!this._duration) && (!this._newEndDate) && (!this._newStartDate)) {
-			this._duration = this.getTagValue("t:Duration", null);
-			if (this._duration) {
-				//this.logInfo("get duration: title:"+this.title+", value:"+cal.createDuration(this._duration));
-				return cal.createDuration(this._duration);
-			}
-		}
 		//this.logInfo("get duration: title:"+this.title+", value:"+this._calEvent.duration);
 		return this._calEvent.duration;
 	},
@@ -184,21 +146,6 @@ mivExchangeEvent.prototype = {
 	//attribute AUTF8String status;
 	get status()
 	{
-		if (!this._status) {
-			this._status = this.myResponseType;
-
-			const statusMap = {
-				"Unknown"	: "NONE",
-				"NoResponseReceived" : "NONE",
-				"Tentative"	: "TENTATIVE",
-				"Accept"	: "CONFIRMED",
-				"Decline"	: "CANCELLED",
-				"Organizer"	: "CONFIRMED",
-				null: null
-			};
-
-			this._calEvent.status = statusMap[this._status];
-		}
 		//this.logInfo("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
 		return this._calEvent.status;
 	},
@@ -244,13 +191,27 @@ mivExchangeEvent.prototype = {
 			if (this._newPrivacy) {
 				this.addSetItemField(updates, "Sensitivity", this._newPrivacy);
 			}
-			if (this._newBody !== undefined) {
-				this._nonPersonalDataChanged = true;
-				if (this._newBody === null) {
-					this.addDeleteItemField(updates, "Body");
+
+			if (this.bodyType == "HTML") {
+				if (this._newBody2 !== undefined) {
+					this._nonPersonalDataChanged = true;
+					if (this._newBody2 === null) {
+						this.addDeleteItemField(updates, "Body");
+					}
+					else {
+						this.addSetItemField(updates, "Body", this._newBody2, { BodyType: "HTML" });
+					}
 				}
-				else {
-					this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
+			}
+			else {
+				if (this._newBody !== undefined) {
+					this._nonPersonalDataChanged = true;
+					if (this._newBody === null) {
+						this.addDeleteItemField(updates, "Body");
+					}
+					else {
+						this.addSetItemField(updates, "Body", this._newBody, { BodyType: "Text" });
+					}
 				}
 			}
 			// Categories
@@ -538,6 +499,83 @@ mivExchangeEvent.prototype = {
 
 		//dump("updates:"+updates.toString()+"\n");
 		return updates;
+	},
+
+	preLoad: function _preLoad()
+	{
+		this._startDate = this.tryToSetDateValue(this.getTagValue("t:Start", null), this._calEvent.startDate);
+		if (this._startDate) {
+			if (this.isAllDayEvent) this._startDate.isDate = true;
+
+			if (this.startTimeZoneId) {
+				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._startDate);
+			}
+			else {
+				if (this.meetingTimeZone) {
+					var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone, this._startDate);
+				}
+				else {
+					if (this.timeZone) {
+						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone, this._startDate);
+					}
+				}
+			}
+			if (timezone) {
+				this._startDate = this._startDate.getInTimezone(timezone);
+			}
+			this._calEvent.startDate = this._startDate.clone();
+		}
+
+		this._endDate = this.tryToSetDateValue(this.getTagValue("t:End", null), this._calEvent.endDate);
+		if (this._endDate) {
+			if (this.isAllDayEvent) this._endDate.isDate = true;
+			if (this.endTimeZoneId) {
+				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:EndTimeZone"), "", this._endDate);
+			}
+			else {
+				if (this.meetingTimeZone) {
+					var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone, this._endDate);
+				}
+				else {
+					if (this.timeZone) {
+						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone, this._endDate);
+					}
+				}
+			}
+			if (timezone) {
+				this._endDate = this._endDate.getInTimezone(timezone);
+			}
+			this._calEvent.endDate = this._endDate.clone();
+		}
+
+	},
+
+	postLoad: function _postLoad()
+	{
+		if ((!this._duration) && (!this._newEndDate) && (!this._newStartDate)) {
+			this._duration = this.getTagValue("t:Duration", null);
+			if (this._duration) {
+				//this.logInfo("get duration: title:"+this.title+", value:"+cal.createDuration(this._duration));
+				return cal.createDuration(this._duration);
+			}
+		}
+
+		if (!this._status) {
+			this._status = this.myResponseType;
+
+			const statusMap = {
+				"Unknown"	: "NONE",
+				"NoResponseReceived" : "NONE",
+				"Tentative"	: "TENTATIVE",
+				"Accept"	: "CONFIRMED",
+				"Decline"	: "CANCELLED",
+				"Organizer"	: "CONFIRMED",
+				null: null
+			};
+
+			this._calEvent.status = statusMap[this._status];
+		}
+
 	},
 
 };

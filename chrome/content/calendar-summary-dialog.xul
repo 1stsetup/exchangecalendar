@@ -32,6 +32,8 @@
  * ***** BEGIN LICENSE BLOCK *****/
 -->
 
+<?xml-stylesheet href="chrome://exchangecalendar/content/calendar-summary-dialog.css" type="text/css"?>
+
 <!DOCTYPE dialog [
     <!ENTITY % eventDialogDTD SYSTEM "chrome://calendar/locale/calendar-event-dialog.dtd">
     %eventDialogDTD;
@@ -43,12 +45,19 @@
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
 <dialog id="calendar-summary-dialog" windowtype="Calendar:EventSummaryDialog"
-		buttons="accept,cancel" onload="onLoad()" buttonlabelextra1="Forward invite"
-		ondialogextra1="exchWebService.forewardEvent2.onForward();" persist="screenX screenY width height"
+		buttons="accept,cancel" buttonlabelextra1="Forward invite"
+		ondialogextra1="tmpEventSummaryDialog.onForward();" persist="screenX screenY width height"
 		xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 		
 		<script type="application/javascript" src="chrome://exchangecalendar/content/calendar-summary-dialog.js" />
 		<box id="item-description-box" flex="1">
+
+		<browser id="exchWebService-body-editor" 
+			class="exchWebService-browser-class" 
+			type="content-targetable" 
+			insertafter="item-description" 
+			onclick = "return tmpEventSummaryDialog.onClick(event);"
+			flex="1"/>
 
 		<commandset id="itemCommands">
 		</commandset>

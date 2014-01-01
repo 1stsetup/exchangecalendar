@@ -32,6 +32,12 @@
  * ***** BEGIN LICENSE BLOCK *****/
 -->
 
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://global/skin/xul.css" type="text/css"?>
+<?xml-stylesheet href="chrome://messenger/skin/messengercompose/messengercompose.css" type="text/css"?>
+<?xml-stylesheet href="chrome://exchangecalendar/content/itemBodyEditor.css" type="text/css"?>
+<?xml-stylesheet href="chrome://exchangecalendar/content/exchWebServiceEditor.css" type="text/css"?> 
+
 <!DOCTYPE dialog [
     <!ENTITY % eventDialogDTD SYSTEM "chrome://calendar/locale/calendar-event-dialog.dtd">
     %eventDialogDTD;
@@ -89,6 +95,14 @@
 				disable-on-readonly="true"/>
 			<textbox id="exchWebService-companies-count" value="" disable-on-readonly="true"/>
 		</row>
+
+		<row id="event-grid-description-row">
+			<itemBodyEditor id="exchWebService-body-editor" 
+				flex="1" 
+				insertafter="item-description" 
+				disable-on-readonly="true"/>
+		</row> 
+
 		<row id="exchWebService-attachments-row"
 			
 			collapsed="true" insertbefore="event-grid-link-separator">

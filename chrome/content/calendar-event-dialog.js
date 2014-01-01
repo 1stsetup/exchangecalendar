@@ -32,6 +32,7 @@ var Ci = Components.interfaces;
 var Cc = Components.classes;
 
 Cu.import("resource://calendar/modules/calUtils.jsm");
+Cu.import("resource://gre/modules/Services.jsm");
 
 function exchEventDialog(aDocument, aWindow)
 {
@@ -74,6 +75,18 @@ exchEventDialog.prototype = {
 			aItem.companies = this._document.getElementById("exchWebService-companies-count").value;
 		}
 
+try{
+		if (this.newItem) {
+			aItem.bodyType = "HTML";
+			aItem.body = this._document.getElementById("exchWebService-body-editor").content;
+		}
+		else {
+			if (aItem.bodyType == "HTML") {
+				aItem.body = this._document.getElementById("exchWebService-body-editor").content;
+			}
+		}
+}catch(err){dump("Error saving content\n");}
+
 		if (this._oldCallback) {
 			this._oldCallback(aItem, aCalendar, aOriginalItem, aIsClosing);
 		}
@@ -83,8 +96,17 @@ exchEventDialog.prototype = {
 	{
 		//onLoad();
 
-		if (this._initialized) return;
+		if (this._window.arguments[0].calendarEvent.calendar.type != "exchangecalendar") {
+			if (this._document.getElementById("item-description")) {
+				this._document.getElementById("item-description").hidden = false;
+			}
+			if (this._document.getElementById("exchWebService-body-editor")) {
+				this._document.getElementById("exchWebService-body-editor").hidden = true;
+			}
+			return;
+		}
 
+		if (this._initialized) return;
 		this._oldCallback = this._window.onAcceptCallback;
 		var self = this;
 		this._window.onAcceptCallback = function(aItem, aCalendar, aOriginalItem, aIsClosing) { self.onAcceptCallback(aItem, aCalendar, aOriginalItem, aIsClosing); };
@@ -95,6 +117,44 @@ exchEventDialog.prototype = {
 			var args = this._window.arguments[0];
 			var item = args.calendarEvent;
 			this.updateScreen(item, item.calendar);
+			//Cc["@mozilla.org/consoleservice;1"]
+	                //     .getService(Ci.nsIConsoleService).logStringMessage(item.exchangeXML);
+
+//dump("event.dialog: item.exchangeXML:"+item.exchangeXML+"\n");
+
+			if ((item.bodyType == "HTML") || (item.bodyType === undefined)) {
+				if (this._document.getElementById("item-description")) {
+					this._document.getElementById("item-description").hidden = true;
+				}
+				if (this._document.getElementById("exchWebService-body-editor")) {
+					this._document.getElementById("exchWebService-body-editor").hidden = false;
+					if (item.bodyType !== undefined) {
+						this._document.getElementById("exchWebService-body-editor").content = item.body;
+					}
+					else {
+						this.newItem = true;
+						if (item.body) {
+							if ((item.body.indexOf("<BODY>") > -1) || (item.body.indexOf("<body>") > -1)) {
+								this._document.getElementById("exchWebService-body-editor").content = item.body;
+							}
+							else {
+								this._document.getElementById("exchWebService-body-editor").content = this.globalFunctions.fromText2HTML(item.getProperty("DESCRIPTION"));
+							}
+						}
+						else {
+							this._document.getElementById("exchWebService-body-editor").content = this.globalFunctions.fromText2HTML(item.getProperty("DESCRIPTION"));
+						}
+					}
+				}
+			}
+			else {
+				if (this._document.getElementById("item-description")) {
+					this._document.getElementById("item-description").hidden = false;
+				}
+				if (this._document.getElementById("exchWebService-body-editor")) {
+					this._document.getElementById("exchWebService-body-editor").hidden = true;
+				}
+			}
 		}
 	},
 
@@ -207,7 +267,6 @@ exchEventDialog.prototype = {
 
 		this.updateScreen(this._window.calendarItem, getCurrentCalendar());
 	},
-
 
 }
 

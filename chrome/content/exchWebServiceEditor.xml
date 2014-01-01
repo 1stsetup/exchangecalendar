@@ -14,11 +14,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- *  Exchange 2007/2010 Contacts.
- *  For Thunderbird.
+ * == Exchange 2007/2010 Calendar and Tasks Provider.
+ * == For Thunderbird with the Lightning add-on.
  *
- * Author: Deepak Kumar
- * email: deepk2u@gmail.com
+ * Author: Michel Verbraak (info@1st-setup.nl)
+ * Website: http://www.1st-setup.nl/wordpress/?page_id=133
+ * email: exchangecalendar@extensions.1st-setup.nl
  *
  *
  * ***** BEGIN LICENSE BLOCK *****/
@@ -148,6 +149,29 @@
 					autoCheck="false"
 					connect="true"
 					state="state_attribute"/>
+				<xul:toolbarbutton anonid="cmd_add_link"
+					class="addlink-button"
+					tooltiptext="Add link"
+					type="checkbox"
+					autoCheck="false"
+					connect="false"
+					state="state_attribute"/>
+				<xul:toolbarbutton anonid="cmd_edit_link"
+					class="editlink-button"
+					tooltiptext="Edit link"
+					type="checkbox"
+					autoCheck="false"
+					connect="false"
+					state="state_attribute"
+					hidden="true"/>
+				<xul:toolbarbutton anonid="cmd_remove_link"
+					class="removelink-button"
+					tooltiptext="Remove link"
+					type="checkbox"
+					autoCheck="false"
+					connect="false"
+					state="state_attribute"
+					hidden="true"/>
 			</xul:toolbar>
 		</xul:toolbox>
 		<xul:toolbox anonid="FormatToolbox" mode="icons">
@@ -175,11 +199,20 @@
 			var self=this;
 			if (this.editorElement) {
 				this.commandManager = this.editorElement.commandManager;
-				this.editorClickFunction = function() { self.onClickEditor();};
+				this.editorClickFunction = function(aEvent) { self.onClickEditor(aEvent);};
 				this.editorElement.addEventListener("click", this.editorClickFunction, true);
+
+				this.editorDblClickFunction = function(aEvent) { self.onDblClickEditor(aEvent);};
+				this.editorElement.addEventListener("dblclick", this.editorDblClickFunction, true);
 
 				this.editorKeyPressFunction = function(aEvent) { self.onKeyPressEditor(aEvent);};
 				this.editorElement.addEventListener("keyup", this.editorKeyPressFunction, true);
+
+				this.editorMouseOver = function(aEvent) { self.onMouseOver(aEvent);};
+				this.editorMouseOut = function(aEvent) { self.onMouseOut(aEvent);};
+
+				this.editorElement.addEventListener("mouseover", this.editorMouseOver , false);
+				this.editorElement.addEventListener("mouseout", this.editorMouseOut, false);
 
 			}
 
@@ -203,17 +236,40 @@
 			this.menuPopup = document.getAnonymousElementByAttribute(this, "anonid", "fontFaceSelect");
 			this.menuPopup.addEventListener("command", this.menuPopupFunction, true);
 			this.fillFontFace();
+
+			this.addLinkFunction = function(){ self.addLink();};
+			var addLinkElement = document.getAnonymousElementByAttribute(this, "anonid", "cmd_add_link")
+			addLinkElement.addEventListener("click", this.addLinkFunction, true);
+
+			this.removeLinkFunction = function(){ self.removeLink();};
+			var removeLinkElement = document.getAnonymousElementByAttribute(this, "anonid", "cmd_remove_link")
+			removeLinkElement.addEventListener("click", this.removeLinkFunction, true);
+
+			this.editLinkFunction = function(){ self.editLink();};
+			var editLinkElement = document.getAnonymousElementByAttribute(this, "anonid", "cmd_edit_link")
+			editLinkElement.addEventListener("click", this.editLinkFunction, true);
+
 		]]></constructor>
 
 		<destructor><![CDATA[
 			if (this.editorElement) {
 				this.editorElement.removeEventListener("click", this.editorClickFunction, false);
 				this.editorElement.removeEventListener("keyup", this.editorKeyPressFunction, false);
+
+				this.editorElement.removeEventListener("dblclick", this.editorDblClickFunction, true);
+
+				this.editorElement.removeEventListener("mouseover", this.editorMouseOver , false);
+				this.editorElement.removeEventListener("mouseout", this.editorMouseOut, false);
 			}
 			this.disconnectButtons("FormatToolbar");
 			document.getAnonymousElementByAttribute(this, "anonid", "cmd_backgroundColor").removeEventListener("click", this.bgColorFunction, false);
 			document.getAnonymousElementByAttribute(this, "anonid", "cmd_fontColor").removeEventListener("click", this.fontColorFunction, false);
-			this.menuPopup.removeEventListener("command", this.menuPopupFunction, false);
+			if (this.menuPopupFunction) {
+				this.menuPopup.removeEventListener("command", this.menuPopupFunction, false);
+			}
+			document.getAnonymousElementByAttribute(this, "anonid", "cmd_add_link").removeEventListener("click", this.addLinkFunction, true);
+			document.getAnonymousElementByAttribute(this, "anonid", "cmd_remove_link").removeEventListener("click", this.removeLinkFunction, true);
+			document.getAnonymousElementByAttribute(this, "anonid", "cmd_edit_link").removeEventListener("click", this.editLinkFunction, true);
 		]]></destructor>
 			
 			<property name="content">
@@ -304,7 +360,7 @@
 		<method name="disconnectButtons">
 			<parameter name="aAnonId" />
 			<body><![CDATA[
-			if (this.functions[aAnonId]) {
+			if ((this.functions) && (this.functions[aAnonId])) {
 				for (var name in this.functions[aAnonId]) {
 					this.disconnectButton(name, aAnonId);
 				}
@@ -335,14 +391,90 @@
 		<method name="onKeyPressEditor">
 			<parameter name="aEvent" />
 			<body><![CDATA[
+//if (aEvent) {
+//dump("aEvent.keyCode:"+aEvent.keyCode+"\n");
+//}
 			if ( ( (aEvent.keyCode > 36) && (aEvent.keyCode < 41) ) || (aEvent.keyCode == 33) || (aEvent.keyCode == 34)) {
-				this.onClickEditor();
+				this.onClickEditor(aEvent);
+			}
+		]]></body>
+		</method>
+
+		<method name="hrefAndLinkNodeForClickEvent">
+			<parameter name="event" />
+			<body><![CDATA[
+			{
+				var href = "";
+				var isKeyCommand = (event.type == "command");
+				var linkNode = isKeyCommand ? this.editorElement.commandDispatcher.focusedElement
+							: event.originalTarget;
+//dump("event.type:"+event.type+"\n");
+//dump("event.originalTarget:"+event.originalTarget+"\n");
+//dump("linkNode:"+linkNode+"\n");
+				while (linkNode instanceof Element) {
+					if (linkNode instanceof HTMLAnchorElement ||
+					  linkNode instanceof HTMLAreaElement ||
+					  linkNode instanceof HTMLLinkElement) {
+						href = linkNode.href;
+						if (href)
+						  break;
+					}
+					// Try MathML href
+					else if (linkNode.namespaceURI == "http://www.w3.org/1998/Math/MathML" &&
+					       linkNode.hasAttribute("href")) {
+						href = linkNode.getAttribute("href");
+						href = makeURLAbsolute(linkNode.baseURI, href);
+						break;
+					}
+					// Try simple XLink
+					else if (linkNode.hasAttributeNS("http://www.w3.org/1999/xlink", "href")) {
+						href = linkNode.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+						href = makeURLAbsolute(linkNode.baseURI, href);
+						break;
+					}
+					linkNode = linkNode.parentNode;
+				}
+//dump("href:"+href+"\n");
+				return href ? {href: href, linkNode: linkNode} : null;
 			}
 		]]></body>
 		</method>
 
 		<method name="onClickEditor">
+			<parameter name="aEvent" />
 			<body><![CDATA[
+			if (aEvent) {
+				this.ceParams = this.hrefAndLinkNodeForClickEvent(aEvent);
+				if (this.ceParams) {
+					// We have a link active.
+					document.getAnonymousElementByAttribute(this, "anonid", "cmd_add_link").hidden = true;
+					document.getAnonymousElementByAttribute(this, "anonid", "cmd_edit_link").hidden = false;
+					document.getAnonymousElementByAttribute(this, "anonid", "cmd_remove_link").hidden = false;
+
+					if (aEvent.ctrlKey) {
+						// Ctrl key was pressed on click so we are going to open the link and the program which can handle it.
+						try {
+							var extProtService = Components.classes["@mozilla.org/uriloader/external-protocol-service;1"].getService();
+							extProtService = extProtService.QueryInterface(Components.interfaces.nsIExternalProtocolService);
+							var scheme = this.ceParams.href.substring(0, this.ceParams.href.indexOf(":"));
+							if (extProtService.isExposedProtocol(scheme)) {
+								var ioService = Components.classes["@mozilla.org/network/io-service;1"]
+									  .getService(Components.interfaces.nsIIOService);
+								extProtService.loadUrl(ioService.newURI(this.ceParams.href, null, null));
+							}
+						} 
+						catch (ex) {
+							alert("Do not know how to handle this reference:"+this.ceParams.href);
+						}
+					}
+				}
+				else {
+					document.getAnonymousElementByAttribute(this, "anonid", "cmd_add_link").hidden = false;
+					document.getAnonymousElementByAttribute(this, "anonid", "cmd_edit_link").hidden = true;
+					document.getAnonymousElementByAttribute(this, "anonid", "cmd_remove_link").hidden = true;
+				}
+			}
+
 			for (var aStore in this.functions) {
 				for (var aAnonId in this.functions[aStore]) {
 					this.setButtonState(aAnonId);
@@ -390,6 +522,53 @@
 		]]></body>
 		</method>
 
+		<method name="onDblClickEditor">
+			<parameter name="aEvent" />
+			<body><![CDATA[
+			if (aEvent) {
+				this.ceParams = this.hrefAndLinkNodeForClickEvent(aEvent);
+				if (this.ceParams) {
+					this.editLink();
+				}
+			}
+
+		]]></body>
+		</method>
+		
+		<method name="onMouseOver">
+			<parameter name="aEvent" />
+			<body><![CDATA[
+			if (aEvent) {
+				var ceParams = this.hrefAndLinkNodeForClickEvent(aEvent);
+				if (ceParams) {
+					this.mouseEnterHRef = ceParams.href;
+					this.setAttribute("tooltiptext", "ctrl+click to follow link:"+ceParams.href);
+					aEvent.preventDefault();
+					return true;
+				}
+			}
+			return true;
+		]]></body>
+		</method>
+		
+		<method name="onMouseOut">
+			<parameter name="aEvent" />
+			<body><![CDATA[
+			if (aEvent) {
+				var ceParams = this.hrefAndLinkNodeForClickEvent(aEvent);
+				if (ceParams) {
+					if (ceParams.href != this.mouseEnterHRef) {
+						return true;
+					}
+					this.removeAttribute("tooltiptext");
+					aEvent.preventDefault();
+					return true;
+				}
+			}
+			return false;
+
+		]]></body>
+		</method>
 		
 		<method name="selectColor">
 			<parameter name="aAnonId" />
@@ -508,6 +687,59 @@
 				}
 //				this.setButtonState(aAnonId);
 				this.onClickEditor();
+			}
+		]]></body>
+		</method>
+
+		<method name="addLink">
+			<body><![CDATA[
+//dump("addLink\n");
+				var result = window.prompt("Link URL:", "http://");
+				if (result) {
+					var selObj = this.editorElement.contentDocument.getSelection();
+//dump("selObj.rangeCount:"+selObj.rangeCount+"\n");
+					var range  = selObj.getRangeAt(0);
+					var textElement = range.startContainer;
+					var parent = textElement.parentElement;
+//dump("parent:"+parent+"\n");
+					var startOffset = range.startOffset;
+//dump("1. parent.outerHTML:"+parent.outerHTML+"\n");
+//dump("range.startOffset:"+range.startOffset+"\n");
+					
+					var newLink = document.createElement("a");
+					newLink.setAttribute("href", result);
+					range.surroundContents(newLink);
+//dump("newLink.outerHTML:"+newLink.outerHTML+"\n");
+
+					var splitText = textElement.splitText(startOffset);
+					parent.insertBefore(newLink, splitText);
+					this.content = this.content;
+//dump("2. parent.outerHTML:"+parent.outerHTML+"\n");
+				}
+		]]></body>
+		</method>
+
+		<method name="removeLink">
+			<body><![CDATA[
+//dump("removeLink\n");
+			if (this.ceParams) {
+				var parent = this.ceParams.linkNode.parentElement;
+				while (this.ceParams.linkNode.firstChild) {
+					parent.insertBefore(this.ceParams.linkNode.firstChild, this.ceParams.linkNode);
+				}
+				parent.removeChild(this.ceParams.linkNode);
+			}
+		]]></body>
+		</method>
+
+		<method name="editLink">
+			<body><![CDATA[
+//dump("editLink\n");
+			if (this.ceParams) {
+				var result = window.prompt("Link URL:", this.ceParams.href);
+				if (result) {
+					this.ceParams.linkNode.setAttribute("href", result);
+				}
 			}
 		]]></body>
 		</method>

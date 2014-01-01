@@ -80,6 +80,7 @@ function erFindCalendarItemsRequest(aArgument, aCbOk, aCbError, aListener)
 	this.serverUrl = aArgument.serverUrl;
 	this.rangeStart = aArgument.rangeStart;
 	this.rangeEnd = aArgument.rangeEnd;
+
 	this.count = aArgument.count;
 	this.folderID = aArgument.folderID;
 	this.folderBase = aArgument.folderBase;
@@ -87,13 +88,15 @@ function erFindCalendarItemsRequest(aArgument, aCbOk, aCbError, aListener)
 	this.listener = aListener;
 	this.itemFilter = aArgument.itemFilter;
 
+	this.uid = aArgument.uid;
+
 	this.recurringMasters = [];
 	this.occurrences = [];
 	this.occurrenceIds = [];
 	this.ids = [];
 
-	this.newStartDate = null;
-
+	this.itemsFound = 0;
+	this.offset = 0;
 	this.isRunning = true;
 	this.execute();
 }
@@ -141,7 +144,7 @@ erFindCalendarItemsRequest.prototype = {
 		else {
 			xml2json.setAttribute(view, "EndDate", "2300-01-01T00:00:00-00:00");
 		}
-		xml2json.setAttribute(view, "MaxEntriesReturned", "25");
+		xml2json.setAttribute(view, "MaxEntriesReturned", "1000");
 
 		view = null;
 
@@ -151,7 +154,7 @@ erFindCalendarItemsRequest.prototype = {
 
 		this.parent.xml2json = true;
 
-		//dump("erFindCalendarItemsRequest.execute:"+String(this.parent.makeSoapMessage2(req))+"\n");
+		//dump("erFindCalendarItemsRequest.execute 2:"+String(this.parent.makeSoapMessage2(req))+"\n");
 
                 this.parent.sendRequest(this.parent.makeSoapMessage2(req), this.serverUrl);
 		req = null;
@@ -169,7 +172,9 @@ erFindCalendarItemsRequest.prototype = {
 		 * We first collect all non-Occurrences, and after that we fill in
 		 * Occurrence for those masters that did not yet see any Exception.
 		 */
-		//dump("erFindCalendarItemsRequest.onSendOk:"+xml2json.toString(aResp)+"\n");
+		if (this.subject) {
+		 dump("erFindCalendarItemsRequest.onSendOk:"+xml2json.toString(aResp)+"\n");
+		}
 
 		var aError = false;
 		var aCode = 0;
@@ -180,17 +185,39 @@ erFindCalendarItemsRequest.prototype = {
 		if (rm.length > 0) {
 			var rootFolder = xml2json.getTag(rm[0], "m:RootFolder");
 			if (rootFolder) {
-					if (this.newStartDate) exchWebService.commonFunctions.LOG("next run because previous did not contain all items.");
+					//this.offset = xml2json.getAttribute(rootFolder, "IndexedPagingOffset");
+					//exchWebService.commonFunctions.LOG(" -- Next IndexedPagingOffset:"+this.offset+".");
+					//dump(" -- Next IndexedPagingOffset:"+this.offset+"\n");
+
 					// Process results.
 					var calendarItems = xml2json.XPath(rootFolder, "/t:Items/t:CalendarItem");
+					this.newStartDate = null;
 					for (var index=0; index < calendarItems.length; index++) {
+
+						if (xml2json.getTagValue(calendarItems[index], "t:Start").substr(0,10) == xml2json.getTagValue(calendarItems[index], "t:End").substr(0,10)) {
+							var tmpDateStr = xml2json.getTagValue(calendarItems[index], "t:End");
+							var tmpDateObj = cal.fromRFC3339(tmpDateStr, exchWebService.commonFunctions.ecTZService().UTC).getInTimezone(exchWebService.commonFunctions.ecDefaultTimeZone());
+							var offset = cal.createDuration();
+							offset.seconds = 1;
+							tmpDateObj.addDuration(offset);
+							this.newStartDate = convDate(tmpDateObj);
+//		dump("  && this.newStartDate:"+this.newStartDate+"\n");
+						}
+
+						this.itemsFound++;
 						var uid = xml2json.getTagValue(calendarItems[index], "t:UID", "");
 
-						this.newStartDate = xml2json.getTagValue(calendarItems[index], "t:End");
+/*dump("  ** title:"+xml2json.getTagValue(calendarItems[index], "t:Subject", "<NOP>")+"\n");
+dump("  ** Start:"+xml2json.getTagValue(calendarItems[index], "t:Start", "<NOP>")+"\n");
+dump("  ** End:"+xml2json.getTagValue(calendarItems[index], "t:End", "<NOP>")+"\n");
+dump("  ** CalendarItemType:"+xml2json.getTagValue(calendarItems[index], "t:CalendarItemType", "<NOP>")+"\n");*/
 
 						switch (xml2json.getTagValue(calendarItems[index], "t:CalendarItemType")) {
 							case "Occurrence" :
 							case "Exception" :
+								if ((this.uid) && (this.uid != uid)) { // Do not select items which do not fit the selected uid.
+									uid = "";
+								}
 								if (uid != "") {
 									this.occurrences[uid] = {Id: xml2json.getAttributeByTag(calendarItems[index], "t:ItemId","Id"),
 										  ChangeKey: xml2json.getAttributeByTag(calendarItems[index], "t:ItemId", "ChangeKey"),
@@ -214,14 +241,16 @@ erFindCalendarItemsRequest.prototype = {
 						}
 					}
 					calendarItems = null;
-
-				if (xml2json.getAttribute(rootFolder, "IncludesLastItemInRange") == "true") {
+//				if ((xml2json.getAttribute(rootFolder, "IncludesLastItemInRange") == "true") || (this.newStartDate === null) || (tmpDateObj.compare(this.rangeEnd) > 0)) {
+				if ((xml2json.getAttribute(rootFolder, "IncludesLastItemInRange") == "true")) {
 					// We are done.
-					exchWebService.commonFunctions.LOG("erFindCalendarItems: retrieved:"+xml2json.getAttribute(rootFolder, "TotalItemsInView")+" items. Includes last item in range.");
+					exchWebService.commonFunctions.LOG("erFindCalendarItems: retrieved:"+this.itemsFound+" items. TotalItemsInView:"+xml2json.getAttribute(rootFolder, "TotalItemsInView")+" items. Includes last item in range.");
+					//dump("erFindCalendarItems: retrieved:"+this.itemsFound+" items. TotalItemsInView:"+xml2json.getAttribute(rootFolder, "TotalItemsInView")+" items. Includes last item in range.\n\n");
 				}
 				else {
 					// We return the result to be processed.
-					exchWebService.commonFunctions.LOG("erFindCalendarItems: retrieved:"+xml2json.getAttribute(rootFolder, "TotalItemsInView")+" items. Last item not in range so going for another run.");
+					exchWebService.commonFunctions.LOG("erFindCalendarItems: retrieved:"+this.itemsFound+" items. TotalItemsInView:"+xml2json.getAttribute(rootFolder, "TotalItemsInView")+" items. Last item not in range so going for another run.");
+					//dump("erFindCalendarItems: retrieved:"+this.itemsFound+" items. TotalItemsInView:"+xml2json.getAttribute(rootFolder, "TotalItemsInView")+" items. Last item not in range so going for another run.\n\n");
 					if (this.mCbOk) {
 						var occurrenceList = [];
 						for (var index in this.occurrences) {
@@ -234,7 +263,6 @@ erFindCalendarItemsRequest.prototype = {
 					this.occurrenceIds = [];
 					this.ids = [];
 
-					// Lets do a new request to the exchange server but with the startdate set to the last enddate.
 					this.execute(); 
 					return;
 				}
@@ -280,6 +308,7 @@ erFindCalendarItemsRequest.prototype = {
 
 	onSendError: function _onSendError(aExchangeRequest, aCode, aMsg)
 	{
+dump(" @@@ onSendError aCode:"+aCode+", aMsg:"+aMsg+" @@@\n");
 		this.isRunning = false;
 		if (this.mCbError) {
 			this.mCbError(this, aCode, aMsg);

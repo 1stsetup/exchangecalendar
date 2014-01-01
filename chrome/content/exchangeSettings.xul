@@ -73,7 +73,7 @@
 	<tabbox flex="1">
 		<tabs onselect="tmpExchangeSettings.doTabChanged(this);">
 			<tab label="&ecsettings.tab.adsettings;" selected="true" /> 
-			<tab label="&ecsettings.tab.meetingrequestsettings;" />
+<!--			<tab label="&ecsettings.tab.meetingrequestsettings;" hidden="true"/>  -->
 			<tab label="&ecsettings.tab.calendarfolderproperties;" />
 			<tab label="&ecsettings.tab.offlineCachingproperties;" />
 		</tabs>
@@ -90,7 +90,7 @@
 					</vbox>
 				</vbox>
 			</tabpanel>
-
+<!--
 			<tabpanel id="exchWebService-meetingrequestsettings">
 				<vbox id="vbox-exchWebService-meetingrequestsettings" hidden="false">
 					<checkbox id="exchWebService-poll-inbox" label="&label.poll.inbox;"
@@ -145,7 +145,7 @@
 					</description>
 				</vbox>
 			</tabpanel>
-
+-->
 			<tabpanel id="exchWebService-folderproperties">
 
 				<hbox flex="1">
@@ -305,7 +305,7 @@
 						<vbox>
 							<hbox>
 								<checkbox label="Cache" id="exchWebService-offlineCacheproperties-cacheState"
-									command="exchWebService_cmd_offlineCache"/>
+									command="exchWebService_cmd_offlineCache" disabled="true"/>
 							</hbox>
 						</vbox>
 						<vbox id="exchWebService-offlineCacheproperties-detaisvbox" collapsed="true">					
@@ -331,6 +331,13 @@
 								<label id="exchWebService-offlineCacheproperties-totalTasks"
 									value="&label.offlineCacheproperties.totalTasks;" />
 								<label id="exchWebService-offlineCacheproperties-totalTasksValue"
+									value="0" />
+
+							</hbox>
+							<hbox>
+								<label id="exchWebService-memoryCache-totalItemsLabel"
+									value="Items in memoryCache:" />
+								<label id="exchWebService-memoryCache-totalItems"
 									value="0" />
 
 							</hbox>

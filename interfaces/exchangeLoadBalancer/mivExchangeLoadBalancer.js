@@ -72,6 +72,17 @@ jobObject.prototype = {
 		}
 	},
 
+	clear: function _clear()
+	{
+		this.exchangeRequest = null;
+		this.timer.cancel();
+		this.timer = null;
+		this.state = "done";
+		this.loadBalancer = null;
+		this.job = null;
+		this.server = null
+	},
+
 }
 
 function mivExchangeLoadBalancer() {
@@ -194,8 +205,8 @@ mivExchangeLoadBalancer.prototype = {
 						var timeDiff = timeNow - oldList[runningJob].startTime;
 						if (timeDiff > 300000)  {
 							dump("We have a job which is running longer than 5 minutes:"+oldList[runningJob].job.ecRequest+"\n"); 
-							if (runningJob.exchangeRequest["runs"]) {
-								dump("  ## runs="+runningJob.exchangeRequest["runs"]+"  ##\n");
+							if (oldList[runningJob].exchangeRequest["runs"]) {
+								dump("  ## runs="+oldList[runningJob].exchangeRequest["runs"]+"  ##\n");
 							}
 							//dump("We have a job which is running longer than 5 minutes\n"); 
 							oldList[runningJob].startTime = new Date().getTime();
@@ -205,7 +216,8 @@ mivExchangeLoadBalancer.prototype = {
 				else {
 					// Running job stopped.
 					this.jobsRunning--;
-					oldList[runningJob].exchangeRequest = undefined;
+					//oldList[runningJob].exchangeRequest = undefined;
+					oldList[runningJob].clear;
 					//dump(server+":running job stopped:"+this.jobsRunning+"\n");
 				}
 			}

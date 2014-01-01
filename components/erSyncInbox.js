@@ -48,6 +48,8 @@ Cu.import("resource://exchangecalendar/ecFunctions.js");
 Cu.import("resource://exchangecalendar/ecExchangeRequest.js");
 Cu.import("resource://exchangecalendar/soapFunctions.js");
 
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+
 var EXPORTED_SYMBOLS = ["erSyncInboxRequest"];
 
 function erSyncInboxRequest(aArgument, aCbOk, aCbError, aListener)
@@ -92,31 +94,42 @@ erSyncInboxRequest.prototype = {
 	{
 		exchWebService.commonFunctions.LOG("erSyncInboxRequest.execute\n");
 
-		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:SyncFolderItems xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
+		//var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:SyncFolderItems xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 
-		var itemShape = req.addChildTag("ItemShape", "nsMessages", null);
-		itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");
-		itemShape = null;
+		//var itemShape = req.addChildTag("ItemShape", "nsMessages", null);
+		//itemShape.addChildTag("BaseShape", "nsTypes", "AllProperties");
+		//itemShape = null;
 
-		var parentFolder = makeParentFolderIds2("SyncFolderId", this.argument);
-		req.addChildTagObject(parentFolder);
+		var root = xml2json.newJSON();
+		var req = xml2json.addTag(root, "SyncFolderItems", "nsMessages", null);
+		xml2json.setAttribute(req, "xmlns:nsMessages", nsMessagesStr);
+		xml2json.setAttribute(req, "xmlns:nsTypes", nsTypesStr);
+
+		var itemShape = xml2json.addTag(req, "ItemShape", "nsMessages", null);
+		var baseShape = xml2json.addTag(itemShape, "BaseShape", "nsTypes", "AllProperties");
+
+		//var parentFolder = makeParentFolderIds2("SyncFolderId", this.argument);
+		//req.addChildTagObject(parentFolder);
+
+		var parentFolder = makeParentFolderIds3("SyncFolderId", this.argument);
+		xml2json.addTagObject(req,parentFolder);
 		parentFolder = null;
 	
 		if ((aSyncState) && (aSyncState != "")) {
-			req.addChildTag("SyncState", "nsMessages", aSyncState);
+			xml2json.addTag(req, "SyncState", "nsMessages", aSyncState);
 		}
 
 //		if (this.getSyncState) {
-			req.addChildTag("MaxChangesReturned", "nsMessages", "512");
+			xml2json.addTag(req, "MaxChangesReturned", "nsMessages", "512");
 //		}
 //		else {
 //			req.addChildTag("MaxChangesReturned", "nsMessages", "15");  // We will ask 15 items at a time.
 //		}
 		
-		this.parent.xml2jxon = true;
+		this.parent.xml2json = true;
 
 		//exchWebService.commonFunctions.LOG("erSyncInboxRequest.execute:"+String(this.parent.makeSoapMessage(req)));
-		var soapStr = this.parent.makeSoapMessage(req);
+		var soapStr = this.parent.makeSoapMessage2(req);
  		req = null;
                 this.parent.sendRequest(soapStr, this.serverUrl);
 		req = null;
@@ -126,46 +139,47 @@ erSyncInboxRequest.prototype = {
 	{
 		//exchWebService.commonFunctions.LOG("erSyncInboxRequest.onSendOk:"+String(aResp));
 
-		var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
+		//var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
+		var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
 		if (rm.length > 0) {
-			var syncState = rm[0].getTagValue("m:SyncState");
+			var syncState = xml2json.getTagValue(rm[0], "m:SyncState");
 
-			var lastItemInRange = rm[0].getTagValue("m:IncludesLastItemInRange");
+			var lastItemInRange = xml2json.getTagValue(rm[0], "m:IncludesLastItemInRange");
 		
 		//	if (!this.getSyncState) {
-				for each (var creation in rm[0].XPath("/m:Changes/t:Create")) {
-					for each (var meetingrequest in creation.getTags("t:MeetingRequest")) {
+				for each (var creation in xml2json.XPath(rm[0], "/m:Changes/t:Create")) {
+					for each (var meetingrequest in xml2json.getTags(creation, "t:MeetingRequest")) {
 						this.creations.meetingrequests.push(meetingrequest);
 					}
-					for each (var meetingCancellation in creation.getTags("t:MeetingCancellation")) {
+					for each (var meetingCancellation in xml2json.getTags(creation, "t:MeetingCancellation")) {
 						this.creations.meetingCancellations.push(meetingCancellation);
 					}
-					for each (var meetingResponse in creation.getTags("t:MeetingResponse")) {
+					for each (var meetingResponse in xml2json.getTags(creation, "t:MeetingResponse")) {
 						this.creations.meetingResponses.push(meetingResponse);
 					}
 				}
 	
-				for each (var update in rm[0].XPath("/m:Changes/t:Update")) {
-					for each (var meetingrequest in update.getTags("t:MeetingRequest")) {
+				for each (var update in xml2json.XPath(rm[0], "/m:Changes/t:Update")) {
+					for each (var meetingrequest in xml2json.getTags(update, "t:MeetingRequest")) {
 						this.updates.meetingrequests.push(meetingrequest);
 					}
-					for each (var meetingCancellation in update.getTags("t:MeetingCancellation")) {
+					for each (var meetingCancellation in xml2json.getTags(update, "t:MeetingCancellation")) {
 						this.updates.meetingCancellations.push(meetingCancellation);
 					}
-					for each (var meetingResponse in update.getTags("t:MeetingResponse")) {
+					for each (var meetingResponse in xml2json.getTags(update, "t:MeetingResponse")) {
 						this.updates.meetingResponses.push(meetingResponse);
 					}
 				}
 
-				for each (var deleted in rm[0].XPath("/m:Changes/t:Delete")) {
-					for each (var meetingrequest in deleted.getTags("t:MeetingRequest")) {
+				for each (var deleted in xml2json.XPath(rm[0], "/m:Changes/t:Delete")) {
+					for each (var meetingrequest in xml2json.getTags(deleted, "t:MeetingRequest")) {
 						this.deletions.meetingrequests.push(meetingrequest);
 					}
-					for each (var meetingCancellation in deleted.getTags("t:MeetingCancellation")) {
+					for each (var meetingCancellation in xml2json.getTags(deleted, "t:MeetingCancellation")) {
 						this.deletions.meetingCancellations.push(meetingCancellation);
 					}
-					for each (var meetingResponse in deleted.getTags("t:MeetingResponse")) {
+					for each (var meetingResponse in xml2json.getTags(deleted, "t:MeetingResponse")) {
 						this.deletions.meetingResponses.push(meetingResponse);
 					}
 				}
@@ -185,9 +199,10 @@ erSyncInboxRequest.prototype = {
 		}
 		else {
 			rm = null;
-			var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage");
+			//var rm = aResp.XPath("/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage");
+			var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage");
 			if (rm.length > 0) {
-				var ResponseCode = rm[0].getTagValue("m:ResponseCode");
+				var ResponseCode = xml2json.getTagValue(rm[0], "m:ResponseCode");
 			}
 			else {
 				var ResponseCode = "Unknown error from Exchange server.";

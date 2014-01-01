@@ -51,9 +51,5 @@
 			oncommand="tmpToolsMenu.openOutofOfficeDialog();" hidden="true"/>
 		<menuitem id="exchangecalendar-tools-aboutMemory" label="about:memory"
 			oncommand="tmpToolsMenu.showAboutMemory(false);" hidden="false"/>
-		<menuitem id="exchangecalendar-tools-aboutMemoryVerbose" label="about:memory?verbose"
-			oncommand="tmpToolsMenu.showAboutMemory(true);" hidden="false"/>
-		<menuitem id="exchangecalendar-tools-xml2jxontest" label="XML2JXON tes"
-			oncommand="tmpToolsMenu.showXML2JXonTest();" hidden="false"/> 
 	</menupopup>
 </overlay>
