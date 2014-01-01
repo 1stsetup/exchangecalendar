@@ -96,7 +96,7 @@ mivExchangeEvent.prototype = {
 				dump("aItem."+index+"="+aItem[index]+"\n");
 			}
 		}*/
-		dump(" mivExchangeEvent: cloneFrom 1 \n");
+		//dump(" mivExchangeEvent: cloneFrom 1 \n");
 try{
 		this._isMutable = aItem._isMutable;
 		this._calendar = aItem._calendar;
@@ -190,7 +190,7 @@ try{
 catch(err){
 	dump(" @@@@@@@@@@@@@ mivExchangeEvent: cloneFrom Error:"+err+"\n");
 }
-		dump(" mivExchangeEvent: cloneFrom 2 \n");
+		//dump(" mivExchangeEvent: cloneFrom 2 \n");
 	},
 
 	get startDate()
@@ -296,9 +296,9 @@ catch(err){
 				this.addSetItemField(updates, "Sensitivity", this._newPrivacy);
 			}
 
-dump("updatexml1: this.bodyType:"+this.bodyType+"\n");
-dump("updatexml2: this._newBody:"+this._newBody+"\n");
-dump("updatexml2: this._newBody2:"+this._newBody2+"\n");
+//dump("updatexml1: this.bodyType:"+this.bodyType+"\n");
+//dump("updatexml2: this._newBody:"+this._newBody+"\n");
+//dump("updatexml3: this._newBody2:"+this._newBody2+"\n");
 
 			if (this.bodyType == "HTML") {
 				if (this._newBody2 !== undefined) {
@@ -307,7 +307,6 @@ dump("updatexml2: this._newBody2:"+this._newBody2+"\n");
 						this.addDeleteItemField(updates, "Body");
 					}
 					else {
-						dump(" &&&&  whoa\n");
 						this.addSetItemField(updates, "Body", this._newBody2, { BodyType: "HTML" });
 					}
 				}
@@ -323,6 +322,7 @@ dump("updatexml2: this._newBody2:"+this._newBody2+"\n");
 					}
 				}
 			}
+//dump("updatexml4: body\n");
 			// Categories
 			if (this._changesCategories) {
 				var categoriesXML = Cc["@1st-setup.nl/conversion/xml2jxon;1"]
@@ -606,7 +606,7 @@ dump("updatexml2: this._newBody2:"+this._newBody2+"\n");
 			this.checkAlarmChange(updates);
 		}
 
-		dump("updates:"+updates.toString()+"\n");
+		//dump("updates:"+updates.toString()+"\n");
 		return updates;
 	},
 

@@ -527,12 +527,8 @@ try {
 
 		if (this._newBodyType) result.bodyType = this.bodyType;
 
-		dump(" clone AA1 this._body:"+this._body+"\n");
-		dump(" clone AA1 this._newBody:"+this._newBody+"\n");
-		dump(" clone AA1 this._newBody2:"+this._newBody2+"\n");
-		if (this._newBody) result.setProperty("DESCRIPTION", this.getProperty("DESCRIPTION"));
-		if (this._newBody2) result.body = this.body;
-		dump(" clone AA2\n");
+		if (this._newBody !== undefined) result.setProperty("DESCRIPTION", this.getProperty("DESCRIPTION"));
+		if (this._newBody2 !== undefined) result.body = this.body;
 		if (this._newLocation) result.setProperty("LOCATION", this.getProperty("LOCATION"));
 		if (this._newLegacyFreeBusyStatus) result.setProperty("TRANSP", this.getProperty("TRANSP"));
 		if (this._newMyResponseType) result.setProperty("STATUS", this.getProperty("STATUS")); 
@@ -1337,14 +1333,24 @@ try {
 		default:
 			if (name.indexOf("X-MOZ-SNOOZE-TIME-") > -1) {
 				//this.logInfo("setProperty: "+name+" is set to value:"+value);
-				if (value != this._xMozSnoozetime) {
-//dump("setProperty: title:"+this.title+", "+name+":"+value+"\n");
-					this._newXMozSnoozeTime = value;
-					this._lastXMozSnoozeTimeNativeId = name.substr(18);
-//dump("setProperty this._lastXMozSnoozeTimeNativeId:"+this._lastXMozSnoozeTimeNativeId+"\n");
+				if ((this._xMozSnoozetime === undefined) && (this._reminderSignalTime)) {
+	//dump("setProperty: X-MOZ-SNOOZE-TIME-:"+this.title+", Going to set initial xMozSnoozeTime for master to:"+value+"\n");
+					this._xMozSnoozetime = value;
 				}
 				else {
-					this._newXMozSnoozeTime = undefined;
+					if (value != this._xMozSnoozetime) {
+
+	//dump("setProperty: X-MOZ-SNOOZE-TIME-:"+this.title+", this._reminderSignalTime:"+this._reminderSignalTime+"\n");
+	//dump("setProperty: X-MOZ-SNOOZE-TIME-:"+this.title+", this._xMozSnoozetime:"+this._xMozSnoozetime+"\n");
+	//dump("setProperty: X-MOZ-SNOOZE-TIME-:"+this.title+", "+name+":"+value+"\n");
+						this._newXMozSnoozeTime = value;
+						this._lastXMozSnoozeTimeNativeId = name.substr(18);
+	//dump("setProperty this._lastXMozSnoozeTimeNativeId:"+this._lastXMozSnoozeTimeNativeId+"\n");
+					}
+					else {
+	//dump("setProperty: X-MOZ-SNOOZE-TIME-:"+this.title+", Not changed\n");
+						this._newXMozSnoozeTime = undefined;
+					}
 				}
 			}
 			else {
@@ -2966,7 +2972,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 	set body(aValue)
 	{
-		dump("set body aValue:"+aValue+"\n");
+		//dump("set body aValue:"+aValue+"\n");
 		this._newBody2 = aValue;
 		if (this.bodyType == "HTML") {
 			this._calEvent.setProperty("DESCRIPTION", this.globalFunctions.fromHTML2Text(aValue));
@@ -3506,10 +3512,10 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		var newSnoozeTime = null;
 		// Alarm snooze or dismiss
 		if (this._newXMozSnoozeTime !== undefined) {
-//dump("checkAlarmChange: this._newXMozSnoozeTime was set to:"+this._newXMozSnoozeTime+", newReminderMinutesBeforeStart="+newReminderMinutesBeforeStart+"\n");
+dump("checkAlarmChange: this._newXMozSnoozeTime was set to:"+this._newXMozSnoozeTime+", newReminderMinutesBeforeStart="+newReminderMinutesBeforeStart+"\n");
 			if ((this._newXMozSnoozeTime === null) && (newReminderMinutesBeforeStart !== true)) {
 				// We have a dismiss
-//dump("checkAlarmChange: We have a change\n");
+dump("checkAlarmChange: We have a change\n");
 				if (this.calendarItemType == "RecurringMaster") {
 					// Find out which occurrence or exception was dismissed
 					var dismissedItem = this.getOccurrenceByNativeId(this._lastXMozSnoozeTimeNativeId);
