@@ -88,6 +88,8 @@ function erFindCalendarItemsRequest(aArgument, aCbOk, aCbError, aListener)
 	this.listener = aListener;
 	this.itemFilter = aArgument.itemFilter;
 
+	this.uid = aArgument.uid;
+
 	this.recurringMasters = [];
 	this.occurrences = [];
 	this.occurrenceIds = [];
@@ -122,40 +124,6 @@ erFindCalendarItemsRequest.prototype = {
 		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:ItemClass'/>");
 		xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='item:Subject'/>");
 
-/*		var pageView = xml2json.addTag(req, "IndexedPageItemView", "nsMessages", null); 
-		xml2json.setAttribute(pageView, "MaxEntriesReturned", "5");
-		xml2json.setAttribute(pageView, "BasePoint", "Beginning");
-		xml2json.setAttribute(pageView, "Offset", this.offset);
-
-		var restriction = xml2json.addTag(req, "Restriction", "nsMessages", null); 
-
-		var andObj = xml2json.addTag(restriction, "And", "nsTypes", null);
-
-		var isGreaterThanOrEqualTo = xml2json.addTag(andObj, "IsGreaterThanOrEqualTo", "nsTypes", null);
-		var fieldUri = xml2json.addTag(isGreaterThanOrEqualTo, "FieldURI", "nsTypes", null);
-		xml2json.setAttribute(fieldUri, "FieldURI", "calendar:End");
-		var fieldURIOrConstant = xml2json.addTag(isGreaterThanOrEqualTo, "FieldURIOrConstant", "nsTypes", null);
-		var constant = xml2json.addTag(fieldURIOrConstant, "Constant", "nsTypes", null);
-		if (this.rangeStart) {
-			xml2json.setAttribute(constant, "Value", convDate(this.rangeStart));
-		}
-		else {
-			xml2json.setAttribute(constant, "Value", "1900-01-01T00:00:00-00:00");
-		}
-
-		var isLessThanOrEqualTo = xml2json.addTag(andObj, "IsLessThanOrEqualTo", "nsTypes", null);
-		fieldUri = xml2json.addTag(isLessThanOrEqualTo, "FieldURI", "nsTypes", null);
-		xml2json.setAttribute(fieldUri, "FieldURI", "calendar:Start");
-		fieldURIOrConstant = xml2json.addTag(isLessThanOrEqualTo, "FieldURIOrConstant", "nsTypes", null);
-		constant = xml2json.addTag(fieldURIOrConstant, "Constant", "nsTypes", null);
-		if (this.rangeEnd) {
-			xml2json.setAttribute(constant, "Value", convDate(this.rangeEnd));
-		}
-		else {
-			xml2json.setAttribute(constant, "Value", "2300-01-01T00:00:00-00:00");
-		}
-*/
-
 		var view = xml2json.addTag(req, "CalendarView", "nsMessages", null); 
 
 		if (this.newStartDate) {
@@ -180,18 +148,13 @@ erFindCalendarItemsRequest.prototype = {
 
 		view = null;
 
-/*		var SortOrder = xml2json.addTag(req, "SortOrder", "nsMessages", null); 
-		var FieldOrder = xml2json.addTag(SortOrder, "FieldOrder", "nsTypes", null); 
-		xml2json.setAttribute(FieldOrder, "Order", "Ascending");
-		xml2json.parseXML(FieldOrder,"<nsTypes:FieldURI FieldURI='calendar:End'/>");*/
-
 		var parentFolder = makeParentFolderIds3("ParentFolderIds", this.argument);
 		xml2json.addTagObject(req,parentFolder);
 		parentFolder = null;
 
 		this.parent.xml2json = true;
 
-		//dump("erFindCalendarItemsRequest.execute:"+String(this.parent.makeSoapMessage2(req))+"\n");
+		//dump("erFindCalendarItemsRequest.execute 2:"+String(this.parent.makeSoapMessage2(req))+"\n");
 
                 this.parent.sendRequest(this.parent.makeSoapMessage2(req), this.serverUrl);
 		req = null;
@@ -209,7 +172,9 @@ erFindCalendarItemsRequest.prototype = {
 		 * We first collect all non-Occurrences, and after that we fill in
 		 * Occurrence for those masters that did not yet see any Exception.
 		 */
-		//dump("erFindCalendarItemsRequest.onSendOk:"+xml2json.toString(aResp)+"\n");
+		if (this.subject) {
+		 dump("erFindCalendarItemsRequest.onSendOk:"+xml2json.toString(aResp)+"\n");
+		}
 
 		var aError = false;
 		var aCode = 0;
@@ -250,6 +215,9 @@ dump("  ** CalendarItemType:"+xml2json.getTagValue(calendarItems[index], "t:Cale
 						switch (xml2json.getTagValue(calendarItems[index], "t:CalendarItemType")) {
 							case "Occurrence" :
 							case "Exception" :
+								if ((this.uid) && (this.uid != uid)) { // Do not select items which do not fit the selected uid.
+									uid = "";
+								}
 								if (uid != "") {
 									this.occurrences[uid] = {Id: xml2json.getAttributeByTag(calendarItems[index], "t:ItemId","Id"),
 										  ChangeKey: xml2json.getAttributeByTag(calendarItems[index], "t:ItemId", "ChangeKey"),
