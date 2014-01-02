@@ -6794,7 +6794,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 					//this.observers.notify("onEndBatch");
 
 					if (!fromOfflineCache) {
-						this.addToOfflineCache(item, null, item.exchangeXML);
+						this.addToOfflineCache(item, null, xml2json.toString(aCalendarItem));
 					}
 
 					if (this.recurringMasterCache[uid]) {
@@ -8787,22 +8787,17 @@ else {
 		startDate.addDuration(monthsBeforeDurarion);
 		endDate.addDuration(monthAfterDurarion);
 
-		// Store what we have in memory cache to offline cache.
-		if (this.debug) this.logInfo("Store what we have in memory cache to offline cache.");
-		dump("Store what we have in memory cache to offline cache.\n");
-		for each(var item in this.itemCacheById) {
-			this.addToOfflineCache(item, null, item.exchangeXML);
-		}
-
-		for each(var item in this.recurringMasterCache) {
-			this.addToOfflineCache(item, null, item.exchangeXML);
-		}
-
 		// Check what is missing for minimal time period.
 		var filter = 0;
 		if (this.supportsEvents) filter |= Ci.calICalendar.ITEM_FILTER_TYPE_EVENT;
 		if (this.supportsTasks) filter |= Ci.calICalendar.ITEM_FILTER_TYPE_TODO;
 
+		// Reset memory caches.
+		this.itemCacheById = {};
+		this.itemCacheByStartDate = {};
+		this.itemCacheByEndDate = {};
+		this.recurringMasterCache = {};
+		this.recurringMasterCacheById = {};
 
 		if (this.supportsEvents) {
 			if ((!this.startDate) && (!this.endDate)) {
@@ -8812,6 +8807,9 @@ else {
 	
 			}
 			else {
+				if (this.debug) this.logInfo("Going to request events in the period of '"+this.startDate+"' until '"+this.endDate+"' from the exchange server to fill offlinecache.");
+				this.requestPeriod(this.startDate, this.endDate, filter, {}, false);
+
 				if ((this.startDate) && (startDate.compare(this.startDate)) < 0) {
 					if (this.debug) this.logInfo("Going to request events in the period of '"+startDate.toString()+"' until '"+this.startDate.toString()+"' from the exchange server to fill offlinecache.");
 					//this.getItems(filter, 0, startDate, this.startDate, null);

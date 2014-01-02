@@ -517,24 +517,9 @@ try {
 					.createInstance(Ci.mivExchangeTodo);
 		}
 
-		//result.cloneFrom(this);
-
 		for each(var alias in this.mailboxAliases) {
 			result.addMailboxAlias(alias);
 		}
-		//result.calendar = this.calendar;
-
-/*		if (this._exchangeXML) {
-			var tmpExchangeData = xml2json.newJSON();
-			xml2json.parseXML(tmpExchangeData, this._exchangeXML);
-			result.exchangeData = tmpExchangeData[telements][0];
-			tmpExchangeData = null;
-		}
-		else {
-		}*/
-
-		//result.exchangeData = this._exchangeData;
-
 		result.cloneToCalEvent(this._calEvent);
 		result.cloneFrom(this);
 
@@ -3042,7 +3027,6 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 		this.postLoad();
 
-		//this._exchangeXML = xml2json.toString(this._exchangeData);
 		this._exchangeXML = true;
 		this._exchangeData = null;
 		
