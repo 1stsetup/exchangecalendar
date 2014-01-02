@@ -2311,6 +2311,7 @@ calExchangeCalendar.prototype = {
 		}
 
 		if (!this.firstSyncDone) {
+			dump("!this.firstSyncDone\n");
 			this.getItemsSyncQueue.push({itemFilter: aItemFilter, 
 						count: aCount,
                                     		rangeStart: aRangeStart, 
@@ -2320,6 +2321,7 @@ calExchangeCalendar.prototype = {
 		}
 
 		if (!this.isInitialized) {
+			dump("!this.isInitialized\n");
 			if (aListener) {
 				this.notifyOperationComplete(aListener,
 				      Cr.NS_OK,
@@ -3196,6 +3198,17 @@ calExchangeCalendar.prototype = {
 //			this.syncInboxState = this.loadFromFile("syncInboxState.txt");
 
 			this.getSyncState();
+
+			if (this.isOffline) {
+				this.firstSyncDone = true;
+				if (this.debug) this.logInfo("First sync is done. Normal operation is starting.");
+
+				while (this.getItemsSyncQueue.length > 0) {
+					let getItemsReq = this.getItemsSyncQueue.shift();
+					this.getItems(getItemsReq.itemFilter, getItemsReq.count, getItemsReq.rangeStart, getItemsReq.rangeEnd, getItemsReq.listener);
+				}
+				if (this.debug) this.logInfo("First sync is done. Processed getItemsSyncQueue.");
+			}
 
 			//dump(this.name+": Going to load testdata ("+this.id+")\n");
 			var testData = this.loadFromFile("testitem");
@@ -6641,6 +6654,11 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 						}
 						//this.itemCacheById[item.id] = item;
 						this.addItemToCache(item);
+
+						if (this.useOfflineCache) {
+							this.addToOfflineCache(item, null, xml2json.toString(aCalendarItem));
+						}
+
 						return null;
 					}
 
@@ -6666,6 +6684,11 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 						}
 						//this.itemCacheById[item.id] = item;
 						this.addItemToCache(item);
+
+						if (this.useOfflineCache) {
+							this.addToOfflineCache(item, null, xml2json.toString(aCalendarItem));
+						}
+
 						return null;
 					}
 					
