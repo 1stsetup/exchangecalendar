@@ -657,7 +657,7 @@ calExchangeCalendar.prototype = {
 
 	set readOnly(aValue)
 	{
-//dump("set readOnly:"+this.name+"\n");
+//dump("set readOnly:"+this.name+"|"+this.globalFunctions.STACK(10)+"\n");
 		this.prefs.setBoolPref("UserReadOnly", aValue);
 		this.readOnlyInternal = aValue;
 	},
@@ -2311,7 +2311,7 @@ calExchangeCalendar.prototype = {
 		}
 
 		if (!this.firstSyncDone) {
-			dump("!this.firstSyncDone\n");
+			//dump("!this.firstSyncDone\n");
 			this.getItemsSyncQueue.push({itemFilter: aItemFilter, 
 						count: aCount,
                                     		rangeStart: aRangeStart, 
@@ -2321,7 +2321,7 @@ calExchangeCalendar.prototype = {
 		}
 
 		if (!this.isInitialized) {
-			dump("!this.isInitialized\n");
+			//dump("!this.isInitialized\n");
 			if (aListener) {
 				this.notifyOperationComplete(aListener,
 				      Cr.NS_OK,
@@ -9231,6 +9231,7 @@ dump("getOccurrencesFromOfflineCache: found:"+result.length+"\n");
 
 			if (!aValue) {
 				if (this.debug) this.logInfo("Initialized:"+this.isInitialized);
+				this.readOnlyInternal = false;
 				this.refresh();
 			}
 			else {
