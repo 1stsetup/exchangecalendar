@@ -90,6 +90,35 @@ mivExchangeTodo.prototype = {
 					.createInstance(Ci.calITodo);
 	},
 
+	cloneFrom: function _cloneFrom(aItem)
+	{
+dump(" mivExchangeTodo: cloneFrom1\n");
+try{
+		this.baseCloneFrom(aItem);
+		if (aItem._entryDate) this._entryDate = aItem._entryDate;
+		if (aItem._dueDate) this._dueDate = aItem._dueDate;
+		if (aItem._completedDate) this._completedDate = aItem._completedDate;
+
+		this._precentComplete = aItem._precentComplete;
+		this._isCompleted = aItem._isCompleted;
+		if (aItem._duration) this._duration = aItem._duration.clone();
+		this._owner = aItem._owner;
+		this._totalWork = aItem._totalWork;
+		this._actualWork = aItem._actualWork;
+		this._mileage = aItem._mileage;
+		this._billingInformation = aItem._billingInformation;
+		this._companies = [];
+		if (aItem._companies) {
+			for each(var company in aItem._companies) {
+				this._companies.push(company);
+			}
+		}
+}
+catch(err){
+	dump(" @@@@@@@@@@@@@ mivExchangeTodo: cloneFrom Error:"+err+"\n");
+}
+	},
+
 	//attribute calIDateTime entryDate;
 	get entryDate()
 	{
@@ -844,7 +873,7 @@ mivExchangeTodo.prototype = {
 			this._duration = this.getTagValue("t:Duration", null);
 			if (this._duration) {
 				//this.logInfo("get duration: title:"+this.title+", value:"+cal.createDuration(this._duration));
-				return cal.createDuration(this._duration);
+				this._duration = cal.createDuration(this._duration);
 			}
 		}
 

@@ -91,106 +91,15 @@ mivExchangeEvent.prototype = {
 
 	cloneFrom: function _cloneFrom(aItem)
 	{
-		/*for(var index in aItem) {
-			if ((this.typeString(aItem[index]) != "function") && (index.substr(0,1) == "_")) {
-				dump("aItem."+index+"="+aItem[index]+"\n");
-			}
-		}*/
-		//dump(" mivExchangeEvent: cloneFrom 1 \n");
 try{
-		this._isMutable = aItem._isMutable;
-		this._calendar = aItem._calendar;
-		this._isAllDayEvent = aItem._isAllDayEvent;
-		this._startTimeZoneId = aItem._startTimeZoneId;
-		this._meetingTimeZone = aItem._meetingTimeZone;
-		this._timeZone = aItem._timeZone;
-		this._endTimeZoneId = aItem._endTimeZoneId;
-		this._effectiveRights = aItem._effectiveRights;
-		this._canDelete = aItem._canDelete;
-		this._canModify = aItem._canModify;
-		this._canRead = aItem._canRead;
-		if (aItem._lastModifiedTime) this._lastModifiedTime = aItem._lastModifiedTime.clone();
-		this._subject = aItem._subject;
-		this._title = aItem._title;
-		this._mimeContent = aItem._mimeContent;
-		this._id = aItem._id;
-		this._priority = aItem._priority;
-		this._sensitivity = aItem._sensitivity;
-		this._privacy = aItem._privacyl
-		this._reminderIsSet = aItem._reminderIsSet;
-		this._calendarItemType = aItem._calendarItemType;
-		if (aItem._reminderDueBy) this._reminderDueBy = aItem._reminderDueBy.clone();
-		this._reminderMinutesBeforeStart = aItem._reminderMinutesBeforeStart;
-		if (aItem._dateTimeReceived) this._dateTimeReceived = aItem._dateTimeReceived.clone();
-		if (aItem._dateTimeSent) this._dateTimeSent = aItem._dateTimeSent.clone();
-		this._size = aItem._size;
-		if (aItem._originalStart) this._originalStart = aItem._originalStart.clone();
-		this._location = aItem._location;
-		this._changeKey = aItem._changeKey;
-		this._uid = aItem._uid;
-		this._itemClass = aItem._itemClass;
-		this._isMeeting = aItem._isMeeting;
-		this._isRecurring = aItem._isRecurring;
-		this._meetingRequestWasSent = aItem._meetingRequestWasSent;
-		this._isResponseRequested = aItem._isResponseRequested;
-		this._myResponseType = aItem._myResponseType;
-		this._startTimeZoneName = aItem._startTimeZoneName;
-		this._endTimeZoneName = aItem._endTimeZoneName;
-		this._conferenceType = aItem._conferenceType;
-		this._allowNewTimeProposal = aItem._allowNewTimeProposal;
-		this._parentId = aItem._parentId;
-		this._parentChangeKey = aItem._parentChangeKey;
+		this.baseCloneFrom(aItem);
 		if (aItem._startDate) this._startDate = aItem._startDate;
 		if (aItem._endDate) this._endDate = aItem._endDate;
-		if (aItem._alarm) this._alarm = aItem._alarm.clone();
-		if (aItem._reminderSignalTime) this._reminderSignalTime = aItem._reminderSignalTime.clone();
-		this._xMozSnoozeTime = aItem._xMozSnoozeTime;
-		if (aItem._alarmLastAck) this._alarmLastAck = aItem._alarmLastAck.clone();
-		if (aItem._recurrenceInfo) {
-			this._recurrenceInfo = aItem._recurrenceInfo.clone();
-		}
-		else {
-			this._recurrenceInfo = aItem._recurrenceInfo;
-		}
-		this._bodyType = aItem._bodyType;
-		this._body = aItem._body;
-		if (aItem._dateTimeCreated) this._dateTimeCreated = aItem._dateTimeCreated.clone();
-		if (aItem._created) this._created = aItem._created.clone();
-		this._legacyFreeBusyStatus = aItem._legacyFreeBusyStatus;
-		this._isCancelled = aItem._isCancelled;
-		this._responseObjects = {};
-		if (aItem._responseObjects) {
-			for (var index in aItem._responseObjects) {
-				this._responseObjects[index] = aItem._responseObjects[index];
-			}
-		}
-		this._type = aItem._type;
-		if (aItem._organizer) this._organizer = aItem._organizer.clone();
-		this._attendees = [];
-		if (aItem._attendees) {
-			for each(var attendee in aItem._attendees) {
-				this._attendees.push(attendee.clone());
-			}
-		}
-		this._hasAttachments = aItem._hasAttachments;
-		this._attachments = [];
-		if (aItem._attachments) {
-			for each(var attachment in aItem._attachments) {
-				this._attachments.push(attachment.clone());
-			}
-		}
-		this._categories = [];
-		if (aItem._categories) {
-			for each(var category in aItem._categories) {
-				this._categories.push(category);
-			}
-		}
-		this._recurrenceId = aItem._recurrenceId;
+		if (aItem._duration) this._duration = aItem._duration.clone();
 }
 catch(err){
 	dump(" @@@@@@@@@@@@@ mivExchangeEvent: cloneFrom Error:"+err+"\n");
 }
-		//dump(" mivExchangeEvent: cloneFrom 2 \n");
 	},
 
 	get startDate()
@@ -665,7 +574,7 @@ catch(err){
 			this._duration = this.getTagValue("t:Duration", null);
 			if (this._duration) {
 				//this.logInfo("get duration: title:"+this.title+", value:"+cal.createDuration(this._duration));
-				return cal.createDuration(this._duration);
+				this._duration = cal.createDuration(this._duration);
 			}
 		}
 

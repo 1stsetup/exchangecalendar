@@ -2721,7 +2721,7 @@ calExchangeCalendar.prototype = {
 
 	},
 
-	requestPeriod: function _requestPeriod(aStartDate, aEndDate, aItemFilter, aCount, findReverse)
+	requestPeriod: function _requestPeriod(aStartDate, aEndDate, aItemFilter, aCount, findReverse, aUID)
 	{
 		if (this.debug) this.logInfo("Getting period from: "+aStartDate+" until "+aEndDate);
 		//dump(this.name+": Getting period from: "+aStartDate+" until "+aEndDate+"\n");
@@ -2787,7 +2787,8 @@ calExchangeCalendar.prototype = {
 					 itemFilter: aItemFilter,
 					 folderID: this.folderID,
 					 changeKey: this.changeKey,
-					 actionStart: Date.now() }, 
+					 actionStart: Date.now(),
+					 uid: aUID }, 
 					function(erFindCalendarItemsRequest, aIds, aOccurrences) { self.findCalendarItemsOK(erFindCalendarItemsRequest, aIds, aOccurrences);}, 
 					function(erFindCalendarItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erFindCalendarItemsRequest, aCode, aMsg);},
 					null);
@@ -5915,6 +5916,9 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		for each(var item in aIds) {
 			if (!doNotCheckCache) {
 				var inItemCache = ((this.itemCacheById[item.Id]) && (this.itemCacheById[item.Id].changeKey == item.ChangeKey));
+				if ((!inItemCache) && (this.useOfflineCache)) {
+					inItemCache = (this.itemIsInOfflineCache(item.Id) == item.ChangeKey);
+				}
 				var inMasterCache = ((item.type == "RecurringMaster") && (this.recurringMasterCache[item.uid]) && (this.recurringMasterCache[item.uid].changeKey == item.ChangeKey));
 			}
 			else {
@@ -6564,7 +6568,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 	{
 		//dump("1. uid:"+item.uid+", it:"+item.calendarItemType+", t:"+item.title+", sd:"+item.startDate+"\n");
 		var uid = item.uid;
-		if (!uid) return null;
+		if ((item.className == "mivExchangeEvent") && (!uid)) return null;
 
 		if (this.itemCacheById[item.id]) {
 			if (this.itemCacheById[item.id].changeKey == item.changeKey) {
@@ -6827,42 +6831,10 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 					else {
 						if ((parentLessCounter == 0) && (!fromOfflineCache) && (this.syncState)) {
 							if (this.debug) this.logInfo("We have a new master without children. Most of the times this means we nead to request the children separately.");
-							dump(this.name+": ("+item.title+") We have a new master without children. Most of the times this means we nead to request the children separately.\n");
-							dump("     -- this.startDate:"+this.startDate+", this.endDate:"+this.endDate+"\n");
-							//this.requestPeriod(this.startDate, this.endDate, Ci.calICalendar.ITEM_FILTER_TYPE_EVENT, 0, false);
-							var self = this;
-							/*var tmpItem = { Id: item.id, ChangeKey: item.changeKey, type:"RecurringMaster"};
-							this.addToQueue( erFindOccurrencesRequest, 
-								{user: this.user, 
-								 mailbox: this.mailbox,
-								 folderBase: this.folderBase,
-								 serverUrl: this.serverUrl,
-								 masterItem: tmpItem,
-								 folderID: this.folderID,
-								 changeKey: this.changeKey,
-								 startDate: this.startDate || this.entryDate,
-								 endDate: this.endDate || this.dueDate,
-						 		 GUID: calExchangeCalendarGUID}, 
-								function(erGetItemsRequest, aIds) { self.findOccurrencesOK(erGetItemsRequest, aIds);}, 
-								function(erGetItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erGetItemsRequest, aCode, aMsg);},
-								null);	*/
+							//dump(this.name+": ("+item.title+") We have a new master without children. Most of the times this means we nead to request the children separately.\n");
+							//dump("     -- this.startDate:"+this.startDate+", this.endDate:"+this.endDate+"\n");
 
-							this.addToQueue( erFindCalendarItemsRequest, 
-								{user: this.user, 
-								 mailbox: this.mailbox,
-								 serverUrl: this.serverUrl,
-								 count: 0,
-								 rangeStart: this.startDate || this.entryDate,
-								 rangeEnd: this.endDate || this.dueDate,
-								 folderBase: this.folderBase,
-								 itemFilter: Ci.calICalendar.ITEM_FILTER_TYPE_EVENT,
-								 folderID: this.folderID,
-								 changeKey: this.changeKey,
-								 actionStart: Date.now(),
-								 uid: item.uid }, 
-								function(erFindCalendarItemsRequest, aIds, aOccurrences) { self.findCalendarItemsOK(erFindCalendarItemsRequest, aIds, aOccurrences);}, 
-								function(erFindCalendarItemsRequest, aCode, aMsg) { self.findCalendarItemsError(erFindCalendarItemsRequest, aCode, aMsg);},
-								null);
+							this.requestPeriod(this.startDate || this.entryDate, this.endDate || this.dueDate, Ci.calICalendar.ITEM_FILTER_TYPE_EVENT, 0, false, item.uid);
 						} 
 					}
 
