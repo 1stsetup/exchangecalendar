@@ -269,8 +269,8 @@ mivExchangeBaseItem.prototype = {
 //		this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 //					.getService(Ci.mivFunctions);
 
-		this.timeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
-					.getService(Ci.mivExchangeTimeZones);
+//		this.timeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
+//					.getService(Ci.mivExchangeTimeZones);
 
 		//dump("initExchangeBaseItem: done.\n");
 
@@ -562,7 +562,12 @@ try {
 		}
 		else {
 			if (((aItem._recurrenceInfo) && (aItem.recurrenceInfo) && (aItem._recurrenceInfo.toString() != aItem.recurrenceInfo.toString())) || (aItem._recurrenceInfo !== aItem.recurrenceInfo)) {
-				this.recurrenceInfo = aItem.recurrenceInfo.clone();
+				if (aItem.recurrenceInfo) {
+					this.recurrenceInfo = aItem.recurrenceInfo.clone();
+				}
+				else {
+					this.recurrenceInfo = aItem.recurrenceInfo;
+				}
 			}
 		}
 

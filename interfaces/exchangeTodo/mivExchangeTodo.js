@@ -38,6 +38,9 @@ Cu.import("resource://interfaces/xml2json/xml2json.js");
 exchGlobalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 					.getService(Ci.mivFunctions);
 
+exchTimeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
+			.getService(Ci.mivExchangeTimeZones);
+
 function mivExchangeTodo() {
 
 	this.initialize();
@@ -866,7 +869,7 @@ catch(err){
 				this._calEvent.dueDate = this._dueDate.clone();
 			}
 
-			var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._entryDate);
+			var timezone = exchTimeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._entryDate);
 			if (timezone) {
 				this._entryDate = this._entryDate.getInTimezone(timezone);
 			}
@@ -875,7 +878,7 @@ catch(err){
 
 		this._dueDate = this.tryToSetDateValue(this.getTagValue("t:DueDate", null), this._calEvent.dueDate);
 		if (this._dueDate) {
-			var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._dueDate);
+			var timezone = exchTimeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._dueDate);
 			if (timezone) {
 				this._dueDate = this._dueDate.getInTimezone(timezone);
 			}
@@ -887,7 +890,7 @@ catch(err){
 	{
 		this._completedDate = this.tryToSetDateValue(this.getTagValue("t:CompleteDate", null), this._calEvent.completedDate);
 		if (this._completedDate) {
-			var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._completedDate);
+			var timezone = exchTimeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._completedDate);
 			if (timezone) {
 				this._completedDate = this._completedDate.getInTimezone(timezone);
 			}

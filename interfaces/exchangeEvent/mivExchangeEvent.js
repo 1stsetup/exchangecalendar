@@ -40,6 +40,10 @@ Cu.import("resource://interfaces/xml2json/xml2json.js");
 exchGlobalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 					.getService(Ci.mivFunctions);
 
+exchTimeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
+			.getService(Ci.mivExchangeTimeZones);
+
+
 function mivExchangeEvent() {
 
 	this.initialize();
@@ -379,7 +383,7 @@ catch(err){
 				this.addSetItemField(updates, "Start", exchStart);
 
 				if (!this.calendar.isVersion2007) {
-					var exchTimeZone = this.timeZones.getExchangeTimeZoneByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl, this._newStartDate);
+					var exchTimeZone = exchTimeZones.getExchangeTimeZoneByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl, this._newStartDate);
 //					var tmpTimeZone = exchGlobalFunctions.xmlToJxon('<t:StartTimeZone Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 					var tmpTimeZone = exchGlobalFunctions.xmlToJxon('<t:StartTimeZone xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 					tmpTimeZone.setAttribute("Name",exchTimeZone.name); 
@@ -422,7 +426,7 @@ catch(err){
 				this.addSetItemField(updates, "End", exchEnd);
 
 				if (!this.calendar.isVersion2007) {
-					var exchTimeZone = this.timeZones.getExchangeTimeZoneByCalTimeZone(this._newEndDate.timezone, this.calendar.serverUrl, this._newEndDate);
+					var exchTimeZone = exchTimeZones.getExchangeTimeZoneByCalTimeZone(this._newEndDate.timezone, this.calendar.serverUrl, this._newEndDate);
 //					var tmpTimeZone = exchGlobalFunctions.xmlToJxon('<t:EndTimeZone Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 					var tmpTimeZone = exchGlobalFunctions.xmlToJxon('<t:EndTimeZone xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 					tmpTimeZone.setAttribute("Name",exchTimeZone.name); 
@@ -467,10 +471,10 @@ catch(err){
 
 			if (((this._newStartDate) || (this._newEndDate)) && (this.calendar.isVersion2007)) {
 				if (this._newStartDate) {
-					this.addSetItemField(updates, "MeetingTimeZone", null, { TimeZoneName: this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl, this._newStartDate)});
+					this.addSetItemField(updates, "MeetingTimeZone", null, { TimeZoneName: exchTimeZones.getExchangeTimeZoneIdByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl, this._newStartDate)});
 				}
 				else {
-					this.addSetItemField(updates, "MeetingTimeZone", null, { TimeZoneName: this.timeZones.getExchangeTimeZoneIdByCalTimeZone(this._newEndDate.timezone, this.calendar.serverUrl, this._newEndDate)});
+					this.addSetItemField(updates, "MeetingTimeZone", null, { TimeZoneName: exchTimeZones.getExchangeTimeZoneIdByCalTimeZone(this._newEndDate.timezone, this.calendar.serverUrl, this._newEndDate)});
 				}
 			}
 
@@ -573,15 +577,15 @@ catch(err){
 			if (this.isAllDayEvent) this._startDate.isDate = true;
 
 			if (this.startTimeZoneId) {
-				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._startDate);
+				var timezone = exchTimeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._startDate);
 			}
 			else {
 				if (this.meetingTimeZone) {
-					var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone, this._startDate);
+					var timezone = exchTimeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone, this._startDate);
 				}
 				else {
 					if (this.timeZone) {
-						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone, this._startDate);
+						var timezone = exchTimeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone, this._startDate);
 					}
 				}
 			}
@@ -595,15 +599,15 @@ catch(err){
 		if (this._endDate) {
 			if (this.isAllDayEvent) this._endDate.isDate = true;
 			if (this.endTimeZoneId) {
-				var timezone = this.timeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:EndTimeZone"), "", this._endDate);
+				var timezone = exchTimeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:EndTimeZone"), "", this._endDate);
 			}
 			else {
 				if (this.meetingTimeZone) {
-					var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone, this._endDate);
+					var timezone = exchTimeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.meetingTimeZone, this._endDate);
 				}
 				else {
 					if (this.timeZone) {
-						var timezone = this.timeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone, this._endDate);
+						var timezone = exchTimeZones.getCalTimeZoneByExchangeMeetingTimeZone(this.timeZone, this._endDate);
 					}
 				}
 			}
