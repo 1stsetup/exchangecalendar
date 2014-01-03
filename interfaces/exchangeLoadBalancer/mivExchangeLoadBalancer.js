@@ -57,7 +57,7 @@ jobObject.prototype = {
 			arg1.argument.cbOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 		}
 		catch(err) { 
-			dump(this.server+":jobObject.onRequestOk Error:"+err +"\n");
+			dump(this.server+":jobObject.onRequestOk Error:"+err+"\n");
 		}
 	},
 

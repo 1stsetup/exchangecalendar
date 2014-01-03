@@ -96,16 +96,40 @@ try{
 		if (aItem._startDate) this._startDate = aItem._startDate;
 		if (aItem._endDate) this._endDate = aItem._endDate;
 		if (aItem._duration) this._duration = aItem._duration.clone();
+		if (aItem._status) this._status = aItem._status;
 }
 catch(err){
 	dump(" @@@@@@@@@@@@@ mivExchangeEvent: cloneFrom Error:"+err+"\n");
 }
 	},
 
+	clone: function _clone()
+	{
+try {
+		//dump("mivExchangeEvent: clone 1: title:"+this.title+", contractId:"+this.contractID+"\n");
+
+		var result = new mivExchangeEvent();
+
+		result.baseClone(this);
+
+		if (this._newStartDate !== undefined) result.startDate = this.startDate.clone();
+		if (this._newEndDate !== undefined) result.endDate = this.endDate.clone();
+
+		if (this._newStatus) {
+			result.status = this._newStatus;
+		}
+}
+catch(err){
+  dump("mivExchangeEvent: Clone: error:"+err+"\n");
+}
+		//dump("mivExchangeEvent: clone 2: title:"+this.title+", contractId:"+this.contractID+"\n");
+		return result;
+	},
+
 	get startDate()
 	{
-		//this.logInfo("get startdate 1: title:"+this.title);
-		//this.logInfo("get startdate 2: title:"+this.title+", startdate=="+this._calEvent.startDate);
+		//dump("get startdate 1: title:"+this.title);
+		//dump("get startdate 2: title:"+this.title+", startdate=="+this._calEvent.startDate);
 
 		if (this._newStartDate) {
 			return this._newStartDate;
@@ -128,7 +152,7 @@ catch(err){
 
 	get endDate()
 	{
-		//this.logInfo("get endDate: title:"+this.title+", endDate=="+this._calEvent.endDate, -1);
+		//dump("get endDate: title:"+this.title+", endDate=="+this._calEvent.endDate, -1);
 		if (this._newEndDate) {
 			return this._newEndDate;
 		}
@@ -142,7 +166,7 @@ catch(err){
 
 	set endDate(aValue)
 	{
-		//this.logInfo("set enddate: title:"+this.title+", aValue:"+aValue);
+		//dump("set enddate: title:"+this.title+", aValue:"+aValue);
 		if (aValue.toString() != this.endDate.toString()) {
 			this._newEndDate = aValue;
 			this._calEvent.endDate = aValue;
@@ -151,7 +175,7 @@ catch(err){
 
 	get duration()
 	{
-		//this.logInfo("get duration: title:"+this.title+", value:"+this._calEvent.duration);
+		//dump("get duration: title:"+this.title+", value:"+this._calEvent.duration);
 		return this._calEvent.duration;
 	},
 
@@ -159,13 +183,33 @@ catch(err){
 	//attribute AUTF8String status;
 	get status()
 	{
-		//this.logInfo("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
+		//dump("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
+		const statusMap = {
+			"Unknown"	: "NONE",
+			"NoResponseReceived" : "NONE",
+			"Tentative"	: "TENTATIVE",
+			"Accept"	: "CONFIRMED",
+			"Decline"	: "CANCELLED",
+			"Organizer"	: "CONFIRMED",
+			null: null
+		};
+
+		if (this._newStatus !== undefined) {
+
+			return statusMap[this._newStatus];
+		}
+
+		if (this._status !== undefined) {
+
+			return statusMap[this._status];
+		}
+
 		return this._calEvent.status;
 	},
 
 	set status(aValue)
 	{
-		//this.logInfo("set status: title:"+this.title+", aValue:"+aValue);
+		//dump("set status: title:"+this.title+", aValue:"+aValue);
 		if (aValue != this.status) {
 			const statuses = { "NONE": "NoResponseReceived",
 					"TENTATIVE": "Tentative", 
@@ -573,7 +617,7 @@ catch(err){
 		if ((!this._duration) && (!this._newEndDate) && (!this._newStartDate)) {
 			this._duration = this.getTagValue("t:Duration", null);
 			if (this._duration) {
-				//this.logInfo("get duration: title:"+this.title+", value:"+cal.createDuration(this._duration));
+				//dump("get duration: title:"+this.title+", value:"+cal.createDuration(this._duration));
 				this._duration = cal.createDuration(this._duration);
 			}
 		}

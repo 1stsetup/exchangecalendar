@@ -84,6 +84,7 @@ interface mivExchangeBaseItem : calIItemBase
 	void removeOccurrence(in mivExchangeBaseItem aItem);
 	void removeOccurrenceAt(in calIDateTime aRecurrenceId);
 
+	void baseClone(in jsval aItem);
 	void cloneToCalEvent(in calIItemBase aCalEvent);
 	void baseCloneFrom(in jsval aCalEvent);
 	void cloneFrom(in jsval aCalEvent);

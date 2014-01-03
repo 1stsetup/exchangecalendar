@@ -77,6 +77,7 @@ Cu.import("resource://interfaces/xml2json/xml2json.js");
 
 //Cu.import("resource://interfaces/xml.js");
 
+//Cu.import("resource://interfaces/exchangeTodo/mivExchangeTodo.js");
 //Cu.import("resource://interfaces/exchangeEvent/mivExchangeEvent.js");
 //Cu.import("resource://interfaces/exchangeBaseItem/mivExchangeBaseItem.js");
 
