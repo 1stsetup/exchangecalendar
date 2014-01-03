@@ -220,6 +220,9 @@ const monthMap = {
 
 var EXPORTED_SYMBOLS = ["mivExchangeBaseItem"];
 
+exchGlobalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+					.getService(Ci.mivFunctions);
+
 function mivExchangeBaseItem() {
 
 	this.initialize();
@@ -263,8 +266,8 @@ mivExchangeBaseItem.prototype = {
 
 		this._isMutable = true;
 
-		this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
-					.getService(Ci.mivFunctions);
+//		this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+//					.getService(Ci.mivFunctions);
 
 		this.timeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
 					.getService(Ci.mivExchangeTimeZones);
@@ -664,7 +667,7 @@ catch(err){
 		return this._calEvent.hashId;
 
 /*		 this._hashId = [encodeURIComponent(this.id),
-			this.recurrenceId ? this.recurrenceId.getInTimezone(this.globalFunctions.ecUTC()).icalString : "",
+			this.recurrenceId ? this.recurrenceId.getInTimezone(exchGlobalFunctions.ecUTC()).icalString : "",
 			this.calendar ? encodeURIComponent(this.calendar.id) : ""].join("#");
 
 		//dump("get hashId: title:"+this.title+", value:"+this._hashId);
@@ -2457,7 +2460,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 	get exchangeData()
 	{
 /*		if (this._exchangeData === null) {
-			dump("Who is requesting exchangedata when it is null:"+this.globalFunctions.STACK()+"\n");
+			dump("Who is requesting exchangedata when it is null:"+exchGlobalFunctions.STACK()+"\n");
 		}*/
 		return this._exchangeData;
 	},
@@ -2474,7 +2477,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		}
 
 /*		if (aValue === null) {
-			dump("Who is setting exchangeData to null:"+this.globalFunctions.STACK()+"\n");
+			dump("Who is setting exchangeData to null:"+exchGlobalFunctions.STACK()+"\n");
 		}*/
 		this._exchangeData = aValue;
 
@@ -2626,7 +2629,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 				alarm.action = "DISPLAY";
 				alarm.repeat = 0;
 				if (this.reminderDueBy) {
-					alarm.alarmDate = this.reminderDueBy.clone().getInTimezone(this.globalFunctions.ecDefaultTimeZone());
+					alarm.alarmDate = this.reminderDueBy.clone().getInTimezone(exchGlobalFunctions.ecDefaultTimeZone());
 					alarm.related = Ci.calIAlarm.ALARM_RELATED_ABSOLUTE;
 
 				}
@@ -2795,11 +2798,11 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		//dump("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
 		if (this._body) {
 			if (this._bodyType == "HTML") {
-				this._calEvent.setProperty("DESCRIPTION", this.globalFunctions.fromHTML2Text(this._body));
+				this._calEvent.setProperty("DESCRIPTION", exchGlobalFunctions.fromHTML2Text(this._body));
 			}
 			else {
 				this._calEvent.setProperty("DESCRIPTION", this._body);
-				this._body = this.globalFunctions.fromText2HTML(this._body);
+				this._body = exchGlobalFunctions.fromText2HTML(this._body);
 			}
 		}
 		this._bodyType = "HTML";
@@ -2973,11 +2976,11 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		//dump("set body aValue:"+aValue+"\n");
 		this._newBody2 = aValue;
 		if (this.bodyType == "HTML") {
-			this._calEvent.setProperty("DESCRIPTION", this.globalFunctions.fromHTML2Text(aValue));
+			this._calEvent.setProperty("DESCRIPTION", exchGlobalFunctions.fromHTML2Text(aValue));
 		}
 		else {
 			this._calEvent.setProperty("DESCRIPTION", aValue);
-			this._newBody2 = this.globalFunctions.fromText2HTML(aValue);
+			this._newBody2 = exchGlobalFunctions.fromText2HTML(aValue);
 		}
 	},
 
@@ -3162,7 +3165,7 @@ try{
 			return;
 		}
 
-		var r = this.globalFunctions.xmlToJxon('<t:Recurrence xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+		var r = exchGlobalFunctions.xmlToJxon('<t:Recurrence xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 
 		//var r = updates.addChildTag("Recurrence", "t", null);
 
@@ -3244,12 +3247,12 @@ try{
 		}
 
 		if (cal.isEvent(this)) {
-//			var startDateStr = cal.toRFC3339(startDate.getInTimezone(this.globalFunctions.ecUTC()))+"Z";
-			var startDateStr = cal.toRFC3339(startDate.getInTimezone(this.globalFunctions.ecUTC()));
-			//var startDateStr = cal.toRFC3339(originalDate.getInTimezone(this.globalFunctions.ecUTC()));
+//			var startDateStr = cal.toRFC3339(startDate.getInTimezone(exchGlobalFunctions.ecUTC()))+"Z";
+			var startDateStr = cal.toRFC3339(startDate.getInTimezone(exchGlobalFunctions.ecUTC()));
+			//var startDateStr = cal.toRFC3339(originalDate.getInTimezone(exchGlobalFunctions.ecUTC()));
 		}
 		else {
-			// We make a non-UTC datetime value for this.globalFunctions.
+			// We make a non-UTC datetime value for exchGlobalFunctions.
 			// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
 			//LOG("  ==== tmpStart:"+cal.toRFC3339(tmpStart));
 			var startDateStr = cal.toRFC3339(startDate).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
@@ -3264,7 +3267,7 @@ try{
 			var endDate = rrule.untilDate.clone();
 			if (cal.isEvent(this)) {
 				endDate.isDate = true;
-				var endDateStr = cal.toRFC3339(endDate.getInTimezone(this.globalFunctions.ecUTC()));
+				var endDateStr = cal.toRFC3339(endDate.getInTimezone(exchGlobalFunctions.ecUTC()));
 			}
 			else {
 				if (!endDate.isDate) {
@@ -3289,7 +3292,7 @@ try{
 		return r;
 }
 catch(err){
-dump("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
+dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 }
 
 		/* We won't write WKST/FirstDayOfWeek for now because it is Exchange 2010 and up */
@@ -3299,7 +3302,7 @@ dump("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	{
 		this._nonPersonalDataChanged = false;
 
-		var updates = this.globalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+		var updates = exchGlobalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 		//dump("updates:"+updates.toString()+"\n");
 		return updates;
 	},
@@ -3719,7 +3722,7 @@ dump("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 					break;
 				case 'StartDate':
 					/* Dunno what to do with this for iCal; no place to set */
-					this._recurrenceStartDate = cal.fromRFC3339(xml2json.getValue(comp).substr(0,10)+"T00:00:00Z", this.globalFunctions.ecTZService().UTC);
+					this._recurrenceStartDate = cal.fromRFC3339(xml2json.getValue(comp).substr(0,10)+"T00:00:00Z", exchGlobalFunctions.ecTZService().UTC);
 					this._recurrenceStartDate.isDate = true;
 					break;
 				case 'EndDate':
@@ -3837,10 +3840,10 @@ dump("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	{
 		if ((ewsvalue) && (ewsvalue.toString().length)) {
 			if (ewsvalue.indexOf("Z") > -1) {
-				return cal.fromRFC3339(ewsvalue, this.globalFunctions.ecTZService().UTC);
+				return cal.fromRFC3339(ewsvalue, exchGlobalFunctions.ecTZService().UTC);
 			}
 			else {
-				return cal.fromRFC3339(ewsvalue, this.globalFunctions.ecDefaultTimeZone()).getInTimezone(this.globalFunctions.ecTZService().UTC);
+				return cal.fromRFC3339(ewsvalue, exchGlobalFunctions.ecDefaultTimeZone()).getInTimezone(exchGlobalFunctions.ecTZService().UTC);
 			}
 		}
 
@@ -3850,7 +3853,7 @@ dump("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	tryToSetDateValueDefaultTZ: function _tryToSetDateValueDefaultTZ(ewsvalue, aDefault)
 	{
 		if ((ewsvalue) && (ewsvalue.toString().length)) {
-			return cal.fromRFC3339(ewsvalue, this.globalFunctions.ecDefaultTimeZone());
+			return cal.fromRFC3339(ewsvalue, exchGlobalFunctions.ecDefaultTimeZone());
 		}
 
 		return aDefault;
@@ -3859,7 +3862,7 @@ dump("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	tryToSetDateValue: function _TryToSetDateValue(ewsvalue, aDefault)
 	{
 		if ((ewsvalue) && (ewsvalue.toString().length)) {
-			return cal.fromRFC3339(ewsvalue, this.globalFunctions.ecTZService().UTC).getInTimezone(this.globalFunctions.ecDefaultTimeZone());
+			return cal.fromRFC3339(ewsvalue, exchGlobalFunctions.ecTZService().UTC).getInTimezone(exchGlobalFunctions.ecDefaultTimeZone());
 		}
 
 		return aDefault;

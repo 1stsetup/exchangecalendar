@@ -35,6 +35,9 @@ Cu.import("resource://interfaces/exchangeBaseItem/mivExchangeBaseItem.js");
 
 Cu.import("resource://interfaces/xml2json/xml2json.js");
 
+exchGlobalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+					.getService(Ci.mivFunctions);
+
 function mivExchangeTodo() {
 
 	this.initialize();
@@ -205,7 +208,7 @@ catch(err){
 	set entryDate(aValue)
 	{
 		//dump("set entryDate 1: title:"+this.title+", aValue:"+aValue+"\n");
-		//dump("set entryDate x:"+this.globalFunctions.STACK()+"\n");
+		//dump("set entryDate x:"+exchGlobalFunctions.STACK()+"\n");
 		if (aValue) {
 			if ((!this.entryDate) || ((aValue.compare(this.entryDate) != 0) || (!this._newEntryDate) || (aValue.compare(this._newEntryDate) != 0))) {
 			//if ((!this.entryDate) || (aValue.compare(this.entryDate) != 0)) {
@@ -560,7 +563,7 @@ catch(err){
 	{
 		this._nonPersonalDataChanged = false;
 
-		var updates = this.globalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+		var updates = exchGlobalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 
 		if (this._newTitle !== undefined) {
 			this._nonPersonalDataChanged = true;
@@ -753,13 +756,13 @@ catch(err){
 				tmpDuration.minutes = -60;
 				tmpStart.addDuration(tmpDuration);*/
 
-				// We make a non-UTC datetime value for this.globalFunctions.
+				// We make a non-UTC datetime value for exchGlobalFunctions.
 				// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
 //				var exchStart = cal.toRFC3339(tmpStart).substr(0, 19)+"Z"; //cal.toRFC3339(tmpStart).length-6);
 				var exchStart = cal.toRFC3339(tmpStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
 			}
 			else {
-				// We set in bias advanced to UCT datetime values for this.globalFunctions.
+				// We set in bias advanced to UCT datetime values for exchGlobalFunctions.
 //				var exchStart = cal.toRFC3339(tmpStart).substr(0, 19)+"Z";
 				var exchStart = cal.toRFC3339(tmpStart).substr(0, 19);
 			}
@@ -783,13 +786,13 @@ catch(err){
 				tmpDuration.minutes = -61;
 				tmpEnd.addDuration(tmpDuration);*/
 
-				// We make a non-UTC datetime value for this.globalFunctions.
+				// We make a non-UTC datetime value for exchGlobalFunctions.
 				// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
 //				var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19)+"Z"; //cal.toRFC3339(tmpEnd).length-6);
 				var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19);
 			}
 			else {
-				// We set in bias advanced to UCT datetime values for this.globalFunctions.
+				// We set in bias advanced to UCT datetime values for exchGlobalFunctions.
 //				var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19)+"Z";
 				var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19);
 			}
@@ -814,13 +817,13 @@ catch(err){
 				tmpDuration.minutes = -61;
 				tmpEnd.addDuration(tmpDuration);*/
 
-				// We make a non-UTC datetime value for this.globalFunctions.
+				// We make a non-UTC datetime value for exchGlobalFunctions.
 				// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
 //				var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19)+"Z"; //cal.toRFC3339(tmpEnd).length-6);
 				var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19);
 			}
 			else {
-				// We set in bias advanced to UCT datetime values for this.globalFunctions.
+				// We set in bias advanced to UCT datetime values for exchGlobalFunctions.
 //				var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19)+"Z";
 				var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19);
 			}
@@ -857,7 +860,7 @@ catch(err){
 			if ((this._entryDate.hour === 0) && (this._entryDate.minute === 0) && (this.dueDate) && (this.dueDate.hour === 0) && (this.dueDate.minute === 0)) {
 				// When a new task is created in outlook it will have entryDate en dueDate times set to 00:00.
 				// We change this to the start of the working day..
-				var dayStart = this.globalFunctions.safeGetIntPref(null,"calendar.view.daystarthour", 8);
+				var dayStart = exchGlobalFunctions.safeGetIntPref(null,"calendar.view.daystarthour", 8);
 				this._entryDate.hour = dayStart;
 				this._dueDate.hour = dayStart;
 				this._calEvent.dueDate = this._dueDate.clone();

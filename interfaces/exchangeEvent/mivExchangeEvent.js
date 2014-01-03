@@ -37,6 +37,9 @@ Cu.import("resource://interfaces/xml2json/xml2json.js");
 
 //var EXPORTED_SYMBOLS = ["mivExchangeEvent"];
 
+exchGlobalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+					.getService(Ci.mivFunctions);
+
 function mivExchangeEvent() {
 
 	this.initialize();
@@ -226,7 +229,7 @@ catch(err){
 	{
 		this._nonPersonalDataChanged = false;
 
-		var updates = this.globalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+		var updates = exchGlobalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 
 		if (this.isInvitation) {
 			// Only can accept/decline/tentative
@@ -362,13 +365,13 @@ catch(err){
 					//tmpDuration.minutes = -60;
 					//tmpStart.addDuration(tmpDuration);
 
-					// We make a non-UTC datetime value for this.globalFunctions.
+					// We make a non-UTC datetime value for exchGlobalFunctions.
 					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
 //					var exchStart = cal.toRFC3339(tmpStart).substr(0, 19)+"Z"; //cal.toRFC3339(tmpStart).length-6);
 					var exchStart = cal.toRFC3339(tmpStart).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
 				}
 				else {
-					// We set in bias advanced to UCT datetime values for this.globalFunctions.
+					// We set in bias advanced to UCT datetime values for exchGlobalFunctions.
 //					var exchStart = cal.toRFC3339(tmpStart.getInTimezone(cal.UTC()));
 					var exchStart = cal.toRFC3339(tmpStart).substr(0, 19);
 				}
@@ -377,19 +380,19 @@ catch(err){
 
 				if (!this.calendar.isVersion2007) {
 					var exchTimeZone = this.timeZones.getExchangeTimeZoneByCalTimeZone(this._newStartDate.timezone, this.calendar.serverUrl, this._newStartDate);
-//					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:StartTimeZone Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
-					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:StartTimeZone xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+//					var tmpTimeZone = exchGlobalFunctions.xmlToJxon('<t:StartTimeZone Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var tmpTimeZone = exchGlobalFunctions.xmlToJxon('<t:StartTimeZone xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 					tmpTimeZone.setAttribute("Name",exchTimeZone.name); 
 					tmpTimeZone.setAttribute("Id",exchTimeZone.id); 
 					var periods = xml2json.getTag(exchTimeZone.timeZone, "t:Periods");
 					var transitionsGroups = xml2json.getTag(exchTimeZone.timeZone, "t:TransitionsGroups");
 					var transitions = xml2json.getTag(exchTimeZone.timeZone, "t:Transitions");
 
-					var tmpPeriods = this.globalFunctions.xmlToJxon(xml2json.toString(periods));
+					var tmpPeriods = exchGlobalFunctions.xmlToJxon(xml2json.toString(periods));
 					tmpTimeZone.addChildTagObject(tmpPeriods);
-					var tmpTransitionsGroups = this.globalFunctions.xmlToJxon(xml2json.toString(transitionsGroups));
+					var tmpTransitionsGroups = exchGlobalFunctions.xmlToJxon(xml2json.toString(transitionsGroups));
 					tmpTimeZone.addChildTagObject(tmpTransitionsGroups);
-					var tmpTransitions = this.globalFunctions.xmlToJxon(xml2json.toString(transitions));
+					var tmpTransitions = exchGlobalFunctions.xmlToJxon(xml2json.toString(transitions));
 					tmpTimeZone.addChildTagObject(tmpTransitions);
 
 					this.addSetItemField(updates, "StartTimeZone", tmpTimeZone, null, true);
@@ -405,13 +408,13 @@ catch(err){
 					tmpDuration.minutes = -61;
 					tmpEnd.addDuration(tmpDuration);
 
-					// We make a non-UTC datetime value for this.globalFunctions.
+					// We make a non-UTC datetime value for exchGlobalFunctions.
 					// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
 //					var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19)+"Z"; //cal.toRFC3339(tmpEnd).length-6);
 					var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19); //cal.toRFC3339(tmpEnd).length-6);
 				}
 				else {
-					// We set in bias advanced to UCT datetime values for this.globalFunctions.
+					// We set in bias advanced to UCT datetime values for exchGlobalFunctions.
 //					var exchEnd = cal.toRFC3339(tmpEnd.getInTimezone(cal.UTC()));
 					var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19);
 				}
@@ -420,19 +423,19 @@ catch(err){
 
 				if (!this.calendar.isVersion2007) {
 					var exchTimeZone = this.timeZones.getExchangeTimeZoneByCalTimeZone(this._newEndDate.timezone, this.calendar.serverUrl, this._newEndDate);
-//					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:EndTimeZone Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
-					var tmpTimeZone = this.globalFunctions.xmlToJxon('<t:EndTimeZone xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+//					var tmpTimeZone = exchGlobalFunctions.xmlToJxon('<t:EndTimeZone Name="'+exchTimeZone.name+'" Id="'+exchTimeZone.id+'" xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+					var tmpTimeZone = exchGlobalFunctions.xmlToJxon('<t:EndTimeZone xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 					tmpTimeZone.setAttribute("Name",exchTimeZone.name); 
 					tmpTimeZone.setAttribute("Id",exchTimeZone.id); 
 					var periods = xml2json.getTag(exchTimeZone.timeZone, "t:Periods");
 					var transitionsGroups = xml2json.getTag(exchTimeZone.timeZone, "t:TransitionsGroups");
 					var transitions = xml2json.getTag(exchTimeZone.timeZone, "t:Transitions");
 
-					var tmpPeriods = this.globalFunctions.xmlToJxon(xml2json.toString(periods));
+					var tmpPeriods = exchGlobalFunctions.xmlToJxon(xml2json.toString(periods));
 					tmpTimeZone.addChildTagObject(tmpPeriods);
-					var tmpTransitionsGroups = this.globalFunctions.xmlToJxon(xml2json.toString(transitionsGroups));
+					var tmpTransitionsGroups = exchGlobalFunctions.xmlToJxon(xml2json.toString(transitionsGroups));
 					tmpTimeZone.addChildTagObject(tmpTransitionsGroups);
-					var tmpTransitions = this.globalFunctions.xmlToJxon(xml2json.toString(transitions));
+					var tmpTransitions = exchGlobalFunctions.xmlToJxon(xml2json.toString(transitions));
 					tmpTimeZone.addChildTagObject(tmpTransitions);
 
 					this.addSetItemField(updates, "EndTimeZone", tmpTimeZone, null, true);
@@ -499,7 +502,7 @@ catch(err){
 						switch (attendee.role) {
 						case "REQ-PARTICIPANT":
 							if (reqAttendeeCount == 0) {
-								var reqAttendees = this.globalFunctions.xmlToJxon('<t:Attendee xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+								var reqAttendees = exchGlobalFunctions.xmlToJxon('<t:Attendee xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 								var ae = reqAttendees;
 							}
 							else {
@@ -509,7 +512,7 @@ catch(err){
 							break;
 						case "OPT-PARTICIPANT":
 							if (optAttendeeCount == 0) {
-								var optAttendees = this.globalFunctions.xmlToJxon('<t:Attendee xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+								var optAttendees = exchGlobalFunctions.xmlToJxon('<t:Attendee xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 								var ae = optAttendees;
 							}
 							else {
