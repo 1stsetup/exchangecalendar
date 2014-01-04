@@ -9152,13 +9152,15 @@ dump("getOccurrencesFromOfflineCache: found:"+result.length+"\n");
 			}
 		});*/
 
-		//if (this.debug) this.logInfo("Retreived '"+result.length+"' records from offline cache. startDate:"+startDate+", endDate:"+endDate);
+		if (this.debug) this.logInfo("Retreived '"+result.length+"' records from offline cache. startDate:"+startDate+", endDate:"+endDate);
 		if ((this.offlineCacheDB.lastError == 0) || (this.offlineCacheDB.lastError == 100) || (this.offlineCacheDB.lastError == 101)) {
 
 			if (result.length > 0) {
 				//this.executeQuery("UPDATE items set event=(event || '_')"+whereStr); // Turned this of so items are always requested from offline cache. Even if they have been requested already.
 
-				return this.updateCalendar(null, result, false, true);
+				let updateResult = this.updateCalendar(null, result, false, true);
+				if (this.debug) this.logInfo("Updated calendar with '"+result.length+"' records from offline cache. startDate:"+startDate+", endDate:"+endDate);
+				return updateResult;
 			}
 		}
 		else {
