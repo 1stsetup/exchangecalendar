@@ -5859,53 +5859,6 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				 listener: aListener});
 	},
 
-	addToOfflineQueue: function _addToOfflineQueue(aRangeStart, aRangeEnd)
-	{
-		if (this.getProperty("disabled")) {
-			return;
-		}
-
-		this.offlineQueue.push({rangeStart:aRangeStart,
-				 rangeEnd: aRangeEnd});
-
-//		this.observerService.notifyObservers(this, "onExchangeProgressChange", "1");  
-
-
-		if (!this.offlineTimer) {
-			if (this.debug) this.logInfo("Arming timer for offlineQueue.");
-			this.offlineTimer = Cc["@mozilla.org/timer;1"]
-					.createInstance(Ci.nsITimer);
-
-		        let self = this;
-			let timerCallback = {
-				notify: function setTimeout_notify() {
-					self.processOfflineQueue();
-				}
-			};
-			if (!this.shutdown) {
-				this.offlineTimer.initWithCallback(timerCallback, 50, this.offlineTimer.TYPE_REPEATING_SLACK);
-			}
-			if (this.debug) this.logInfo("Timer for offlineQueue.");
-
-		}
-	},
-
-	processOfflineQueue: function _processOfflineQueue()
-	{
-		if (this.offlineQueue.length > 0) {
-			var queueItem = this.offlineQueue[0];
-			this.offlineQueue.shift();
-
-			//this.globalFunctions.LOG("["+this.name+"] processQueue:"+aQueueNumber+" ("+this.globalFunctions.STACKshort()+")");
-			//this.observerService.notifyObservers(this, "onExchangeProgressChange", "-1");  
-			var itemsFromCache = this.getItemsFromOfflineCache(queueItem.rangeStart, queueItem.rangeEnd);
-			if (itemsFromCache) {
-				if (this.debug) this.logInfo("We got '"+itemsFromCache.length+"' items from offline cache.");
-			}
-		}
-
-	},
-
 	findCalendarItemsOK: function _findCalendarItemsOK(erFindCalendarItemsRequest, aIds, aOccurrences, doNotCheckCache)
 	{
 		if (this.debug) this.logInfo("findCalendarItemsOK: aIds.length="+aIds.length+", aOccurrences.length="+aOccurrences.length);
