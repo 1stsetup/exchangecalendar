@@ -8613,7 +8613,7 @@ else {
 			var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+aCalItem.id+"', '"+aCalItem.changeKey+"', '"+startDate+"', '"+endDate+"', '"+aCalItem.uid+"', '"+this.getItemType(aCalItem)+"', '"+aCalItem.parentItem.id+"', '"+aExchangeItemXML.replace(/\x27/g, "''")+"')";
 		}
 		else {
-			var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+aCalItem.id+"', '"+aCalItem.changeKey+"', '"+startDate+"', '"+endDate+"', '"+aCalItem.uid+"', '"+this.getItemType(aCalItem)+"', '"+aCalItem.parentItem.id+"', '"+xml2json.toString(aExchangeItem).toString().replace(/\x27/g, "''")+"')";
+			var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+aCalItem.id+"', '"+aCalItem.changeKey+"', '"+startDate+"', '"+endDate+"', '"+aCalItem.uid+"', '"+this.getItemType(aCalItem)+"', '"+aCalItem.parentItem.id+"', '"+xml2json.toString(aExchangeItem).replace(/\x27/g, "''")+"')";
 		}
 		if (this.noDB) return;
 		if (!this.executeQuery(sqlStr)) {
@@ -8717,7 +8717,7 @@ else {
 			var sqlStr = "UPDATE items SET event='"+eventField+"', id='"+aCalItem.id+"', changeKey='"+aCalItem.changeKey+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+aCalItem.uid+"', type='"+this.getItemType(aCalItem)+"', parentItem='"+aCalItem.parentItem.id+"', item='"+aExchangeItemXML.replace(/\x27/g, "''")+"' WHERE id='"+aCalItem.id+"'";
 		}
 		else {
-			var sqlStr = "UPDATE items SET event='"+eventField+"', id='"+aCalItem.id+"', changeKey='"+aCalItem.changeKey+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+aCalItem.uid+"', type='"+this.getItemType(aCalItem)+"', parentItem='"+aCalItem.parentItem.id+"', item='"+xml2json.toString(aExchangeItem).toString().replace(/\x27/g, "''")+"' WHERE id='"+aCalItem.id+"'";
+			var sqlStr = "UPDATE items SET event='"+eventField+"', id='"+aCalItem.id+"', changeKey='"+aCalItem.changeKey+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+aCalItem.uid+"', type='"+this.getItemType(aCalItem)+"', parentItem='"+aCalItem.parentItem.id+"', item='"+xml2json.toString(aExchangeItem).replace(/\x27/g, "''")+"' WHERE id='"+aCalItem.id+"'";
 		}
 		if (this.noDB) return;
 		if (!this.executeQuery(sqlStr)) {
