@@ -35,7 +35,7 @@ Cu.import("resource://interfaces/exchangeBaseItem/mivExchangeBaseItem.js");
 Cu.import("resource://interfaces/xml2json/xml2json.js");
 
 
-//var EXPORTED_SYMBOLS = ["mivExchangeEvent"];
+var EXPORTED_SYMBOLS = ["mivExchangeEvent"];
 
 exchGlobalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 					.getService(Ci.mivFunctions);

@@ -77,8 +77,8 @@ Cu.import("resource://interfaces/xml2json/xml2json.js");
 
 //Cu.import("resource://interfaces/xml.js");
 
-//Cu.import("resource://interfaces/exchangeTodo/mivExchangeTodo.js");
-//Cu.import("resource://interfaces/exchangeEvent/mivExchangeEvent.js");
+Cu.import("resource://interfaces/exchangeTodo/mivExchangeTodo.js");
+Cu.import("resource://interfaces/exchangeEvent/mivExchangeEvent.js");
 //Cu.import("resource://interfaces/exchangeBaseItem/mivExchangeBaseItem.js");
 
 var globalStart = new Date().getTime();
@@ -6886,8 +6886,10 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 		if (this.debug) this.logInfo("convertExchangeAppointmentToCalAppointment:"+xml2json.toString(aCalendarItem), 2);
 
 		//var item = createEvent();
-		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
-				.createInstance(Ci.mivExchangeEvent, this);
+//		var item = Cc["@1st-setup.nl/exchange/calendarevent;1"]
+//				.createInstance(Ci.mivExchangeEvent, this);
+
+		var item = new mivExchangeEvent();
 
 		item.addMailboxAlias(this.mailbox);
 		item.calendar = this.superCalendar;
@@ -6939,8 +6941,10 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 	{
 		if (this.debug) this.logInfo("convertExchangeTaskToCalTask:"+xml2json.toString(aTask), 2);
 		//var item = createTodo();
-		var item = Cc["@1st-setup.nl/exchange/calendartodo;1"]
-				.createInstance(Ci.mivExchangeTodo, this);
+//		var item = Cc["@1st-setup.nl/exchange/calendartodo;1"]
+//				.createInstance(Ci.mivExchangeTodo, this);
+
+		var item = new mivExchangeTodo();
 
 		item.addMailboxAlias(this.mailbox);
 		item.calendar = this.superCalendar;

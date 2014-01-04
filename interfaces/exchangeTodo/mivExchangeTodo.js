@@ -41,6 +41,8 @@ exchGlobalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 exchTimeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
 			.getService(Ci.mivExchangeTimeZones);
 
+var EXPORTED_SYMBOLS = ["mivExchangeTodo"];
+
 function mivExchangeTodo() {
 
 	this.initialize();
