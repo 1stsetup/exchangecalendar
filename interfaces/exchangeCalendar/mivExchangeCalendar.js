@@ -1993,6 +1993,7 @@ calExchangeCalendar.prototype = {
 				case "Single" :
 					if (this.debug) this.logInfo("-- Single CalendarItemType");
 
+					var self = this;
 					this.addToQueue( erDeleteItemRequest, 
 						{user: this.user, 
 						 mailbox: this.mailbox,
@@ -2011,6 +2012,7 @@ calExchangeCalendar.prototype = {
 				case "Exception" :
 					if (this.debug) this.logInfo("-- "+aItem.calendarItemType+" CalendarItemType");
 
+					var self = this;
 					this.addToQueue( erGetOccurrenceIndexRequest,
 						{user: this.user, 
 						 mailbox: this.mailbox,
@@ -2031,6 +2033,7 @@ calExchangeCalendar.prototype = {
 				case "RecurringMaster" :
 					if (this.debug) this.logInfo("-- RecurringMaster CalendarItemType");
 
+					var self = this;
 					this.addToQueue( erDeleteItemRequest,
 						{user: this.user, 
 						 mailbox: this.mailbox,
@@ -2053,6 +2056,7 @@ calExchangeCalendar.prototype = {
 
 		if (isToDo(aItem)) {
 			if (this.debug) this.logInfo("deleteItem is calITask");
+			var self = this;
 			this.addToQueue( erDeleteItemRequest,
 				{user: this.user, 
 				 mailbox: this.mailbox,
@@ -2580,7 +2584,6 @@ calExchangeCalendar.prototype = {
 			return;
 		}
 
-      		var self = this;
 
 		// 2013-11-19 Going to request getitems period from exchange.
 /*		if ((wantEvents) && (this.supportsEvents)) {
@@ -2612,6 +2615,7 @@ calExchangeCalendar.prototype = {
 	
 		if ((wantTodos) && (this.supportsTasks)) {
 			if (this.debug) this.logInfo("Requesting tasks from exchange server.");
+  	    		var self = this;
 			this.addToQueue( erFindTaskItemsRequest, 
 				{user: this.user, 
 				 mailbox: this.mailbox,
@@ -2859,7 +2863,7 @@ calExchangeCalendar.prototype = {
 		}
 
 		//if (this.debug) this.logInfo("Refresh. We start a sync.");
-		var self = this;
+		//var self = this;
 
 		if (this.OnlyShowAvailability) {
 			this.getOnlyFreeBusyInformation(this.lastValidRangeStart, this.lastValidRangeEnd);
@@ -5263,7 +5267,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 		// See if we need to update the item when it is an invitation to others
 		// This to get the invitation uncluding the attachments send out.
-		this.addAttachmentsToOfflineCache(erDeleteAttachmentRequest.argument.item);
+		this.addAttachmentsToOfflineCache({ man: {calItem:erDeleteAttachmentRequest.argument.item}});
 
 		if ((erDeleteAttachmentRequest.argument.sendto) && ((erDeleteAttachmentRequest.argument.sendto != "sendtonone"))) {
 			// The item we processed was a meeting of which I'm the organiser.
@@ -6602,8 +6606,11 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 						//this.itemCacheById[item.id] = item;
 						this.addItemToCache(item);
 
-						if (this.useOfflineCache) {
-							this.addToOfflineCache(item, xml2json.toString(aCalendarItem));
+						if ((this.useOfflineCache) && (!fromOfflineCache)) {
+							let cacheItem = {};
+							cacheItem[item.id] = {calItem: item,
+									exchangeItemXML: xml2json.toString(aCalendarItem)};
+							this.addToOfflineCache(cacheItem);
 						}
 
 						return null;
@@ -6632,8 +6639,11 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 						//this.itemCacheById[item.id] = item;
 						this.addItemToCache(item);
 
-						if (this.useOfflineCache) {
-							this.addToOfflineCache(item, xml2json.toString(aCalendarItem));
+						if ((this.useOfflineCache) && (!fromOfflineCache)) {
+							let cacheItem = {};
+							cacheItem[item.id] = {calItem: item,
+									exchangeItemXML: xml2json.toString(aCalendarItem)};
+							this.addToOfflineCache(cacheItem);
 						}
 
 						return null;
@@ -6764,7 +6774,10 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 					//this.observers.notify("onEndBatch");
 
 					if (!fromOfflineCache) {
-						this.addToOfflineCache(item, xml2json.toString(aCalendarItem));
+						let cacheItem = {};
+						cacheItem[item.id] = {calItem: item,
+								exchangeItemXML: xml2json.toString(aCalendarItem)};
+						this.addToOfflineCache(cacheItem);
 					}
 
 					if (this.recurringMasterCache[uid]) {
@@ -7140,6 +7153,8 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 	{
 		if (this.debug) this.logInfo("updateCalendar2: We have '"+aItems.length+"' items to update in calendar. fromOfflineCache:"+fromOfflineCache);
 
+		let cacheItem = {};
+
 		for (var index = 0; index < aItems.length; index++) {
 
 			this.itemsFromExchange++;
@@ -7158,8 +7173,10 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 						this.notifyTheObservers("onAddItem", [item]);
 					}
 
-					if (!fromOfflineCache) {
-						this.addToOfflineCache(item, xml2json.toString(aItems[index]));
+					if ((this.useOfflineCache) && (!fromOfflineCache)) {
+						cacheItem[item.id] = {calItem: item,
+								exchangeItemXML: xml2json.toString(aItems[index])};
+						//this.addToOfflineCache(item, xml2json.toString(aItems[index]));
 					}
 
 				}
@@ -7170,14 +7187,20 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 					this.singleModified(item, doNotify);
 
-					if (!fromOfflineCache) {
-						this.addToOfflineCache(item, xml2json.toString(aItems[index]));
+					if ((this.useOfflineCache) && (!fromOfflineCache)) {
+						cacheItem[item.id] = {calItem: item,
+								exchangeItemXML: xml2json.toString(aItems[index])};
+						//this.addToOfflineCache(item, xml2json.toString(aItems[index]));
 					}
 				}
 			}
 
 			aItems[index] = null;
 
+		}
+
+		if ((this.useOfflineCache) && (!fromOfflineCache)) {
+			this.addToOfflineCache(cacheItem);
 		}
 	},
 
@@ -7738,7 +7761,6 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 		if (this.debug) this.logInfo("getOnlyFreeBusyInformation: aRangeStart:"+aRangeStart+", aRangeEnd:"+aRangeEnd);
 
-		var self = this;
 		var tmpStartDate = aRangeStart.clone();
 		tmpStartDate.isDate = false;
 		var tmpEndDate = aRangeEnd.clone();
@@ -7764,6 +7786,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			}
 		}
 
+		var self = this;
 		this.addToQueue( erGetUserAvailabilityRequest, 
 			{user: this.user, 
 			 folderBase: "calendar",
@@ -8336,13 +8359,15 @@ else {
 		}
 	},
 
-	addAttachmentsToOfflineCache: function _addAttachmentsToOfflineCache(aCalItem)
+	addAttachmentsToOfflineCache: function _addAttachmentsToOfflineCache(aList)
 	{
-		var attachments = aCalItem.getAttachments({});
-		this.removeAttachmentsFromOfflineCache(aCalItem);
-		for (var index in attachments) {
-			this.addAttachmentToOfflineCache(aCalItem, attachments[index]);
-		}			
+		for each(var item in aList) {
+			var attachments = item.calItem.getAttachments({});
+			this.removeAttachmentsFromOfflineCache(item.calItem);
+			for (var index in attachments) {
+				this.addAttachmentToOfflineCache(item.calItem, attachments[index]);
+			}
+		}
 	},
 
 	addAttachmentToOfflineCache: function _addAttachmentToOfflineCache(aCalItem, aCalAttachment)
@@ -8496,216 +8521,410 @@ else {
 		}
 	},
 
-	addToOfflineCache: function _addToOfflineCache(aCalItem, aExchangeItemXML)
+	addToOfflineCache: function _addToOfflineCache(aList)
 	{
+
 		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
 		}
 
-		if (isEvent(aCalItem)) {
-			var startDate = cal.toRFC3339(aCalItem.startDate.getInTimezone(this.globalFunctions.ecUTC()));
-			var endDate = cal.toRFC3339(aCalItem.endDate.getInTimezone(this.globalFunctions.ecUTC()));
-			var eventField = "y";
-		}
-		else {
-			if (aCalItem.entryDate) {
-				var startDate = cal.toRFC3339(aCalItem.entryDate.getInTimezone(this.globalFunctions.ecUTC()));
-			}
-			else {
-				var startDate = "";
-			};
+		//dump(this.name+":addToOfflineCache 1\n");
+		var sqlQueries = [];
 
-			if (((aCalItem.completedDate) && (aCalItem.dueDate) && (aCalItem.completedDate.compare(aCalItem.dueDate) == 1)) || ((aCalItem.completedDate) && (!aCalItem.dueDate))) {
-				var endDate = cal.toRFC3339(aCalItem.completedDate.getInTimezone(this.globalFunctions.ecUTC()));
+		for each(var item in aList) {
+
+			if (isEvent(item.calItem)) {
+				var startDate = cal.toRFC3339(item.calItem.startDate.getInTimezone(this.globalFunctions.ecUTC()));
+				var endDate = cal.toRFC3339(item.calItem.endDate.getInTimezone(this.globalFunctions.ecUTC()));
+				var eventField = "y";
 			}
 			else {
-				if (aCalItem.dueDate) {
-					var endDate = cal.toRFC3339(aCalItem.dueDate.getInTimezone(this.globalFunctions.ecUTC()));
+				if (item.calItem.entryDate) {
+					var startDate = cal.toRFC3339(item.calItem.entryDate.getInTimezone(this.globalFunctions.ecUTC()));
 				}
 				else {
-					var endDate = "";
-				}
-			}
-			var eventField = "n";
-		}
+					var startDate = "";
+				};
 
-		var sqlStr = "SELECT COUNT() as itemcount from items WHERE id='"+aCalItem.id+"'";
-		if (this.debug) this.logInfo("sql-query:"+sqlStr, 2);
-		var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
-		if (this.noDB) return;
-		sqlStatement.executeStep();
-		if (sqlStatement.row.itemcount > 0) {
-			if (this.debug) this.logInfo("Going to update the item because it all ready exist.");
-			this.updateInOfflineCache(aCalItem, aExchangeItemXML);
-			sqlStatement.finalize();
-			return;
-		}
-		sqlStatement.finalize();
-
-		if (isEvent(aCalItem)) {
-			if (this.getItemType(aCalItem) == "M") {
-				// Lets find the real end date.
-				for (var childIndex in this.itemCacheById) {
-					if ((this.itemCacheById[childIndex]) && (aCalItem.uid == this.itemCacheById[childIndex].uid)) {
-						var childEnd = cal.toRFC3339(this.itemCacheById[childIndex].endDate.getInTimezone(this.globalFunctions.ecUTC()));
-						if (childEnd > endDate) {
-							endDate = childEnd;
-						}
-					}
-				}
-			}
-			else {
-				if ((this.getItemType(aCalItem) == "RO") || (this.getItemType(aCalItem) == "RE")) {
-					this.updateMasterInOfflineCache(aCalItem.parentItem);
-				}
-			}
-		}
-		
-		var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+aCalItem.id+"', '"+aCalItem.changeKey+"', '"+startDate+"', '"+endDate+"', '"+aCalItem.uid+"', '"+this.getItemType(aCalItem)+"', '"+aCalItem.parentItem.id+"', '"+aExchangeItemXML.replace(/\x27/g, "''")+"')";
-
-		if (this.noDB) return;
-		if (!this.executeQuery(sqlStr)) {
-			if (this.debug) this.logInfo("Error inserting item into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
-		}
-		else {
-			if (this.debug) this.logInfo("Inserted item into offlineCacheDB. Title:"+aCalItem.title+", startDate:"+startDate);
-		}
-		this.addAttachmentsToOfflineCache(aCalItem);
-	},
-
-	updateInOfflineCache: function _updateInOfflineCache(aCalItem, aExchangeItemXML)
-	{
-		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
-			return;
-		}
-
-		if ((this.getItemType(aCalItem) != "M") || (isToDo(aCalItem))) {
-			var sqlStr = "SELECT COUNT() as itemcount from items WHERE id='"+aCalItem.id+"' AND changeKey='"+aCalItem.changeKey+"'";
-			if (this.debug) this.logInfo("sql-query:"+sqlStr, 2);
-			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
-			if (this.noDB) return;
-			sqlStatement.executeStep();
-			if (sqlStatement.row.itemcount > 0) {
-				if (this.debug) this.logInfo("This item is allready in offlineCache database. id and changeKey are the same. Not going to update it.");
-				sqlStatement.finalize();
-				return;
-			}
-			sqlStatement.finalize();
-		}
-		
-		if (isEvent(aCalItem)) {
-			var startDate = cal.toRFC3339(aCalItem.startDate.getInTimezone(this.globalFunctions.ecUTC()));
-			var endDate = cal.toRFC3339(aCalItem.endDate.getInTimezone(this.globalFunctions.ecUTC()));
-//			var eventField = "y_";
-			var eventField = "y";
-		}
-		else {
-			if (aCalItem.entryDate) {
-				var startDate = cal.toRFC3339(aCalItem.entryDate.getInTimezone(this.globalFunctions.ecUTC()));
-			}
-			else {
-				var startDate = "";
-			};
-
-			if ((aCalItem.completedDate) && (aCalItem.completedDate.compare(aCalItem.dueDate) == 1)) {
-				var endDate = cal.toRFC3339(aCalItem.completedDate.getInTimezone(this.globalFunctions.ecUTC()));
-			}
-			else {
-				if (aCalItem.dueDate) {
-					var endDate = cal.toRFC3339(aCalItem.dueDate.getInTimezone(this.globalFunctions.ecUTC()));
+				if (((item.calItem.completedDate) && (item.calItem.dueDate) && (item.calItem.completedDate.compare(item.calItem.dueDate) == 1)) || ((item.calItem.completedDate) && (!item.calItem.dueDate))) {
+					var endDate = cal.toRFC3339(item.calItem.completedDate.getInTimezone(this.globalFunctions.ecUTC()));
 				}
 				else {
-					var endDate = "";
-				}
-			}
-//			var eventField = "n_";
-			var eventField = "n";
-		}
-
-		if (isEvent(aCalItem)) {
-			if (this.getItemType(aCalItem) == "M") {
-				// Lets find the real end date.
-				if (this.noDB) return;
-				var newMasterEndDate = this.executeQueryWithResults("SELECT max(endDate) as newEndDate FROM items WHERE uid='"+aCalItem.uid+"'",["newEndDate"]);
-				if ((newMasterEndDate) && (newMasterEndDate.length > 0)) {
-					if (this.debug) this.logInfo("newMasterEndDate:"+newMasterEndDate[0].newEndDate);
-					var endDateStr = newMasterEndDate[0].newEndDate;
-					if (endDateStr) {
-						if (endDateStr.length == 10) {
-							endDateStr += "T23:59:59Z";
-						}
-						if (this.debug) this.logInfo("newEndDate for master setting it to:"+endDateStr);
-						endDate = endDateStr;
+					if (item.calItem.dueDate) {
+						var endDate = cal.toRFC3339(item.calItem.dueDate.getInTimezone(this.globalFunctions.ecUTC()));
 					}
 					else {
-						if (this.debug) this.logInfo("newEndDate for master is null not going to use this. Strange!!");
+						var endDate = "";
+					}
+				}
+				var eventField = "n";
+			}
+
+			var sqlStr = "SELECT '"+item.calItem.id+"' as realid, id, changeKey, COUNT() as itemcount from items WHERE id='"+item.calItem.id+"'";
+			//dump(this.name+":addToOfflineCache: sqlStr:"+sqlStr+"\n");
+			if (this.debug) this.logInfo("sql-query:"+sqlStr, 2);
+
+			sqlQueries.push(this.offlineCacheDB.createAsyncStatement(sqlStr));
+		}
+
+		if (sqlQueries.length == 0) {
+			//dump(this.name+":addToOfflineCache: No items in aList to be added to offlinecache.\n");
+			return;
+		}
+
+		//dump(this.name+":addToOfflineCache: Going to execute '"+sqlQueries.length+"' queries\n");
+
+		var self = this;
+		var pendingStatement = this.offlineCacheDB.executeAsync(sqlQueries, sqlQueries.length,{
+				toBeInserted: [],
+				toBeUpdated: [],
+				list: aList,
+				handleCompletion: function _handleCompletion(aReason) {
+					if (aReason == Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
+						// Finished looking up items in offline cache. Now insert or update the items.
+						//dump(self.name+":Finished looking up items in offline cache. Now insert or update the items.\n");
+						if (this.toBeInserted.length > 0) {
+							self.insertToOfflineCache(this.toBeInserted);
+						}
+						if (this.toBeUpdated.length > 0) {
+							self.updateInOfflineCache(this.toBeUpdated);
+						}
+					}
+					else {
+						//dump(self.name+":addToOfflineCache: handleCompletion: DB update did not end normally aReason:"+aReason+".\n");
+						/*if (aReason == Components.interfaces.mozIStorageStatementCallback.REASON_CANCELED) {
+							dump("  -- It was canceled.\n");
+						}
+						if (aReason == Components.interfaces.mozIStorageStatementCallback.REASON_ERROR) {
+							dump("  -- It was an error.\n");
+						}*/
+					}
+				},
+
+				handleError: function _handleError(aError) {
+					dump(self.name+":addToOfflineCache: handleError: aError:"+aError.message+" ("+aError.result+")\n");
+				},
+
+				handleResult: function _handleResult(aResultSet) {
+					if (self.debug) self.logInfo("Found item in offline Cache.");
+					var row;
+					while (row = aResultSet.getNextRow()) {
+
+						if (row) {
+							if (row.getResultByName('itemcount') > 0) {
+								if (row.getResultByName('changeKey') != this.list[row.getResultByName('id')].calItem.changeKey) {
+									//dump(self.name+":Item will be updated id:"+row.getResultByName('id')+"\n");
+									this.toBeUpdated.push(this.list[row.getResultByName('id')]);
+								}
+								else {
+									if (this.debug) 
+										this.logInfo("This item '"+this.list[row.getResultByName('id')]+"' is allready in offlineCache database. id and changeKey are the same. Not going to update it.");
+										//dump(self.name+":This item '"+this.list[row.getResultByName('id')]+"' is allready in offlineCache database. id and changeKey are the same. Not going to update it.\n");
+								}
+							}
+							else {
+								//dump(self.name+":Item will be inserted id 1:"+row.getResultByName('realid')+"\n");
+								//dump("Item will be inserted id 2:"+row.getResultByName('id')+"\n");
+								//dump("Item will be inserted id 3:"+row.getResultByIndex(0)+"\n");
+								this.toBeInserted.push(this.list[row.getResultByName('realid')]);
+							}
+						}
+					}
+				}
+			});
+
+	},
+
+	insertToOfflineCache: function _insertToOfflineCache(aList)
+	{
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
+			//dump(this.name+":NO Offline Cache DB: insertToOfflineCache 1\n");
+			return;
+		}
+
+try{
+		//dump(this.name+":insertToOfflineCache 1\n");
+		var sqlQueries = [];
+		var mastersToBeUpdated = [];
+
+		for each(var item in aList) {
+
+			if (isEvent(item.calItem)) {
+				var startDate = cal.toRFC3339(item.calItem.startDate.getInTimezone(this.globalFunctions.ecUTC()));
+				var endDate = cal.toRFC3339(item.calItem.endDate.getInTimezone(this.globalFunctions.ecUTC()));
+				var eventField = "y";
+			}
+			else {
+				if (item.calItem.entryDate) {
+					var startDate = cal.toRFC3339(item.calItem.entryDate.getInTimezone(this.globalFunctions.ecUTC()));
+				}
+				else {
+					var startDate = "";
+				};
+
+				if (((item.calItem.completedDate) && (item.calItem.dueDate) && (item.calItem.completedDate.compare(item.calItem.dueDate) == 1)) || ((item.calItem.completedDate) && (!item.calItem.dueDate))) {
+					var endDate = cal.toRFC3339(item.calItem.completedDate.getInTimezone(this.globalFunctions.ecUTC()));
+				}
+				else {
+					if (item.calItem.dueDate) {
+						var endDate = cal.toRFC3339(item.calItem.dueDate.getInTimezone(this.globalFunctions.ecUTC()));
+					}
+					else {
+						var endDate = "";
+					}
+				}
+				var eventField = "n";
+			}
+
+			if (isEvent(item.calItem)) {
+				if (this.getItemType(item.calItem) == "M") {
+					// Lets find the real end date.
+					for (var childIndex in this.itemCacheById) {
+						if ((this.itemCacheById[childIndex]) && (item.calItem.uid == this.itemCacheById[childIndex].uid)) {
+							var childEnd = cal.toRFC3339(this.itemCacheById[childIndex].endDate.getInTimezone(this.globalFunctions.ecUTC()));
+							if (childEnd > endDate) {
+								endDate = childEnd;
+							}
+						}
 					}
 				}
 				else {
-					if (this.debug) this.logInfo("Could not get newEndDate for Master. What is wrong!!"); 
-				} 
-
-/*				for (var childIndex in this.itemCacheById) {
-					if ((this.itemCacheById[childIndex]) && (aCalItem.uid == this.itemCacheById[childIndex].uid)) {
-						var childEnd = cal.toRFC3339(this.itemCacheById[childIndex].endDate.getInTimezone(this.globalFunctions.ecUTC()));
-						if (childEnd > endDate) {
-							endDate = childEnd;
-						}
+					if ((this.getItemType(item.calItem) == "RO") || (this.getItemType(item.calItem) == "RE")) {
+						mastersToBeUpdated.push(item.calItem.parentItem);
 					}
-				} */ // Old code which did not work right.
-			}
-			else {
-				if ((this.getItemType(aCalItem) == "RO") || (this.getItemType(aCalItem) == "RE")) {
-					this.updateMasterInOfflineCache(aCalItem.parentItem);
 				}
 			}
-		}
 		
-		var sqlStr = "UPDATE items SET event='"+eventField+"', id='"+aCalItem.id+"', changeKey='"+aCalItem.changeKey+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+aCalItem.uid+"', type='"+this.getItemType(aCalItem)+"', parentItem='"+aCalItem.parentItem.id+"', item='"+aExchangeItemXML.replace(/\x27/g, "''")+"' WHERE id='"+aCalItem.id+"'";
+			var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+item.calItem.id+"', '"+item.calItem.changeKey+"', '"+startDate+"', '"+endDate+"', '"+item.calItem.uid+"', '"+this.getItemType(item.calItem)+"', '"+item.calItem.parentItem.id+"', '"+item.exchangeItemXML.replace(/\x27/g, "''")+"')";
 
-		if (this.noDB) return;
-		if (!this.executeQuery(sqlStr)) {
-			if (this.debug) this.logInfo("Error updating item in offlineCacheDB. Error:"+this.offlineCacheDB.lastErrorString);
+			sqlQueries.push(this.offlineCacheDB.createAsyncStatement(sqlStr));
 		}
-		else {
-			if (this.debug) this.logInfo("Updated item in offlineCacheDB. Title:"+aCalItem.title+", startDate:"+startDate);
+
+		//dump(this.name+":insertToOfflineCache 2\n");
+		if (mastersToBeUpdated.length > 0) {
+			this.updateMasterInOfflineCache(mastersToBeUpdated);
 		}
-		this.addAttachmentsToOfflineCache(aCalItem);
+
+		//dump(this.name+":insertToOfflineCache 3\n");
+		if (sqlQueries.length == 0) {
+			//dump(this.name+":insertToOfflineCache: No items in aList to be inserted to offlinecache.\n");
+			return;
+		}
+
+		//dump(this.name+":insertToOfflineCache: Going to insert '"+sqlQueries.length+"' items to offlinecache.\n");
+
+		var self = this;
+		var pendingStatement = this.offlineCacheDB.executeAsync(sqlQueries, sqlQueries.length,{
+				handleCompletion: function _handleCompletion(aReason) {
+					if (aReason == Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
+						// Finished looking up items in offline cache. Now insert or update the items.
+						//dump(self.name+":updateInOfflineCache: handleCompletion: items were inserted ok.\n");
+						self.addAttachmentsToOfflineCache(aList);
+					}
+					else {
+						//dump(self.name+":updateInOfflineCache: handleCompletion: DB update did not end normally aReason:"+aReason+".\n");
+					}
+				},
+
+				handleError: function _handleError(aError) {
+					dump(self.name+":updateInOfflineCache: handleError: aError:"+aError.message+" ("+aError.result+")\n");
+				},
+
+				handleResult: function _handleResult(aResultSet) {
+					//dump(self.name+":updateInOfflineCache: handleResult.  DOES THIS EVER GET CALLED \n");
+				}
+			});
+}
+catch(err) {
+	dump(this.name+":insertToOfflineCache: err:"+err+"\n");
+}
 	},
 
-	updateMasterInOfflineCache: function _updateMasterInOfflineCache(aCalItem)
+	updateInOfflineCache: function _updateInOfflineCache(aList) //aCalItem, aExchangeItemXML)
 	{
 		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
 		}
 
-		var endDate = cal.toRFC3339(aCalItem.endDate.getInTimezone(this.globalFunctions.ecUTC()));
+		//dump(this.name+":updateInOfflineCache:\n");
 
-		if (this.getItemType(aCalItem) == "M") {
-			// Lets find the real end date.
-			for (var childIndex in this.itemCacheById) {
-				if ((this.itemCacheById[childIndex]) && (aCalItem.uid == this.itemCacheById[childIndex].uid)) {
-					var childEnd = cal.toRFC3339(this.itemCacheById[childIndex].endDate.getInTimezone(this.globalFunctions.ecUTC()));
-					if (childEnd > endDate) {
-						endDate = childEnd;
+		var sqlQueries = [];
+		var mastersToBeUpdated = [];
+
+		for each(var item in aList) {
+
+			if (isEvent(item.calItem)) {
+				var startDate = cal.toRFC3339(item.calItem.startDate.getInTimezone(this.globalFunctions.ecUTC()));
+				var endDate = cal.toRFC3339(item.calItem.endDate.getInTimezone(this.globalFunctions.ecUTC()));
+				var eventField = "y";
+			}
+			else {
+				if (item.calItem.entryDate) {
+					var startDate = cal.toRFC3339(item.calItem.entryDate.getInTimezone(this.globalFunctions.ecUTC()));
+				}
+				else {
+					var startDate = "";
+				};
+
+				if ((item.calItem.completedDate) && (item.calItem.completedDate.compare(item.calItem.dueDate) == 1)) {
+					var endDate = cal.toRFC3339(item.calItem.completedDate.getInTimezone(this.globalFunctions.ecUTC()));
+				}
+				else {
+					if (item.calItem.dueDate) {
+						var endDate = cal.toRFC3339(item.calItem.dueDate.getInTimezone(this.globalFunctions.ecUTC()));
+					}
+					else {
+						var endDate = "";
+					}
+				}
+				var eventField = "n";
+			}
+
+			if (isEvent(item.calItem)) {
+				if (this.getItemType(item.calItem) == "M") {
+					// Lets find the real end date.
+					if (this.noDB) return;
+					var newMasterEndDate = this.executeQueryWithResults("SELECT max(endDate) as newEndDate FROM items WHERE uid='"+item.calItem.uid+"'",["newEndDate"]);
+					if ((newMasterEndDate) && (newMasterEndDate.length > 0)) {
+						if (this.debug) this.logInfo("newMasterEndDate:"+newMasterEndDate[0].newEndDate);
+						var endDateStr = newMasterEndDate[0].newEndDate;
+						if (endDateStr) {
+							if (endDateStr.length == 10) {
+								endDateStr += "T23:59:59Z";
+							}
+							if (this.debug) this.logInfo("newEndDate for master setting it to:"+endDateStr);
+							endDate = endDateStr;
+						}
+						else {
+							if (this.debug) this.logInfo("newEndDate for master is null not going to use this. Strange!!");
+						}
+					}
+					else {
+						if (this.debug) this.logInfo("Could not get newEndDate for Master. What is wrong!!"); 
+					} 
+
+				}
+				else {
+					if ((this.getItemType(item.calItem) == "RO") || (this.getItemType(item.calItem) == "RE")) {
+						mastersToBeUpdated.push(item.calItem.parentItem); 
 					}
 				}
 			}
-		}
-		else {
-			if ((this.getItemType(aCalItem) == "RO") || (this.getItemType(aCalItem) == "RE")) {
-				this.updateMasterInOfflineCache(aCalItem.parentItem);
-			}
-		}
 		
-		var sqlStr = "UPDATE items SET endDate='"+endDate+"' WHERE id='"+aCalItem.id+"'";
-		if (this.noDB) return;
-		if (!this.executeQuery(sqlStr)) {
-			if (this.debug) this.logInfo("Error updating master item in offlineCacheDB. Error:"+this.offlineCacheDB.lastErrorString);
+			let sqlStr = "UPDATE items SET event='"+eventField+"', id='"+item.calItem.id+"', changeKey='"+item.calItem.changeKey+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+item.calItem.uid+"', type='"+this.getItemType(item.calItem)+"', parentItem='"+item.calItem.parentItem.id+"', item='"+item.exchangeItemXML.replace(/\x27/g, "''")+"' WHERE id='"+item.calItem.id+"'";
+
+			sqlQueries.push(this.offlineCacheDB.createAsyncStatement(sqlStr));
 		}
-		else {
-			if (this.debug) this.logInfo("Updated master item in offlineCacheDB. Title:"+aCalItem.title);
+
+		if (mastersToBeUpdated.length > 0) {
+			this.updateMasterInOfflineCache(mastersToBeUpdated);
 		}
+
+		if (sqlQueries.length == 0) {
+			//dump(this.name+":updateInOfflineCache: No items in aList to be updated in offlinecache.\n");
+			return;
+		}
+
+		//dump(this.name+":updateInOfflineCache: Going to update '"+sqlQueries.length+"' items to offlinecache.\n");
+
+		var self = this;
+		var pendingStatement = this.offlineCacheDB.executeAsync(sqlQueries, sqlQueries.length,{
+				handleCompletion: function _handleCompletion(aReason) {
+					if (aReason == Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
+						// Finished looking up items in offline cache. Now insert or update the items.
+						//dump(self.name+":updateInOfflineCache: handleCompletion: items were updated ok.\n");
+						self.addAttachmentsToOfflineCache(aList);
+					}
+					else {
+						//dump(self.name+":updateInOfflineCache: handleCompletion: DB update did not end normally aReason:"+aReason+".\n");
+					}
+				},
+
+				handleError: function _handleError(aError) {
+					dump(self.name+":updateInOfflineCache: handleError: aError:"+aError.message+" ("+aError.result+")\n");
+				},
+
+				handleResult: function _handleResult(aResultSet) {
+					//dump(self.name+":updateInOfflineCache: handleResult.  DOES THIS EVER GET CALLED \n");
+				}
+			});
+
+	},
+
+	updateMasterInOfflineCache: function _updateMasterInOfflineCache(aList)
+	{
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
+			return;
+		}
+
+try{
+		//dump(this.name+":updateMasterInOfflineCache:\n");
+
+		var sqlQueries = [];
+		var mastersToBeUpdated = [];
+
+		for each(var item in aList) {
+
+
+			var endDate = cal.toRFC3339(item.endDate.getInTimezone(this.globalFunctions.ecUTC()));
+
+			if (this.getItemType(item) == "M") {
+				// Lets find the real end date.
+				for (var childIndex in this.itemCacheById) {
+					if ((this.itemCacheById[childIndex]) && (item.uid == this.itemCacheById[childIndex].uid)) {
+						var childEnd = cal.toRFC3339(this.itemCacheById[childIndex].endDate.getInTimezone(this.globalFunctions.ecUTC()));
+						if (childEnd > endDate) {
+							endDate = childEnd;
+						}
+					}
+				}
+			}
+			else {
+				if ((this.getItemType(item) == "RO") || (this.getItemType(item) == "RE")) {
+					mastersToBeUpdated.push(item.parentItem);
+				}
+			}
+		
+			let sqlStr = "UPDATE items SET endDate='"+endDate+"' WHERE id='"+item.id+"'";
+			sqlQueries.push(this.offlineCacheDB.createAsyncStatement(sqlStr));
+		}
+
+		if (mastersToBeUpdated.length > 0) {
+			this.updateMasterInOfflineCache(mastersToBeUpdated);
+		}
+
+		if (sqlQueries.length == 0) {
+			//dump(this.name+":updateMasterInOfflineCache: No masters in aList to be updated in offlinecache.\n");
+			return;
+		}
+
+		//dump(this.name+":updateMasterInOfflineCache: '"+sqlQueries.length+"' masters will be updated in offlinecache.\n");
+
+		var self = this;
+		var pendingStatement = this.offlineCacheDB.executeAsync(sqlQueries, sqlQueries.length,{
+				handleCompletion: function _handleCompletion(aReason) {
+					if (aReason == Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
+						// Finished looking up items in offline cache. Now insert or update the items.
+						//dump(self.name+":updateMasterInOfflineCache: handleCompletion: masters were updated ok.\n");
+					}
+					else {
+						//dump(self.name+":updateMasterInOfflineCache: handleCompletion: DB update did not end normally aReason:"+aReason+".\n");
+					}
+				},
+
+				handleError: function _handleError(aError) {
+					dump(self.name+":updateMasterInOfflineCache: handleError: aError:"+aError.message+" ("+aError.result+")\n");
+				},
+
+				handleResult: function _handleResult(aResultSet) {
+					//dump(self.name+":updateMasterInOfflineCache: handleResult.  DOES THIS EVER GET CALLED \n");
+				}
+			});
+
+}
+catch(err) {
+	dump(this.name+":updateMasterInOfflineCache: err:"+err+"\n");
+}
 	},
 
 	removeFromOfflineCache: function _removeFromOfflineCache(aCalItem)
@@ -8795,6 +9014,7 @@ else {
 			}
 		}
 
+		var self = this;
 		if (this.supportsTasks) {
 			if (this.debug) this.logInfo("Requesting tasks from exchange server.");
 			this.addToQueue( erFindTaskItemsRequest, 
