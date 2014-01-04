@@ -2485,13 +2485,6 @@ calExchangeCalendar.prototype = {
 		if (!this.lastValidRangeStart) this.lastValidRangeStart = aRangeStart.clone();
 		if (!this.lastValidRangeEnd) this.lastValidRangeEnd = aRangeEnd.clone();
 
-		// 2013-11-19 We now always request period from offline cache.
-/*		if (this.useOfflineCache) {
-			if (((wantEvents) && (this.supportsEvents)) || ((wantTodos) && (this.supportsTasks))) {
-				this.getItemsFromOfflineCache(aRangeStart, aRangeEnd, aListener);
-			}
-		}
-*/
 		if ((this.useOfflineCache) && (dateChanged)) {
 			if (((wantEvents) && (this.supportsEvents)) || ((wantTodos) && (this.supportsTasks))) {
 				if (this.debug) this.logInfo("Requesting events/tasks from offline cache.");
@@ -3200,7 +3193,7 @@ calExchangeCalendar.prototype = {
 
 			this.getSyncState();
 
-			if (this.isOffline) {
+			if ((this.isOffline) || ((this.useOfflineCache) && (this.syncState))) {
 				this.firstSyncDone = true;
 				if (this.debug) this.logInfo("First sync is done. Normal operation is starting.");
 
@@ -6657,7 +6650,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 						this.addItemToCache(item);
 
 						if (this.useOfflineCache) {
-							this.addToOfflineCache(item, null, xml2json.toString(aCalendarItem));
+							this.addToOfflineCache(item, xml2json.toString(aCalendarItem));
 						}
 
 						return null;
@@ -6687,7 +6680,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 						this.addItemToCache(item);
 
 						if (this.useOfflineCache) {
-							this.addToOfflineCache(item, null, xml2json.toString(aCalendarItem));
+							this.addToOfflineCache(item, xml2json.toString(aCalendarItem));
 						}
 
 						return null;
@@ -6818,7 +6811,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 					//this.observers.notify("onEndBatch");
 
 					if (!fromOfflineCache) {
-						this.addToOfflineCache(item, null, xml2json.toString(aCalendarItem));
+						this.addToOfflineCache(item, xml2json.toString(aCalendarItem));
 					}
 
 					if (this.recurringMasterCache[uid]) {
@@ -7137,24 +7130,30 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		}
 	},
 
-	updateCalendar: function _updateCalendar(erGetItemsRequest, aItems, doNotify, fromOfflineCache)
+	updateCalendar: function _updateCalendar(erGetItemsRequest, aItems, doNotify, fromOfflineCache, processInParts)
 	{
-//		this.observers.notify("onStartBatch");
-		this.updateCalendar2(erGetItemsRequest, aItems,doNotify, fromOfflineCache);
-//		this.observers.notify("onEndBatch");
-return;
+		if (!processInParts) {
+			this.updateCalendar2(erGetItemsRequest, aItems,doNotify, fromOfflineCache);
+			return;
+		}
+
+		if (this.debug) this.logInfo("updateCalendar: We have '"+aItems.length+"' items to update in calendar in parts. fromOfflineCache:"+fromOfflineCache);
+
 		for (var index in aItems) {
 			this.updateCalendarItems.push({ request: erGetItemsRequest,
 							item: aItems[index],
-							doNotify: doNotify});
+							doNotify: doNotify,
+							fromOfflineCache: fromOfflineCache});
 			aItems[index] = null;
 		}
+
+		this.doUpdateCalendarItem();
 
 		if ((this.updateCalendarItems.length > 0) && (!this.updateCalendarTimerRunning)) {
 			this.updateCalendarTimerRunning = true;
 		        let self = this;
 			//this.observerService.notifyObservers(this, "onExchangeProgressChange", "2");
-			this.updateCalendarTimer.initWithCallback({ notify: function setTimeout_notify() {self.doUpdateCalendarItem();	}}, 2, this.updateCalendarTimer.TYPE_REPEATING_SLACK);
+			this.updateCalendarTimer.initWithCallback({ notify: function setTimeout_notify() {self.doUpdateCalendarItem();	}}, 20, this.updateCalendarTimer.TYPE_REPEATING_SLACK);
 		}
 	},
 	
@@ -7170,7 +7169,7 @@ return;
 				counter--;
 			}
 
-			this.updateCalendar2(updateRecord.request, tmpItems, true);
+			this.updateCalendar2(updateRecord.request, tmpItems, false, true);
 			tmpItems = null;
 			updateRecord.item = null;
 			updateRecord.request = null;
@@ -7186,7 +7185,7 @@ return;
 
 	updateCalendar2: function _updateCalendar2(erGetItemsRequest, aItems, doNotify, fromOfflineCache)
 	{
-		if (this.debug) this.logInfo("updateCalendar: We have '"+aItems.length+"' items to update in calendar. fromOfflineCache:"+fromOfflineCache);
+		if (this.debug) this.logInfo("updateCalendar2: We have '"+aItems.length+"' items to update in calendar. fromOfflineCache:"+fromOfflineCache);
 
 		for (var index = 0; index < aItems.length; index++) {
 
@@ -7201,25 +7200,25 @@ return;
 					this.addItemToCache(item);
 					this.itemCount++;
 
-					if (this.debug) this.logInfo("updateCalendar: onAddItem:"+ item.title);
+					if (this.debug) this.logInfo("updateCalendar2: onAddItem:"+ item.title);
 					if (doNotify) {
 						this.notifyTheObservers("onAddItem", [item]);
 					}
 
 					if (!fromOfflineCache) {
-						this.addToOfflineCache(item, null, xml2json.toString(aItems[index]));
+						this.addToOfflineCache(item, xml2json.toString(aItems[index]));
 					}
 
 				}
 				else {
 					// I Allready known this one.
-					if (this.debug) this.logInfo("updateCalendar: onModifyItem:"+ item.title);
+					if (this.debug) this.logInfo("updateCalendar2: onModifyItem:"+ item.title);
 					//dump("updateCalendar: onModifyItem:"+ item.title);
 
 					this.singleModified(item, doNotify);
 
 					if (!fromOfflineCache) {
-						this.addToOfflineCache(item, null, xml2json.toString(aItems[index]));
+						this.addToOfflineCache(item, xml2json.toString(aItems[index]));
 					}
 				}
 			}
@@ -8306,7 +8305,7 @@ else {
 
 	executeQuery: function _executeQuery(aQuery)
 	{
-		if (this.debug) this.logInfo("sql-query:"+aQuery, 1);
+		if (this.debug) this.logInfo("sql-query:"+aQuery, 2);
 		if ((this.noDB) && (!this.dbInit)) return false;
 		try {
 			var sqlStatement = this.offlineCacheDB.createStatement(aQuery);
@@ -8544,7 +8543,7 @@ else {
 		}
 	},
 
-	addToOfflineCache: function _addToOfflineCache(aCalItem, aExchangeItem, aExchangeItemXML)
+	addToOfflineCache: function _addToOfflineCache(aCalItem, aExchangeItemXML)
 	{
 		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
@@ -8584,7 +8583,7 @@ else {
 		sqlStatement.executeStep();
 		if (sqlStatement.row.itemcount > 0) {
 			if (this.debug) this.logInfo("Going to update the item because it all ready exist.");
-			this.updateInOfflineCache(aCalItem, aExchangeItem, aExchangeItemXML);
+			this.updateInOfflineCache(aCalItem, aExchangeItemXML);
 			sqlStatement.finalize();
 			return;
 		}
@@ -8609,12 +8608,8 @@ else {
 			}
 		}
 		
-		if (aExchangeItemXML) {
-			var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+aCalItem.id+"', '"+aCalItem.changeKey+"', '"+startDate+"', '"+endDate+"', '"+aCalItem.uid+"', '"+this.getItemType(aCalItem)+"', '"+aCalItem.parentItem.id+"', '"+aExchangeItemXML.replace(/\x27/g, "''")+"')";
-		}
-		else {
-			var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+aCalItem.id+"', '"+aCalItem.changeKey+"', '"+startDate+"', '"+endDate+"', '"+aCalItem.uid+"', '"+this.getItemType(aCalItem)+"', '"+aCalItem.parentItem.id+"', '"+xml2json.toString(aExchangeItem).replace(/\x27/g, "''")+"')";
-		}
+		var sqlStr = "INSERT INTO items VALUES ('"+eventField+"','"+aCalItem.id+"', '"+aCalItem.changeKey+"', '"+startDate+"', '"+endDate+"', '"+aCalItem.uid+"', '"+this.getItemType(aCalItem)+"', '"+aCalItem.parentItem.id+"', '"+aExchangeItemXML.replace(/\x27/g, "''")+"')";
+
 		if (this.noDB) return;
 		if (!this.executeQuery(sqlStr)) {
 			if (this.debug) this.logInfo("Error inserting item into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
@@ -8625,7 +8620,7 @@ else {
 		this.addAttachmentsToOfflineCache(aCalItem);
 	},
 
-	updateInOfflineCache: function _updateInOfflineCache(aCalItem, aExchangeItem, aExchangeItemXML)
+	updateInOfflineCache: function _updateInOfflineCache(aCalItem, aExchangeItemXML)
 	{
 		if ((!this.useOfflineCache) || (!this.offlineCacheDB) ) {
 			return;
@@ -8713,12 +8708,8 @@ else {
 			}
 		}
 		
-		if (aExchangeItemXML) {
-			var sqlStr = "UPDATE items SET event='"+eventField+"', id='"+aCalItem.id+"', changeKey='"+aCalItem.changeKey+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+aCalItem.uid+"', type='"+this.getItemType(aCalItem)+"', parentItem='"+aCalItem.parentItem.id+"', item='"+aExchangeItemXML.replace(/\x27/g, "''")+"' WHERE id='"+aCalItem.id+"'";
-		}
-		else {
-			var sqlStr = "UPDATE items SET event='"+eventField+"', id='"+aCalItem.id+"', changeKey='"+aCalItem.changeKey+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+aCalItem.uid+"', type='"+this.getItemType(aCalItem)+"', parentItem='"+aCalItem.parentItem.id+"', item='"+xml2json.toString(aExchangeItem).replace(/\x27/g, "''")+"' WHERE id='"+aCalItem.id+"'";
-		}
+		var sqlStr = "UPDATE items SET event='"+eventField+"', id='"+aCalItem.id+"', changeKey='"+aCalItem.changeKey+"', startDate='"+startDate+"', endDate='"+endDate+"', uid='"+aCalItem.uid+"', type='"+this.getItemType(aCalItem)+"', parentItem='"+aCalItem.parentItem.id+"', item='"+aExchangeItemXML.replace(/\x27/g, "''")+"' WHERE id='"+aCalItem.id+"'";
+
 		if (this.noDB) return;
 		if (!this.executeQuery(sqlStr)) {
 			if (this.debug) this.logInfo("Error updating item in offlineCacheDB. Error:"+this.offlineCacheDB.lastErrorString);
@@ -8881,7 +8872,7 @@ else {
 
 		var sqlStr = "SELECT id, uid, changeKey FROM items WHERE id = '"+aId+"' AND type='M'";
 
-		if (this.debug) this.logInfo("sql-query:"+sqlStr, 1);
+		if (this.debug) this.logInfo("sql-query:"+sqlStr, 2);
 		try {
 			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
 		}
@@ -8935,7 +8926,7 @@ else {
 
 		var sqlStr = "SELECT id, changeKey FROM items WHERE id = '"+aId+"'";
 
-		if (this.debug) this.logInfo("sql-query:"+sqlStr, 1);
+		if (this.debug) this.logInfo("sql-query:"+sqlStr, 2);
 		try {
 			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
 		}
@@ -8999,7 +8990,7 @@ dump("itemIsInOfflineCache: found:"+result+"\n");
 			}
 		}
 
-		if (this.debug) this.logInfo("sql-query:"+sqlStr, 1);
+		if (this.debug) this.logInfo("sql-query:"+sqlStr, 2);
 		try {
 			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
 		}
@@ -9081,7 +9072,7 @@ dump("getOccurrencesFromOfflineCache: found:"+result.length+"\n");
 			}
 		}
 
-		if (this.debug) this.logInfo("sql-query:"+sqlStr, 1);
+		if (this.debug) this.logInfo("sql-query:"+sqlStr, 2);
 		try {
 			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
 		}
@@ -9158,7 +9149,8 @@ dump("getOccurrencesFromOfflineCache: found:"+result.length+"\n");
 			if (result.length > 0) {
 				//this.executeQuery("UPDATE items set event=(event || '_')"+whereStr); // Turned this of so items are always requested from offline cache. Even if they have been requested already.
 
-				let updateResult = this.updateCalendar(null, result, false, true);
+				let updateResult = this.updateCalendar(null, result, false, true, false);
+
 				if (this.debug) this.logInfo("Updated calendar with '"+result.length+"' records from offline cache. startDate:"+startDate+", endDate:"+endDate);
 				return updateResult;
 			}
@@ -9182,7 +9174,7 @@ dump("getOccurrencesFromOfflineCache: found:"+result.length+"\n");
 
 		var sqlStr = "SELECT item FROM items WHERE id = '"+aId+"'";
 
-		if (this.debug) this.logInfo("sql-query:"+sqlStr, 1);
+		if (this.debug) this.logInfo("sql-query:"+sqlStr, 2);
 		try {
 			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
 		}
