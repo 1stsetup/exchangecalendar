@@ -6532,7 +6532,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 	{
 		//dump("1. uid:"+item.uid+", it:"+item.calendarItemType+", t:"+item.title+", sd:"+item.startDate+"\n");
 		var uid = item.uid;
-		if ((item.className == "mivExchangeEvent") && (!uid)) return null;
+//		if ((item.className == "mivExchangeEvent") && (!uid)) return null;
 
 		if (this.itemCacheById[item.id]) {
 			if (this.itemCacheById[item.id].changeKey == item.changeKey) {
@@ -6545,7 +6545,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 			}
 		}
 		else {
-			if (this.recurringMasterCache[uid]) {
+			if ((uid) && (this.recurringMasterCache[uid])) {
 				if ( (this.recurringMasterCache[uid].changeKey == xml2json.getAttributeByTag(aCalendarItem, "t:ItemId", "ChangeKey")) && (this.recurringMasterCache[uid].id == item.id)) {
 					//if (this.debug) this.logInfo("Master item is allready in cache and the id and changeKey are the same. Skipping it.");
 			//dump("convertExchangeAppointmentToCalAppointment. Master item is allready in cache and the id and changeKey are the same. Skipping it:"+item.title+", item.calendarItemType:"+item.calendarItemType+"\n");
