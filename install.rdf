@@ -5,7 +5,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>exchangecalendar@extensions.1st-setup.nl</em:id>
-    <em:version>3.2.0-Beta72</em:version>
+    <em:version>3.2.0-Beta73</em:version>
 
     <em:targetApplication>
       <Description>
