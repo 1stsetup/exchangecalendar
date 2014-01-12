@@ -113,7 +113,7 @@ catch(err){
 	clone: function _clone()
 	{
 try {
-		//dump("mivExchangeEvent: clone 1: title:"+this.title+", contractId:"+this.contractID+"\n");
+		//dump("mivExchangeEvent: clone 1: title:"+this.title+", startDate:"+this.startDate+"\n");
 
 		var result = new mivExchangeEvent();
 
