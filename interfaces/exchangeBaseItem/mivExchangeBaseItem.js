@@ -266,6 +266,8 @@ mivExchangeBaseItem.prototype = {
 
 		this._isMutable = true;
 
+		this._cloneCount = 0;
+
 //		this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 //					.getService(Ci.mivFunctions);
 
@@ -398,10 +400,16 @@ mivExchangeBaseItem.prototype = {
 		return internalClass.toLowerCase();
 	},
 
+	get cloneCount()
+	{
+		return this._cloneCount;
+	},
+
 	baseCloneFrom: function _baseCloneFrom(aItem)
 	{
 		//dump("mivExchangeBaseItem: baseCloneFrom 1: title:"+this.title+", contractId:"+this.contractID+"\n");
 try{
+		this._cloneCount = aItem._cloneCount + 1;
 		this._isMutable = aItem._isMutable;
 		this._calendar = aItem._calendar;
 		this._isAllDayEvent = aItem._isAllDayEvent;
@@ -454,6 +462,24 @@ try{
 		else {
 			this._recurrenceInfo = aItem._recurrenceInfo;
 		}
+
+		this._occurrences = {};
+		if (aItem._occurrences) {
+			for each(var occurrence in aItem._occurrences) {
+//dump("baseClone: aItem._ocurrences 1");
+				//this.removeOccurrence(occurrence);
+				this.addOccurrence(occurrence.clone());
+			}
+		}
+
+		this._exceptions = {};
+		if (aItem._exceptions) {
+			for each(var exception in aItem._exceptions) {
+				//this.removeException(exception);
+				this.addException(exception.clone());
+			}
+		}
+
 		this._bodyType = aItem._bodyType;
 		this._body = aItem._body;
 		if (aItem._dateTimeCreated) this._dateTimeCreated = aItem._dateTimeCreated.clone();
@@ -488,6 +514,10 @@ try{
 			}
 		}
 		this._recurrenceId = aItem._recurrenceId;
+
+		if (aItem._occurrenceIndex) {
+			this.occurrenceIndex = aItem._occurrenceIndex;
+		}
 
 }
 catch(err){
@@ -551,7 +581,6 @@ try {
 			}
 		}
 
-		this.recurrenceInfo;
 		if (aItem._newRecurrenceInfo !== undefined) {
 			if (aItem._newRecurrenceInfo == null) {
 				this.recurrenceInfo = aItem._newRecurrenceInfo;
@@ -560,7 +589,7 @@ try {
 				this.recurrenceInfo = aItem._newRecurrenceInfo.clone();
 			}
 		}
-		else {
+/*		else {
 			if (((aItem._recurrenceInfo) && (aItem.recurrenceInfo) && (aItem._recurrenceInfo.toString() != aItem.recurrenceInfo.toString())) || (aItem._recurrenceInfo !== aItem.recurrenceInfo)) {
 				if (aItem.recurrenceInfo) {
 					this.recurrenceInfo = aItem.recurrenceInfo.clone();
@@ -569,22 +598,7 @@ try {
 					this.recurrenceInfo = aItem.recurrenceInfo;
 				}
 			}
-		}
-
-		if (aItem._occurrences) {
-			for each(var occurrence in aItem._occurrences) {
-//dump("baseClone: aItem._ocurrences 1");
-				//this.removeOccurrence(occurrence);
-				this.addOccurrence(occurrence);
-			}
-		}
-
-		if (aItem._exceptions) {
-			for each(var exception in aItem._exceptions) {
-				//this.removeException(exception);
-				this.addException(exception);
-			}
-		}
+		}*/
 
 		if (aItem._newBodyType) this.bodyType = aItem.bodyType;
 
@@ -643,9 +657,6 @@ try {
 		if (aItem._newParentItem) this.parentItem =aItem.parentItem;
 		if (aItem._newAlarmLastAck) this.alarmLastAck = aItem.alarmLastAck;
 
-		if (aItem._occurrenceIndex) {
-			this.occurrenceIndex = aItem._occurrenceIndex;
-		}
 		//dump("mivExchangeBaseItem: baseClone 99: title:"+aItem.title+", startDate:"+this.startDate, -1);
 }
 catch(err){
@@ -2298,7 +2309,7 @@ try {
 				this._exceptions[aItem.id] = null;
 				delete this._exceptions[aItem.id];
 			}
-			this._exceptions[aItem.id] = aItem.clone();
+			this._exceptions[aItem.id] = aItem;
 //			this._exceptions[aItem.id] = aItem;
 
 			if (this.recurrenceInfo) {
@@ -2442,6 +2453,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 	//void removeOccurrenceAt(in calIDateTime aRecurrenceId);
 	removeOccurrenceAt: function _removeOccurrenceAt(aRecurrenceId)
 	{
+		//dump("removeOccurrenceAt this._cloneCount:"+this._cloneCount+"\n");
 		// Find item.
 		var item = null;
 		for each(var occurrence in this._occurrences) {

@@ -93,6 +93,7 @@ interface mivExchangeBaseItem : calIItemBase
 	readonly attribute AUTF8String exchangeXML;
 	attribute long occurrenceIndex;
 	readonly attribute jsval updateXML;
+	attribute long cloneCount;
 
 	readonly attribute boolean nonPersonalDataChanged;
 

@@ -3065,20 +3065,20 @@ calExchangeCalendar.prototype = {
 
 		if (this.debug) this.logInfo("getRemovedOccurrence: oldCount.value="+oldCount.value);
 		if (this.debug) this.logInfo("getRemovedOccurrence: newCount.value="+newCount.value);
-		if (newCount.value < oldCount.value) {
+		if (newCount.value > oldCount.value) {
 			if (this.debug) this.logInfo("getRemovedOccurrence: We have less occurrences than before.");
 
-			for each(var oldOccurrence in oldOccurrences) {
+			for each(var newOccurrence in newOccurrences) {
 				var foundOld = false;
-				for each(var newOccurrence in newOccurrences) {
+				for each(var oldOccurrence in oldOccurrences) {
 					if (oldOccurrence.id == newOccurrence.id) {
 						foundOld = true;
 						break;
 					}
 				}
 				if (foundOld == false) {
-					if (this.debug) this.logInfo("getRemovedOccurrence: We found the removed occurrence: startdate:"+oldOccurrence.startDate.toString());
-					return oldOccurrence;
+					if (this.debug) this.logInfo("getRemovedOccurrence: We found the removed occurrence: startdate:"+newOccurrence.startDate.toString());
+					return newOccurrence;
 				}
 			}
 		}
@@ -3092,20 +3092,21 @@ calExchangeCalendar.prototype = {
 
 		if (this.debug) this.logInfo("getRemovedOccurrence: oldCount.value="+oldCount.value);
 		if (this.debug) this.logInfo("getRemovedOccurrence: newCount.value="+newCount.value);
-		if (newCount.value < oldCount.value) {
+
+		if (newCount.value > oldCount.value) {
 			if (this.debug) this.logInfo("getRemovedOccurrence: We have less exceptions than before.");
 
-			for each(var oldException in oldExceptions) {
+			for each(var newException in newExceptions) {
 				var foundOld = false;
-				for each(var newException in newExceptions) {
+				for each(var oldException in oldExceptions) {
 					if (oldException.id == newException.id) {
 						foundOld = true;
 						break;
 					}
 				}
 				if (foundOld == false) {
-					if (this.debug) this.logInfo("getRemovedOccurrence: We found the removed exception: startdate:"+oldException.startDate.toString());
-					return oldException;
+					if (this.debug) this.logInfo("getRemovedOccurrence: We found the removed exception: startdate:"+newException.startDate.toString());
+					return newException;
 				}
 			}
 		}

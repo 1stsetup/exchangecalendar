@@ -113,7 +113,7 @@ catch(err){
 	clone: function _clone()
 	{
 try {
-		//dump("mivExchangeEvent: clone 1: title:"+this.title+", startDate:"+this.startDate+"\n");
+		//dump("mivExchangeEvent: clone 1: title:"+this.title+", this.calendarItemType:"+this.calendarItemType+", startDate:"+this.startDate+"\n");
 
 		var result = new mivExchangeEvent();
 
@@ -129,7 +129,7 @@ try {
 catch(err){
   dump("mivExchangeEvent: Clone: error:"+err+"\n");
 }
-		//dump("mivExchangeEvent: clone 2: title:"+this.title+", contractId:"+this.contractID+"\n");
+		//dump("mivExchangeEvent: clone 2: title:"+this.title+", this.calendarItemType:"+this.calendarItemType+", startDate:"+this.startDate+"\n");
 		return result;
 	},
 

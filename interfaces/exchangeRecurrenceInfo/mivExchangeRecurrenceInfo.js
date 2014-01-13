@@ -298,7 +298,7 @@ mivExchangeRecurrenceInfo.prototype = {
   //void modifyException(in calIItemBase anItem, in boolean aTakeOverOwnership);
 	modifyException: function _modifyException(anItem, aTakeOverOwnership)
 	{
-		//this.logInfo("modifyException: anItem:"+anItem.title);
+		//dump("modifyException: anItem:"+anItem.title+"\n");
 		this._recurrenceInfo.modifyException(anItem, aTakeOverOwnership);
 		this.item.modifyException(anItem);
 	},
