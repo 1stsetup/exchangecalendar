@@ -1441,37 +1441,9 @@ calExchangeCalendar.prototype = {
 			return null;
 		}
 
-/*		if (((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) ||
-			((aOldItem.recurrenceInfo) && (aOldItem.calendarItemType == "RecurringMaster") && (!aNewItem.recurrenceInfo)) ||
-			((aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo) && (aOldItem.recurrenceInfo.toString() != aNewItem.recurrenceInfo.toString())) ) {*/
-			if (this.debug) this.logInfo("1 -- aOldItem.recurrenceInfo:"+aOldItem.recurrenceInfo+", aNewItem.recurrenceInfo:"+aNewItem.recurrenceInfo);
-			if ((this.debug) && (aOldItem.recurrenceInfo)) this.logInfo("1 -- aOldItem.recurrenceInfo.toString():"+aOldItem.recurrenceInfo.toString());
-			if ((this.debug) && (aNewItem.recurrenceInfo)) this.logInfo("1 -- aNewItem.recurrenceInfo.toString():"+aNewItem.recurrenceInfo.toString());
-
-/*		if (((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) ||
-			((aOldItem.recurrenceInfo) && (aOldItem.calendarItemType == "RecurringMaster") && (!aNewItem.recurrenceInfo)) ) {
-			if (this.debug) this.logInfo("2 -- aOldItem.recurrenceInfo:"+aOldItem.recurrenceInfo+", aNewItem.recurrenceInfo:"+aNewItem.recurrenceInfo);
-			if ((this.debug) && (aOldItem.recurrenceInfo)) this.logInfo("2 -- aOldItem.recurrenceInfo.toString():"+aOldItem.recurrenceInfo.toString());
-			if ((this.debug) && (aNewItem.recurrenceInfo)) this.logInfo("2 -- aNewItem.recurrenceInfo.toString():"+aNewItem.recurrenceInfo.toString());
-
-			if ((!aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) this.logInfo("modifyItem item was changed from single into recurring.");
-			if ((aOldItem.recurrenceInfo) && (!aNewItem.recurrenceInfo)) this.logInfo("modifyItem item was changed from recurring into single.");
-			if ((aOldItem.recurrenceInfo) && (aNewItem.recurrenceInfo)) this.logInfo("modifyItem recurrency was chaned for item.");
-	        	this.notifyOperationComplete(aListener,
-	        	                             Cr.NS_OK,
-	        	                             Ci.calIOperationListener.MODIFY,
-	        	                             aOldItem.id,
-	        	                             aOldItem);
-			//if ((!aOldItem.recurrenceInfo) || (!aNewItem.recurrenceInfo)) {
-				aNewItem.id = null;  // This needs to be null otherwise additem does not see it as a new item.
-				aNewItem.clearId(null);
-
-				this.deleteItem(aOldItem, null);
-				this.addItem(aNewItem, null);
-				return null;
-			//}
-			
-		}*/
+		if (this.debug) this.logInfo("1 -- aOldItem.recurrenceInfo:"+aOldItem.recurrenceInfo+", aNewItem.recurrenceInfo:"+aNewItem.recurrenceInfo);
+		if ((this.debug) && (aOldItem.recurrenceInfo)) this.logInfo("1 -- aOldItem.recurrenceInfo.toString():"+aOldItem.recurrenceInfo.toString());
+		if ((this.debug) && (aNewItem.recurrenceInfo)) this.logInfo("1 -- aNewItem.recurrenceInfo.toString():"+aNewItem.recurrenceInfo.toString());
 
 	        if (!aNewItem) {
 	            throw Cr.NS_ERROR_INVALID_ARG;
