@@ -7855,6 +7855,9 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 		var itemStartDate = item.startDate || item.entryDate;
 		var itemEndDate = item.endDate || item.dueDate;
+		itemStartDate = itemStartDate.getInTimezone(this.globalFunctions.ecUTC());
+		itemEndDate = itemEndDate.getInTimezone(this.globalFunctions.ecUTC());
+
 /*if (this.itemCacheById[item.id]) { 
 	dump("addItemToCache: item.title:"+item.title+", startDate:"+itemDate+". IS AL READY IN CACHE.\n");
 }
