@@ -6893,6 +6893,14 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 			return null;
 		}
 
+		if (item.startDate.compare(item.endDate) > 0) {
+			if (this.debug) this.logInfo("Startdate ("+item.startDate+") is after enddate ("+item.endDate+")? Skipping this item.");
+			item.deleteItem();
+			item = null;
+			//dump("convertExchangeAppointmentToCalAppointment. Startdate ("+item.startDate+") is after enddate ("+item.endDate+")? Skipping this item.\n");
+			return null;
+		}
+
 		return this.convertExchangeItemtoCalItem(aCalendarItem, item, fromOfflineCache, isMeetingRequest);
 	},
 
