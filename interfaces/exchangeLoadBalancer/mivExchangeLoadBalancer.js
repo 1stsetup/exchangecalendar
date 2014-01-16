@@ -44,10 +44,17 @@ jobObject.prototype = {
 
 		var self = this;
 		this.state = "running";
-		this.exchangeRequest = new this.job.ecRequest(this.job.arguments, 
-		function myOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) { self.onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, this.job);}, 
-		function myError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {self.onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, this.job);}
-		, this.job.listener);
+		try {
+			this.exchangeRequest = new this.job.ecRequest(this.job.arguments, 
+			function myOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) { self.onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, this.job);}, 
+			function myError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {self.onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, this.job);}
+			, this.job.listener);
+		}
+		catch(err) {
+			dump(this.server+":jobObject.notify Error:"+err+"\n");
+			this.state = "error";
+			this.exchangeRequest = null;
+		}
 	},
 
 	onRequestOk: function _onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job)
@@ -196,7 +203,7 @@ mivExchangeLoadBalancer.prototype = {
 			var oldList = this.serverQueue[server].runningJobs;
 			this.serverQueue[server].runningJobs = new Array();
 			for (var runningJob in oldList) {
-				if ((oldList[runningJob].exchangeRequest === null) || (oldList[runningJob].exchangeRequest.isRunning)) {
+				if ((oldList[runningJob].exchangeRequest) && (oldList[runningJob].exchangeRequest.isRunning)) {
 					//this.logInfo("this.jobsRunning:"+this.jobsRunning);
 					this.serverQueue[server].runningJobs.push(oldList[runningJob]);
 					// Check how long this job is running
@@ -279,31 +286,6 @@ mivExchangeLoadBalancer.prototype = {
 
 	},
 
-/*	onRequestOk: function _onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job)
-	{
-
-		try{
-			this.logInfo("onRequestOk job to queue for server '"+arg1.argument.serverUrl+"' for calendar '"+arg1.argument.job.calendar.id+"'. We now have:"+this.serverQueue[arg1.argument.serverUrl].jobs[arg1.argument.calendar.id].length+" jobs in queue and "+this.serverQueue[arg1.argument.serverUrl].runningJobs.length+" jobs running.");
-			arg1.argument.cbOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-//			arg1.isRunning = false;
-		}
-		catch(err) { 
-			this.globalFunctions.LOG("onRequestOk Error:"+err + " ("+this.globalFunctions.STACK()+")", -1);
-		}
-	},
-
-	onRequestError: function _onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job)
-	{
-		try{
-			this.logInfo("onRequestError job to queue for server '"+arg1.argument.serverUrl+"' for calendar '"+arg1.argument.job.calendar.id+"'. We now have:"+this.serverQueue[arg1.argument.serverUrl].jobs[arg1.argument.calendar.id].length+" jobs in queue and "+this.serverQueue[arg1.argument.serverUrl].runningJobs.length+" jobs running.");
-			arg1.argument.cbError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-//			arg1.isRunning = false;
-		}
-		catch(err) { 
-			this.globalFunctions.LOG("onRequestError Error:"+err + " ("+this.globalFunctions.STACK()+")", -1);
-		}
-	},
-*/
 	clearQueueForCalendar: function _clearQueueForCalendar(aServer, aCalendar)
 	{
 		if (this.serverQueue[aServer]) {
