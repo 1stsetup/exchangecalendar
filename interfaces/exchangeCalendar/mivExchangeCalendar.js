@@ -2806,7 +2806,7 @@ calExchangeCalendar.prototype = {
 			return;
 		}
 
-		if ((!this.syncState) || (this.weAreSyncing)) {
+		if (((!this.syncState) && (!this.OnlyShowAvailability)) || (this.weAreSyncing)) {
 			if (this.weAreSyncing) {
 				if (this.debug) this.logInfo("weAreSyncing. So no refresh.");
 			}	
