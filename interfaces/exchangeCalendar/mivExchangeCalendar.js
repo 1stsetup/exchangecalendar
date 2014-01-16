@@ -3955,7 +3955,7 @@ try{
 
 		var items = new Array();
 		if (this.OnlyShowAvailability) {
-			this.updateCalendar(erGetUserAvailabilityRequest, aEvents, true);
+			this.updateCalendar(erGetUserAvailabilityRequest, aEvents, true, false, false);
 			aEvents = null;
 			erGetUserAvailabilityRequest = null;
 		}
@@ -7022,8 +7022,9 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		var endDateStr = xml2json.getTagValue(aCalendarEvent, "t:EndTime", "");
 		item.id = this.md5(startDateStr+endDateStr);
 		if (this.itemCacheById[item.id]) {
-			item = null;
-			return null;
+//dump("\n-- we already know this one --:"+xml2json.toString(aCalendarEvent)+"\n");
+			//item = null;
+			return this.itemCacheById[item.id];
 		}
 
 		// Try to see if it is an all day event. Only to see if all hours, minutes and seconds are 0 (zero)
@@ -7033,7 +7034,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			item.endDate.isDate = true;
 		}
 
-//dump("\n-- added --:"+aCalendarEvent.toString()+"\n");
+//dump("\n-- added --:"+xml2json.toString(aCalendarEvent)+"\n");
 		return item;
 	},
 
@@ -7041,6 +7042,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 	{
 		if (this.debug) this.logInfo("convertExchangeToCal:"+aExchangeItem, 2);
 		if (!aExchangeItem) { 
+			if (this.debug) this.logInfo("convertExchangeToCal: !aExchangeItem", 2);
 			//dump("convertExchangeToCal. !aExchangeItem\n");
 			return;
 		}
@@ -7634,6 +7636,8 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			if (this.debug) this.logInfo("getFolderOk: but EffectiveRights.Read == false. Only getting Free/Busy information.");
 			if (!this.OnlyShowAvailability) {
 				this.OnlyShowAvailability = true;
+				this.useOfflineCache = false;
+				this.firstSyncDone = true;
 				this.getOnlyFreeBusyInformation(this.lastValidRangeStart, this.lastValidRangeEnd);
 				this.startCalendarPoller();
 			}		
@@ -7695,6 +7699,8 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			if (!this.OnlyShowAvailability) {
 				if (this.debug) this.logInfo("Turning on the showing of only free/busy data.");
 				this.OnlyShowAvailability = true;
+				this.useOfflineCache = false;
+				this.firstSyncDone = true;
 				this.folderIsNotAvailable = true;
 				this.folderProperties = null;
 				//this.prefs.deleteBranch("folderProperties");
