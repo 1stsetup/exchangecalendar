@@ -36,6 +36,8 @@ function jobObject(aJob, aServer, aLoadBalancer)
 	this.loadBalancer = aLoadBalancer;
 	this.state = "queued";
 	this.timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
+	this.uuid = this.loadBalancer.globalFunctions.getUUID();
+
 }
 
 jobObject.prototype = {
@@ -45,13 +47,15 @@ jobObject.prototype = {
 		var self = this;
 		this.state = "running";
 		try {
+			this.loadBalancer.logInfo(this.uuid+":"+this.server+":jobObject:notify: starting exchangeRequest.");
+
 			this.exchangeRequest = new this.job.ecRequest(this.job.arguments, 
 			function myOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) { self.onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, this.job);}, 
 			function myError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {self.onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, this.job);}
 			, this.job.listener);
 		}
 		catch(err) {
-			dump(this.server+":jobObject.notify Error:"+err+"\n");
+			dump(this.uuid+":"+this.server+":jobObject.notify Error:"+err+"\n");
 			this.state = "error";
 			this.exchangeRequest = null;
 		}
@@ -60,27 +64,33 @@ jobObject.prototype = {
 	onRequestOk: function _onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job)
 	{
 //dump(this.server+":jobObject.onRequestOk\n");
+		this.loadBalancer.logInfo(this.uuid+":"+this.server+":jobObject:onRequestOk.");
 		try{
 			arg1.argument.cbOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 		}
 		catch(err) { 
-			dump(this.server+":jobObject.onRequestOk Error:"+err+"\n");
+			dump(this.uuid+":"+this.server+":jobObject.onRequestOk Error:"+err+"\n");
+		}
+		if (!this.exchangeRequest.isRunning) {
+			this.loadBalancer.logInfo(this.uuid+":"+this.server+":jobObject:onRequestOk: isRunning="+this.exchangeRequest.isRunning);
 		}
 	},
 
 	onRequestError: function _onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, job)
 	{
 //dump(this.server+":jobObject.onRequestError\n");
+		this.loadBalancer.logInfo(this.uuid+":"+this.server+":jobObject:onRequestError. arg2:"+arg2+", arg3:"+arg3);
 		try{
 			arg1.argument.cbError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 		}
 		catch(err) { 
-			dump(this.server+":onRequestError Error:"+err +"\n");
+			dump(this.uuid+":"+this.server+":onRequestError Error:"+err +"\n");
 		}
 	},
 
 	clear: function _clear()
 	{
+		this.loadBalancer.logInfo(this.uuid+":"+this.server+":jobObject:clear.");
 		this.exchangeRequest = null;
 		this.timer.cancel();
 		this.timer = null;
