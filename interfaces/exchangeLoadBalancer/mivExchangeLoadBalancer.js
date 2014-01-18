@@ -34,18 +34,21 @@ function jobObject(aJob, aServer, aLoadBalancer)
 	this.startTime = new Date().getTime();
 	this.exchangeRequest = null;
 	this.loadBalancer = aLoadBalancer;
-	this.state = "queued";
+	this.state = this.QUEUED;
 	this.timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
 	this.uuid = this.loadBalancer.globalFunctions.getUUID();
 
 }
 
 jobObject.prototype = {
+	QUEUED : 0,
+	RUNNING : 1,
+	DONE : 2,
+	ERROR : 3,
 	notify: function setTimeout_notify(aTimer) {
 //dump(this.server+":loadBalancer: starting Job\n");
 
 		var self = this;
-		this.state = "running";
 		try {
 			this.loadBalancer.logInfo(this.uuid+":"+this.server+":jobObject:notify: starting exchangeRequest.");
 
@@ -53,10 +56,11 @@ jobObject.prototype = {
 			function myOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) { self.onRequestOk(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, this.job);}, 
 			function myError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {self.onRequestError(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, this.job);}
 			, this.job.listener);
+			this.state = this.RUNNING;
 		}
 		catch(err) {
 			dump(this.uuid+":"+this.server+":jobObject.notify Error:"+err+"\n");
-			this.state = "error";
+			this.state = this.ERROR;
 			this.exchangeRequest = null;
 		}
 	},
@@ -94,7 +98,7 @@ jobObject.prototype = {
 		this.exchangeRequest = null;
 		this.timer.cancel();
 		this.timer = null;
-		this.state = "done";
+		this.state = this.DONE;
 		this.loadBalancer = null;
 		this.job = null;
 		this.server = null
@@ -146,7 +150,7 @@ mivExchangeLoadBalancer.prototype = {
 
 	get sleepBetweenJobs()
 	{
-		return 50;  // Currently going for default zero because it works.
+		return 200;  // Currently going for default zero because it works.
 		//return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"sleepBetweenJobs", 2, true);
 	},
 
@@ -213,11 +217,12 @@ mivExchangeLoadBalancer.prototype = {
 			var oldList = this.serverQueue[server].runningJobs;
 			this.serverQueue[server].runningJobs = new Array();
 			for (var runningJob in oldList) {
-				if ((oldList[runningJob].exchangeRequest) && (oldList[runningJob].exchangeRequest.isRunning)) {
+				if ((oldList[runningJob].state == jobObject.QUEUED) || 
+					((oldList[runningJob].state == jobObject.RUNNING) && (oldList[runningJob].exchangeRequest) && (oldList[runningJob].exchangeRequest.isRunning))) {
 					//this.logInfo("this.jobsRunning:"+this.jobsRunning);
 					this.serverQueue[server].runningJobs.push(oldList[runningJob]);
 					// Check how long this job is running
-					if (oldList[runningJob].state = "running") {
+					if (oldList[runningJob].state == jobObject.RUNNING) {
 						var timeNow = new Date().getTime();
 						var timeDiff = timeNow - oldList[runningJob].startTime;
 						if (timeDiff > 300000)  {
@@ -233,7 +238,6 @@ mivExchangeLoadBalancer.prototype = {
 				else {
 					// Running job stopped.
 					this.jobsRunning--;
-					//oldList[runningJob].exchangeRequest = undefined;
 					oldList[runningJob].clear;
 					//dump(server+":running job stopped:"+this.jobsRunning+"\n");
 				}
