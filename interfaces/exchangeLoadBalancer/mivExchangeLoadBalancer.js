@@ -106,13 +106,177 @@ jobObject.prototype = {
 
 }
 
-function mivExchangeLoadBalancer() {
-	this.serverQueue = {};
-	this.runningJobs = {};
+function serverQueue(aServer, aLoadBalancer)
+{
+	this.observerService = Cc["@mozilla.org/observer-service;1"]  
+	                          .getService(Ci.nsIObserverService); 
+
+	this.server = aServer;
+	this.loadBalancer = aLoadBalancer;
+	this.timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
+	this.timerStopped = true;
+	this.uuid = this.loadBalancer.globalFunctions.getUUID();
+	this.calendars = [];
+	this.calendarIndex = 0;
+	this.jobs = {};
+	this.calendarNames = {};
+	this.jobCount = 0;
+	this.runningJobs = [];
 	this.jobsRunning = 0;
+}
 
+serverQueue.prototype = {
+	matchesServer: function _matchesServer(aServer)
+	{
+		return (aServer.toLowerCase() == this.server.toLowerCase());
+	},
 
-	this.timer = null;
+	clearQueueForCalendar: function _clearQueueForCalendar(aCalendar)
+	{
+		if (this.jobs[aCalendar.id]) {
+			this.jobCount = this.jobCount - this.jobs[aCalendar.id].length;
+			delete this.jobs[aCalendar.id];
+			this.observerService.notifyObservers(aCalendar, "onExchangeProgressChange", null); 
+		}
+	},
+
+	stopRunningJobsForCalendar: function _stopRunningJobsForCalendar(aCalendar)
+	{
+		if (this.jobs[aCalendar.id]) {
+			for (var index in this.runningJobs) {
+				// only stop for current calendar
+				try {
+					if ((this.runningJobs[index].exchangeRequest) && (this.runningJobs[index].exchangeRequest.isRunning) && (this.runningJobs[index].calendar) && (this.runningJobs[index].calendar.id == aCalendar.id)) {
+						this.runningJobs[index].exchangeRequest.stopRequest();
+					}
+				}
+				catch(err) {
+					this.loadBalancer.globalFunctions.LOG("serverQueue:"+this.server+":stopRunningJobsForCalendar Error:"+err + " ("+this.globalFunctions.STACKshort()+")", -1);
+				}
+			}
+		}
+	},
+
+	addJob: function _addJob(aJob)
+	{
+		// Check if we already have this calendar id;
+		if (!this.jobs[aJob.calendar.id]) {
+			this.calendars.push(aJob.calendar.id);
+			this.jobs[aJob.calendar.id] = [];
+			this.calendarNames[aJob.calendar.id] = aJob.calendar.name;
+		}
+
+		this.jobs[aJob.calendar.id].push(aJob);
+		this.jobCount++;
+
+		if (this.timerStopped) {
+			this.loadBalancer.logInfo("serverQueue:"+this.server+": Timer started.",1);
+			this.timerStopped = false;
+			this.timer.initWithCallback(this, 10, this.timer.TYPE_REPEATING_SLACK);
+		}
+
+		this.loadBalancer.logInfo("serverQueue:"+this.server+": Added job to queue for server '"+this.server+"' for calendar '"+aJob.calendar.name+"'. We now have:"+this.jobs[aJob.calendar.id].length+" jobs.",2);
+		this.observerService.notifyObservers(aJob.calendar, "onExchangeProgressChange", null); 
+	},
+
+	get maxJobs()
+	{
+		return 1;  // Currently going for default one at a time to the same server because the xmlhttprequest cannot handle more simultaniously.
+		//return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"maxJobs", 3, true);
+	},
+
+	get sleepBetweenJobs()
+	{
+		return 50;  // Currently going for default zero because it works.
+		//return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"sleepBetweenJobs", 2, true);
+	},
+
+	notify: function _notify(aTimer) {
+//dump(this.server+":loadBalancer: starting Job\n");
+try{
+		// Cleanup jobs wich have finished
+		var newJobList = [];
+		for (var index in this.runningJobs) {
+			if ((this.runningJobs[index].exchangeRequest) && (!this.runningJobs[index].exchangeRequest.isRunning)) {
+				// Job stopped.
+				this.loadBalancer.logInfo("serverQueue:"+this.server+": Removing stopped job.",1);
+				this.jobsRunning--;
+				this.runningJobs[index].clear();
+			}
+			else {
+				newJobList.push(this.runningJobs[index]);
+				if (this.runningJobs[index].state == jobObject.RUNNING) {
+					var timeNow = new Date().getTime();
+					var timeDiff = timeNow - this.runningJobs[index].startTime;
+					if (timeDiff > 300000)  {
+						dump("We have a job which is running longer than 5 minutes:"+this.runningJobs[index].job.ecRequest+"\n"); 
+						if (this.runningJobs[index].exchangeRequest["runs"]) {
+							dump("  ## runs="+this.runningJobs[index].exchangeRequest["runs"]+"  ##\n");
+						}
+						//dump("We have a job which is running longer than 5 minutes\n"); 
+						this.runningJobs[index].startTime = new Date().getTime();
+					}
+				}
+			}
+		}
+		this.runningJobs = newJobList;
+
+		//this.loadBalancer.logInfo("serverQueue:"+this.server+": Notify: this.runningJobs:"+this.runningJobs.length+".",2);
+
+		if ((this.runningJobs.length < this.maxJobs) && (this.jobCount > 0)) {
+
+			// Try to find next calendar with a job.
+			var oldCalendarIndex = this.calendarIndex;
+			do {
+				this.calendarIndex++;
+				if (this.calendarIndex >= this.calendars.length) {
+					this.calendarIndex = 0;
+				}
+			} while ((this.jobs[this.calendars[this.calendarIndex]].length == 0) && (this.calendarIndex != oldCalendarIndex));
+
+			if (this.jobs[this.calendars[this.calendarIndex]].length > 0) {
+				var job = this.jobs[this.calendars[this.calendarIndex]].shift();
+				if (job === undefined) {
+					dump("%%%%%%%%%%%%%%%%% job === undefined &&&&&&&&&&&&&&&&&&&&\n");
+				}
+				this.jobCount--;
+
+				this.observerService.notifyObservers(job.calendar, "onExchangeProgressChange", null); 
+
+				job.arguments["cbOk"] = job.cbOk;
+				job.arguments["cbError"] = job.cbError;
+				job.arguments["job"] = job;
+				job.arguments["calendar"] = job.calendar;
+				var newJob = new jobObject(job, this.server, this.loadBalancer);
+				this.runningJobs.push(newJob);
+
+				this.jobsRunning++;
+				this.loadBalancer.logInfo("serverQueue:"+this.server+":Starting job for calendar '"+job.calendar.name+"'. We now have:"+this.jobs[job.calendar.id].length+" jobs in queue and "+this.runningJobs.length+" jobs running.",2);
+
+	//dump(server+":loadBalancer: starting timeout for Job\n");
+				newJob.timer.initWithCallback(newJob, this.sleepBetweenJobs, Ci.nsITimer.TYPE_ONE_SHOT);
+				this.loadBalancer.logInfo("serverQueue:"+this.server+": Started timer for new job.",1);
+			}
+			else {
+				dump("serverQueue:"+this.server+": Strange. this.jobCount == "+this.jobCount+" but could not find calendar with jobs.\n");
+			}
+		}
+
+		if ((this.jobCount == 0) && (this.runningJobs.length == 0)) {
+			this.loadBalancer.logInfo("serverQueue:"+this.server+": Stopping server queue timer.",1);
+			this.timer.cancel();
+			this.timerStopped = true;
+			this.loadBalancer.logInfo("serverQueue:"+this.server+": Timer stopped.",1);
+		}
+}
+catch(err) {
+	dump("serverQueue: notify: err:"+err+"\n");
+}
+	},
+}
+
+function mivExchangeLoadBalancer() {
+	this.serverQueues = [];
 
 	this.observerService = Cc["@mozilla.org/observer-service;1"]  
 	                          .getService(Ci.nsIObserverService); 
@@ -141,190 +305,55 @@ mivExchangeLoadBalancer.prototype = {
 
 	// External methods
 
-	// Internal methods.
-	get maxJobs()
-	{
-		return 1;  // Currently going for default one at a time to the same server because the xmlhttprequest cannot handle more simultaniously.
-		//return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"maxJobs", 3, true);
-	},
-
-	get sleepBetweenJobs()
-	{
-		return 200;  // Currently going for default zero because it works.
-		//return this.globalFunctions.safeGetIntPref(null, PREF_MAINPART+"sleepBetweenJobs", 2, true);
-	},
-
-	notify: function _notify() {
-		this.processQueue();
-	},
-
 	addToQueue: function _addToQueue(aJob)
 	{
-
 		if (!aJob.arguments) {
 			this.logInfo("addToQueue: arguments is not defined!!!????:"+this.globalFunctions.STACK());
 			return;
 		}
 
-		if (!this.serverQueue[aJob.arguments.serverUrl]) {
-			this.serverQueue[aJob.arguments.serverUrl] = { currentCalendar: 0,
-									calendarList: new Array(),
-									calendarNames: {},
-									runningJobs: new Array(),
-									jobs: {} };
-		}
-
-		if (!this.serverQueue[aJob.arguments.serverUrl].jobs[aJob.calendar.id]) {
-			this.serverQueue[aJob.arguments.serverUrl].jobs[aJob.calendar.id] = new Array();
-			this.serverQueue[aJob.arguments.serverUrl].calendarNames[aJob.calendar.id] = aJob.calendar.name;
-		}
-
-		this.serverQueue[aJob.arguments.serverUrl].jobs[aJob.calendar.id].push(aJob);
-		this.logInfo("Adding job to queue for server '"+aJob.arguments.serverUrl+"' for calendar '"+aJob.calendar.id+"'. We now have:"+this.serverQueue[aJob.arguments.serverUrl].jobs[aJob.calendar.id].length+" jobs.",2);
-
-		// Check if the calendar.id is allready in the list.
-		var inList = false;
-		var counter = 0;
-		while ((!inList) && (counter < this.serverQueue[aJob.arguments.serverUrl].calendarList.length)) {
-			if (this.serverQueue[aJob.arguments.serverUrl].calendarList[counter] == aJob.calendar.id) {
-				inList = true;
+		var queueToUse = undefined;
+		for each(var serverq in this.serverQueues) {
+			if (serverq.matchesServer(aJob.arguments.serverUrl)) {
+				queueToUse = serverq;
+				break;
 			}
-			counter++;
-		}
-		if (!inList) {
-			this.serverQueue[aJob.arguments.serverUrl].calendarList.push(aJob.calendar.id);
 		}
 
-		this.observerService.notifyObservers(aJob.calendar, "onExchangeProgressChange", null); 
-
-		if (!this.timer) {
-			this.logInfo("Start timer");
-			this.timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
-			this.timer.initWithCallback(this, 10, this.timer.TYPE_REPEATING_SLACK);
+		if (queueToUse === undefined) {
+			queueToUse = new serverQueue(aJob.arguments.serverUrl, this);
+			this.serverQueues.push(queueToUse);
 		}
+
+		queueToUse.addJob(aJob);
 	},
 
 	get jobList()
 	{
-		return this.serverQueue;
-	},
-
-	processQueue: function _processQueue()
-	{
-		for (var server in this.serverQueue) {
-
-			// Cleanup jobs wich have finished
-			var oldList = this.serverQueue[server].runningJobs;
-			this.serverQueue[server].runningJobs = new Array();
-			for (var runningJob in oldList) {
-				if ((oldList[runningJob].state == jobObject.QUEUED) || 
-					((oldList[runningJob].state == jobObject.RUNNING) && (oldList[runningJob].exchangeRequest) && (oldList[runningJob].exchangeRequest.isRunning))) {
-					//this.logInfo("this.jobsRunning:"+this.jobsRunning);
-					this.serverQueue[server].runningJobs.push(oldList[runningJob]);
-					// Check how long this job is running
-					if (oldList[runningJob].state == jobObject.RUNNING) {
-						var timeNow = new Date().getTime();
-						var timeDiff = timeNow - oldList[runningJob].startTime;
-						if (timeDiff > 300000)  {
-							dump("We have a job which is running longer than 5 minutes:"+oldList[runningJob].job.ecRequest+"\n"); 
-							if (oldList[runningJob].exchangeRequest["runs"]) {
-								dump("  ## runs="+oldList[runningJob].exchangeRequest["runs"]+"  ##\n");
-							}
-							//dump("We have a job which is running longer than 5 minutes\n"); 
-							oldList[runningJob].startTime = new Date().getTime();
-						}
-					}
-				}
-				else {
-					// Running job stopped.
-					this.jobsRunning--;
-					oldList[runningJob].clear;
-					//dump(server+":running job stopped:"+this.jobsRunning+"\n");
-				}
-			}
-
-			// See if we can start another job for this url/server
-			//this.logInfo("Runningjobs:"+this.serverQueue[server].runningJobs.length+", maxJobs:"+this.maxJobs);
-			if (this.serverQueue[server].runningJobs.length < this.maxJobs) {
-				if (this.serverQueue[server].currentCalendar >= this.serverQueue[server].calendarList.length) {
-					this.serverQueue[server].currentCalendar = 0;
-				}
-				var initialCurrentCalendar = this.serverQueue[server].currentCalendar;
-				var noJobsLeft = false
-				while ((!noJobsLeft) && (this.serverQueue[server].currentCalendar < this.serverQueue[server].calendarList.length) && (this.serverQueue[server].jobs[this.serverQueue[server].calendarList[this.serverQueue[server].currentCalendar]].length == 0)) {
-					this.serverQueue[server].currentCalendar++;
-
-					if (this.serverQueue[server].currentCalendar >= this.serverQueue[server].calendarList.length) {
-						this.serverQueue[server].currentCalendar = 0;
-					}
-
-					if (this.serverQueue[server].currentCalendar == initialCurrentCalendar) {
-						// Stop processing for this server because there are now jobs left.
-						noJobsLeft = true;
-						
-					}
-
-				}
-				if ((!noJobsLeft) && (this.serverQueue[server].currentCalendar < this.serverQueue[server].calendarList.length) && (this.serverQueue[server].jobs[this.serverQueue[server].calendarList[this.serverQueue[server].currentCalendar]].length > 0)) {
-					var job = this.serverQueue[server].jobs[this.serverQueue[server].calendarList[this.serverQueue[server].currentCalendar]].shift();
-
-					this.serverQueue[server].currentCalendar++;
-					if (this.serverQueue[server].currentCalendar >= this.serverQueue[server].calendarList.length) {
-						this.serverQueue[server].currentCalendar = 0;
-					}
-
-					this.observerService.notifyObservers(job.calendar, "onExchangeProgressChange", null); 
-	 
-					job.arguments["cbOk"] = job.cbOk;
-					job.arguments["cbError"] = job.cbError;
-					job.arguments["job"] = job;
-					job.arguments["calendar"] = job.calendar;
-					var newJob = new jobObject(job, server, this);
-					this.serverQueue[server].runningJobs.push(newJob);
-
-					this.logInfo("Starting job to queue for server '"+server+"' for calendar '"+job.calendar.id+"'. We now have:"+this.serverQueue[server].jobs[job.calendar.id].length+" jobs in queue and "+this.serverQueue[server].runningJobs.length+" jobs running.",2);
-					this.jobsRunning++;
-					this.logInfo("this.jobsRunning:"+this.jobsRunning,1);
-
-//dump(server+":loadBalancer: starting timeout for Job\n");
-					newJob.timer.initWithCallback(newJob, this.sleepBetweenJobs, Ci.nsITimer.TYPE_ONE_SHOT);
-				}				
-			}
-		}
-
-		if (this.jobsRunning == 0) {
-			this.logInfo("No more jobs left. Stop Timer.",2);
-			this.timer.cancel();
-			delete this.timer;
-		}
-
+		return this.serverQueues;
 	},
 
 	clearQueueForCalendar: function _clearQueueForCalendar(aServer, aCalendar)
 	{
-		if (this.serverQueue[aServer]) {
-			if (this.serverQueue[aServer].jobs[aCalendar.id]) {
-				this.observerService.notifyObservers(aCalendar, "onExchangeProgressChange", null); 
-				this.serverQueue[aServer].jobs[aCalendar.id] = new Array();
-			}			
+		var queueToUse = undefined;
+		for each(var serverq in this.serverQueues) {
+			if (serverq.matchesServer(aServer)) {
+				serverq.clearQueueForCalendar(aCalendar);
+				break;
+			}
 		}
 	},
 
 	stopRunningJobsForCalendar: function _stopRunningJobsForCalendar(aServer, aCalendar)
 	{
-		if (this.serverQueue[aServer]) {
-			for (var index in this.serverQueue[aServer].runningJobs) {
-				// only stop for current calendar
-				try {
-					if ((this.serverQueue[aServer].runningJobs[index].exchangeRequest.isRunning) && (this.serverQueue[aServer].runningJobs[index].calendar) && (this.serverQueue[aServer].runningJobs[index].calendar.id == aCalendar.id)) {
-						this.serverQueue[aServer].runningJobs[index].exchangeRequest.stopRequest();
-					}
-				}
-				catch(err) {
-					this.globalFunctions.LOG("stopRunningJobsForCalendar Error:"+err + " ("+this.globalFunctions.STACKshort()+")", -1);
-				}
+		var queueToUse = undefined;
+		for each(var serverq in this.serverQueues) {
+			if (serverq.matchesServer(aServer)) {
+				serverq.stopRunningJobsForCalendar(aCalendar);
+				break;
 			}
 		}
+
 	},
 
 	logInfo: function _logInfo(message, aDebugLevel) {
