@@ -640,6 +640,9 @@ catch(err){
 		let xmlReq = this.mXmlReq;
 
 		if (this.debug) this.logInfo(": ExchangeRequest.onLoad :"+evt.type+", readyState:"+xmlReq.readyState+", status:"+xmlReq.status);
+
+		if (this.debug) this.logInfo(": ExchangeRequest.onLoad :"+xmlReq.getAllResponseHeaders(),2);
+
 		if (this.debug) this.logInfo(": ExchangeRequest.onLoad :"+xmlReq.responseText,2);
 
 		//this.exchangeStatistics.addDataRead(this.currentUrl, xmlReq.responseText.length);
