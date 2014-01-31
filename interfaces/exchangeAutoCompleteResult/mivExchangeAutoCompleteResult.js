@@ -188,7 +188,18 @@ mivExchangeAutoCompleteResult.prototype = {
 			//dump("  -- mailListURI:"+this._cards[aIndex].mailListURI+"\n");
 		}
 //		return this._cards[aIndex].displayName + " <" + this._cards[aIndex].primaryEmail + ">";
-		return this._cards[aIndex].firstName + " " + this._cards[aIndex].lastName + " <" + this._cards[aIndex].primaryEmail + ">";
+//dump("firstname:"+this._cards[aIndex].firstName+", lastname:"+this._cards[aIndex].lastName+", displayName:"+this._cards[aIndex].displayName+"\n");
+		if ((this._cards[aIndex].firstName != "") || (this._cards[aIndex].lastName != "")) {
+			return this._cards[aIndex].firstName + " " + this._cards[aIndex].lastName + " <" + this._cards[aIndex].primaryEmail + ">";
+		}
+		else {
+			if (this._cards[aIndex].displayName != "") {
+				return this._cards[aIndex].displayName + " <" + this._cards[aIndex].primaryEmail + ">";
+			}
+			else {
+				return this._cards[aIndex].primaryEmail;
+			}
+		}
 	},
 
   /**
