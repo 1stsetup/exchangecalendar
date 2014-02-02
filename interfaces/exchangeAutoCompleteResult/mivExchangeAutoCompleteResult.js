@@ -208,7 +208,8 @@ mivExchangeAutoCompleteResult.prototype = {
   //AString getLabelAt(in long index);
 	getLabelAt: function _getLabelAt(aIndex)
 	{
-		return "label";
+		//dump("getLabelAt: aIndex:"+aIndex+"\n");
+		return this.getValueAt(aIndex);
 	},
 
   /**
@@ -217,6 +218,7 @@ mivExchangeAutoCompleteResult.prototype = {
   //AString getCommentAt(in long index);
 	getCommentAt: function _getCommentAt(aIndex)
 	{
+		//dump("getCommentAt: aIndex:"+aIndex+"\n");
 		if ((this._cards[aIndex].isMailList) && (this._cards[aIndex].primaryEmail.indexOf("@") == -1)) {
 			return this._cards[aIndex].displayName;
 		}
@@ -229,6 +231,7 @@ mivExchangeAutoCompleteResult.prototype = {
   //AString getStyleAt(in long index);
 	getStyleAt: function _getStyleAt(aIndex)
 	{
+		//dump("getStyleAt: aIndex:"+aIndex+"\n");
 		return "exchange-abook";
 	},
 
@@ -238,7 +241,8 @@ mivExchangeAutoCompleteResult.prototype = {
   //AString getImageAt(in long index);
 	getImageAt: function _getImageAt(aIndex)
 	{
-		return "image";
+		//dump("getImageAt: aIndex:"+aIndex+"\n");
+		return "chrome://exchangecalendar/content/exchange-addrbook.png";
 	},
 
   /**
