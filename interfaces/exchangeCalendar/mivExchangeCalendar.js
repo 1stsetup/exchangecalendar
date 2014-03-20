@@ -2564,7 +2564,7 @@ calExchangeCalendar.prototype = {
 
 		if ((wantEvents) && (this.supportsEvents)) {
 			if (this.debug) this.logInfo("Requesting events from exchange server.");
-			if ((startChanged) || (endChanged)) {
+			if (((startChanged) && (oldStartDate)) || ((endChanged) && (oldEndDate))) {
 
 				//this.getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, this.exporting);
 
