@@ -57,13 +57,13 @@ mivExchangeAuthPromptProvider.prototype = {
 	//void getAuthPrompt(in PRUint32 aPromptReason, in nsIIDRef iid, [iid_is(iid),retval] out nsQIResult result);
 	getAuthPrompt: function _nsIAuthPromptProvider_getAuthPrompt(aPromptReason, iid)
 	{
-		this.logInfo("  --- ecnsIAuthPrompt2.getAuthPrompt:aPromptReason:"+aPromptReason+", iid:"+iid);
+		this.logInfo("  --- mivExchangeAuthPromptProvider.getAuthPrompt:aPromptReason:"+aPromptReason+", iid:"+iid);
 		if (iid.equals(Ci.nsIAuthPrompt2)) {    // id == 651395eb-8612-4876-8ac0-a88d4dce9e1e
 			this.logInfo("  --- ecnsIAuthPrompt2.getAuthPrompt: iid=nsIAuthPrompt2");
 			return Cc["@1st-setup.nl/exchange/authprompt2;1"].getService();
 		} 
 
-		this.logInfo("  --- ecnsIAuthPrompt2.getAuthPrompt:aPromptReason:"+aPromptReason+", iid:"+iid);
+		this.logInfo("  --- mivExchangeAuthPromptProvider.getAuthPrompt:aPromptReason:"+aPromptReason+", iid:"+iid);
 		this.globalFunctions.LOG("  >>>>>>>>>>> MAIL THIS LINE TO exchangecalendar@extensions.1st-setup.nl: ecnsIAuthPrompt2.getAuthPrompt("+iid+")");
   
 		return Cr.NS_ERROR_NOT_AVAILABLE;

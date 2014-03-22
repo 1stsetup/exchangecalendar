@@ -671,7 +671,7 @@ var xml2json = {
 	},
 
 	getTags: function _getTags(aParent, aTagName) {
-		return realGetTags(aParent, aTagName);
+		return this.clone(realGetTags(aParent, aTagName));
 	},
 
 	getValue: function _getValue(aParent) {
@@ -694,6 +694,10 @@ var xml2json = {
 		return result;
 	},
 
+	clone: function _clone(aElement) {
+		return JSON.parse(JSON.stringify(aElement));
+	},
+
 	getTag: function _getTag(aParent, aTagName) {
 		let result = null;
 
@@ -703,7 +707,7 @@ var xml2json = {
 		while ((!result) && (i < aParent[telements].length)) {
 //			if ((aParent[telements][i][tnamespace] == tmpTN.nameSpace) && (aParent[telements][i].tagName == tmpTN.tagName)) {
 			if (aParent[telements][i].tagName == tmpTN.tagName) { // Namespace is ignored for now.
-				return aParent[telements][i];
+				return this.clone(aParent[telements][i]);
 			}
 			i++;
 		}
@@ -942,7 +946,7 @@ var xml2json = {
 		//dump("aParent:"+JSON.stringify(aParent)+"\n");
 		//dump("..\n");
 
-		return realXPath(aParent, aPath);
+		return this.clone(realXPath(aParent, aPath));
 	},
 
 }

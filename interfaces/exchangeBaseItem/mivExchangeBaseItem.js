@@ -220,13 +220,16 @@ const monthMap = {
 
 var EXPORTED_SYMBOLS = ["mivExchangeBaseItem"];
 
+exchGlobalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+					.getService(Ci.mivFunctions);
+
 function mivExchangeBaseItem() {
 
 	this.initialize();
 
 	this.initExchangeBaseItem();
 
-	this.logInfo("mivExchangeBaseItem: init");
+	//dump("mivExchangeBaseItem: init\n");
 
 }
 
@@ -263,13 +266,15 @@ mivExchangeBaseItem.prototype = {
 
 		this._isMutable = true;
 
-		this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
-					.getService(Ci.mivFunctions);
+		this._cloneCount = 0;
 
-		this.timeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
-					.getService(Ci.mivExchangeTimeZones);
+//		this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+//					.getService(Ci.mivFunctions);
 
-		this.logInfo("initExchangeBaseItem: done.");
+//		this.timeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
+//					.getService(Ci.mivExchangeTimeZones);
+
+		//dump("initExchangeBaseItem: done.\n");
 
 	},
 
@@ -321,7 +326,7 @@ mivExchangeBaseItem.prototype = {
 	//calIItemBase createProxy(in calIDateTime aRecurrenceId);
 	createProxy: function _createProxy(aRecurrenceId)
 	{
-		//this.logInfo("CreateProxy aRecurrenceId:"+aRecurrenceId);
+		//dump("CreateProxy aRecurrenceId:"+aRecurrenceId);
 
 		var occurrence;
 		for each(var occurrence in this._occurrences) {
@@ -340,7 +345,7 @@ mivExchangeBaseItem.prototype = {
 			newItem.parentItem = this;
 		}
 
-		//this.logInfo("CreateProxy the end");
+		//dump("CreateProxy the end");
 		return newItem;
 	},
 
@@ -351,7 +356,7 @@ mivExchangeBaseItem.prototype = {
 	//calIItemBase cloneShallow(in calIItemBase aNewParent);
 	cloneShallow: function _cloneShallow(aNewParent)
 	{
-		//this.logInfo("cloneShallow aNewParent:"+aNewParent);
+		//dump("cloneShallow aNewParent:"+aNewParent);
 		var newItem = this.clone();
 		if (aNewParent) {
 			newItem.parentItem = aNewParent;
@@ -370,7 +375,7 @@ mivExchangeBaseItem.prototype = {
 	//readonly attribute boolean isMutable;
 	get isMutable()
 	{
-		//this.logInfo("get isMutable: title:"+this.title+", value:"+this._calEvent.isMutable);
+		//dump("get isMutable: title:"+this.title+", value:"+this._calEvent.isMutable);
 		return this._isMutable;
 	},
 
@@ -378,226 +383,286 @@ mivExchangeBaseItem.prototype = {
 	//void makeImmutable();
 	makeImmutable: function _makeImmutable()
 	{
-		//this.logInfo("makeImmutable: title:"+this.title);
+		//dump("makeImmutable: title:"+this.title);
 		this._isMutable = false;
+	},
+
+
+	typeString: function _typeString(o) {
+		if (typeof o != 'object')
+			return typeof o;
+
+		if (o === null)
+			return "null";
+	  //object, array, function, date, regexp, string, number, boolean, error
+		var internalClass = Object.prototype.toString.call(o)
+		                                       .match(/\[object\s(\w+)\]/)[1];
+		return internalClass.toLowerCase();
+	},
+
+	get cloneCount()
+	{
+		return this._cloneCount;
+	},
+
+	baseCloneFrom: function _baseCloneFrom(aItem)
+	{
+		//dump("mivExchangeBaseItem: baseCloneFrom 1: title:"+this.title+", contractId:"+this.contractID+"\n");
+try{
+		this._cloneCount = aItem._cloneCount + 1;
+		this._isMutable = aItem._isMutable;
+		this._calendar = aItem._calendar;
+		this._isAllDayEvent = aItem._isAllDayEvent;
+		this._startTimeZoneId = aItem._startTimeZoneId;
+		this._meetingTimeZone = aItem._meetingTimeZone;
+		this._timeZone = aItem._timeZone;
+		this._endTimeZoneId = aItem._endTimeZoneId;
+		this._effectiveRights = aItem._effectiveRights;
+		this._canDelete = aItem._canDelete;
+		this._canModify = aItem._canModify;
+		this._canRead = aItem._canRead;
+		if (aItem._lastModifiedTime) this._lastModifiedTime = aItem._lastModifiedTime.clone();
+		this._subject = aItem._subject;
+		this._title = aItem._title;
+		this._mimeContent = aItem._mimeContent;
+		this._id = aItem._id;
+		this._priority = aItem._priority;
+		this._sensitivity = aItem._sensitivity;
+		this._privacy = aItem._privacyl
+		this._reminderIsSet = aItem._reminderIsSet;
+		this._calendarItemType = aItem._calendarItemType;
+		if (aItem._reminderDueBy) this._reminderDueBy = aItem._reminderDueBy.clone();
+		this._reminderMinutesBeforeStart = aItem._reminderMinutesBeforeStart;
+		if (aItem._dateTimeReceived) this._dateTimeReceived = aItem._dateTimeReceived.clone();
+		if (aItem._dateTimeSent) this._dateTimeSent = aItem._dateTimeSent.clone();
+		this._size = aItem._size;
+		if (aItem._originalStart) this._originalStart = aItem._originalStart.clone();
+		this._location = aItem._location;
+		this._changeKey = aItem._changeKey;
+		this._uid = aItem._uid;
+		this._itemClass = aItem._itemClass;
+		this._isMeeting = aItem._isMeeting;
+		this._isRecurring = aItem._isRecurring;
+		this._meetingRequestWasSent = aItem._meetingRequestWasSent;
+		this._isResponseRequested = aItem._isResponseRequested;
+		this._myResponseType = aItem._myResponseType;
+		this._startTimeZoneName = aItem._startTimeZoneName;
+		this._endTimeZoneName = aItem._endTimeZoneName;
+		this._conferenceType = aItem._conferenceType;
+		this._allowNewTimeProposal = aItem._allowNewTimeProposal;
+		this._parentId = aItem._parentId;
+		this._parentChangeKey = aItem._parentChangeKey;
+		if (aItem._alarm) this._alarm = aItem._alarm.clone();
+		if (aItem._reminderSignalTime) this._reminderSignalTime = aItem._reminderSignalTime.clone();
+		this._xMozSnoozeTime = aItem._xMozSnoozeTime;
+		if (aItem._alarmLastAck) this._alarmLastAck = aItem._alarmLastAck.clone();
+		if (aItem._recurrenceInfo) {
+			this._recurrenceInfo = aItem._recurrenceInfo.clone();
+		}
+		else {
+			this._recurrenceInfo = aItem._recurrenceInfo;
+		}
+
+		this._occurrences = {};
+		if (aItem._occurrences) {
+			for each(var occurrence in aItem._occurrences) {
+//dump("baseClone: aItem._ocurrences 1");
+				//this.removeOccurrence(occurrence);
+				this.addOccurrence(occurrence.clone());
+			}
+		}
+
+		this._exceptions = {};
+		if (aItem._exceptions) {
+			for each(var exception in aItem._exceptions) {
+				//this.removeException(exception);
+				this.addException(exception.clone());
+			}
+		}
+
+		this._bodyType = aItem._bodyType;
+		this._body = aItem._body;
+		if (aItem._dateTimeCreated) this._dateTimeCreated = aItem._dateTimeCreated.clone();
+		if (aItem._created) this._created = aItem._created.clone();
+		this._legacyFreeBusyStatus = aItem._legacyFreeBusyStatus;
+		this._isCancelled = aItem._isCancelled;
+		this._responseObjects = {};
+		if (aItem._responseObjects) {
+			for (var index in aItem._responseObjects) {
+				this._responseObjects[index] = aItem._responseObjects[index];
+			}
+		}
+		this._type = aItem._type;
+		if (aItem._organizer) this._organizer = aItem._organizer.clone();
+		this._attendees = [];
+		if (aItem._attendees) {
+			for each(var attendee in aItem._attendees) {
+				this._attendees.push(attendee.clone());
+			}
+		}
+		this._hasAttachments = aItem._hasAttachments;
+		this._attachments = [];
+		if (aItem._attachments) {
+			for each(var attachment in aItem._attachments) {
+				this._attachments.push(attachment.clone());
+			}
+		}
+		this._categories = [];
+		if (aItem._categories) {
+			for each(var category in aItem._categories) {
+				this._categories.push(category);
+			}
+		}
+		this._recurrenceId = aItem._recurrenceId;
+
+		if (aItem._occurrenceIndex) {
+			this.occurrenceIndex = aItem._occurrenceIndex;
+		}
+
+}
+catch(err){
+	dump(" @@@@@@@@@@@@@ mivExchangeEvent: baseCloneFrom Error:"+err+"\n");
+}
+		//dump("mivExchangeBaseItem: baseCloneFrom 2: title:"+this.title+", contractId:"+this.contractID+"\n");
+	},
+
+	cloneFrom: function _cloneFrom(aItem)
+	{
+		/*for(var index in aItem) {
+			if ((this.typeString(aItem[index]) != "function") && (index.substr(0,1) == "_")) {
+				dump("aItem."+index+"="+aItem[index]+"\n");
+			}
+		}*/
+		//dump(" mivExchangeBaseItem: cloneFrom 1 \n");
+		//dump(" mivExchangeBaseItem: cloneFrom 2 \n");
 	},
 
 	// clone always returns a mutable event
 	//calIItemBase clone();
 	clone: function _clone()
 	{
+		//dump("mivExchangeBaseItem: clone 1: title:"+this.title+", contractId:"+this.contractID+"\n");
+		var result = new mivExchangeBaseItem();
+		result.baseClone(this);
+		return result;
+		//dump("mivExchangeBaseItem: clone 1: title:"+this.title+", contractId:"+this.contractID+"\n");
+	},
+
+	baseClone: function _baseClone(aItem)
+	{
 try {
-		//dump("clone 1: title:"+this.title+", contractId:"+this.contractID+"\n");
-
-		if (this.contractID == "@1st-setup.nl/exchange/calendarevent;1") {
-			var result = Cc[this.contractID]
-					.createInstance(Ci.mivExchangeEvent);
+		//dump("mivExchangeBaseItem: baseClone 1: title:"+this.title+", contractId:"+this.contractID+"\n");
+		for each(var alias in aItem.mailboxAliases) {
+			this.addMailboxAlias(alias);
 		}
-		else {
-			var result = Cc[this.contractID]
-					.createInstance(Ci.mivExchangeTodo);
-		}
+		this.cloneToCalEvent(aItem._calEvent);
+		this.cloneFrom(aItem);
 
-		for each(var alias in this.mailboxAliases) {
-			result.addMailboxAlias(alias);
-		}
-		result.calendar = this.calendar;
-
-		if (this._exchangeXML) {
-			var tmpExchangeData = xml2json.newJSON();
-			xml2json.parseXML(tmpExchangeData, this._exchangeXML);
-			result.exchangeData = tmpExchangeData[telements][0];
-			tmpExchangeData = null;
-		}
-		else {
-		}
-
-		//result.exchangeData = this._exchangeData;
-
-		result.cloneToCalEvent(this._calEvent);
-
-		if (this._newId !== undefined) result.id = this._newId;
-
-		if (this.contractID == "@1st-setup.nl/exchange/calendarevent;1") {
-			if (this._newStartDate !== undefined) result.startDate = this.startDate.clone();
-			if (this._newEndDate !== undefined) result.endDate = this.endDate.clone();
-		}
+		if (aItem._newId !== undefined) result.id = aItem._newId;
 
 		// We are going to replay all changes to clone
-		if (this._newBody === null) result.deleteProperty("DESCRIPTION");
-		if (this._newLocation === null) result.deleteProperty("LOCATION");
-		if (this._newLegacyFreeBusyStatus === null) result.deleteProperty("TRANSP");
-		if (this._newMyResponseType === null) result.deleteProperty("STATUS"); 
-		if (this._newIsInvitation === null) result.deleteProperty("X-MOZ-SEND-INVITATIONS");
+		if (aItem._newBody === null) this.deleteProperty("DESCRIPTION");
+		if (aItem._newLocation === null) this.deleteProperty("LOCATION");
+		if (aItem._newLegacyFreeBusyStatus === null) this.deleteProperty("TRANSP");
+		if (aItem._newMyResponseType === null) this.deleteProperty("STATUS"); 
+		if (aItem._newIsInvitation === null) this.deleteProperty("X-MOZ-SEND-INVITATIONS");
 
-		if (this._newTitle) result.title = this.title;
-		if (this._newPriority) result.priority = this.priority;
-		if (this._newPrivacy) result.privacy = this.privacy;
-		if (this._newStatus) {
-			if (this.contractID == "@1st-setup.nl/exchange/calendarevent;1") {
-				result.status = this._newStatus;
+		if (aItem._newTitle) this.title = aItem.title;
+		if (aItem._newPriority) this.priority = aItem.priority;
+		if (aItem._newPrivacy) this.privacy = aItem.privacy;
+
+		if (aItem._newAlarm !== undefined) {
+//dump("baseClone: We have alarm changes.\n");
+			if (aItem._newAlarm) {
+				this.addAlarm(aItem._newAlarm);
 			}
 			else {
-				const statusMap = {
-					"NotStarted"	: "NONE",
-					"InProgress" : "IN-PROCESS",
-					"Completed"	: "COMPLETED",
-					"WaitingOnOthers"	: "NEEDS-ACTION",
-					"Deferred"	: "CANCELLED",
-					null: "NONE"
-				};
-
-				result.status = statusMap[this._newStatus];
+				this.clearAlarms();
 			}
 		}
-		if (this._newAlarm !== undefined) {
-//dump("clone: We have alarm changes.\n");
-			if (this._newAlarm) {
-				result.addAlarm(this._newAlarm);
+
+		if (aItem._newRecurrenceInfo !== undefined) {
+			if (aItem._newRecurrenceInfo == null) {
+				this.recurrenceInfo = aItem._newRecurrenceInfo;
 			}
 			else {
-				result.clearAlarms();
+				this.recurrenceInfo = aItem._newRecurrenceInfo.clone();
 			}
 		}
+/*		else {
+			if (((aItem._recurrenceInfo) && (aItem.recurrenceInfo) && (aItem._recurrenceInfo.toString() != aItem.recurrenceInfo.toString())) || (aItem._recurrenceInfo !== aItem.recurrenceInfo)) {
+				if (aItem.recurrenceInfo) {
+					this.recurrenceInfo = aItem.recurrenceInfo.clone();
+				}
+				else {
+					this.recurrenceInfo = aItem.recurrenceInfo;
+				}
+			}
+		}*/
 
-/*		if (this._changesAlarm) {
-			result.clearAlarms();
-			var alarms = this._calEvent.getAlarms({});
-			for each(var alarm in alarms) {
-				result.addAlarm(alarm);
-			}
-		}
-*/
-		result.recurrenceInfo;
-		if (this._newRecurrenceInfo !== undefined) {
-			if (this._newRecurrenceInfo == null) {
-				result.recurrenceInfo = this._newRecurrenceInfo;
-			}
-			else {
-				result.recurrenceInfo = this._newRecurrenceInfo.clone();
-			}
-		}
-		else {
-			if (((this._recurrenceInfo) && (this.recurrenceInfo) && (this._recurrenceInfo.toString() != this.recurrenceInfo.toString())) || (this._recurrenceInfo !== this.recurrenceInfo)) {
-				result.recurrenceInfo = this.recurrenceInfo.clone();
-			}
-		}
+		if (aItem._newBodyType) this.bodyType = aItem.bodyType;
 
-		if (this._occurrences) {
-			for each(var occurrence in this._occurrences) {
-//this.logInfo("clone: this._ocurrences 1");
-				//result.removeOccurrence(occurrence);
-				result.addOccurrence(occurrence);
-			}
-		}
+		if (aItem._newBody !== undefined) this.setProperty("DESCRIPTION", aItem.getProperty("DESCRIPTION"));
+		if (aItem._newBody2 !== undefined) this.body = aItem.body;
+		if (aItem._newLocation) this.setProperty("LOCATION", aItem.getProperty("LOCATION"));
+		if (aItem._newLegacyFreeBusyStatus) this.setProperty("TRANSP", aItem.getProperty("TRANSP"));
+		if (aItem._newMyResponseType) this.setProperty("STATUS", aItem.getProperty("STATUS")); 
+		if (aItem._newIsInvitation) this.setProperty("X-MOZ-SEND-INVITATIONS", aItem.getProperty("X-MOZ-SEND-INVITATIONS"));
 
-		if (this._exceptions) {
-			for each(var exception in this._exceptions) {
-				//result.removeException(exception);
-				result.addException(exception);
-			}
-		}
-
-		if (this._newBody) result.setProperty("DESCRIPTION", this.getProperty("DESCRIPTION"));
-		if (this._newBody2) result.body = this.body;
-		if (this._newLocation) result.setProperty("LOCATION", this.getProperty("LOCATION"));
-		if (this._newLegacyFreeBusyStatus) result.setProperty("TRANSP", this.getProperty("TRANSP"));
-		if (this._newMyResponseType) result.setProperty("STATUS", this.getProperty("STATUS")); 
-		if (this._newIsInvitation) result.setProperty("X-MOZ-SEND-INVITATIONS", this.getProperty("X-MOZ-SEND-INVITATIONS"));
-
-		if (this._changedProperties) {
-			for each(var change in this._changedProperties) {
+		if (aItem._changedProperties) {
+			for each(var change in aItem._changedProperties) {
 				switch (change.action) {
 				case "set": 
-					result.setProperty(change.name, xml2json.getValue(change));
+					this.setProperty(change.name, xml2json.getValue(change));
 					break;
 				case "remove":
-					result.deleteProperty(change.name);
+					this.deleteProperty(change.name);
 					break;
 				}
 			}
 		}
-		if (this._newOrganizer) result.organizer = this.organizer.clone();
+		if (aItem._newOrganizer) this.organizer = aItem.organizer.clone();
 
-		if (this._changesAttendees) {
-			for each(var attendee in this._changesAttendees) {
+		if (aItem._changesAttendees) {
+			for each(var attendee in aItem._changesAttendees) {
 				switch (attendee.action) {
 				case "add": 
-					result.addAttendee(attendee.attendee);
+					this.addAttendee(attendee.attendee);
 					break;
 				case "remove":
-					result.removeAttendee(attendee.attendee);
+					this.removeAttendee(attendee.attendee);
 					break;
 				}
 			}
-			var tmpattendees = result.getAttendees({});
+			var tmpattendees = this.getAttendees({});
 		}
 
-		if (this._changesAttachments) {
-			for each(var attachment in this._changesAttachments) {
+		if (aItem._changesAttachments) {
+			for each(var attachment in aItem._changesAttachments) {
 				switch (attachment.action) {
 				case "add": 
-					result.addAttachment(attachment.attachment);
+					this.addAttachment(attachment.attachment);
 					break;
 				case "remove":
-					result.removeAttachment(attachment.attachment);
+					this.removeAttachment(attachment.attachment);
 					break;
 				}
 			}
 		}
-		if (this._changesCategories) {
-			var categories = this.getCategories({});
-			result.setCategories(categories.length, categories);
+		if (aItem._changesCategories) {
+			var categories = aItem.getCategories({});
+			this.setCategories(categories.length, categories);
 		}
 
-		if (this._newParentItem) result.parentItem =this.parentItem;
-		if (this._newAlarmLastAck) result.alarmLastAck = this.alarmLastAck;
+		if (aItem._newParentItem) this.parentItem =aItem.parentItem;
+		if (aItem._newAlarmLastAck) this.alarmLastAck = aItem.alarmLastAck;
 
-		if (this.contractID == "@1st-setup.nl/exchange/calendartodo;1") {
-			if (this._newEntryDate !== undefined) {
-				if (this.entryDate) {
-					result.entryDate = this.entryDate.clone();
-				}
-				else {
-					result.entryDate = null;
-				}
-			}
-			if (this._newDueDate !== undefined) {
-				if (this.dueDate) {
-					result.dueDate = this.dueDate.clone();
-				}
-				else {
-					result.dueDate = null;
-				}
-			}
-			if (this._newCompletedDate !== undefined) {
-				if (this.completedDate) {
-					result.completedDate = this.completedDate.clone();
-				}
-				else {
-					result.completedDate = null;
-				}
-			}
-			if (this._newPercentComplete) result.percentComplete = this._newPercentComplete;
-			if (this._newDuration) result.duration = this._newDuration;
-			if (this._newTotalWork) result.totalWork = this._newTotalWork;
-			if (this._newActualWork) result.actualWork = this._newActualWork;
-			if (this._newMileage) result.mileage = this._newMileage;
-			if (this._newBillingInformation) result.billingInformation = this._newBillingInformation;
-			if (this._newCompanies) result.companies = this.companies;
-			if (this._newIsCompleted !== null) result.isCompleted = this._newIsCompleted;
-		}
-
-		if (this._occurrenceIndex) {
-			result.occurrenceIndex = this._occurrenceIndex;
-		}
-		//this.logInfo("clone 99: title:"+this.title+", startDate:"+result.startDate, -1);
+		//dump("mivExchangeBaseItem: baseClone 99: title:"+aItem.title+", startDate:"+this.startDate, -1);
 }
 catch(err){
-  this.logInfo("Clone: error:"+err);
+  dump("mivExchangeBaseItem: baseClone: error:"+err+"\n");
 }
-		//dump("clone 2: title:"+this.title+", contractId:"+this.contractID+"\n");
-		return result;
+		//dump("mivExchangeBaseItem: baseClone 2: title:"+this.title+", contractId:"+this.contractID+"\n");
 	},
 
 	/**
@@ -618,10 +683,10 @@ catch(err){
 		return this._calEvent.hashId;
 
 /*		 this._hashId = [encodeURIComponent(this.id),
-			this.recurrenceId ? this.recurrenceId.getInTimezone(this.globalFunctions.ecUTC()).icalString : "",
+			this.recurrenceId ? this.recurrenceId.getInTimezone(exchGlobalFunctions.ecUTC()).icalString : "",
 			this.calendar ? encodeURIComponent(this.calendar.id) : ""].join("#");
 
-		//this.logInfo("get hashId: title:"+this.title+", value:"+this._hashId);
+		//dump("get hashId: title:"+this.title+", value:"+this._hashId);
 		return this._hashId;*/
 	},
 
@@ -636,7 +701,7 @@ catch(err){
 	//boolean hasSameIds(in calIItemBase aItem);
 	hasSameIds: function _hasSameIds(aItem)
 	{
-		//this.logInfo("hasSameIds: title:"+this.title);
+		//dump("hasSameIds: title:"+this.title);
 		return this._calEvent.hasSameIds(aItem);
 	},
 
@@ -691,7 +756,7 @@ catch(err){
 
 	set generation(aValue)
 	{
-		//this.logInfo("set generation: title:"+this.title);
+		//dump("set generation: title:"+this.title);
 		this._calEvent.generation = aValue;
 	},
 
@@ -699,7 +764,7 @@ catch(err){
 	//readonly attribute calIDateTime creationDate;
 	get creationDate()
 	{
-		//this.logInfo("get creationDate: title:"+this.title+", value:"+this.dateTimeCreated);
+		//dump("get creationDate: title:"+this.title+", value:"+this.dateTimeCreated);
 		return this.dateTimeCreated;
 	},
 
@@ -707,7 +772,7 @@ catch(err){
 	//readonly attribute calIDateTime lastModifiedTime;
 	get lastModifiedTime()
 	{
-		//this.logInfo("get lastModifiedTime: title:"+this.title+", value:"+this._lastModifiedTime);
+		//dump("get lastModifiedTime: title:"+this.title+", value:"+this._lastModifiedTime);
 		return this._lastModifiedTime;
 	},
 
@@ -715,7 +780,7 @@ catch(err){
 	//readonly attribute calIDateTime stampTime;
 	get stampTime()
 	{
-		//this.logInfo("get stampTime: title:"+this.title+", value:"+this._calEvent.stampTime);
+		//dump("get stampTime: title:"+this.title+", value:"+this._calEvent.stampTime);
 		return this._calEvent.stampTime;
 	},
 
@@ -743,13 +808,8 @@ catch(err){
 
 	set id(aValue) 
 	{
-		//this.logInfo("set id: title:"+this.title);
+		//dump("set id: title:"+this.title);
 		return; // We do not allow this.
-		if (aValue != this.id) {
-			//dump("Setting new id: title:"+this.title+", oldId:"+this.id+", newId:"+aValue+"\n"+this.globalFunctions.STACK()+"\n");
-			this._newId = aValue;
-			this._calEvent.id = aValue;
-		}
 	},
 
 	clearId: function _clearId(newId)
@@ -770,7 +830,7 @@ catch(err){
 	//attribute AUTF8String title;
 	get title()
 	{
-		//this.logInfo("get title: title:"+this._calEvent.title);
+		//dump("get title: title:"+this._calEvent.title);
 		if (this._newTitle) {
 			return this._newTitle;
 		}
@@ -784,7 +844,7 @@ catch(err){
 
 	set title(aValue)
 	{
-		//this.logInfo("set title: oldTitle:"+this.title+", newTitle:"+aValue);
+		//dump("set title: oldTitle:"+this.title+", newTitle:"+aValue);
 		if (aValue != this._title) {
 			this._newTitle = aValue;
 			this._calEvent.title = aValue;
@@ -795,13 +855,13 @@ catch(err){
 	//attribute short priority;
 	get priority()
 	{
-		//this.logInfo("get priority: title:"+this.title+", value:"+this._calEvent.priority);
+		//dump("get priority: title:"+this.title+", value:"+this._calEvent.priority);
 		return this._calEvent.priority;
 	},
 
 	set priority(aValue)
 	{
-		//this.logInfo("set priority: title:"+this.title+", aValue:"+aValue);
+		//dump("set priority: title:"+this.title+", aValue:"+aValue);
 		if (aValue != this.priority) {
 			if (aValue > 5) {
 				this._newPriority = "Low";
@@ -822,13 +882,22 @@ catch(err){
 	//attribute AUTF8String privacy;
 	get privacy()
 	{
-		//this.logInfo("get privacy: title:"+this.title+", value:"+this._calEvent.privacy);
+		//dump("get privacy: title:"+this.title+", value:"+this._calEvent.privacy);
+		if (this._newPrivacy !== undefined) {
+			const privacies = { "Normal": "PUBLIC" ,
+					"Confidential": "CONFIDENTIAL" , 
+					"Private": "PRIVATE" ,
+					null: "PUBLIC" };
+
+			return privacies[this._newPrivacy];
+		}
+
 		return this._calEvent.privacy;
 	},
 
 	set privacy(aValue)
 	{
-		//this.logInfo("set privacy: title:"+this.title+", aValue:"+aValue);
+		//dump("set privacy: title:"+this.title+", aValue:"+aValue);
 		if (aValue != this.privacy) {
 			const privacies = { "PUBLIC": "Normal",
 					"CONFIDENTIAL": "Confidential", 
@@ -843,7 +912,7 @@ catch(err){
 	//attribute AUTF8String status;
 	get status()
 	{
-		//this.logInfo("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
+		//dump("get status: title:"+this.title+", value:"+this._calEvent.status+", this._status:"+this._status);
 		if (this._newStatus !== undefined) {
 			return this._newStatus;
 		}
@@ -853,8 +922,10 @@ catch(err){
 
 	set status(aValue)
 	{
-		this._newStatus = aValue;
-		this._calEvent.status = aValue;
+		if (aValue != this.status) {
+			this._newStatus = aValue;
+			this._calEvent.status = aValue;
+		}
 	},
 
 	// ical interop; writing this means parsing
@@ -862,13 +933,13 @@ catch(err){
 	//attribute AUTF8String icalString;
 	get icalString()
 	{
-		//this.logInfo("get icalString: title:"+this.title+", value:"+this._calEvent.icalString);
+		//dump("get icalString: title:"+this.title+", value:"+this._calEvent.icalString);
 		return this._calEvent.icalString;
 	},
 
 	set icalString(aValue)
 	{
-		//this.logInfo("set icalString: title:"+this.title+", aValue:"+aValue);
+		//dump("set icalString: title:"+this.title+", aValue:"+aValue);
 		this._calEvent.icalString = aValue;
 	},
 
@@ -878,13 +949,13 @@ catch(err){
 	//attribute calIIcalComponent icalComponent;
 	get icalComponent()
 	{
-		//this.logInfo("get icalComponent: title:"+this.title+", value:"+this._calEvent.icalComponent);
+		//dump("get icalComponent: title:"+this.title+", value:"+this._calEvent.icalComponent);
 		return this._calEvent.icalComponent;
 	},
 
 	set icalComponent(aValue)
 	{
-		//this.logInfo("set icalComponent: title:"+this.title+", aValue:"+aValue);
+		//dump("set icalComponent: title:"+this.title+", aValue:"+aValue);
 		this._calEvent.icalComponent = aValue;
 	},
 
@@ -1016,15 +1087,6 @@ try {
 	get recurrenceInfo()
 	{
 
-		// For debugging
-/*		var recurrenceInfo = this._calEvent.recurrenceInfo;
-		if (recurrenceInfo) {
-			this.logInfo("get recurrenceInfo 3: title:"+this.title+", this._calEvent.recurrenceInfo:"+this._calEvent.recurrenceInfo, 1, 2);
-			this.logInfo("                    : recurrenceItems.length:"+recurrenceInfo.getRecurrenceItems({}).length);
-		}
-		else {
-			dump("get recurrenceInfo 4: title:"+this.title+", this._calEvent.recurrenceInfo:null\n");
-		}*/
 		if (this._newRecurrenceInfo !== undefined) {
 			return this._newRecurrenceInfo;
 		}
@@ -1079,11 +1141,11 @@ try {
 				this._calEvent.recurrenceInfo = aValue.clone();
 			}
 			else {
-				//dump("set recurrenceInfo 3: recurrenceinfo changed.\n"); 
+				//dump("set recurrenceInfo 3: recurrenceinfo did not change.\n"); 
 			}
 		}
 		else {
-			//dump("set recurrenceInfo 2: recurrenceinfo changed.\n"); 
+			//dump("set recurrenceInfo 4: recurrenceinfo changed.\n"); 
 			this._newRecurrenceInfo = aValue;
 			this._calEvent.recurrenceInfo = aValue;
 		}
@@ -1098,7 +1160,7 @@ try {
 				return this._recurrenceStartDate;
 			}
 		}
-		//this.logInfo("get recurrenceStartDate: title:"+this.title+", value:"+this._calEvent.recurrenceStartDate);
+		//dump("get recurrenceStartDate: title:"+this.title+", value:"+this._calEvent.recurrenceStartDate);
 		return this._calEvent.recurrenceStartDate;
 	},
 
@@ -1137,7 +1199,6 @@ try {
 	//readonly attribute nsISimpleEnumerator propertyEnumerator;
 	get propertyEnumerator()
 	{
-		this.logInfo("get propertyEnumerator: title:"+this.title);
 		this.getProperty("DESCRIPTION"); // To preload.
 		this.getProperty("LOCATION"); // To preload.
 		this.getProperty("TRANSP"); // To preload.
@@ -1149,7 +1210,7 @@ try {
 	//boolean hasProperty(in AString name);
 	hasProperty: function _hasProperty(name)
 	{
-		//this.logInfo("hasProperty: title:"+this.title+", name:"+name);
+		//dump("hasProperty: title:"+this.title+", name:"+name);
 		this.getProperty(name); // To preload.
 		return this._calEvent.hasProperty(name);
 	},
@@ -1195,13 +1256,13 @@ try {
 			break;
 		default:
 			if (name.indexOf("X-MOZ-SNOOZE-TIME-") > -1) {
-				//this.logInfo("setProperty: "+name+" is set to value:"+value);
+				//dump("setProperty: "+name+" is set to value:"+value);
 				//dump("getProperty:"+name+":"+this._calEvent.getProperty(name)+"\n");
 				//dump("getProperty: this.reminderSignalTime:"+this.reminderSignalTime+"\n");
 			}
 		}
 
-		//this.logInfo("get property 2: title:"+this.title+", name:"+name+", value:"+this._calEvent.getProperty(name)+", _newLocation:"+this._newLocation);
+		//dump("get property 2: title:"+this.title+", name:"+name+", value:"+this._calEvent.getProperty(name)+", _newLocation:"+this._newLocation);
 		return this._calEvent.getProperty(name);
 	},
 
@@ -1217,7 +1278,7 @@ try {
 	//void setProperty(in AString name, in nsIVariant value);
 	setProperty: function _setProperty(name, value)
 	{
-		//this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
+		//dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
 		switch (name) {
 		case "PERCENT-COMPLETE":
 			this.percentComplete = value;
@@ -1259,7 +1320,7 @@ try {
 			}
 			break;
 		case "STATUS": 
-			//this.logInfo("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
+			//dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n", -1);
 			//dump("set property: title:"+this.title+", name:"+name+", aValue:"+value+"\n");
 			if (this.className == "mivExchangeEvent") {
 				if (value != this.getProperty(name)) {
@@ -1303,15 +1364,25 @@ try {
 			break;
 		default:
 			if (name.indexOf("X-MOZ-SNOOZE-TIME-") > -1) {
-				//this.logInfo("setProperty: "+name+" is set to value:"+value);
-				if (value != this._xMozSnoozetime) {
-//dump("setProperty: title:"+this.title+", "+name+":"+value+"\n");
-					this._newXMozSnoozeTime = value;
-					this._lastXMozSnoozeTimeNativeId = name.substr(18);
-//dump("setProperty this._lastXMozSnoozeTimeNativeId:"+this._lastXMozSnoozeTimeNativeId+"\n");
+				//dump("setProperty: "+name+" is set to value:"+value);
+				if ((this._xMozSnoozetime === undefined) && (this._reminderSignalTime)) {
+	//dump("setProperty: X-MOZ-SNOOZE-TIME-:"+this.title+", Going to set initial xMozSnoozeTime for master to:"+value+"\n");
+					this._xMozSnoozetime = value;
 				}
 				else {
-					this._newXMozSnoozeTime = undefined;
+					if (value != this._xMozSnoozetime) {
+
+	//dump("setProperty: X-MOZ-SNOOZE-TIME-:"+this.title+", this._reminderSignalTime:"+this._reminderSignalTime+"\n");
+	//dump("setProperty: X-MOZ-SNOOZE-TIME-:"+this.title+", this._xMozSnoozetime:"+this._xMozSnoozetime+"\n");
+	//dump("setProperty: X-MOZ-SNOOZE-TIME-:"+this.title+", "+name+":"+value+"\n");
+						this._newXMozSnoozeTime = value;
+						this._lastXMozSnoozeTimeNativeId = name.substr(18);
+	//dump("setProperty this._lastXMozSnoozeTimeNativeId:"+this._lastXMozSnoozeTimeNativeId+"\n");
+					}
+					else {
+	//dump("setProperty: X-MOZ-SNOOZE-TIME-:"+this.title+", Not changed\n");
+						this._newXMozSnoozeTime = undefined;
+					}
 				}
 			}
 			else {
@@ -1356,7 +1427,7 @@ try {
 		default:
 			if (name.indexOf("X-MOZ-SNOOZE-TIME-") > -1) {
 //dump("deleteProperty: title:"+this.title+", "+name+"\n");
-				//this.logInfo("setProperty: "+name+" is set to value:"+value);
+				//dump("setProperty: "+name+" is set to value:"+value);
 				this._newXMozSnoozeTime = null;
 				this._lastXMozSnoozeTimeNativeId = name.substr(18);
 //dump("deleteProperty this._lastXMozSnoozeTimeNativeId:"+this._lastXMozSnoozeTimeNativeId+"\n");
@@ -1377,7 +1448,7 @@ try {
 	//boolean isPropertyPromoted(in AString name);
 	isPropertyPromoted: function _isPropertyPromoted(name)
 	{
-		//this.logInfo("isPropertyPromoted: title:"+this.title+", name:"+name);
+		//dump("isPropertyPromoted: title:"+this.title+", name:"+name);
 		return this._calEvent.isPropertyPromoted(name);
 	},
 
@@ -1392,7 +1463,7 @@ try {
 	//	               in AString aParameterName);
 	getPropertyParameter: function _getPropertyParameter(aPropertyName, aParameterName)
 	{
-		//this.logInfo("getPropertyParameter: title:"+this.title+", aPropertyName:"+aPropertyName+", aParameterName:"+aParameterName+", value:"+this._calEvent.getPropertyParameter(aPropertyName, aParameterName));
+		//dump("getPropertyParameter: title:"+this.title+", aPropertyName:"+aPropertyName+", aParameterName:"+aParameterName+", value:"+this._calEvent.getPropertyParameter(aPropertyName, aParameterName));
 		return this._calEvent.getPropertyParameter(aPropertyName, aParameterName);
 	},
 
@@ -1407,7 +1478,7 @@ try {
 	//	              in AString aParameterName);
 	hasPropertyParameter: function _hasPropertyParameter(aPropertyName, aParameterName)
 	{
-		//this.logInfo("hasPropertyParameter: title:"+this.title+", aPropertyName:"+aPropertyName+", aParameterName:"+aParameterName+", value:"+this._calEvent.hasPropertyParameter(aPropertyName, aParameterName));
+		//dump("hasPropertyParameter: title:"+this.title+", aPropertyName:"+aPropertyName+", aParameterName:"+aParameterName+", value:"+this._calEvent.hasPropertyParameter(aPropertyName, aParameterName));
 		return this._calEvent.hasPropertyParameter(aPropertyName, aParameterName);
 	},
 
@@ -1424,7 +1495,7 @@ try {
 	//	            in AUTF8String aParameterValue);
 	setPropertyParameter: function _setPropertyParameter(aPropertyName, aParameterName, aParameterValue)
 	{
-		//this.logInfo("setPropertyParameter: title:"+this.title+", aPropertyName:"+aPropertyName+", aParameterName:"+aParameterName+", aParameterValue:"+aParameterValue);
+		//dump("setPropertyParameter: title:"+this.title+", aPropertyName:"+aPropertyName+", aParameterName:"+aParameterName+", aParameterValue:"+aParameterValue);
 		return this._calEvent.setPropertyParameter(aPropertyName, aParameterName, aParameterValue);
 	},
 
@@ -1437,7 +1508,7 @@ try {
 	//nsISimpleEnumerator getParameterEnumerator(in AString aPropertyName);
 	getParameterEnumerator: function _getParameterEnumerator(aPropertyName)
 	{
-		//this.logInfo("getParameterEnumerator: title:"+this.title+", aPropertyName:"+aPropertyName);
+		//dump("getParameterEnumerator: title:"+this.title+", aPropertyName:"+aPropertyName);
 		return this._calEvent.getParameterEnumerator(aPropertyName);
 	},
 
@@ -1450,13 +1521,13 @@ try {
 	//attribute calIAttendee organizer;
 	get organizer()
 	{
-		//this.logInfo("get organizer: title:"+this.title+", value:"+this._calEvent.organizer);
+		//dump("get organizer: title:"+this.title+", value:"+this._calEvent.organizer);
 		return this._calEvent.organizer;
 	},
 
 	set organizer(aValue)
 	{
-		//this.logInfo("set organizer: title:"+this.title+", aValue:"+aValue);
+		//dump("set organizer: title:"+this.title+", aValue:"+aValue);
 		this.organizer;
 		if (aValue) {
 			if ((!this.organizer) || (aValue.toString() != this.organizer.toString())) {
@@ -1479,7 +1550,7 @@ try {
 	//	    [array,size_is(count),retval] out calIAttendee attendees);
 	getAttendees: function _getAttendees(count)
 	{
-		//this.logInfo("getAttendees: title:"+this.title);
+		//dump("getAttendees: title:"+this.title);
 		return this._calEvent.getAttendees(count);
 	},
 
@@ -1491,7 +1562,7 @@ try {
 	//calIAttendee getAttendeeById(in AUTF8String id);
 	getAttendeeById: function _getAttendeeById(id)
 	{
-		//this.logInfo("getAttendeeById: title:"+this.title+", id:"+id);
+		//dump("getAttendeeById: title:"+this.title+", id:"+id);
 		if (!this._attendees) this.getAttendees({});
 
 		return this._calEvent.getAttendeeById(id);
@@ -1629,7 +1700,7 @@ try {
 	//	      [array,size_is(count),retval] out calIAttachment attachments);
 	getAttachments: function _getAttachments(count)
 	{
-		//this.logInfo("getAttachments: title:"+this.title);
+		//dump("getAttachments: title:"+this.title);
 		return this._calEvent.getAttachments(count);
 	},
 
@@ -1647,7 +1718,7 @@ try {
 	removeAttachment: function _removeAttachment(attachment)
 	{
 		//dump("removeAttachment: title:"+this.title+"\n");
-		//this.logInfo("removeAttachment: title:"+this.title);
+		//dump("removeAttachment: title:"+this.title);
 		this.getAttachments({});
 		if (!this._changesAttachments) this._changesAttachments = [];
 		this._changesAttachments.push({ action: "remove", attachment: attachment.clone()});
@@ -1658,7 +1729,7 @@ try {
 	removeAllAttachments: function _removeAllAttachments()
 	{
 		//dump("removeAllAttachments: title:"+this.title+"\n");
-		//this.logInfo("removeAllAttachments: title:"+this.title);
+		//dump("removeAllAttachments: title:"+this.title);
 //		var allAttachments = this._calEvent.getAttachments({});
 		var allAttachments = this.getAttachments({});
 		for each(var attachment in allAttachments) {
@@ -1680,7 +1751,7 @@ try {
 	//	     [array, size_is(aCount), retval] out wstring aCategories);
 	getCategories: function _getCategories(aCount)
 	{
-		//this.logInfo("getCategories: title:"+this.title+"\n");
+		//dump("getCategories: title:"+this.title+"\n");
 		return this._calEvent.getCategories(aCount);
 	},
 
@@ -1691,7 +1762,7 @@ try {
 	//	     [array, size_is(aCount)] in wstring aCategories);
 	setCategories: function _setCategories(aCount, aCategories)
 	{
-		//this.logInfo("set categories: title:"+this.title+", aCategories.length:"+aCategories.length+"\n");
+		//dump("set categories: title:"+this.title+", aCategories.length:"+aCategories.length+"\n");
 		this.getCategories({});
 		this._changesCategories = true;
 		this._calEvent.setCategories(aCount, aCategories);
@@ -1709,7 +1780,7 @@ try {
 	//	    [array,size_is(count),retval] out calIRelation relations);
 	getRelations: function _getRelations(count)
 	{
-		//this.logInfo("getRelations: title:"+this.title);
+		//dump("getRelations: title:"+this.title);
 		return this._calEvent.getRelations(count);
 	},
 
@@ -1719,7 +1790,7 @@ try {
 	//void addRelation(in calIRelation relation);
 	addRelation: function _addRelation(relation)
 	{
-		//this.logInfo("addRelation: title:"+this.title);
+		//dump("addRelation: title:"+this.title);
 		this._calEvent.addRelation(relation);
 	},
 
@@ -1729,7 +1800,7 @@ try {
 	//void removeRelation(in calIRelation relation);
 	removeRelation: function _removeRelation(relation)
 	{
-		//this.logInfo("removeRelation: title:"+this.title);
+		//dump("removeRelation: title:"+this.title);
 		this._calEvent.removeRelation(relation);
 	},
 
@@ -1739,7 +1810,7 @@ try {
 	//void removeAllRelations();
 	removeAllRelations: function _removeAllRelations()
 	{
-		//this.logInfo("removeAllRelations: title:"+this.title);
+		//dump("removeAllRelations: title:"+this.title);
 		this._calEvent.removeAllRelations();
 	},
 
@@ -1781,7 +1852,7 @@ try {
 			var tmpStartDate = this.startDate || this.entryDate;
 			var tmpEndDate = this.endDate || this.dueDate;
 			if ( ((aStartDate === null) || (!tmpStartDate) || (tmpStartDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (!tmpEndDate) || (tmpEndDate.compare(aEndDate) < 0)) ) {
-				//this.logInfo("getOccurrencesBetween 0a: inserting myself into list.");
+				//dump("getOccurrencesBetween 0a: inserting myself into list.");
 				occurrences.push(this);
 			}
 			break;
@@ -1790,7 +1861,7 @@ try {
 				var tmpStartDate = exception.startDate || exception.entryDate;
 				var tmpEndDate = exception.endDate || exception.entryDate;
 				if ( ((aStartDate === null) || (!tmpStartDate) || (tmpStartDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (!tmpEndDate) || (tmpEndDate.compare(aEndDate) < 0)) ) {
-					//this.logInfo("getOccurrencesBetween 0d: inserting myself into list.");
+					//dump("getOccurrencesBetween 0d: inserting myself into list.");
 					occurrences.push(exception);
 				}
 			}
@@ -1798,7 +1869,7 @@ try {
 				var tmpStartDate = occurrence.startDate || occurrence.entryDate;
 				var tmpEndDate = occurrence.endDate || occurrence.entryDate;
 				if ( ((aStartDate === null) || (!tmpStartDate) || (tmpStartDate.compare(aStartDate) >= 0)) && ((aEndDate === null) || (!tmpEndDate) || (tmpEndDate.compare(aEndDate) < 0)) ) {
-					//this.logInfo("getOccurrencesBetween 0e: inserting myself into list.");
+					//dump("getOccurrencesBetween 0e: inserting myself into list.");
 					occurrences.push(occurrence);
 				}
 			}
@@ -1812,12 +1883,12 @@ try {
 				else {
 					//dump("  : getOccurrencesBetween mivExchangeEvent\n");
 					occurrences = this.recurrenceInfo.getOccurrences(aStartDate, aEndDate, 0, aCount);
-					//this.logInfo("getOccurrencesBetween 0b: title:"+this.title+", this.calendarItemType:"+this.calendarItemType+", aStartDate:"+aStartDate+", aEndDate:"+aEndDate+", occurrences.length:"+occurrences.length);
+					//dump("getOccurrencesBetween 0b: title:"+this.title+", this.calendarItemType:"+this.calendarItemType+", aStartDate:"+aStartDate+", aEndDate:"+aEndDate+", occurrences.length:"+occurrences.length);
 					return this.recurrenceInfo.getOccurrences(aStartDate, aEndDate, 0, aCount);
 				}
 			}
 		}
-		//this.logInfo("getOccurrencesBetween 1: title:"+this.title+", aStartDate:"+aStartDate+", aEndDate:"+aEndDate+", occurrences.length:"+occurrences.length);
+		//dump("getOccurrencesBetween 1: title:"+this.title+", aStartDate:"+aStartDate+", aEndDate:"+aEndDate+", occurrences.length:"+occurrences.length);
 
 		aCount.value = occurrences.length;
 		return occurrences;
@@ -1832,7 +1903,7 @@ try {
 	//attribute calIItemBase parentItem;
 	get parentItem()
 	{
-		//this.logInfo("get parentItem: title:"+this.title);
+		//dump("get parentItem: title:"+this.title);
 		if ((!this._parentItem) && (!this._newParentItem)) {
 			this._parenItem = this;
 			this._calEvent.parentItem = this;
@@ -1842,7 +1913,7 @@ try {
 
 	set parentItem(aValue)
 	{
-		//this.logInfo("set parentItem: title:"+this.title);
+		//dump("set parentItem: title:"+this.title);
 		if (aValue != this.parentItem) {
 			this._newParentItem = aValue;
 			this._calEvent.parentItem = aValue;
@@ -1858,7 +1929,7 @@ try {
 	//attribute calIDateTime recurrenceId;
 	get recurrenceId()
 	{
-		//this.logInfo("get recurrenceId: title:"+this.title+", value:"+this._calEvent.recurrenceId);
+		//dump("get recurrenceId: title:"+this.title+", value:"+this._calEvent.recurrenceId);
 		return this._calEvent.recurrenceId;
 	},
 
@@ -1866,10 +1937,10 @@ try {
 	{
 		if (aValue != this.recurrenceId) {
 			this._newRecurrenceId = aValue;
-			//this.logInfo("set recurrenceId: User tries to set recurrenceId to:"+aValue.toString()+", title:"+this.title+", this.calendarItemType:"+this.calendarItemType);
+			//dump("set recurrenceId: User tries to set recurrenceId to:"+aValue.toString()+", title:"+this.title+", this.calendarItemType:"+this.calendarItemType);
 		}
 		else {
-			//this.logInfo("set recurrenceId: User tries to set recurrenceId to null, title:"+this.title);
+			//dump("set recurrenceId: User tries to set recurrenceId to null, title:"+this.title);
 		}
 		this._calEvent.recurrenceId = aValue; 
 	},
@@ -1878,10 +1949,10 @@ try {
 
 	cloneToCalEvent: function cloneToCalEvent(aCalEvent)
 	{
-		//this.logInfo("cloneToCalEvent: start: this.calendarItemType:"+this.calendarItemType);
+		//dump("cloneToCalEvent: start: this.calendarItemType:"+this.calendarItemType);
 		this._calEvent = aCalEvent.clone();
 
-		var alarms = aCalEvent.getAlarms({});
+/*		var alarms = aCalEvent.getAlarms({});
 		if (alarms.length > 0) {
 			this._alarm = alarms[0].clone();
 			this._reminderIsSet = true;
@@ -1922,7 +1993,7 @@ try {
 			}
 //dump("cloneToCalEvent: offset="+offset.inSeconds+"\n");
 			this._reminderMinutesBeforeStart = (offset.inSeconds / 60) * -1;
-		}
+		}*/
 	},
 
 	//readonly attribute AUTF8String subject;
@@ -2230,7 +2301,6 @@ try {
 	//void addException(in mivExchangeBaseItem aItem);
 	addException: function _addException(aItem)
 	{
-		this.logInfo("addException: aItem.title:"+aItem.title+"\n");
 		if ((aItem.calendarItemType == "Exception") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
 			aItem.parentItem = this;
 
@@ -2239,7 +2309,7 @@ try {
 				this._exceptions[aItem.id] = null;
 				delete this._exceptions[aItem.id];
 			}
-			this._exceptions[aItem.id] = aItem.clone();
+			this._exceptions[aItem.id] = aItem;
 //			this._exceptions[aItem.id] = aItem;
 
 			if (this.recurrenceInfo) {
@@ -2264,7 +2334,6 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 	//void modifyException(in mivExchangeBaseItem aItem);
 	modifyException: function _modifyException(aItem)
 	{
-		this.logInfo("modifyException: aItem.title:"+aItem.title+"\n");
 		if ((aItem.calendarItemType == "Exception") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
 
 			if ((this._exceptions[aItem.id]) && (this._exceptions[aItem.id].changeKey == aItem.changeKey)) {
@@ -2283,8 +2352,8 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 				delete this._exceptions[aItem.id];
 			}
 
-			this._exceptions[aItem.id] = aItem.clone();
-//			this._exceptions[aItem.id] = aItem;
+//			this._exceptions[aItem.id] = aItem.clone();
+			this._exceptions[aItem.id] = aItem;
 
 			var itemAlarms = aItem.getAlarms({});
 			var tmpStartDate = aItem.startDate || aItem.entryDate;
@@ -2318,7 +2387,6 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		var item = null;
 		for each(var exception in this._exceptions) {
 			if (exception.recurrenceId.compare(aRecurrenceId) == 0) {
-				this.logInfo("item.removeExceptionAt: Found item for exception.\n");
 				item = exception;
 				break;
 			}
@@ -2345,7 +2413,6 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 	//void addOccurrence(in mivExchangeBaseItem aItem);
 	addOccurrence: function _addOccurrence(aItem)
 	{
-		this.logInfo("addOccurrence: aItem.title:"+aItem.title+", startDate:"+aItem.startDate+"\n");
 		if ((aItem.calendarItemType == "Occurrence") && (this.calendarItemType == "RecurringMaster") && (aItem.isMutable)) {
 			aItem.parentItem = this;
 
@@ -2354,11 +2421,11 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 				this._occurrences[aItem.id] = null;
 				delete this._occurrences[aItem.id];
 			}
-//			this._occurrences[aItem.id] = aItem;
-			this._occurrences[aItem.id] = aItem.clone();
+			this._occurrences[aItem.id] = aItem;
+//			this._occurrences[aItem.id] = aItem.clone();
 
 			var itemAlarms = aItem.getAlarms({});
-			//this.logInfo("AddOccurrence: itemAlarms.length:"+itemAlarms.length+", X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
+			//dump("AddOccurrence: itemAlarms.length:"+itemAlarms.length+", X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime);
 			var tmpStartDate = aItem.startDate || aItem.entryDate;
 			if ((itemAlarms.length > 0) && ((!tmpStartDate) || ((this.reminderDueBy) && (tmpStartDate.compare(this.reminderDueBy) == 0)))) {
 				this.setProperty("X-MOZ-SNOOZE-TIME-"+aItem.recurrenceId.nativeTime, this.reminderSignalTime.getInTimezone(cal.UTC()).icalString);
@@ -2386,11 +2453,11 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 	//void removeOccurrenceAt(in calIDateTime aRecurrenceId);
 	removeOccurrenceAt: function _removeOccurrenceAt(aRecurrenceId)
 	{
+		//dump("removeOccurrenceAt this._cloneCount:"+this._cloneCount+"\n");
 		// Find item.
 		var item = null;
 		for each(var occurrence in this._occurrences) {
 			if (occurrence.recurrenceId.compare(aRecurrenceId) == 0) {
-				this.logInfo("item.removeOccurrenceAt: Found item for occurrence.\n");
 				item = occurrence;
 				break;
 			}
@@ -2401,7 +2468,6 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		}
 		else {
 			// This recurrenceId is not an occurrence. Maybe an exception.
-			this.logInfo("item.removeOccurrenceAt: Did not find an occurrence going to check exceptions.\n");
 			this.removeExceptionAt(aRecurrenceId);
 		}
 
@@ -2411,14 +2477,14 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 	get exchangeData()
 	{
 /*		if (this._exchangeData === null) {
-			dump("Who is requesting exchangedata when it is null:"+this.globalFunctions.STACK()+"\n");
+			dump("Who is requesting exchangedata when it is null:"+exchGlobalFunctions.STACK()+"\n");
 		}*/
 		return this._exchangeData;
 	},
 
 	set exchangeData(aValue)
 	{
-		//this.logInfo("exchangeData:"+aValue.toString());
+		//dump("exchangeData:"+aValue.toString());
 		//dump("exchangeData:"+aValue.toString()+"\n\n");
 
 		this.initialize();
@@ -2428,7 +2494,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		}
 
 /*		if (aValue === null) {
-			dump("Who is setting exchangeData to null:"+this.globalFunctions.STACK()+"\n");
+			dump("Who is setting exchangeData to null:"+exchGlobalFunctions.STACK()+"\n");
 		}*/
 		this._exchangeData = aValue;
 
@@ -2575,16 +2641,14 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		switch (this.className) {
 		case "mivExchangeTodo":
 			if ((this.reminderIsSet) && (this.calendarItemType != "RecurringMaster")) {
-				this.logInfo("Creating alarm in getAlarms: this.calendarItemType:"+this.calendarItemType);
 				//dump("Creating alarm in getAlarms: title:"+this.title+", this.reminderDueBy:"+this.reminderDueBy+"\n");
 				var alarm = cal.createAlarm();
 				alarm.action = "DISPLAY";
 				alarm.repeat = 0;
 				if (this.reminderDueBy) {
-					alarm.alarmDate = this.reminderDueBy.clone().getInTimezone(this.globalFunctions.ecDefaultTimeZone());
+					alarm.alarmDate = this.reminderDueBy.clone().getInTimezone(exchGlobalFunctions.ecDefaultTimeZone());
 					alarm.related = Ci.calIAlarm.ALARM_RELATED_ABSOLUTE;
 
-					this.logInfo("Alarm set with an alarmDate of "+alarm.alarmDate+".");
 				}
 				else {
 					var alarmOffset = cal.createDuration();
@@ -2599,7 +2663,6 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 					alarm.related = Ci.calIAlarm.ALARM_RELATED_START;
 					alarm.offset = alarmOffset;
 
-					this.logInfo("Alarm set with an offset of "+alarmOffset.minutes+" minutes from the start");
 				}
 
 				this._alarm = alarm.clone();
@@ -2643,7 +2706,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 //dump(this.title+"| this._reminderSignalTime.icalString:"+this._reminderSignalTime.icalString+"\n");
 //dump(this.title+"| this.calendarItemType:"+this.calendarItemType+"\n");
 
-			//this.logInfo("Setting X-MOZ-SNOOZE-TIME by data in exchangedata", -1);
+			//dump("Setting X-MOZ-SNOOZE-TIME by data in exchangedata", -1);
 			if (this.className == "mivExchangeEvent") {
 				switch (this.calendarItemType) {
 				case "RecurringMaster":
@@ -2656,7 +2719,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 					this._xMozSnoozeTime = this._reminderSignalTime.icalString;
 					break;
 				default:
-					//this.logInfo("Would like to set X-MOZ-SNOOZE-TIME for this.calendarItemType:"+this.calendarItemType);
+					//dump("Would like to set X-MOZ-SNOOZE-TIME for this.calendarItemType:"+this.calendarItemType);
 				}
 			}
 
@@ -2711,12 +2774,11 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 		var recurrence = this.XPath("/t:Recurrence/*");
 		if (recurrence.length > 0) {
-			//this.logInfo("Recurrence::"+recurrence);
+			//dump("Recurrence::"+recurrence);
 			var recrule = this.readRecurrenceRule(recurrence);
 			recurrence = null;
 
 			if (recrule) {
-				this.logInfo("get recurrenceInfo 1: title:"+this.title+", recrule:"+recrule);
 				//var recurrenceInfo = cal.createRecurrenceInfo(this);
 				this._recurrenceInfo = Cc["@1st-setup.nl/exchange/recurrenceinfo;1"]
 							.createInstance(Ci.mivExchangeRecurrenceInfo);
@@ -2750,14 +2812,14 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		this._bodyType = this.getAttributeByTag("t:Body", "BodyType", "HTML");
 
 		this._body = this.getTagValue("t:Body", null);
-		//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
+		//dump("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
 		if (this._body) {
 			if (this._bodyType == "HTML") {
-				this._calEvent.setProperty("DESCRIPTION", this.globalFunctions.fromHTML2Text(this._body));
+				this._calEvent.setProperty("DESCRIPTION", exchGlobalFunctions.fromHTML2Text(this._body));
 			}
 			else {
 				this._calEvent.setProperty("DESCRIPTION", this._body);
-				this._body = this.globalFunctions.fromText2HTML(this._body);
+				this._body = exchGlobalFunctions.fromText2HTML(this._body);
 			}
 		}
 		this._bodyType = "HTML";
@@ -2765,7 +2827,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 		this._dateTimeCreated = this.tryToSetDateValueUTC(this.getTagValue("t:DateTimeCreated", null), null);
 
 		this._created = this.dateTimeCreated;
-		//this.logInfo("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
+		//dump("get property 1a: title:"+this.title+", name:"+name+", this._body:"+this._body);
 		if (this._created) {
 			this._calEvent.setProperty("CREATED", this._created);
 		}
@@ -2874,15 +2936,11 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 		this._attachments = [];
 		if (this.hasAttachments) {
-//			if (this.debug) this.logInfo("Title:"+aItem.title+"Attachments:"+aExchangeItem.getTagValue("Attachments"));
 			var fileAttachments = this.XPath("/t:Attachments/t:FileAttachment");
 			for each(var fileAttachment in fileAttachments) {
-//				if (this.debug) this.logInfo(" -- Attachment: name="+fileAttachment.getTagValue("t:Name"));
 				var newAttachment = cal.createAttachment();
 				newAttachment.setParameter("X-AttachmentId",xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id")); 
 				newAttachment.uri = cal.makeURL("http://somewhere/?id="+encodeURIComponent(xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id"))+"&name="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Name"))+"&size="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:Size", ""))+"&calendarid="+encodeURIComponent(this.calendar.id)+"&isinline="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:IsInline", "false"))+"&contentid="+encodeURIComponent(xml2json.getTagValue(fileAttachment, "t:ContentId", "<NOPE>")));
-
-				//if (this.debug) this.logInfo("New attachment URI:"+this.serverUrl+"/?id="+encodeURIComponent(xml2json.getAttributeByTag(fileAttachment, "t:AttachmentId","Id"))+"&name="+encodeURIComponent(fileAttachment.getTagValue("t:Name"))+"&size="+encodeURIComponent(fileAttachment.getTagValue("t:Size", ""))+"&user="+encodeURIComponent(this.user));
 
 				this._attachments.push(newAttachment.clone());
 				this._calEvent.addAttachment(newAttachment);
@@ -2908,7 +2966,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 		this.postLoad();
 
-		this._exchangeXML = xml2json.toString(this._exchangeData);
+		this._exchangeXML = true;
 		this._exchangeData = null;
 		
 	},
@@ -2932,13 +2990,14 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 	set body(aValue)
 	{
+		//dump("set body aValue:"+aValue+"\n");
 		this._newBody2 = aValue;
 		if (this.bodyType == "HTML") {
-			this._calEvent.setProperty("DESCRIPTION", this.globalFunctions.fromHTML2Text(aValue));
+			this._calEvent.setProperty("DESCRIPTION", exchGlobalFunctions.fromHTML2Text(aValue));
 		}
 		else {
 			this._calEvent.setProperty("DESCRIPTION", aValue);
-			this._newBody2 = this.globalFunctions.fromText2HTML(aValue);
+			this._newBody2 = exchGlobalFunctions.fromText2HTML(aValue);
 		}
 	},
 
@@ -3097,44 +3156,33 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 	makeRecurrenceRule: function _makeRecurrenceRule()
 	{
 		if (!this.parentItem) {
-			this.logInfo("makeRecurrenceRule: No parent.");
 			return;
 		}
 try{
 		if (!this.recurrenceInfo || this.parentItem.id != this.id) {
 			if (!this.recurrenceInfo) {
-				this.logInfo("makeRecurrenceRule: We have no recurrenceInfo");
 			}
 			if (this.parentItem.id != this.id) {
-				this.logInfo("makeRecurrenceRule: We have this.parentItem.id != this.id");
 			}
 			return;
 		}
 
 		var recurrenceItems = this.recurrenceInfo.getRecurrenceItems({});
-		this.logInfo("Going to see if we have recurrenceItems:"+recurrenceItems.length);
 		var rrule = null;
 		for each (var ritem in recurrenceItems) {
-				this.logInfo(" ||||| ritem:"+ritem);
 			if (ritem instanceof Ci.calIRecurrenceRule) {
 				rrule = ritem;
-				if (rrule) {
-					this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
-				}
-				else {
-					this.logInfo(" ;;;; rrule: null !!!!!!!!!!!!!!");
-				}
 				break;
 			}
 		}
 
 		if (!rrule) {
 			// XXX exception?
-			this.logInfo("makeRecurrenceRule: We have no rrule");
+			//dump("makeRecurrenceRule: We have no rrule");
 			return;
 		}
 
-		var r = this.globalFunctions.xmlToJxon('<t:Recurrence xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+		var r = exchGlobalFunctions.xmlToJxon('<t:Recurrence xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 
 		//var r = updates.addChildTag("Recurrence", "t", null);
 
@@ -3216,12 +3264,12 @@ try{
 		}
 
 		if (cal.isEvent(this)) {
-//			var startDateStr = cal.toRFC3339(startDate.getInTimezone(this.globalFunctions.ecUTC()))+"Z";
-			var startDateStr = cal.toRFC3339(startDate.getInTimezone(this.globalFunctions.ecUTC()));
-			//var startDateStr = cal.toRFC3339(originalDate.getInTimezone(this.globalFunctions.ecUTC()));
+//			var startDateStr = cal.toRFC3339(startDate.getInTimezone(exchGlobalFunctions.ecUTC()))+"Z";
+			var startDateStr = cal.toRFC3339(startDate.getInTimezone(exchGlobalFunctions.ecUTC()));
+			//var startDateStr = cal.toRFC3339(originalDate.getInTimezone(exchGlobalFunctions.ecUTC()));
 		}
 		else {
-			// We make a non-UTC datetime value for this.globalFunctions.
+			// We make a non-UTC datetime value for exchGlobalFunctions.
 			// EWS will use the MeetingTimeZone or StartTimeZone and EndTimeZone to convert.
 			//LOG("  ==== tmpStart:"+cal.toRFC3339(tmpStart));
 			var startDateStr = cal.toRFC3339(startDate).substr(0, 19); //cal.toRFC3339(tmpStart).length-6);
@@ -3236,7 +3284,7 @@ try{
 			var endDate = rrule.untilDate.clone();
 			if (cal.isEvent(this)) {
 				endDate.isDate = true;
-				var endDateStr = cal.toRFC3339(endDate.getInTimezone(this.globalFunctions.ecUTC()));
+				var endDateStr = cal.toRFC3339(endDate.getInTimezone(exchGlobalFunctions.ecUTC()));
 			}
 			else {
 				if (!endDate.isDate) {
@@ -3261,7 +3309,7 @@ try{
 		return r;
 }
 catch(err){
-this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
+dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 }
 
 		/* We won't write WKST/FirstDayOfWeek for now because it is Exchange 2010 and up */
@@ -3271,8 +3319,8 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	{
 		this._nonPersonalDataChanged = false;
 
-		var updates = this.globalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
-		this.logInfo("updates:"+updates.toString()+"\n");
+		var updates = exchGlobalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
+		//dump("updates:"+updates.toString()+"\n");
 		return updates;
 	},
 
@@ -3342,7 +3390,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 						switch (alarm.related) {
 						case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
-							//this.logInfo("ALARM_RELATED_ABSOLUTE we are going to calculate a offset from the start.");
+							//dump("ALARM_RELATED_ABSOLUTE we are going to calculate a offset from the start.");
 							var newAlarmTime = alarm.alarmDate.clone();
 
 							// Calculate offset from start of item.
@@ -3355,12 +3403,12 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 							}
 							break;
 						case Ci.calIAlarm.ALARM_RELATED_START:
-							//this.logInfo("ALARM_RELATED_START this is easy exchange does the same.");
+							//dump("ALARM_RELATED_START this is easy exchange does the same.");
 							//var newAlarmTime = this.startDate.clone();
 							var offset = alarm.offset.clone();
 							break;
 						case Ci.calIAlarm.ALARM_RELATED_END:
-							//this.logInfo("ALARM_RELATED_END we are going to calculate the offset from the start.");
+							//dump("ALARM_RELATED_END we are going to calculate the offset from the start.");
 							var newAlarmTime = this.endDate.clone();
 							newAlarmTime.isDate = false;
 							newAlarmTime.addDuration(alarm.offset);
@@ -3419,7 +3467,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 
 				switch (alarm.related) {
 				case Ci.calIAlarm.ALARM_RELATED_ABSOLUTE:
-					//this.logInfo("ALARM_RELATED_ABSOLUTE we are going to calculate a offset from the start.");
+					//dump("ALARM_RELATED_ABSOLUTE we are going to calculate a offset from the start.");
 					var newAlarmTime = alarm.alarmDate.clone();
 
 					// Calculate offset from start of item.
@@ -3432,11 +3480,11 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 					}
 					break;
 				case Ci.calIAlarm.ALARM_RELATED_START:
-					//this.logInfo("ALARM_RELATED_START this is easy exchange does the same.");
+					//dump("ALARM_RELATED_START this is easy exchange does the same.");
 					var offset = alarm.offset.clone();
 					break;
 				case Ci.calIAlarm.ALARM_RELATED_END:
-					//this.logInfo("ALARM_RELATED_END we are going to calculate the offset from the start.");
+					//dump("ALARM_RELATED_END we are going to calculate the offset from the start.");
 					var newAlarmTime = this.endDate.clone();
 					newAlarmTime.isDate = false;
 					newAlarmTime.addDuration(alarm.offset);
@@ -3660,7 +3708,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 			case "EndDateRecurrence":
 				break;
 			default:
-				if (this.debug) this.logInfo("skipping " + rec.tagName);
+				//dump("skipping " + rec.tagName);
 				continue;
 			}
 	
@@ -3691,7 +3739,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 					break;
 				case 'StartDate':
 					/* Dunno what to do with this for iCal; no place to set */
-					this._recurrenceStartDate = cal.fromRFC3339(xml2json.getValue(comp).substr(0,10)+"T00:00:00Z", this.globalFunctions.ecTZService().UTC);
+					this._recurrenceStartDate = cal.fromRFC3339(xml2json.getValue(comp).substr(0,10)+"T00:00:00Z", exchGlobalFunctions.ecTZService().UTC);
 					this._recurrenceStartDate.isDate = true;
 					break;
 				case 'EndDate':
@@ -3765,7 +3813,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		for each(var alias in this.mailboxAliases) {
 			if (xml2json.getTagValue(mbox, "t:EmailAddress","unknown").toLowerCase() == alias.toLowerCase()) {
 				me = true;
-				this.logInfo("createAttendee: Title:"+this.title+", email:"+xml2json.getTagValue(mbox, "t:EmailAddress","unknown")+". This address is mine ("+alias+").\n");
+				//dump("createAttendee: Title:"+this.title+", email:"+xml2json.getTagValue(mbox, "t:EmailAddress","unknown")+". This address is mine ("+alias+").\n");
 				break;
 			}
 		}
@@ -3780,7 +3828,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 				attendee.id = 'ldap:' + xml2json.getTagValue(mbox, "t:EmailAddress","unknown");
 				break;
 			default:
-				this.logInfo("createAttendee: Unknown RoutingType:'"+xml2json.getTagValue(mbox, "t:RoutingType")+"'");
+				//dump("createAttendee: Unknown RoutingType:'"+xml2json.getTagValue(mbox, "t:RoutingType")+"'");
 				attendee.id = 'mailto:' + xml2json.getTagValue(mbox, "t:EmailAddress","unknown");
 				break;
 		}
@@ -3809,10 +3857,10 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	{
 		if ((ewsvalue) && (ewsvalue.toString().length)) {
 			if (ewsvalue.indexOf("Z") > -1) {
-				return cal.fromRFC3339(ewsvalue, this.globalFunctions.ecTZService().UTC);
+				return cal.fromRFC3339(ewsvalue, exchGlobalFunctions.ecTZService().UTC);
 			}
 			else {
-				return cal.fromRFC3339(ewsvalue, this.globalFunctions.ecDefaultTimeZone()).getInTimezone(this.globalFunctions.ecTZService().UTC);
+				return cal.fromRFC3339(ewsvalue, exchGlobalFunctions.ecDefaultTimeZone()).getInTimezone(exchGlobalFunctions.ecTZService().UTC);
 			}
 		}
 
@@ -3822,7 +3870,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	tryToSetDateValueDefaultTZ: function _tryToSetDateValueDefaultTZ(ewsvalue, aDefault)
 	{
 		if ((ewsvalue) && (ewsvalue.toString().length)) {
-			return cal.fromRFC3339(ewsvalue, this.globalFunctions.ecDefaultTimeZone());
+			return cal.fromRFC3339(ewsvalue, exchGlobalFunctions.ecDefaultTimeZone());
 		}
 
 		return aDefault;
@@ -3831,7 +3879,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 	tryToSetDateValue: function _TryToSetDateValue(ewsvalue, aDefault)
 	{
 		if ((ewsvalue) && (ewsvalue.toString().length)) {
-			return cal.fromRFC3339(ewsvalue, this.globalFunctions.ecTZService().UTC).getInTimezone(this.globalFunctions.ecDefaultTimeZone());
+			return cal.fromRFC3339(ewsvalue, exchGlobalFunctions.ecTZService().UTC).getInTimezone(exchGlobalFunctions.ecDefaultTimeZone());
 		}
 
 		return aDefault;
@@ -3879,7 +3927,7 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		if (this._exchangeData) {
 			return xml2json.getAttributeByTag(this._exchangeData, aTagName, aAttribute, aDefaultValue);
 		}
-		//this.logInfo("getAttributeByTag 3: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
+		//dump("getAttributeByTag 3: title:"+this.title+", aTagName:"+aTagName+", aAttribute:"+aAttribute);
 
 		return aDefaultValue;
 	},
@@ -3899,23 +3947,6 @@ this.logInfo("Error2:"+err+" | "+this.globalFunctions.STACK()+"\n");
 		else {
 			this._calEvent = Cc["@mozilla.org/calendar/event;1"]
 						.createInstance(Ci.calIEvent);
-		}
-	},
-
-	logInfo: function _logInfo(aMsg, aDebugLevel, aDepth) 
-	{
-		var depth = aDepth || 1;
-
-		if (!aDebugLevel) aDebugLevel = 1;
-
-		var prefB = Cc["@mozilla.org/preferences-service;1"]
-			.getService(Ci.nsIPrefBranch);
-
-		this.debugLevel = this.globalFunctions.safeGetIntPref(prefB, "extensions.1st-setup."+this._className+".debuglevel", 0, true);
-		//this.debugLevel = 1;
-		if (aDebugLevel <= this.debugLevel) {
-			this.globalFunctions.LOG("["+this._className+"] "+aMsg + " ("+this.globalFunctions.STACKshort()+")");
-//			this.globalFunctions.LOG("["+this._className+"] "+aMsg + " ("+this.globalFunctions.STACK(depth, 1)+")");
 		}
 	},
 

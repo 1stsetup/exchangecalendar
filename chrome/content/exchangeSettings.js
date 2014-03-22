@@ -262,9 +262,9 @@ exchExchangeSettings.prototype = {
 		            .getService(Ci.nsIPrefService)
 			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+calId+".");
 
+		this._document.getElementById("exchWebService-poll-calendar-interval").value = this.globalFunctions.safeGetIntPref(exchWebServicesCalPrefs, "ecCalendarPollInterval", 60);
 /*
 		this._document.getElementById("exchWebService-poll-inbox").checked = this.globalFunctions.safeGetBoolPref(exchWebServicesCalPrefs, "ecPollInbox", true);
-		this._document.getElementById("exchWebService-poll-calendar-interval").value = this.globalFunctions.safeGetIntPref(exchWebServicesCalPrefs, "ecCalendarPollInterval", 60);
 		this._document.getElementById("exchWebService-poll-inbox-interval").value = this.globalFunctions.safeGetIntPref(exchWebServicesCalPrefs, "ecPollInboxInterval", 180);
 		this._document.getElementById("exchWebService-autorespond-meetingrequest").checked = this.globalFunctions.safeGetBoolPref(exchWebServicesCalPrefs, "ecAutoRespondMeetingRequest", false); 
 		this._document.getElementById("exchWebService-autorespond-answer").value = this.globalFunctions.safeGetCharPref(exchWebServicesCalPrefs, "ecAutoRespondAnswer", "TENTATIVE"); 
@@ -315,8 +315,9 @@ exchExchangeSettings.prototype = {
 		this.checkFolderSettings();
 
 		//exchWebServicesCalPrefs.setBoolPref("ecPollInbox", this._document.getElementById("exchWebService-poll-inbox").checked); 
+
 		exchWebServicesCalPrefs.setIntPref("ecCalendarPollInterval", this._document.getElementById("exchWebService-poll-calendar-interval").value); 
-		exchWebServicesCalPrefs.setIntPref("ecPollInboxInterval", this._document.getElementById("exchWebService-poll-inbox-interval").value); 
+		//exchWebServicesCalPrefs.setIntPref("ecPollInboxInterval", this._document.getElementById("exchWebService-poll-inbox-interval").value); 
 		//exchWebServicesCalPrefs.setBoolPref("ecAutoRespondMeetingRequest", this._document.getElementById("exchWebService-autorespond-meetingrequest").checked); 
 		//exchWebServicesCalPrefs.setCharPref("ecAutoRespondAnswer", this._document.getElementById("exchWebService-autorespond-answer").value); 
 

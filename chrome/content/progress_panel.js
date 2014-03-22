@@ -79,7 +79,7 @@ exchProgressPanel.prototype = {
 					if (!this._document.getElementById("exchWebServiceProgress.progress.grid"+rowCount)) {
 						grid = this._document.createElement("exchangeProgressGrid");
 						grid.setAttribute("id","exchWebServiceProgress.progress.grid"+rowCount);
-						grid.setAttribute("serverUrl",server);
+						grid.setAttribute("serverUrl",jobList[server].server);
 						mainVBox.appendChild(grid);
 					}
 					else {
@@ -154,7 +154,7 @@ exchProgressPanel.prototype = {
 		}
 
 		if (topic == "onExchangeProgressChange") {
-			if ((!this.timerRunning) && (!this.timerRunning)) {
+			if (!this.timerRunning) {
 				this.timerRunning = true;
 				this.timer.initWithCallback(this, 200, this.timer.TYPE_REPEATING_SLACK);
 			}

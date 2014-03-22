@@ -84,12 +84,16 @@ interface mivExchangeBaseItem : calIItemBase
 	void removeOccurrence(in mivExchangeBaseItem aItem);
 	void removeOccurrenceAt(in calIDateTime aRecurrenceId);
 
+	void baseClone(in jsval aItem);
 	void cloneToCalEvent(in calIItemBase aCalEvent);
+	void baseCloneFrom(in jsval aCalEvent);
+	void cloneFrom(in jsval aCalEvent);
 
 	attribute jsval exchangeData;
 	readonly attribute AUTF8String exchangeXML;
 	attribute long occurrenceIndex;
 	readonly attribute jsval updateXML;
+	attribute long cloneCount;
 
 	readonly attribute boolean nonPersonalDataChanged;
 
