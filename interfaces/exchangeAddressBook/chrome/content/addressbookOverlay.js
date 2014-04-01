@@ -97,8 +97,8 @@ exchAddressbookOverlay.prototype = {
 
 		var promptService = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]		
 						.getService(Components.interfaces.nsIPromptService);
-		if (promptService.confirm(null, this.globalFunctions.getString("ExchangeContacts","promtpDeleteDirectoryTitle",[],"exchangecalendar"), 
-				this.globalFunctions.getString("ExchangeContacts","promptDeleteDirectoryText",[theChildDirectory.dirName],"exchangecalendar"))) {	
+		if (promptService.confirm(null, this.globalFunctions.getString("ExchangeContacts","promtpDeleteDirectoryTitle",[],"exchangecontacts"), 
+				this.globalFunctions.getString("ExchangeContacts","promptDeleteDirectoryText",[theChildDirectory.dirName],"exchangecontacts"))) {	
 			exchWebService.commonAbFunctions.deleteAccount(theChildDirectory.uuid);
 
 			MailServices.ab.notifyDirectoryItemDeleted(theParentDirectory, theChildDirectory);
