@@ -882,7 +882,7 @@ mivFunctions.prototype = {
 		else {
 			html = "";
 		}
-		return "<HTML><BODY>"+html+"</BODY></HTML>";
+		return '<HTML><HEAD><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></HEAD><BODY>'+html+'</BODY></HTML>';
 	},
 
 
