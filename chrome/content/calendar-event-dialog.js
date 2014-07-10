@@ -270,6 +270,208 @@ try{
 
 }
 
+if (!exchWebService) var exchWebService = {};
+
+exchWebService.eventDialog = {
+
+    _initialized: false,
+    onLoad: function _onLoad() {
+        if (this._initialized) return;
+
+        exchWebService.eventDialog.updateAttendees();
+	},
+
+
+    updateAttendees: function _updateAttendees() {
+        let attendeeRow = document.getElementById("event-grid-attendee-row");
+        attendeeRow.setAttribute('collapsed', 'true');
+        let attendeeRow2 = document.getElementById("event-grid-attendee-row-2");
+        let optAttendeeRow = document.getElementById("event-grid-attendee-row-4");
+        let reqAttendeeRow = document.getElementById("event-grid-attendee-row-3");
+        if (window.attendees && window.attendees.length > 0) {
+            if (isEvent(window.calendarItem)) { // sending email invitations currently only supported for events
+                attendeeRow2.removeAttribute('collapsed');
+            } else {
+                attendeeRow2.setAttribute('collapsed', 'true');
+            }
+
+            let attendeeNames = [];
+            let attendeeEmails = [];
+            let reqAttendeeNames = [];
+            let reqAttendeeEmails = [];
+            let optAttendeeNames = [];
+            let optAttendeeEmails = [];
+            let numAttendees = window.attendees.length;
+            let emailRE = new RegExp("^mailto:(.*)", "i");
+            for (let i = 0; i < numAttendees; i++) {
+                let attendee = window.attendees[i];
+                let name = attendee.commonName;
+                if (attendee.role == "OPT-PARTICIPANT") {
+                    if (name && name.length) {
+                        optAttendeeNames.push(name);
+                        let email = attendee.id;
+                        if (email && email.length) {
+                            if (emailRE.test(email)) {
+                                name += ' <' + RegExp.$1 + '>';
+                            } else {
+                                name += ' <' + email + '>';
+                            }
+                            optAttendeeEmails.push(name);
+                        }
+                    } else if (attendee.id && attendee.id.length) {
+                        let email = attendee.id;
+                        if (emailRE.test(email)) {
+                            optAttendeeNames.push(RegExp.$1);
+                        } else {
+                            optAttendeeNames.push(email);
+                        }
+                    } else {
+                        continue;
+                    }
+
+                } else {
+
+                    if (name && name.length) {
+                        reqAttendeeNames.push(name);
+                        let email = attendee.id;
+                        if (email && email.length) {
+                            if (emailRE.test(email)) {
+                                name += ' <' + RegExp.$1 + '>';
+                            } else {
+                                name += ' <' + email + '>';
+                            }
+                            reqAttendeeEmails.push(name);
+                        }
+                    } else if (attendee.id && attendee.id.length) {
+                        let email = attendee.id;
+                        if (emailRE.test(email)) {
+                            reqAttendeeNames.push(RegExp.$1);
+                        } else {
+                            reqAttendeeNames.push(email);
+                        }
+                    } else {
+                        continue;
+                    }
+
+                }
+            }
+            if (reqAttendeeNames.length > 0) {
+                reqAttendeeRow.removeAttribute('collapsed');
+            } else {
+                reqAttendeeRow.setAttribute('collapsed', 'true');
+            }
+            if (optAttendeeNames.length > 0) {
+                optAttendeeRow.removeAttribute('collapsed');
+            } else {
+                optAttendeeRow.setAttribute('collapsed', 'true');
+            }
+
+            let attendeeList = document.getElementById("attendee-list");
+            let reqAttendeeList = document.getElementById("req-attendee-list-3");
+            let optAttendeeList = document.getElementById("opt-attendee-list-4");
+
+            let callback = function func() {
+                reqAttendeeList.setAttribute('value', reqAttendeeNames.join(', '));
+                reqAttendeeList.setAttribute('tooltiptext', reqAttendeeEmails.join(', '));
+                optAttendeeList.setAttribute('value', optAttendeeNames.join(', '));
+                optAttendeeList.setAttribute('tooltiptext', optAttendeeEmails.join(', '));
+            };
+            setTimeout(callback, 1);
+        } else {
+
+            attendeeRow2.setAttribute('collapsed', 'true');
+            optAttendeeRow.setAttribute('collapsed', 'true');
+            reqAttendeeRow.setAttribute('collapsed', 'true');
+        }
+    },
+
+    editAttendees: function _editAttendees() {
+        let savedWindow = window;
+        let calendar = getCurrentCalendar();
+
+        var callback = function (attendees, organizer, startTime, endTime) {
+            savedWindow.attendees = attendees;
+            if (organizer) {
+                // In case we didn't have an organizer object before we
+                // added attendees to our event we take the one created
+                // by the 'invite attendee'-dialog.
+                if (savedWindow.organizer) {
+                    // The other case is that we already had an organizer object
+                    // before we went throught the 'invite attendee'-dialog. In that
+                    // case make sure we don't carry over attributes that have been
+                    // set to their default values by the dialog but don't actually
+                    // exist in the original organizer object.
+                    if (!savedWindow.organizer.id) {
+                        organizer.id = null;
+                    }
+                    if (!savedWindow.organizer.role) {
+                        organizer.role = null;
+                    }
+                    if (!savedWindow.organizer.participationStatus) {
+                        organizer.participationStatus = null;
+                    }
+                    if (!savedWindow.organizer.commonName) {
+                        organizer.commonName = null;
+                    }
+                }
+                savedWindow.organizer = organizer;
+            }
+            var duration = endTime.subtractDate(startTime);
+            startTime = startTime.clone();
+            endTime = endTime.clone();
+            var kDefaultTimezone = calendarDefaultTimezone();
+            gStartTimezone = startTime.timezone;
+            gEndTimezone = endTime.timezone;
+            gStartTime = startTime.getInTimezone(kDefaultTimezone);
+            gEndTime = endTime.getInTimezone(kDefaultTimezone);
+            gItemDuration = duration;
+            exchWebService.eventDialog.updateAttendees();
+            updateDateTime();
+            updateAllDay();
+            if (isAllDay != gStartTime.isDate) {
+                setShowTimeAs(gStartTime.isDate)
+            }
+        };
+
+        var startTime = gStartTime.getInTimezone(gStartTimezone);
+        var endTime = gEndTime.getInTimezone(gEndTimezone);
+
+        var isAllDay = getElementValue("event-all-day", "checked");
+        if (isAllDay) {
+            startTime.isDate = true;
+            endTime.isDate = true;
+            endTime.day += 1;
+        } else {
+            startTime.isDate = false;
+            endTime.isDate = false;
+        }
+
+        var menuItem = document.getElementById('options-timezone-menuitem');
+        var displayTimezone = menuItem.getAttribute('checked') == 'true';
+
+        var args = new Object();
+        args.startTime = startTime;
+        args.endTime = endTime;
+        args.displayTimezone = displayTimezone;
+        args.attendees = window.attendees;
+        args.organizer = window.organizer && window.organizer.clone();
+        args.calendar = calendar;
+        args.item = window.calendarItem;
+        args.onOk = callback;
+        args.fbWrapper = window.fbWrapper;
+
+        // open the dialog modally
+        openDialog(
+            "chrome://calendar/content/calendar-event-dialog-attendees.xul",
+            "_blank",
+            "chrome,titlebar,modal,resizable",
+            args);
+    }
+}
+
+window.addEventListener("load", exchWebService.eventDialog.onLoad, false);
+
+
 var tmpEventDialog = new exchEventDialog(document, window);
 window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpEventDialog.onLoad(); }, true);
 
