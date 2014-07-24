@@ -3518,7 +3518,7 @@ dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 
 		var newSnoozeTime = null;
 		// Alarm snooze or dismiss
-		if (typeof this._newXMozSnoozeTime != "undefined"") {
+		if (typeof this._newXMozSnoozeTime != "undefined") {
 //dump("checkAlarmChange: this._newXMozSnoozeTime was set to:"+this._newXMozSnoozeTime+", newReminderMinutesBeforeStart="+newReminderMinutesBeforeStart+"\n");
 			if ((this._newXMozSnoozeTime === null) && (newReminderMinutesBeforeStart !== true)) {
 				// We have a dismiss
