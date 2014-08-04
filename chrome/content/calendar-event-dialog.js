@@ -447,7 +447,9 @@ exchWebService.eventDialog = {
         }
 
         var menuItem = document.getElementById('options-timezone-menuitem');
-        var displayTimezone = menuItem.getAttribute('checked') == 'true';
+        var displayTimezone = true;
+        if( menuItem != null)
+            displayTimezone = menuItem.getAttribute('checked') == 'true';
 
         var args = new Object();
         args.startTime = startTime;
