@@ -122,7 +122,7 @@ try{
 
 //dump("event.dialog: item.exchangeXML:"+item.exchangeXML+"\n");
 
-			if ((item.bodyType == "HTML") || (item.bodyType === undefined)) {
+			if ((item.bodyType === undefined) || (item.bodyType == "HTML")) {
 				if (this._document.getElementById("item-description")) {
 					this._document.getElementById("item-description").hidden = true;
 				}
