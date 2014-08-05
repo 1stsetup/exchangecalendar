@@ -145,7 +145,8 @@
 					  // until this function returns we add at least a single copy of this template back again.
 					  listbox.removeChild(template);
 
-					  this.addDirectoryServerObserver();
+                      // TODO: addDirectoryServerObserver is not present!
+					  // this.addDirectoryServerObserver();
 
 					  this.setFocus(this.mMaxAttendees);
         			]]></body>
