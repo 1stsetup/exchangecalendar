@@ -4,8 +4,8 @@
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 
   <Description about="urn:mozilla:install-manifest">
-    <em:id>exchangecalendar@ericsson.com</em:id>
-    <em:version>3.2.0</em:version>
+    <em:id>exchangecalendar@extensions.1st-setup.nl</em:id>
+    <em:version>3.2.1</em:version>
 
     <em:targetApplication>
       <Description>
@@ -21,7 +21,7 @@
           <!-- Seamonkey -->
         <em:id>{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}</em:id>
         <em:minVersion>2.6</em:minVersion>
-        <em:maxVersion>2.20.*</em:maxVersion>
+        <em:maxVersion>2.26.*</em:maxVersion>
       </Description>
     </em:targetApplication>
 
