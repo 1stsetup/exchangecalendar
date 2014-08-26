@@ -122,6 +122,8 @@ exchAddressbookOverlay.prototype = {
 
 			//this._document.getElementById("cmd_delete").setAttribute('disabled','true');
 			this._document.getElementById("button_delete").setAttribute('disabled','true');
+			this._document.getElementById("cmd_properties").setAttribute('disabled', 'true');
+			this._document.getElementById("button-editcard").setAttribute('disabled', 'true');
 
 			this._document.getElementById("cmd_deleteexchange").setAttribute('disabled','true');
 
@@ -158,6 +160,8 @@ exchAddressbookOverlay.prototype = {
 				this._document.getElementById("menu_deleteexchangecontact").setAttribute('disabled','true');
 
 			}
+			this._document.getElementById("cmd_properties").setAttribute('disabled', 'false');
+			this._document.getElementById("button-editcard").setAttribute('disabled', 'false');
 		}
 
 		exchWebService.commonAbFunctions.logInfo("ondirTreeSelect selectedDir:"+selectedDir+"\n");
