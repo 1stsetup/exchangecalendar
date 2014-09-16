@@ -157,7 +157,7 @@ mivExchangeAutoCompleteResult.prototype = {
   //readonly attribute boolean typeAheadResult;
 	get typeAheadResult()
 	{
-		return true;
+		return this.matchCount() <= 1;
 	},
 
   /**
@@ -243,6 +243,16 @@ mivExchangeAutoCompleteResult.prototype = {
 	{
 		//dump("getImageAt: aIndex:"+aIndex+"\n");
 		return "chrome://exchangecalendar/content/exchange-addrbook.png";
+	},
+
+  /**
+   * Get the final value that should be completed when the user confirms
+   * the match at the given index.
+   */
+  //AString getFinalCompleteValueAt(in long index);
+	getFinalCompleteValueAt: function _getFinalCompleteValueAt(aIndex)
+	{
+		return this.getValueAt(aIndex)
 	},
 
   /**
