@@ -44,5 +44,5 @@
 <!ENTITY button.offlineCacheproperties.clearCache "Clear offline cached data">
 <!ENTITY ecsettings.tab.autoprocessingproperties "Automatic Processing">
 
-<!ENTITY label.autoprocessingproperties.deletecancelleditems "Automatically remove cancelled items">
+<!ENTITY label.autoprocessingproperties.deletecancelleditems "Automatically remove cancelled events">
 
