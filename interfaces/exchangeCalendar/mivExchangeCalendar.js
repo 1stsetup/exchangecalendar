@@ -2646,7 +2646,16 @@ calExchangeCalendar.prototype = {
 			for (var itemid in ids) {
 				if (this.itemCacheById[itemid]) {
 					if (isEvent(this.itemCacheById[itemid])) {
-						events.push(this.itemCacheById[itemid])
+						if ( this.deleteCancelledInvitation && this.itemCacheById[itemid].isCancelled &&  this.itemCacheById[itemid].isInvitation   )  
+						{
+							if (this.debug) this.logInfo("getItemsFromMemoryCache 2: " +  "Found Cancelled Items going for delete - " + this.itemCacheById[itemid].title );
+						    this.deleteItem(this.itemCacheById[itemid]);
+						}
+						else
+						{						
+							events.push(this.itemCacheById[itemid])
+
+						}
 					}
 				}
 			}
@@ -3357,6 +3366,10 @@ try{
 		aDate.addDuration(tmpDur);
 		if (this.debug) this.logInfo("endCacheDate:"+aDate.toString());
 		return aDate
+	},
+	
+	get deleteCancelledInvitation() {
+		return this.globalFunctions.safeGetBoolPref(this.prefs, "ecautoprocessingdeletecancelleditems", false);
 	},
 
 	checkInbox: function _checkInbox()
@@ -7146,8 +7159,13 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify, fromOfflineCache);
 			if (item) {
+				if ( this.deleteCancelledInvitation && item.isCancelled &&  item.isInvitation   )  
+				{
+					if (this.debug) this.logInfo("updateCalendar2 2: " +  "Found Cancelled Items going for delete - " + item.title );
+				    this.deleteItem(item);
+				}
 				//convertedItems.push(item);
-				if (!this.itemCacheById[item.id]) {
+				else if (!this.itemCacheById[item.id]) {
 					// This is a new unknown item
 					//this.itemCacheById[item.id] = item;
 					this.addItemToCache(item);
