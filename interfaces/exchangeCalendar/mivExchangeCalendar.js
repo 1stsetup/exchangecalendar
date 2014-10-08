@@ -2648,13 +2648,12 @@ calExchangeCalendar.prototype = {
 					if (isEvent(this.itemCacheById[itemid])) {
 						if ( this.deleteCancelledInvitation && this.itemCacheById[itemid].isCancelled &&  this.itemCacheById[itemid].isInvitation   )  
 						{
-							if (this.debug) this.logInfo("getItemsFromMemoryCache 2: " +  "Found Cancelled Items going for delete - " + this.itemCacheById[itemid].title );
+							if (this.debug) this.logInfo("getItemsFromMemoryCache 2: " +  "Found Cancelled Item " + this.itemCacheById[itemid].title + " - going to delete from cache" );
 						    this.deleteItem(this.itemCacheById[itemid]);
 						}
 						else
 						{						
-							events.push(this.itemCacheById[itemid])
-
+							events.push(this.itemCacheById[itemid]); 
 						}
 					}
 				}
@@ -7158,14 +7157,9 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			this.itemsFromExchange++;
 
 			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify, fromOfflineCache);
-			if (item) {
-				if ( this.deleteCancelledInvitation && item.isCancelled &&  item.isInvitation   )  
-				{
-					if (this.debug) this.logInfo("updateCalendar2 2: " +  "Found Cancelled Items going for delete - " + item.title );
-				    this.deleteItem(item);
-				}
+			if (item) { 
 				//convertedItems.push(item);
-				else if (!this.itemCacheById[item.id]) {
+				  if (!this.itemCacheById[item.id]) {
 					// This is a new unknown item
 					//this.itemCacheById[item.id] = item;
 					this.addItemToCache(item);
@@ -7389,6 +7383,20 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 					delete this.itemCacheById[item.id];*/
 					this.removeItemFromCache(item);
 					this.removeFromOfflineCache(item);
+					if ( this.deleteCancelledInvitation &&  item.isCancelled &&  item.isInvitation   )  
+					{
+						if (this.debug) this.logInfo("syncFolderItemsOK 2: " +  "Found item deleted : " +  item.title  + " - going to delete from calendar" ); 
+						this.deleteItem(item);		
+						this.removeFromMeetingRequestCache(item); 
+						if ( item.isRemoved )
+					    {
+							if (this.debug) this.logInfo("syncFolderItemsOK 2: " +  "Deleted event " + item.title );
+					    }
+						else
+						{
+							if (this.debug) this.logInfo("syncFolderItemsOK 2: " +  "Something wrong! not deleted from exchange calendar - " + item.title );
+						}
+					}
 				}
 				else {
 					// Find matching master record.
