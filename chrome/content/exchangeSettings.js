@@ -262,7 +262,7 @@ exchExchangeSettings.prototype = {
 		            .getService(Ci.nsIPrefService)
 			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+calId+".");		
 		this._document.getElementById("exchWebService-poll-calendar-interval").value = this.globalFunctions.safeGetIntPref(exchWebServicesCalPrefs, "ecCalendarPollInterval", 60);
-		this._document.getElementById("exchWebService-autoprocessingproperties-deletecancelleditems").checked = this.globalFunctions.safeGetBoolPref(exchWebServicesCalPrefs, "ecautoprocessingdeletecancelleditems", false);
+		this._document.getElementById("exchWebService-autoprocessingproperties-deletecancelleditems").checked = this.globalFunctions.safeGetBoolPref(exchWebServicesCalPrefs, "ecautoprocessingdeletecancelleditems", true);
 /*
 		this._document.getElementById("exchWebService-poll-inbox").checked = this.globalFunctions.safeGetBoolPref(exchWebServicesCalPrefs, "ecPollInbox", true);
 		this._document.getElementById("exchWebService-poll-inbox-interval").value = this.globalFunctions.safeGetIntPref(exchWebServicesCalPrefs, "ecPollInboxInterval", 180);
