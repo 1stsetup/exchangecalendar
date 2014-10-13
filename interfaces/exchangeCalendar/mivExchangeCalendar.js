@@ -7158,8 +7158,22 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify, fromOfflineCache);
 			if (item) { 
+				if ( item.isCancelled && item.reminderIsSet )
+				{
+				    var aNewItem = item.QueryInterface(Ci.mivExchangeEvent);
+				    
+					if (this.debug) this.logInfo("updateCalendar2: This item is Cancelled resetting reminder to false :  " + aNewItem.title );
+ 
+					this.itemCount++; 
+					aNewItem._reminderIsSet=false;
+					aNewItem._newAlarm=null;
+					
+					this.modifyItem(aNewItem, item); 
+					
+					if (this.debug) this.logInfo("updateCalendar2: hope! reminder is set  for item " +  aNewItem.title + " going to next item "  );
+				}
 				//convertedItems.push(item);
-				  if (!this.itemCacheById[item.id]) {
+				else if (!this.itemCacheById[item.id]) {
 					// This is a new unknown item
 					//this.itemCacheById[item.id] = item;
 					this.addItemToCache(item);

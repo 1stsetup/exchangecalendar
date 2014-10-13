@@ -3641,6 +3641,11 @@ dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 					  PropertyType: "SystemTime"} );
 		}
 
+		if ( this.isCancelled )
+		{
+			reminderIsSetChanged="false";
+		}
+		
 		if (reminderIsSetChanged !== undefined) {
 			this.addSetItemField(updates, "ReminderIsSet", reminderIsSetChanged);
 		}
