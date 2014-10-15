@@ -7157,7 +7157,9 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			this.itemsFromExchange++;
 
 			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify, fromOfflineCache);
+			var aItem = item.QueryInterface(Ci.mivExchangeEvent);
 			if (item) { 
+				var isOldCacheItem=true;
 				if ( item.isCancelled && item.reminderIsSet )
 				{
 				    var aNewItem = item.QueryInterface(Ci.mivExchangeEvent);
@@ -7178,7 +7180,10 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 					//this.itemCacheById[item.id] = item;
 					this.addItemToCache(item);
 					this.itemCount++;
+					isOldCacheItem=false;  
 
+					if (this.debug) this.logInfo("updateCalendar2: setTentative:"+ item.title); 
+					this.setTentative(aItem,aItems[index],isOldCacheItem);   
 					if (this.debug) this.logInfo("updateCalendar2: onAddItem:"+ item.title);
 					if (doNotify) {
 						this.notifyTheObservers("onAddItem", [item]);
@@ -7204,6 +7209,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 						//this.addToOfflineCache(item, xml2json.toString(aItems[index]));
 					}
 				}
+				isOldCacheItem=true;
 			}
 
 			aItems[index] = null;
@@ -7214,7 +7220,444 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			this.addToOfflineCache(cacheItem);
 		}
 	},
+	
+	setTentative: function _setTentative(aItem, exchangeItem ,isOldCacheItem)
+	{ 
+		//Return when item already in cache
+		if ( !aItem  || !exchangeItem || !isEvent(aItem)   ) 
+		{
+			if (this.debug) this.logInfo("setTentative"); 
+			return;
+		} 
+		
+		if ( this.newCalendar )
+		{
+			if (this.debug) this.logInfo("setTentative : calendar is creating so no setTentative will not proceed"); 
+			return;
+		}
+		
+		if ( isOldCacheItem ) 
+		{
+			//NoResponseReceived
+			//t:MyResponseType 
+			 if (this.debug) this.logInfo("setTentative 2: This item : " + aItem.title + " is Old and responded with - "  + xml2json.getTagValue(exchangeItem,"t:MyResponseType")  );
+			 return;
+		}  		
+		else
+		{
+		    var aNewItem = aItem.QueryInterface(Ci.mivExchangeEvent); 
+		    var aOldItem = aItem.QueryInterface(Ci.mivExchangeEvent); 
+		   
+		    var aNewItem = this.cloneItem(aItem);
+		    var aOldItem = this.cloneItem(aItem); 
+		    
+			var itemResponse =xml2json.getTagValue(exchangeItem,"t:MyResponseType");
+			if ( itemResponse == "NoResponseReceived" )
+			{
+				var meNew = this.getInvitedAttendee(aNewItem);
+			 	var meOld = this.getInvitedAttendee(aOldItem);
+				//Assuming items already marked as tentaive in auto processing settings in ews server
+				if (this.debug) this.logInfo("setTentative 2: This item is not in cache " + " stauts: "  + meNew.participationStatus + " :: "  + meOld.participationStatus+ " - " +  aItem.title + " Responded : " + itemResponse );
+				//aNewItem.setProperty("STATUS", "TENTATIVE");
+		
+			 	meNew.participationStatus="TENTATIVE"; 
+			 	
+				if (this.debug) this.logInfo("setTentative 2: This item is not in cache " + meNew.participationStatus + " :: "  + meOld.participationStatus) ;
+				this.modifyEventImmediate(aNewItem, aOldItem); 
+			}
+			else				
+			{
+				if (this.debug) this.logInfo("setTentative 2: This item is found in cache " + aItem.title + " Responded : " + itemResponse );
+				return;
+			}
+		}  
+	},	
+	
+	modifyEventImmediate: function _modifyItemImmediate(aNewItem, aOldItem, aListener)
+	{
 
+		if (this.debug) this.logInfo("modifyEventImmediate");
+		var result = Ci.calIErrors.MODIFICATION_FAILED;
+
+	        if (this.OnlyShowAvailability) {
+			this.readOnlyInternal = true;
+			this.notifyOperationComplete(aListener,
+        	                             Ci.calIErrors.OPERATION_CANCELLED,
+                        	             Ci.calIOperationListener.MODIFY,
+        	                             aNewItem.id,
+        	                             aNewItem);
+			return null;
+	        }
+
+	        if (this.readOnly) {
+			// When we hit this it probably is the change on a alarm. We will process this only in the local cache.
+			if (this.debug) this.logInfo("modifyEventImmediate: modifyItem and this calendar is ReadOnly");
+			this.notifyTheObservers("onModifyItem", [aNewItem, aOldItem]);
+	        	this.notifyOperationComplete(aListener,
+	        	                             Cr.NS_OK,
+	        	                             Ci.calIOperationListener.MODIFY,
+	        	                             aNewItem.id,
+	        	                             aNewItem);
+			return null;
+	        }
+
+		if ((aOldItem.className) && (!aOldItem.canModify)) {
+			if (this.debug) this.logInfo("modifyEventImmediate: modifyItem and this item is ReadOnly for this user.");
+	        	this.notifyOperationComplete(aListener,
+	        	                             Cr.NS_OK,
+	        	                             Ci.calIOperationListener.MODIFY,
+	        	                             aOldItem.id,
+	        	                             aOldItem);
+			return null;
+		}
+
+		if (this.debug) this.logInfo("modifyEventImmediate: 1 -- aOldItem.recurrenceInfo:"+aOldItem.recurrenceInfo+", aNewItem.recurrenceInfo:"+aNewItem.recurrenceInfo);
+		if ((this.debug) && (aOldItem.recurrenceInfo)) this.logInfo("modifyItemAsTentative: 1 -- aOldItem.recurrenceInfo.toString():"+aOldItem.recurrenceInfo.toString());
+		if ((this.debug) && (aNewItem.recurrenceInfo)) this.logInfo("modifyItemAsTentative: 1 -- aNewItem.recurrenceInfo.toString():"+aNewItem.recurrenceInfo.toString());
+
+	        if (!aNewItem) {
+	            throw Cr.NS_ERROR_INVALID_ARG;
+	        }
+
+	        var this_ = this;
+	        function reportError(errStr, errId) {
+	            this_.notifyOperationComplete(aListener,
+	                                          errId ? errId : Cr.NS_ERROR_FAILURE,
+	                                          Ci.calIOperationListener.MODIFY,
+	                                          aNewItem.id,
+	                                          errStr);
+	            return null; 
+	        }
+
+	        if (aNewItem.id == null) {
+	            // this is definitely an error
+	            return reportError("modifyEventImmediate: ID for modifyItem item is null");
+	        }
+
+		// See if attachments changed.
+		var newAttachments = aNewItem.getAttachments({});
+		var attachments = {};
+
+		var attachmentsUpdates = { create: [], delete:[] };
+		if (newAttachments.length > 0) {
+			if (this.debug) this.logInfo("modifyEventImmediate:   -- We have newAttachments:"+newAttachments.length);
+			for (var index in newAttachments) {
+				if (newAttachments[index].getParameter("X-AttachmentId")) {
+					attachments[newAttachments[index].getParameter("X-AttachmentId")] = newAttachments[index];
+				}
+				else {
+					attachmentsUpdates.create.push(newAttachments[index]);
+					if (this.debug) this.logInfo("modifyEventImmediate: newAttachment:"+newAttachments[index].uri.spec);
+				}
+			}
+		}
+		// Check which have been removed.
+		var oldAttachments = aOldItem.getAttachments({});
+		for (var index in oldAttachments) {
+			if (! attachments[oldAttachments[index].getParameter("X-AttachmentId")]) {
+				attachmentsUpdates.delete.push(oldAttachments[index]);
+				if (this.debug) this.logInfo("modifyEventImmediate: removedAttachment:"+oldAttachments[index].uri.spec);
+			}
+		}			
+		
+
+		if (isEvent(aNewItem)) {
+			if (this.debug) this.logInfo("modifyEventImmediate:  it is an event.");
+			var doSendMeetingRespons = false;
+			var meOld = this.getInvitedAttendee(aOldItem);
+			if (!meOld) {
+				if (this.debug) this.logInfo("modifyEventImmediate: Did not find meOld");
+				meOld = cal.createAttendee();
+				meOld.participationStatus = "NEEDS-ACTION";
+			}
+
+			var meNew = this.getInvitedAttendee(aNewItem);
+			if (!meNew) {
+				if (this.debug) this.logInfo("modifyEventImmediate: Did not find meNew");
+				meNew = cal.createAttendee();
+				meNew.participationStatus = "NEEDS-ACTION";
+			}
+
+			if (aOldItem.isInvitation) {
+
+				if (this.debug) this.logInfo("modifyEventImmediate: 1 meOld.participationStatus="+meOld.participationStatus+", meNew.participationStatus="+meNew.participationStatus);
+				if (this.debug) this.logInfo("modifyEventImmediate: 1 aOldItem.status="+aOldItem.getProperty("STATUS")+", aNewItem.status="+aNewItem.getProperty("STATUS"));
+
+				if ((meOld) && (meNew) && (meOld.participationStatus != meNew.participationStatus)) {
+					doSendMeetingRespons = true;
+				}
+
+				if ((meNew) && (meNew.participationStatus == "NEEDS-ACTION") && (meOld.participationStatus != meNew.participationStatus)) {
+					// They choose to confirm at a later state. Do not change this item.
+			        	this.notifyOperationComplete(aListener,
+			        	                             Cr.NS_OK,
+			        	                             Ci.calIOperationListener.MODIFY,
+			        	                             aNewItem.id,
+			        	                             aNewItem);
+
+			        	return null;
+				}
+
+				if ((meOld) && (meNew) && (aOldItem.getProperty("STATUS") != aNewItem.getProperty("STATUS")) && (!doSendMeetingRespons)) {
+					switch (aNewItem.getProperty("STATUS")) {
+					case "CONFIRMED": 
+						meNew.participationStatus = "ACCEPTED";
+						break;
+					case null:
+					case "TENTATIVE": 
+						meNew.participationStatus = "TENTATIVE";
+						break;
+					case "CANCELLED": 
+						meNew.participationStatus = "DECLINED";
+						break;
+					}
+					doSendMeetingRespons = true;
+				}
+
+			}
+			
+			if (this.debug) this.logInfo("modifyEventImmediate:  doSendMeetingRespons " + doSendMeetingRespons );
+			
+			if (doSendMeetingRespons) {
+				// The item is an invitation.
+				// My status has changed. Send to this.globalFunctions.
+				if (this.debug) this.logInfo("modifyEventImmediate: 2 aOldItem.participationStatus="+meOld.participationStatus+", aNewItem.participationStatus="+(meNew ? meNew.participationStatus : ".."));
+				if (this.debug) this.logInfo("modifyEventImmediate: 3a aOldItem.id="+aOldItem.id);
+				if (this.debug) this.logInfo("modifyEventImmediate: 3b aNewItem.id="+aNewItem.id);
+
+				var requestResponseItem = aNewItem;
+				requestResponseItem.setProperty("X-MEETINGREQUEST", true);
+				var aResponse = null;
+
+				// Loop through meetingRequestsCache to find it.
+				var cachedItem = null;
+				for (var index in this.meetingRequestsCache) {
+					if (this.meetingRequestsCache[index]) {
+						if (this.meetingRequestsCache[index].uid == aNewItem.id) {
+							cachedItem = this.meetingRequestsCache[index];
+							break;
+						}
+					}
+				}
+
+				if (cachedItem) {
+					if (this.debug) this.logInfo("modifyEventImmediate: ___________ Found in meeting request cache.");
+					var tmpItem = cachedItem;
+					var tmpUID = aNewItem.id;
+					requestResponseItem = this.cloneItem(aNewItem);
+					requestResponseItem.id = tmpItem.id;
+					//requestResponseItem.setProperty("X-UID",  tmpItem.uid);
+					//requestResponseItem.setProperty("X-ChangeKey",  tmpItem.changeKey);
+				}
+				else {
+					if (this.debug) this.logInfo("modifyEventImmediate: ___________ NOT Found in meeting request cache. X-UID:"+aNewItem.uid);
+
+					if (aNewItem.id == aNewItem.parentItem.id) {
+						if (this.debug) this.logInfo("modifyEventImmediate: _________ it is a master.");
+					}
+
+					if ((!this.itemCacheById[aNewItem.id]) && (!this.recurringMasterCache[aNewItem.uid])) {
+						this.getMeetingRequestFromServer(aNewItem, aOldItem.uid, Ci.calIOperationListener.MODIFY, aListener);
+						return;
+					}
+
+				}
+
+				if (this.sendMeetingResponsImmediate(requestResponseItem, null, "exisiting", aResponse)) {
+					//return;
+					result = Cr.NS_OK;
+				}
+				else {
+					if (this.debug) this.logInfo("modifyEventImmediate : canceled by user.");
+					result = Cr.NS_OK;
+				}
+			}
+			else {
+
+				var input= { item: aNewItem, 
+					     response: "sendtonone"};
+
+				if (aNewItem.organizer) {
+					if (this.debug) this.logInfo("The organizer is:"+aNewItem.organizer.id);
+				}
+				else {
+					if (this.debug) this.logInfo("We have no organizer!");
+				}
+
+
+				var changesObj = this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, aOldItem.isInvitation);
+				var changes;
+				if (changesObj) {
+					changes = changesObj.changes;
+				}
+				var weHaveChanges = (changes || (attachmentsUpdates.create.length > 0) || (attachmentsUpdates.delete.length > 0));
+//				var weHaveChanges = (this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, aOldItem.isInvitation) || (attachmentsUpdates.create.length > 0) || (attachmentsUpdates.delete.length > 0));
+
+				var iAmOrganizer = ((aNewItem.organizer) && (aNewItem.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()));
+				//if (iAmOrganizer) {}
+
+				if (this.debug) this.logInfo("modifyEventImmediate:  it is a event. aOldItem.CalendarItemType=:"+aOldItem.calendarItemType);
+
+				// We have a Single or master
+				if (aOldItem.calendarItemType == "RecurringMaster") {
+					if (this.debug) this.logInfo(" Master changed:"+aNewItem.title);
+					// See if the aNewItem is also the master record.
+					var masterChanged = (aNewItem.parentItem.id == aNewItem.id);
+
+					// We need to find out wat has changed;
+					if (this.debug) this.logInfo("modifyEventImmediate:  ==1 invite="+aOldItem.isInvitation);
+
+					if (changes) {
+						if (this.debug) this.logInfo("modifyEventImmediate: changed:"+String(changes));
+
+						var self = this;
+						this.addToQueue( erUpdateItemRequest,
+							{user: this.user, 
+							 mailbox: this.mailbox,
+							 folderBase: this.folderBase,
+							 serverUrl: this.serverUrl,
+							 item: aOldItem,
+							 folderID: this.folderID,
+							 changeKey: this.changeKey,
+							 updateReq: changes,
+							 newItem: aNewItem,
+					 		 actionStart: Date.now(),
+							 attachmentsUpdates: attachmentsUpdates,
+							 sendto: input.response}, 
+							function(erUpdateItemRequest, aId, aChangeKey) { self.updateItemOk(erUpdateItemRequest, aId, aChangeKey);}, 
+							function(erUpdateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erUpdateItemRequest, aCode, aMsg);},
+							aListener);
+						return;
+					}
+					else {
+						if (this.debug) this.logInfo("modifyEventImmediate:  No changes for master.");
+						// No changes to a master could means that one of the occurrences
+						// was deleted. 
+						var removedOccurrence = this.getRemovedOccurrence(aOldItem, aNewItem);
+						if (removedOccurrence) {
+							// Delete this occurrence; multi
+							this.notifyTheObservers("onDeleteItem", [removedOccurrence], true);
+							this.deleteItem(removedOccurrence);
+							result = Cr.NS_OK;
+						}
+						else {
+							// Could be an alarm dismiss or snooze
+							dump("IF YOU SEE THIS PLEASE REPORT..(CODE1)\n");
+							this.masterModified(aNewItem);
+						}
+						result = Cr.NS_OK;
+					}
+				}
+				else {
+					if (this.debug) this.logInfo("modifyEventImmediate: '"+aOldItem.calendarItemType+"' event modification");
+					// We need to find out wat has changed;
+					if (this.debug) this.logInfo("modifyEventImmediate:  ==1 invite="+aOldItem.isInvitation);
+
+					if (changes) {
+						if (this.debug) this.logInfo("modifyEventImmediate:  changed:"+String(changes));
+
+						var self = this;
+						this.addToQueue( erUpdateItemRequest,
+							{user: this.user, 
+							 mailbox: this.mailbox,
+							 folderBase: this.folderBase,
+							 serverUrl: this.serverUrl,
+							 item: aOldItem,
+							 folderID: this.folderID,
+							 changeKey: this.changeKey,
+							 updateReq: changes,
+							 newItem: aNewItem,
+					 		 actionStart: Date.now(),
+							 attachmentsUpdates: attachmentsUpdates,
+							 sendto: input.response}, 
+							function(erUpdateItemRequest, aId, aChangeKey) { self.updateItemOk(erUpdateItemRequest, aId, aChangeKey);}, 
+							function(erUpdateItemRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erUpdateItemRequest, aCode, aMsg);},
+							aListener);
+						this.singleModified(aNewItem, true, true);
+						return;
+					}
+					else {
+						if (this.doAttachmentUpdates(attachmentsUpdates, aOldItem, input.response, aListener)) {
+							// We are done
+							if (this.debug) this.logInfo("modifyEventImmediate:  No only attachment changes no other fields.");
+							return;
+						}
+						else {
+							if (this.debug) this.logInfo("modifyEventImmediate:  No changes 1.");
+							if (!aOldItem.isInvitation) {
+								//aNewItem.parentItem = aNewItem; move to storagecalendar
+								this.singleModified(aNewItem, true, true);
+							}
+							result = Cr.NS_OK;
+						}
+					}
+				}
+			}
+		}
+		  
+		//this.notifyTheObservers("onModifyItem", [aNewItem, aOldItem]);
+
+        	this.notifyOperationComplete(aListener,
+        	                             result,
+        	                             Ci.calIOperationListener.MODIFY,
+        	                             aNewItem.id,
+        	                             aNewItem);
+
+        	return null;
+	},
+	
+	sendMeetingResponsImmediate: function _sendMeetingResponsImmediate(aItem, aListener, aItemType, aResponse, aBodyText)
+	{
+		if (this.debug) this.logInfo("sendMeetingResponsImmediate");
+
+		// Check if I'm the organiser. Do not send to myself.
+		if (aItem.organizer) {
+			if (aItem.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) {
+				return true;
+			}
+		}
+		var me = this.getInvitedAttendee(aItem);
+		if ((!me) && (!aResponse)) {
+			return false;
+		}
+
+		if (aResponse) {
+			var tmpResponse = aResponse;
+		}
+		else {
+			var tmpResponse = me.participationStatus;
+		}
+
+		var messageDisposition = "SendOnly";
+		
+		var input= { item: aItem, 
+			     response: tmpResponse,
+			     answer: "",
+			     bodyText: ""}; 
+	 
+		if (this.debug) this.logInfo("sendMeetingResponsImmediate:  -------------- messageDisposition="+messageDisposition);
+
+		var self = this;
+		this.addToQueue( erSendMeetingResponsRequest,
+			{user: this.user, 
+			 mailbox: this.mailbox,
+			 folderBase: this.folderBase,
+			 serverUrl: this.serverUrl,
+			 item: aItem,
+			 folderID: this.folderID,
+			 changeKey: this.changeKey,
+			 response: input.response,
+			 bodyText: input.bodyText,
+			 senderMailbox: this.mailbox,
+	 		 actionStart: Date.now(),
+			 itemType: aItemType,
+			 messageDisposition: messageDisposition}, 
+			function(erSendMeetingResponsRequest) { self.sendMeetingResponsOk(erSendMeetingResponsRequest);}, 
+			function(erSendMeetingResponsRequest, aCode, aMsg) { self.whichOccurrencegetOccurrenceIndexError(erSendMeetingResponsRequest, aCode, aMsg);},
+			aListener);
+		return true;
+	},
+	
 
 	getCalendarItemsOK: function _getCalendarItemsOK(erGetItemsRequest, aItems, aItemErrors)
 	{
