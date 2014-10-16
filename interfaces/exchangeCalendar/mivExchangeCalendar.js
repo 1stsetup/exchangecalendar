@@ -7155,10 +7155,18 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			this.itemsFromExchange++;
 
 			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify, fromOfflineCache);
-			var aItem = item.QueryInterface(Ci.mivExchangeEvent);
+			var aItem;
+			if ( isEvent(item) )
+			{
+				aItem=item.QueryInterface(Ci.mivExchangeEvent);
+			}
+			else
+			{
+				aItem=null;
+			}
 			if (item) { 
 				var isOldCacheItem=true;
-				if ( item.isCancelled && item.reminderIsSet )
+				if ( item.isCancelled && item.reminderIsSet &&  isEvent(item) )
 				{
 				    var aNewItem = item.QueryInterface(Ci.mivExchangeEvent);
 				    
@@ -7181,7 +7189,10 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 					isOldCacheItem=false;  
 
 					if (this.debug) this.logInfo("updateCalendar2: setTentative:"+ item.title); 
-					this.setTentative(aItem,aItems[index],isOldCacheItem);   
+					if ( isEvent(aItem) )
+					{
+							this.setTentative(aItem,aItems[index],isOldCacheItem);
+					}
 					if (this.debug) this.logInfo("updateCalendar2: onAddItem:"+ item.title);
 					if (doNotify) {
 						this.notifyTheObservers("onAddItem", [item]);
