@@ -2148,11 +2148,12 @@ calExchangeCalendar.prototype = {
                                      Ci.calIOperationListener.GET,
                                      aId,
                                      null);
-			aListener.onGetResult (this, 
+	/*	
+		aListener.onGetResult (this, 
 		                       Cr.NS_OK,
 		                       item_iid, null,
 		                       1, [item]);
-		 
+	*/	 
 	},
 
 	typeString: function _typeString(o) {
