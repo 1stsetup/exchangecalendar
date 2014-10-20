@@ -48,3 +48,7 @@ start
 
 <!ENTITY button.offlineCacheproperties.clearCache "Verwijder offline gebufferde data">
 
+<!ENTITY ecsettings.tab.autoprocessingproperties "Automatische verwerking">
+
+<!ENTITY label.autoprocessingproperties.deletecancelleditems "Verwijder automatisch geannuleerde gebeurtenissen">
+
