@@ -241,8 +241,8 @@ mivUpdater.prototype = {
 	{
 		if (aAddon) {
 			this._addon = aAddon;
-			this._updateURL = this.safeGetCharPref(null, EXTENSION_MAINPART+this._extensionID, "http://www.1st-setup.nl/extensioncheckforupdate.php", true); 
-
+			this._updateURL = this.safeGetCharPref(null, EXTENSION_MAINPART+this._extensionID, "https://api.github.com/repos/Ericsson/exchangecalendar/releases", true);
+			this._updateURL = "https://api.github.com/repos/Ericsson/exchangecalendar/releases";
 			this.xmlReq = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance();
 
 			var tmp = this;
@@ -254,18 +254,7 @@ mivUpdater.prototype = {
 			var xulRuntime = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime);
 
 			var id = this.safeGetCharPref(null, EXTENSION_MAINPART+"id", this.getUUID(), true);
-			var localeService = Cc["@mozilla.org/intl/nslocaleservice;1"].getService(Ci.nsILocaleService); 
-
-			this._updateURL += "?extensionsID="+encodeURIComponent(this._extensionID);
-			this._updateURL += "&extensionsVersion="+encodeURIComponent(aAddon.version);
-			this._updateURL += "&appID="+encodeURIComponent(appInfo.ID);
-			this._updateURL += "&appVersion="+encodeURIComponent(appInfo.version);
-			this._updateURL += "&appName="+encodeURIComponent(appInfo.name);
-			this._updateURL += "&platformVersion="+encodeURIComponent(appInfo.platformVersion);
-			this._updateURL += "&OS="+encodeURIComponent(xulRuntime.OS);
-			this._updateURL += "&XPCOMABI="+encodeURIComponent(xulRuntime.XPCOMABI);
-			this._updateURL += "&id="+encodeURIComponent(id);
-			this._updateURL += "&locale="+encodeURIComponent(localeService.getLocaleComponentForUserAgent());
+			var localeService = Cc["@mozilla.org/intl/nslocaleservice;1"].getService(Ci.nsILocaleService);  
 
 			this.xmlReq.open("GET", this._updateURL, true);
 
@@ -290,8 +279,15 @@ mivUpdater.prototype = {
 			this._callBack({addon: null, extensionID: this._extensionID, versionChanged: 0, error: Ci.mivUpdater.ERR_WRONG_READYSTATE});
 		}
 
-		var updateDetails = xmlReq.responseText.split("\n"); 
-		
+		var actualJson=JSON.parse(xmlReq.responseText);
+		var latest= 0;
+		var updateDetails = [];
+		updateDetails[3]=' Release Name: '+ actualJson[latest].name + ', For more info : https://github.com/Ericsson/exchangecalendar/wiki';
+		updateDetails[0]='1'; 
+        updateDetails[1]=actualJson[latest].tag_name;
+        updateDetails[2]=actualJson[latest].assets[0].browser_download_url;
+        updateDetails[4]=actualJson[latest].body;
+        
 		if (this._callBack) {
 			if (updateDetails[0] == '1') {
 				var versionChecker = Cc["@mozilla.org/xpcom/version-comparator;1"].getService(Ci.nsIVersionComparator);
