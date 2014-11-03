@@ -520,6 +520,7 @@ exchDelegateCalendarSettings.prototype = {
      }
      else
      {  
+    	 if( this.delegatesList ) {
 		    for(var index=0;index<this.delegatesList.length;index++ )
 		    {
 		    	var listEmail = this.delegatesList[index].PrimarySmtpAddress;
@@ -531,7 +532,7 @@ exchDelegateCalendarSettings.prototype = {
 		    		return;
  		    	} 
 		    }
-		    
+    	 }
     	    var self=this;
 		    var calendar = this._window.arguments[0].calendar; 
 			var calId = this._window.arguments[0].calendar.id;
