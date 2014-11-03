@@ -18,7 +18,8 @@
 <dialog id="DelegateUserPopup" title="Delegate Calendar" 
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" 
         xmlns:html="http://www.w3.org/1999/xhtml" 
-        buttons="cancel" ondialogcancel="window.close();" onload="tmpDelegateCalendarSettings.onLoad();return tmpDelegateCalendarSettings.getDelegate()"> 
+        buttons="cancel" ondialogcancel="window.close();" 
+        onload="tmpDelegateCalendarSettings.onLoad();tmpDelegateCalendarSettings.getDelegator();return tmpDelegateCalendarSettings.getDelegate()"> 
         
 		 <script type="application/javascript" src="chrome://exchangecalendar/content/delegateCalendar.js" />  
 	<hbox  width="600" flex="1" >	   
@@ -42,15 +43,12 @@
 	   <label>Shared with me</label>
 	  
 	    <vbox>
-         <listbox id="delegator" width="" enableColumnDrag="true" resizable="true"  onclick="tmpDelegateCalendarSettings.listSelectEvent()">
+         <listbox id="delegator" width="" enableColumnDrag="true" resizable="true" onclick="tmpDelegateCalendarSettings.changeDelegatorCalendar()" >
              <listhead>
-             <listheader label="Delegator" width="" resizable="true"   enableColumnDrag="true" />
-            <listheader label="Add To Calendar" width="" resizable="true" flex="1" enableColumnDrag="true" />
-             </listhead>
+             <listheader label="Delegator" resizable="true" flex="1"  enableColumnDrag="true" />
+              </listhead>
                 <listcols>
-                 <listcol/>
-                    <listcol flex="1" /> 
-                  
+                 <listcol flex="1" /> 
                 </listcols>
             </listbox>
         </vbox>
@@ -85,10 +83,7 @@
                   <button id="delegateCalendaractionadd" label="Add" onclick="tmpDelegateCalendarSettings.addDelegate()" />  
                   <button id="delegateCalendaractionupdate" label="Update" onclick="tmpDelegateCalendarSettings.updateDelegate()" /> 
                   <button id="delegateCalendaractiondelete" label="Remove" onclick="tmpDelegateCalendarSettings.removeDelegate()" /> 
-                  <button id="delegateCalendaractionrefresh" label="Details" align="end" onclick='openDialog("chrome://messenger/content/addressbook/abEditCardDialog.xul",
-                  "",
-                  "chrome,resizable=no,modal,titlebar,centerscreen",
-                  {null:null, null:null});' />
+             <!--      <button id="delegateCalendaractionrefresh" label="Details" align="end" onclick="tmpDelegateCalendarSettings.getDetails();" /> -->
                   
              <!--   <button id="delegateCalendaractiongetdelegate" label="testrefresh" align="end" onclick="tmpDelegateCalendarSettings.refresh()" /> -->
           </hbox>
@@ -165,7 +160,7 @@
                
            <vbox>    
             <checkbox id="ReceiveCopiesOfMeetingMessages" label="&label.delegateCalendar.permission.receiveInvitationCopy;" checked="true"/>
-             <checkbox id="ViewPrivateItems" label="&label.delegateCalendar.permission.viewPrivateItems;" checked="true"/>
+             <checkbox id="ViewPrivateItems" label="&label.delegateCalendar.permission.viewPrivateItems;" />
           </vbox> 
          </hbox>  
          </groupbox>

@@ -21,25 +21,304 @@ Cu.import("resource://exchangecalendar/erRemoveDelegateRequest.js");
 Cu.import("resource://exchangecalendar/erUpdateDelegateRequest.js");
  
 Cu.import("resource://calendar/modules/calUtils.jsm");
-Cu.import("resource://interfaces/xml2json/xml2json.js");
-
+Cu.import("resource://interfaces/xml2json/xml2json.js"); 
+  
 function exchDelegateCalendarSettings(aDocument, aWindow)
 {
 	this._document = aDocument;
 	this._window = aWindow; 
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
-				.getService(Ci.mivFunctions);
-	 
+				.getService(Ci.mivFunctions); 
 	this.loadBalancer = Cc["@1st-setup.nl/exchange/loadbalancer;1"]  
-	                          .getService(Ci.mivExchangeLoadBalancer);
-	 this.delegatesList=null;
- 
+	                          .getService(Ci.mivExchangeLoadBalancer); 
+	 this.delegatesList=null; 
 } 
 
 exchDelegateCalendarSettings.prototype = {   
 	 onLoad:function _onLoad() {  
   			this._window.sizeToContent() ;
 	 },
+	 
+	 getDetails : function _getDetails()	{
+		 
+		 /*
+		   
+		  var email = this._document.getElementById("email");
+	      let abManager = Components.classes["@mozilla.org/abmanager;1"]
+	                                        .getService(Components.interfaces.nsIAbManager);
+	              let allAddressBooks = abManager.directories;
+	              var theCard;
+	              var addressBook;
+	              while (allAddressBooks.hasMoreElements()) {
+		
+		                let ab = allAddressBooks.getNext();
+		                if (ab instanceof Components.interfaces.nsIAbDirectory &&
+		                    !ab.isRemote) {
+		                	
+	                	 let abManager = Components.classes["@mozilla.org/abmanager;1"]
+		                	                                   .getService(Components.interfaces.nsIAbManager);
+	
+	        	         let oneAddressBook = abManager.getDirectory(ab.URI);
+	        	         theCard=oneAddressBook.cardForEmailAddress(email);
+	        	         if( theCard )
+	        	         {
+	        	             
+	        	             this._window.openDialog("chrome://messenger/content/addressbook/abEditCardDialog.xul",
+	        	                      "",
+	        	                      "chrome,resizable=no,modal,titlebar,centerscreen",
+	        	                      {abURI:ab.URI, card:theCard});  
+	        	        	 break;
+	        	         }
+	                }
+              	} 
+	      */
+	 },
+	 
+	 getDelegator : function _getDelegator() {      
+               var listBox = this._document.getElementById("delegator"); 
+               this.emptyList(listBox);     
+           		/**Add already added calendar in delegator list**/ 
+        	      var tmpPrefs = Cc["@mozilla.org/preferences-service;1"]
+	        	                     .getService(Ci.nsIPrefService)
+	        	 		    .getBranch("calendar.registry."); 
+        	      
+        	      var thisCalId = this._window.arguments[0].calendar.id;
+     
+        	      var children = tmpPrefs.getChildList("");
+					if (children.length > 0) {
+						// read prefs get uuid and description.
+							for (var index in children) { 
+							  
+								var pos = children[index].indexOf(".");
+								var tmpUUID = children[index].substr(0, pos);
+								var tmpField = children[index].substr(pos+1);
+					         	 
+								 if (tmpField == "uri")  { 
+									if ( thisCalId != tmpUUID ) { 
+									  var prefs = Cc["@mozilla.org/preferences-service;1"]
+									                    .getService(Ci.nsIPrefService)
+											    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+tmpUUID+".");
+										if ( this.globalFunctions.safeGetCharPref(prefs, "delegateOwner") == thisCalId )
+										{		 						    	   
+									         var cboxrow =   this._document.createElement("listitem"); 
+								         	 cboxrow.setAttribute("type","checkbox"); 
+								         	 cboxrow.setAttribute("checked",true);
+								         	 cboxrow.setAttribute("id",tmpUUID);
+								         	 cboxrow.setAttribute("label", this.globalFunctions.safeGetCharPref(prefs, "name") ); 
+								         	 cboxrow.setAttribute("value", this.globalFunctions.safeGetCharPref(prefs, "ecMailbox") ); 
+									         listBox.appendChild(cboxrow);  
+										}
+								 	} 
+								}
+							}
+					} 
+					
+					var searchQuery = "(or(PrimaryEmail,bw,@V)(and(IsMailList,=,FALSE)))";
+					 searchQuery = searchQuery.replace(/@V/g, encodeURIComponent("ericsson.com"));
+					        
+				      let abManager = Components.classes["@mozilla.org/abmanager;1"]
+				                                        .getService(Components.interfaces.nsIAbManager);
+				              let allAddressBooks = abManager.directories;
+				
+				              while (allAddressBooks.hasMoreElements()) {
+				
+				                let ab = allAddressBooks.getNext();
+				                if (ab instanceof Components.interfaces.nsIAbDirectory &&
+				                    !ab.isRemote) {
+				                	
+				                	 if ( ab.dirName == "Collected Addresses" ){
+				                      let searchResult = abManager.getDirectory(ab.URI + "?" + searchQuery).childCards; 
+				                    	 // alert(searchResult);
+				                    	  while (searchResult.hasMoreElements()) {   
+				                    		  var abCard=searchResult.getNext()
+				                                 .QueryInterface(Components.interfaces.nsIAbCard);
+				                    		 
+				                    		  var displayName; 
+				                    		  var primaryAddress;
+				                    		  primaryAddress = abCard.primaryEmail;
+				                    		  if( abCard.displayName == "" )
+				                    		  {
+			                    				  displayName =  abCard.primaryEmail.replace(/@ericsson.com/g,"");
+ 				                    		  }  
+				                    		  else
+				                   			  {
+			                    				  displayName = abCard.displayName; 
+ 				                   			  }
+				                    		  
+				                    		  if(displayName)
+				                    		  {
+				                    			  if(  primaryAddress){
+					                    			  var cboxrow =   this._document.createElement("listitem"); 
+											         	 cboxrow.setAttribute("type","checkbox"); 
+											         	 cboxrow.setAttribute("checked",false);
+											         	 cboxrow.setAttribute("id",primaryAddress);
+											         	 cboxrow.setAttribute("label", displayName ); 
+											         	 cboxrow.setAttribute("value", primaryAddress  ); 
+												         listBox.appendChild(cboxrow);  
+				                    			  }
+				                    		  } 
+				                    	  } 
+				                	 } 
+			                	}
+			              	} 
+	 },
+	  
+	 changeDelegatorCalendar :function _changeDelegatorCalendar() {  
+		 	var checkBox = this._document.getElementById("delegator").getSelectedItem(0);
+	 			if(checkBox)
+ 				{
+ 	 			    var email = checkBox.getAttribute("value");  
+ 				    this._document.getElementById('email').value = email;  
+ 				    
+ 				    if ( checkBox.checked ==  true  ) { 
+ 	 				    var calName=checkBox.getAttribute("label") ;
+ 	 				    if( calName && email ) 	    {
+ 	 	 				     this._document.getElementById('email').value = email;  
+ 	 				    	  setTimeout('4000',this.createCalendar(checkBox));  
+ 	 				    }
+ 				    }
+ 				    else
+ 				    {
+ 				    	this.deleteCalendar(checkBox);
+ 				    } 
+ 			 	}  
+		this._window.sizeToContent() ;
+	 }, 
+	 
+	deleteCalendar: function _deleteCalendar(checkBox)	 {   
+		  var email = checkBox.getAttribute("value");  
+
+	      var tmpPrefs = Cc["@mozilla.org/preferences-service;1"]
+    	                     .getService(Ci.nsIPrefService)
+    	 		    .getBranch("calendar.registry."); 
+	      
+	      var thisCalId = this._window.arguments[0].calendar.id;
+	      
+	      var children = tmpPrefs.getChildList("");
+			if (children.length > 0) {  
+					// read prefs get uuid and description. 
+					for (var index in children) { 
+					  
+						var pos = children[index].indexOf(".");
+						var tmpUUID = children[index].substr(0, pos);
+						var tmpField = children[index].substr(pos+1);
+			         	 
+						 if (tmpField == "uri")  { 
+							var prefs = Cc["@mozilla.org/preferences-service;1"]
+						                    .getService(Ci.nsIPrefService)
+								    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+tmpUUID+".");
+							if(email==this.globalFunctions.safeGetCharPref(prefs, "ecMailbox"))
+							{ 
+		  				    	 var calManager = Cc["@mozilla.org/calendar/manager;1"]
+		 				    	       			.getService(Ci.calICalendarManager);
+		 				    	 
+		 				    	 let calendars = calManager.getCalendars({});	
+		 				    	 for each (let calendar in calendars) {
+		 				    		  if(tmpUUID == calendar.id) { 
+		 				    			 calManager.unregisterCalendar(calendar);
+		 				    			 calManager.deleteCalendar(calendar);
+					    			  } 
+		 				         } 
+							}
+						 }
+					}
+			}//children.length   
+	 },
+	 
+	createCalendar: function _createCalendar(checkBox)	{
+		this.globalFunctions.LOG("Going to create the calendar in prefs.js");
+		
+		var useOfflineCache=false;
+		var calendarName = checkBox.getAttribute("label");
+		var reminderOption=true;
+		var emailAddress = checkBox.getAttribute("value");  
+		
+		// Calculate the new calendar.id
+		var newCalId = this.globalFunctions.getUUID();
+		checkBox.setAttribute("UUID",newCalId);
+		// Save settings in dialog to new cal id.
+		//tmpSettingsOverlay.exchWebServicesSaveExchangeSettingsByCalId(newCalId);
+
+		//Old Calendar Preferences 
+		var calId = this._window.arguments[0].calendar.id;
+	    var calPrefs = Cc["@mozilla.org/preferences-service;1"]
+					            .getService(Ci.nsIPrefService)
+						    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+ calId+"."); 
+		 
+	    var exchWebServicesgServer = this.globalFunctions.safeGetCharPref(calPrefs, "ecServer"); 
+	    var exchWebServicesgUser = this.globalFunctions.safeGetCharPref(calPrefs, "ecUser");
+		var exchWebServicesgDomain = this.globalFunctions.safeGetCharPref(calPrefs, "ecDomain");  
+		var exchWebServicesgFolderPath = this.globalFunctions.safeGetCharPref(calPrefs, "ecFolderpath"); 
+		var exchWebServicesgFolderBase = this.globalFunctions.safeGetCharPref(calPrefs, "ecFolderbase"); 
+		var exchWebServicesgMailbox = emailAddress ; 
+ 		var exchWebServicesgFolderIdOfShare ="";
+ 		var exchWebServicesgChangeKey  = "";
+  
+ 		//Applying parent calendarsettings to new calendar similar to autodiscovery : tmpSettingsOverlay.exchWebServicesSaveExchangeSettingsByCalId(newCalId);
+		//New Calendar Preferences
+		var exchWebServicesCalPrefs = Cc["@mozilla.org/preferences-service;1"]
+		             		            .getService(Ci.nsIPrefService)
+		             			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+newCalId+".");
+
+		             		if (exchWebServicesCalPrefs) {
+		             			exchWebServicesCalPrefs.setCharPref("ecServer",  exchWebServicesgServer);
+		             			exchWebServicesCalPrefs.setCharPref("ecUser",     exchWebServicesgUser);
+		             			exchWebServicesCalPrefs.setCharPref("ecDomain",  exchWebServicesgDomain);
+		             			exchWebServicesCalPrefs.setCharPref("ecFolderpath",  exchWebServicesgFolderPath);
+		             			exchWebServicesCalPrefs.setCharPref("ecFolderbase",  exchWebServicesgFolderBase);
+		             			exchWebServicesCalPrefs.setCharPref("ecMailbox",  exchWebServicesgMailbox);
+		             			
+		             			exchWebServicesCalPrefs.setCharPref("name",  calendarName); 
+		             			exchWebServicesCalPrefs.setCharPref("delegateOwner", calId ); 
+
+		             		}
+
+		             		if (( exchWebServicesgFolderPath == "/") && ( exchWebServicesgFolderIdOfShare == "")) {
+		             			 exchWebServicesgFolderID = "";
+		             			 exchWebServicesgChangeKey = "";
+		             		}
+		             		exchWebServicesCalPrefs.setCharPref("ecFolderID",  exchWebServicesgFolderID);
+		             		exchWebServicesCalPrefs.setCharPref("ecChangeKey", exchWebServicesgChangeKey); 
+		 
+		// Need to save the useOfflineCache preference separetly because it is not part of the main.
+		this.prefs = Cc["@mozilla.org/preferences-service;1"]
+	                    .getService(Ci.nsIPrefService)
+			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+newCalId+".");
+		this.prefs.setBoolPref("useOfflineCache", useOfflineCache );
+		this.prefs.setIntPref("exchangePrefVersion", 1);
+
+		// We create a new URI for this calendar which will contain the calendar.id
+		var ioService = Cc["@mozilla.org/network/io-service;1"]  
+				.getService(Ci.nsIIOService);  
+		var tmpURI = ioService.newURI("https://auto/"+newCalId, null, null);  
+
+		var calManager = Cc["@mozilla.org/calendar/manager;1"]
+			.getService(Ci.calICalendarManager);
+		var newCal = calManager.createCalendar("exchangecalendar", tmpURI);
+
+		newCal.id = newCalId;
+		newCal.name =  calendarName ;
+
+		var calPrefs = Cc["@mozilla.org/preferences-service;1"]
+		            .getService(Ci.nsIPrefService)
+			    .getBranch("calendar.registry."+newCalId+".");
+
+		calPrefs.setCharPref("name", calendarName );
+
+		newCal.setProperty("color", "Yellow" );
+		if (!reminderOption) {
+			newCal.setProperty("suppressAlarms", true);
+		}
+
+		var identity="id1";
+		newCal.setProperty("imip.identity.key", identity);  
+		newCal.setProperty("cache.enabled", false);
+
+		Cc["@mozilla.org/preferences-service;1"]
+	                    .getService(Ci.nsIPrefService).savePrefFile(null);
+
+		 calManager.registerCalendar(newCal); 
+	},
  
 	 getDelegate  :function _getDelegate() { 
 			
@@ -78,7 +357,7 @@ exchDelegateCalendarSettings.prototype = {
  		 },
 		  		 
  		delayRefresh: function _delayRefresh() {
-	         setTimeout( this.getDelegate(),4000); 
+	         setTimeout( this.getDelegate(),5000); 
   		 },
  		 
 		 listSelectEvent :function _listSelectEvent() { 
@@ -92,7 +371,7 @@ exchDelegateCalendarSettings.prototype = {
 						var listName = childNodes[0].getAttribute("label");
 						var regex = /[^()]+/g;
 				        var email = listName.match(regex);
-				        var listEmail=email[1];  
+				        var listEmail=childNodes[0].getAttribute("value");  
 				        
 				        for( var index=0;index<this.delegatesList.length;index++)
 					 	{   			
@@ -136,6 +415,7 @@ exchDelegateCalendarSettings.prototype = {
 		                 	 var row =   this._document.createElement("listitem"); 
 		        	         var cell =   this._document.createElement("listcell");
 		        	         cell.setAttribute("label", aResp[index].DisplayName+" ("+aResp[index].PrimarySmtpAddress+")");
+		        	         cell.setAttribute("value", aResp[index].PrimarySmtpAddress);
 		        	         row.appendChild(cell);  
 		        	         listBox.appendChild(row);  
 		    		   }	
@@ -145,12 +425,12 @@ exchDelegateCalendarSettings.prototype = {
  		 
 		 erGetDelegateRequestError : function _erGetDelegateRequestError(aGetDelegateRequest, aCode, aMsg)
 		 { 
-			   alert( "erGetDelegateRequestError: "+ aCode+":"+aMsg);  
+			   this.globalFunctions.LOG("erGetDelegateRequestError: "+ aCode+":"+aMsg);  
 		 }, 
 	
 		removeDelegate   :function _removeDelegate() {
 			 this.onActionLoad(); 
-			 var email =   this._document.getElementById('email').value;  
+			 var email =  this._document.getElementById('email').value;  
 			 var sValidEmail = /\S+@\S+\.\S+/;
 			 var reValidEmail = new RegExp(sValidEmail);
 			 var isEmail =  reValidEmail.test(email) ;
@@ -203,8 +483,7 @@ exchDelegateCalendarSettings.prototype = {
 	 
 	 onActionLoadEnd:function _onActionLoadEnd() {
 	  this._window.sizeToContent() ; 
-	  this._document.getElementById("email").setAttribute("Value","");
-
+	//  this._document.getElementById("email").Value=""; 
 	  this._document.getElementById("delegateCalendaractionadd").removeAttribute("disabled");
 	  this._document.getElementById("delegateCalendaractionupdate").removeAttribute("disabled");
 	  this._document.getElementById("delegateCalendaractiondelete" ).removeAttribute("disabled");
@@ -227,18 +506,32 @@ exchDelegateCalendarSettings.prototype = {
 	 var sValidEmail = /\S+@\S+\.\S+/;
 	 var reValidEmail = new RegExp(sValidEmail);
 	 var isEmail =  reValidEmail.test(email) ;
-	if ( !isEmail && email )
-	{
+	 if ( !isEmail && email )
+	 {
 		 this._window.alert('Not Valid Email address! ' );
-	} 
-	else if ( !email )
+	     this.onActionLoadEnd();
+		 this._window.sizeToContent() ; 
+	 } 
+	 else if ( !email )
      {
-     this._window.alert(' Email address of Delegatee can not be empty! ' + email );
-     this.onActionLoadEnd();
-		this._window.sizeToContent() ;
+	     this._window.alert(' Email address of Delegatee can not be empty! ' );
+	     this.onActionLoadEnd();
+		 this._window.sizeToContent() ;
      }
      else
-     { 
+     {  
+		    for(var index=0;index<this.delegatesList.length;index++ )
+		    {
+		    	var listEmail = this.delegatesList[index].PrimarySmtpAddress;
+		    	if ( email == listEmail )
+		    	{
+		    		this._window.alert('Already added! do Update');
+		    	    this.onActionLoadEnd(); 
+		    		this._window.sizeToContent();
+		    		return;
+ 		    	} 
+		    }
+		    
     	    var self=this;
 		    var calendar = this._window.arguments[0].calendar; 
 			var calId = this._window.arguments[0].calendar.id;
@@ -249,7 +542,7 @@ exchDelegateCalendarSettings.prototype = {
 				   DelegatePermissions: this._document.getElementById('delegateCalendarpermission').selectedItem.value  ,
 				   ReceiveCopiesOfMeetingMessages:  this._document.getElementById('ReceiveCopiesOfMeetingMessages').checked ,
 				   ViewPrivateItems: this._document.getElementById('ViewPrivateItems').checked ,
-				   DeliverMeetingRequests:"DelegatesAndMe",
+				   DeliverMeetingRequests: this._document.getElementById('deliverMeetingRequestslist').value,
 		   }; 
 	       var tmpObject = new erAddDelegateRequest({ 
 	    	   		delegateproperties : delegateProperties ,
@@ -281,10 +574,10 @@ exchDelegateCalendarSettings.prototype = {
                	 var row =   this._document.createElement("listitem"); 
       	         var cell =   this._document.createElement("listcell");
       	         cell.setAttribute("label", aResp[index].DisplayName+" ("+aResp[index].PrimarySmtpAddress+")");
+      	         cell.setAttribute("value", aResp[index].PrimarySmtpAddress);
       	         row.appendChild(cell);  
       	         listBox.appendChild(row);  
-  		   }	
-         
+  		   }	 
          }
 		 this.delayRefresh();
 		 this.delayRefresh();
@@ -325,7 +618,7 @@ exchDelegateCalendarSettings.prototype = {
 					   DelegatePermissions: this._document.getElementById('delegateCalendarpermission').selectedItem.value  ,
 					   ReceiveCopiesOfMeetingMessages:  this._document.getElementById('ReceiveCopiesOfMeetingMessages').checked ,
 					   ViewPrivateItems: this._document.getElementById('ViewPrivateItems').checked ,
-					   DeliverMeetingRequests:"DelegatesAndMe",
+					   DeliverMeetingRequests:this._document.getElementById('deliverMeetingRequestslist').value,
 			   };
 			   
 		       var tmpObject = new erUpdateDelegateRequest({ 
@@ -358,6 +651,7 @@ exchDelegateCalendarSettings.prototype = {
                	 var row =   this._document.createElement("listitem"); 
       	         var cell =   this._document.createElement("listcell");
       	         cell.setAttribute("label", aResp[index].DisplayName+" ("+aResp[index].PrimarySmtpAddress+")");
+      	         cell.setAttribute("value", aResp[index].PrimarySmtpAddress);
       	         row.appendChild(cell);  
       	         listBox.appendChild(row);  
   		   }	 
