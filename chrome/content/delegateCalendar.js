@@ -478,7 +478,7 @@ exchDelegateCalendarSettings.prototype = {
 	  this._document.getElementById("delegateCalendaractionadd").setAttribute("disabled", "true");
 	  this._document.getElementById("delegateCalendaractionupdate").setAttribute("disabled", "true");
 	  this._document.getElementById("delegateCalendaractiondelete" ).setAttribute("disabled", "true");
-	  this._document.getElementById("delegateCalendaractionrefresh").setAttribute("disabled", "true");
+//	  this._document.getElementById("delegateCalendaractionrefresh").setAttribute("disabled", "true");
 	 },
 	 
 	 onActionLoadEnd:function _onActionLoadEnd() {
@@ -487,7 +487,7 @@ exchDelegateCalendarSettings.prototype = {
 	  this._document.getElementById("delegateCalendaractionadd").removeAttribute("disabled");
 	  this._document.getElementById("delegateCalendaractionupdate").removeAttribute("disabled");
 	  this._document.getElementById("delegateCalendaractiondelete" ).removeAttribute("disabled");
-	  this._document.getElementById("delegateCalendaractionrefresh").removeAttribute("disabled");
+	//  this._document.getElementById("delegateCalendaractionrefresh").removeAttribute("disabled");
 	 }, 
 		
 	 emptyList :function emptyList(listId)
