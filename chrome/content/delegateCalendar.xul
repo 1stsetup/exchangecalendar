@@ -19,7 +19,7 @@
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" 
         xmlns:html="http://www.w3.org/1999/xhtml" 
         buttons="cancel" ondialogcancel="window.close();" 
-        onload="tmpDelegateCalendarSettings.onLoad();tmpDelegateCalendarSettings.getDelegator();return tmpDelegateCalendarSettings.getDelegate()"> 
+        onload="tmpDelegateCalendarSettings.onLoad();"> 
         
 		 <script type="application/javascript" src="chrome://exchangecalendar/content/delegateCalendar.js" />  
 	<hbox  width="600" flex="1" >	   

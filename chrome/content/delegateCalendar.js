@@ -31,12 +31,14 @@ function exchDelegateCalendarSettings(aDocument, aWindow)
 				.getService(Ci.mivFunctions); 
 	this.loadBalancer = Cc["@1st-setup.nl/exchange/loadbalancer;1"]  
 	                          .getService(Ci.mivExchangeLoadBalancer); 
-	 this.delegatesList=null; 
+	 this.delegatesList=[]; 
 } 
 
 exchDelegateCalendarSettings.prototype = {   
 	 onLoad:function _onLoad() {  
-  			this._window.sizeToContent() ;
+			this.refresh();			
+			this.getDelegator();
+   			this._window.sizeToContent() ; 
 	 },
 	 
 	 getDetails : function _getDetails()	{
@@ -345,19 +347,13 @@ exchDelegateCalendarSettings.prototype = {
 		 },
 		 
 		 refresh: function _refresh() {
-	         this.getDelegate(); 
-             var listBox = this._document.getElementById("delegatee"); 
-             var myListBox = listId;
- 	         var countrow = myListBox.itemCount;
- 	         var countList=this.delegatesList;
- 	         if ( countList != countrow )
- 	         { 
- 	        	 this.delayRefresh();
- 	         }
+		      this.getDelegate(); 
+	          this.updateDelegateView(); 
  		 },
 		  		 
  		delayRefresh: function _delayRefresh() {
 	         setTimeout( this.getDelegate(),5000); 
+	         setTimeout( this.updateDelegateView(),7000); 
   		 },
  		 
 		 listSelectEvent :function _listSelectEvent() { 
@@ -400,34 +396,64 @@ exchDelegateCalendarSettings.prototype = {
 		 
 		 erGetDelegateRequestOK : function _erGetDelegateRequestOK(aGetDelegateRequest, aResp)
 		 {  
- 	               if ( aResp.length > 0 )
+               if ( aResp.length > 0 )
+               {  
+            	   for( index=0;index<aResp.length;index++)
 	               { 
-	                   var listBox = this._document.getElementById("delegatee"); 
-	                   this.emptyList(listBox);    
-		               for( index=0;index<aResp.length;index++)
-		               { 
-		                 	 //dump("\n  "+ index + " Resp 1: " + aResp[index].SID );	
-		                 	 //dump("\n  "+ index + " Resp 2: " + aResp[index].PrimarySmtpAddress );	
-		                 	 //dump("\n  "+ index + " Resp 3: " + aResp[index].DisplayName );	
-		                 	 //dump("\n  "+ index + " Resp 4: " + aResp[index].DelegatePermissions );	
-		                 	 //dump("\n  "+ index + " Resp 5: " + aResp[index].ReceiveCopiesOfMeetingMessages );	
-		                 	 //dump("\n  "+ index + " Resp 6: " + aResp[index].ViewPrivateItems ); 
-		                 	 var row =   this._document.createElement("listitem"); 
-		        	         var cell =   this._document.createElement("listcell");
-		        	         cell.setAttribute("label", aResp[index].DisplayName+" ("+aResp[index].PrimarySmtpAddress+")");
-		        	         cell.setAttribute("value", aResp[index].PrimarySmtpAddress);
-		        	         row.appendChild(cell);  
-		        	         listBox.appendChild(row);  
-		    		   }	
-		               this.delegatesList=aResp;
-	               }
+            		   this.delegatesList[index]=aResp[index];
+	               } 
+ 		           this.updateDelegateView();  
+               }
  		 },
  		 
 		 erGetDelegateRequestError : function _erGetDelegateRequestError(aGetDelegateRequest, aCode, aMsg)
 		 { 
 			   this.globalFunctions.LOG("erGetDelegateRequestError: "+ aCode+":"+aMsg);  
 		 }, 
-	
+		 
+		updateDelegateView: function _updateDelegateView(){
+			 
+			 var listBox = this._document.getElementById("delegatee"); 
+             this.emptyList(listBox);   
+			 for (var index=0;index<this.delegatesList.length;index++)
+			 {   
+				 	var row =   this._document.createElement("listitem"); 
+				 	var cell =   this._document.createElement("listcell");
+					 cell.setAttribute("label", this.delegatesList[index].DisplayName+" ("+this.delegatesList[index].PrimarySmtpAddress+")");
+        	         cell.setAttribute("value", this.delegatesList[index].PrimarySmtpAddress);
+        	         row.appendChild(cell);  
+        	         listBox.appendChild(row);   
+			 }	 
+  		 },
+		 
+		removeDelegateCache :function _removeDelegateCache(email)
+		{  
+ 			 if(email){ 
+ 				 for (var index=0;index < this.delegatesList.length ;index++ )
+				 { 
+					if ( email == this.delegatesList[index].PrimarySmtpAddress )
+					{
+						this.delegatesList.splice(index,1);
+					}
+				 }	 
+			 }
+			 this.updateDelegateView();
+  		},
+ 		
+ 		addDelegateCache :function _addDelegateCache(delegate)
+		{
+			 if(delegate){ 
+				 var count=this.delegatesList.length;
+				 if(!count){
+					 count=0; 
+				 }
+ 
+				 this.delegatesList[count]=delegate;
+			 } 
+			 this.updateDelegateView();
+			 this.delayRefresh(); 
+  		},
+		
 		removeDelegate   :function _removeDelegate() {
 			 this.onActionLoad(); 
 			 var email =  this._document.getElementById('email').value;  
@@ -456,17 +482,21 @@ exchDelegateCalendarSettings.prototype = {
 	    	   		mailbox : this.globalFunctions.safeGetCharPref(calPrefs, "ecMailbox") ,
 	    	   		user: this.globalFunctions.safeGetCharPref(calPrefs, "ecDomain")+"\\"+this.globalFunctions.safeGetCharPref(calPrefs, "ecUser"),	 		 
 	    	   		serverUrl: this.globalFunctions.safeGetCharPref(calPrefs, "ecServer"), },   
-	 		 	 	function(erRemoveDelegateRequest, aResp){self.erRemoveDelegateRequestOK(erRemoveDelegateRequest)},
+	 		 	 	function(erRemoveDelegateRequest, aResp){self.erRemoveDelegateRequestOK(erRemoveDelegateRequest,aResp)},
 	 		 	 	function(erRemoveDelegateRequest, aCode, aMsg){self.erRemoveDelegateRequestError(erRemoveDelegateRequest, aCode, aMsg)},
 	 		 	 	null );				        
-		}		        
+		}	 
  		  this.onActionLoadEnd();
 		  this._window.sizeToContent() ;  
 	 },
 	 
-	 erRemoveDelegateRequestOK : function _erRemoveDelegateRequestOK(aRemoveDelegateRequest)
-	 {	
-		 this.refresh();
+	 erRemoveDelegateRequestOK : function _erRemoveDelegateRequestOK(aRemoveDelegateRequest,aResp)
+	 {	 
+		 for(var index=0;index<aResp.length;index++)
+		 {
+ 			 this.removeDelegateCache(aResp[index].PrimarySmtpAddress);
+		 } 		 
+		 this.delayRefresh(); 
 	 },
 	 erRemoveDelegateRequestError : function _erRemoveDelegateRequestError(aRemoveDelegateRequest, aCode, aMsg)
 	 {
@@ -563,8 +593,7 @@ exchDelegateCalendarSettings.prototype = {
 	 {
 		 if ( aResp.length > 0 )
          { 
-             var listBox = this._document.getElementById("delegatee"); 
-              for( index=0;index<aResp.length;index++)
+             for( var index=0;index<aResp.length;index++)
              { 
                	 //dump("\n  "+ index + " Resp 1: " + aResp[index].SID );	
                	 //dump("\n  "+ index + " Resp 2: " + aResp[index].PrimarySmtpAddress );	
@@ -572,16 +601,9 @@ exchDelegateCalendarSettings.prototype = {
                	 //dump("\n  "+ index + " Resp 4: " + aResp[index].DelegatePermissions );	
                	 //dump("\n  "+ index + " Resp 5: " + aResp[index].ReceiveCopiesOfMeetingMessages );	
                	 //dump("\n  "+ index + " Resp 6: " + aResp[index].ViewPrivateItems ); 
-               	 var row =   this._document.createElement("listitem"); 
-      	         var cell =   this._document.createElement("listcell");
-      	         cell.setAttribute("label", aResp[index].DisplayName+" ("+aResp[index].PrimarySmtpAddress+")");
-      	         cell.setAttribute("value", aResp[index].PrimarySmtpAddress);
-      	         row.appendChild(cell);  
-      	         listBox.appendChild(row);  
+            	  this.addDelegateCache(aResp[index]);
   		   }	 
          }
-		 this.delayRefresh();
-		 this.delayRefresh();
 	 },
 	 
 	 erAddDelegateRequestError : function _erAddDelegateRequestError(aAddDelegateRequest, aCode, aMsg)
@@ -636,6 +658,7 @@ exchDelegateCalendarSettings.prototype = {
 		  this.onActionLoadEnd();
 		  this._window.sizeToContent() ;
 	 },
+	 
 	 erUpdateDelegateRequestOK : function _erUpdateDelegateRequestOK(aUpdateDelegateRequest, aResp)
 	 {
 		 if ( aResp.length > 0 )
@@ -649,12 +672,8 @@ exchDelegateCalendarSettings.prototype = {
                	 //dump("\n  "+ index + " Resp 4: " + aResp[index].DelegatePermissions );	
                	 //dump("\n  "+ index + " Resp 5: " + aResp[index].ReceiveCopiesOfMeetingMessages );	
                	 //dump("\n  "+ index + " Resp 6: " + aResp[index].ViewPrivateItems ); 
-               	 var row =   this._document.createElement("listitem"); 
-      	         var cell =   this._document.createElement("listcell");
-      	         cell.setAttribute("label", aResp[index].DisplayName+" ("+aResp[index].PrimarySmtpAddress+")");
-      	         cell.setAttribute("value", aResp[index].PrimarySmtpAddress);
-      	         row.appendChild(cell);  
-      	         listBox.appendChild(row);  
+            	  this.removeDelegateCache(aResp[index].PrimarySmtpAddress);
+            	  this.addDelegateCache(aResp[index]);
   		   }	 
          }
 		 this.delayRefresh();
@@ -662,7 +681,7 @@ exchDelegateCalendarSettings.prototype = {
 	 
 	 erUpdateDelegateRequestError : function _erUpdateDelegateRequestError(aUpdateDelegateRequest, aCode, aMsg)
 	 {
-		    this.globalFunctions.LOG( "erUpdateDelegateRequestError "+  aCode+":"+aMsg);  
+		 this._window.alert( "erUpdateDelegateRequestError "+  aCode+":"+aMsg);  
 	 }, 
  
 	 emptyRow :function emptyRow(listId,email)

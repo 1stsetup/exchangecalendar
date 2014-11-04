@@ -81,10 +81,12 @@ erRemoveDelegateRequest.prototype = {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, "Error on sending meeting respons:"+responseCode);
 			return;
 		}
+		
 		rm = null;
-
+		var  delegate=[];
+		delegate[0]={PrimarySmtpAddress:this.DelegateEmail};
 		if (this.mCbOk) {
-			this.mCbOk(this); 
+			this.mCbOk(this,delegate); 
 		}
 		this.isRunning = false;
 	},
