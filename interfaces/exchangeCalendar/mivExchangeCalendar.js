@@ -3367,7 +3367,11 @@ try{
 	},
 	
 	get deleteCancelledInvitation() {
-		return this.globalFunctions.safeGetBoolPref(this.prefs, "ecautoprocessingdeletecancelleditems", false);
+		return this.globalFunctions.safeGetBoolPref(this.prefs, "ecautoprocessingdeletecancelleditems", true);
+	},
+	
+	get markEventasTentative() {
+		return this.globalFunctions.safeGetBoolPref(this.prefs, "ecautoprocessingmarkeventtentative", false);
 	},
 
 	checkInbox: function _checkInbox()
@@ -7189,9 +7193,9 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 					this.itemCount++;
 					isOldCacheItem=false;  
 
-					if (this.debug) this.logInfo("updateCalendar2: setTentative:"+ item.title); 
-					if ( isEvent(aItem) )
+					if ( isEvent(aItem) && this.markEventasTentative )
 					{
+						if (this.debug) this.logInfo("updateCalendar2: setTentative:"+ item.title);  
 							this.setTentative(aItem,aItems[index],isOldCacheItem);
 					}
 					if (this.debug) this.logInfo("updateCalendar2: onAddItem:"+ item.title);

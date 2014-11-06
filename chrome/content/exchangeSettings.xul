@@ -386,14 +386,21 @@
 	            <tabpanel id="exchWebService-autoprocessing-properties">
                  <vbox flex="1">
                     <groupbox id="exchWebService-autoprocessingproperties-detaisgroupbox">
-                         <caption label="Details:" />
+                         <caption label="Preferences:" />
                          <vbox>
                              <hbox>
                                  <checkbox label="&label.autoprocessingproperties.deletecancelleditems;" id="exchWebService-autoprocessingproperties-deletecancelleditems"
                                       disabled="false"/> 
                             </hbox>
                         </vbox>  
-                    </groupbox>                             
+                         <vbox>
+                             <hbox>
+                                 <checkbox label="&label.autoprocessingproperties.markeventtentative;" id="exchWebService-autoprocessingproperties-markeventtentative"
+                                      disabled="false"/> 
+                            </hbox> 
+                        </vbox>  
+                    </groupbox>   
+                                              
                 </vbox> 
             </tabpanel> 
 		</tabpanels>
