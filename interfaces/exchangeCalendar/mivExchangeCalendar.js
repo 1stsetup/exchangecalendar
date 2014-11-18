@@ -8520,8 +8520,127 @@ else {
 		return result;
 	},
 
-	createOfflineCacheDB: function _createOfflineCacheDB()
+	updateVersionInfoCache:function _updateVersionInfoCache(self, Addon)
 	{
+		if (this.noDB) return;
+		if (!Addon) return;
+		var version=Addon.version;
+		
+		var sqlStr2 = "DELETE FROM version"; 
+		if (!this.executeQuery(sqlStr2)) {
+			if (this.debug) this.logInfo("removeExchCalDbCache : Error removing attachment from offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
+		}
+		else {
+			if (this.debug) this.logInfo("removeExchCalDbCache: Removed version from offlineCacheDB. ");
+		}
+		 
+		var sqlStr = "INSERT INTO version VALUES ('"+version+"')";
+ 		if (!this.executeQuery(sqlStr)) {
+			if (this.debug) this.logInfo("removeExchCalDbCache : Error inserting attachments_per_item into offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
+		}
+		else {
+			if (this.debug) this.logInfo("removeExchCalDbCache: Inserted attachments_per_item into offlineCacheDB. Name:"+ version );
+		} 
+		return true;
+	},
+	
+	checkExchCalAddonVerion: function _checkExchCalAddonVersion()
+	{
+		Cu.import("resource://gre/modules/AddonManager.jsm");
+ 		var self=this; 
+	    AddonManager.getAddonByID("exchangecalendar@extensions.1st-setup.nl",function(Addon){  
+		    																self.removeExchCalDbCache(self,Addon); 
+  	    																}); 
+	}, 
+	
+	removeExchCalDbCache: function _removeExchCalDbCache(self,Addon){  
+  		var currentAddonVersion = Addon.version;
+  		var OldAddonversion = null; 
+  		var result = null;
+		
+  		this.logInfo("removeExchCalDbCache" );
+
+		var sqlStr = "SELECT name FROM version limit 1";
+
+		if (this.debug) this.logInfo("removeExchCalDbCache sql-query:"+sqlStr, 2);
+		try {
+			var sqlStatement = this.offlineCacheDB.createStatement(sqlStr);
+		}
+		catch(exc) {
+			if (this.debug) this.logInfo("removeExchCalDbCache Error on createStatement. Error:"+this.offlineCacheDB.lastError+", Msg:"+this.offlineCacheDB.lastErrorString+", Exception:"+exc+". ("+sqlStr+")");
+			return null;
+		}
+		
+		var doContinue = true;
+		try {
+			while (doContinue) {
+				doContinue = sqlStatement.executeStep();
+
+				if (doContinue) {
+					if (this.debug) this.logInfo("removeExchCalDbCache Found item in offline Cache."); 
+					OldAddonversion =  sqlStatement.row.name;
+				}
+			}
+		}
+		finally {  
+			sqlStatement.reset();
+		}			
+  		 
+		if ( OldAddonversion ){
+	  		if ( OldAddonversion != currentAddonVersion  ) {  
+			  			if(this.offlineCacheDB.connectionReady && this.offlineCacheDB.tableExists("items")){
+			  				 this.logInfo("removeExchCalDbCache clearCachedData - " + " NewVersion: " + currentAddonVersion + " OldVersion: " +   OldAddonversion  );
+			  					let statement = this.offlineCacheDB.createStatement("DELETE FROM items");
+			  					let statement1 = this.offlineCacheDB.createStatement("DELETE FROM attachments");
+			  					let statement2 = this.offlineCacheDB.createStatement("DELETE FROM attachments_per_item");
+			  									
+			  					try{	
+			  						statement.executeStep();
+			  						statement1.executeStep();
+			  						statement2.executeStep();					
+		
+			  						statement.finalize();
+			  						statement1.finalize();
+			  						statement2.finalize();
+			  					}
+			  					catch(e){
+			  						 this.logInfo("removeExchCalDbCache 41: unable to clear tables"+e);					
+			  					}
+			  				this.logInfo("removeExchCalDbCache cache cleared! current version : " + currentAddonVersion + " resetting calendar: " +  this.id );
+			  				var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
+			  				observerService.notifyObservers(this, "onCalReset", this.id);			
+		 	  			}
+			  			
+			  			if(this.updateVersionInfoCache(self,Addon))
+						{
+							if (this.debug) this.logInfo("removeExchCalDbCache 21: new version updated in cache: " + currentAddonVersion);  
+						}
+						else
+						{
+							if (this.debug) this.logInfo("removeExchCalDbCache 22: failed! New version not updated in cache" );  
+						}
+			  			
+						if (this.debug) this.logInfo("removeExchCalDbCache 31: removing offlineCacheDB new/old wVersion found" );  
+	   		}  
+		}
+  		else
+  		{
+  			if (this.debug) this.logInfo("removeExchCalDbCache 26: not removing offlineCacheDB new/old Version not found: "+ currentAddonVersion ); 
+
+  			if(this.updateVersionInfoCache(self,Addon))
+			{
+				if (this.debug) this.logInfo("removeExchCalDbCache 32: new version updated in cache: " + currentAddonVersion);  
+			}
+			else
+			{
+				if (this.debug) this.logInfo("removeExchCalDbCache 35: failed! New version not updated in cache" );  
+			}
+  		}  
+ 	}, 
+		
+	createOfflineCacheDB: function _createOfflineCacheDB()
+	{ 
+ 		
 		if ((this.mUseOfflineCache) && (!this.offlineCacheDB)) {
 			this.noDB = true;
 			this.dbInit = true;
@@ -8532,14 +8651,14 @@ else {
 			if ( !this.dbFile.exists() || !this.dbFile.isDirectory() ) {
 				this.dbFile.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);  
 			}
-
+			
 			this.dbFile.append(this.id+".offlineCache.sqlite");
 
 			var dbExists = false;
 			if (this.dbFile.exists()) {
 				dbExists = true;
 			}
-
+			
 			try {
 				this.offlineCacheDB = Services.storage.openUnsharedDatabase(this.dbFile); // Will also create the file if it does not exist
 			}
@@ -8548,7 +8667,7 @@ else {
 				if (this.debug) this.logInfo("Could not open offlineCache database.");
 				return;
 			}
-
+			
 			if (!this.offlineCacheDB.connectionReady) {
 				this.offlineCacheDB = null;
 				if (this.debug) this.logInfo("connectionReady for offlineCache database.");
@@ -8560,8 +8679,29 @@ else {
 			if (dbExists) {
 				dbVersion = this.globalFunctions.safeGetIntPref(this.prefs, "dbVersion", 0);
 			}
+	 		
+			//Check exchange calendar version clear cache
+ 	 		this.checkExchCalAddonVerion();
 
 //			if (dbVersion < latestDBVersion) {
+				if (!this.offlineCacheDB.tableExists("version")) {
+					if (this.debug) this.logInfo("Table 'version' does not yet exist. We are going to create it.");
+					try {
+						this.offlineCacheDB.createTable("version", "name STRING");
+					}
+					catch(exc) {
+						if (this.debug) this.logInfo("Could not create table 'version'. Error:"+exc);
+						return;
+					}
+	
+					var sqlStr = "CREATE UNIQUE INDEX idx_ver_id ON version (name)";
+					if (!this.executeQuery(sqlStr)) {
+						if (this.debug) this.logInfo("Could not create index 'idx_ver_id'");
+						this.offlineCacheDB = null;
+						return;
+					}   
+				}
+				
 				if (!this.offlineCacheDB.tableExists("items")) {
 					if (this.debug) this.logInfo("Table 'items' does not yet exist. We are going to create it.");
 					try {
@@ -8702,8 +8842,7 @@ else {
 					}
 				} 
 				this.prefs.setIntPref("dbVersion", latestDBVersion);
-
-			}
+ 			}
 			//this.executeQuery("UPDATE items set event='y' where event='y_'"); // Turned of 2013-11-19. Items will always be read from offline cache even if they have already been read
 			//this.executeQuery("UPDATE items set event='n' where event='n_'");
 
