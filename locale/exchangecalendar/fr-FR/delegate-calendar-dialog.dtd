@@ -1,0 +1,17 @@
+<!ENTITY label.delegateCalendar.cancelbutton "Annulation">
+<!ENTITY label.delegateCalendar.userEmail "Email">
+<!ENTITY label.delegateCalendar.deliveryMeetingRerquestControl "Envoi de messages de réunion">
+<!ENTITY menuitem.delegateCalendar.deliverMeetingRequestslist.delegateOnly "Délégué(e) seulement">
+<!ENTITY menuitem.delegateCalendar.deliverMeetingRequestslist.delegateAndMe "Délégué(e) et moi">
+<!ENTITY menuitem.delegateCalendar.deliverMeetingRequestslist.delegateAndInfo "Délégué(e) avec copie pour moi">
+<!ENTITY label.delegateCalendar.permission "Permission">
+<!ENTITY menuitem.delegateCalendar.permission.author "Auteur">
+<!ENTITY menuitem.delegateCalendar.permission.editor "Editeur">
+<!ENTITY menuitem.delegateCalendar.permission.reviewer "Correcteur">
+<!ENTITY menuitem.delegateCalendar.permission.none "Aucune">
+<!ENTITY label.delegateCalendar.permission.receiveInvitationCopy "Recoit une copie des demandes des réunion" >
+<!ENTITY label.delegateCalendar.permission.viewPrivateItems "Accès aux éléments marqués privé" >
+<!ENTITY delegateCalendar.permission.description.author "Lecture et création d'éléments dans le dossier Calendrier." >
+<!ENTITY delegateCalendar.permission.description.editor "Lecture, création et modification d'éléments dans le dossier Calendrier." >
+<!ENTITY delegateCalendar.permission.description.reviewer "Lecture seule d'éléments dans le dossier Calendrier." >
+<!ENTITY delegateCalendar.permission.description.none "Aucun accès au dossier Calendrier." >
