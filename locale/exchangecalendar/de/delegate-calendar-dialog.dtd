@@ -1,7 +1,7 @@
  
 <!ENTITY  label.delegateCalendar.cancelbutton "Abbrechen">
 <!ENTITY  label.delegateCalendar.userEmail "Email">
-<!ENTITY  label.delegateCalendar.deliveryMeetingRerquestControl "Deliver Meeting Requests">
+<!ENTITY  label.delegateCalendar.deliveryMeetingRerquestControl "Besprechungsanfragen auslieferen">
 
 <!ENTITY  menuitem.delegateCalendar.deliverMeetingRequestslist.delegateOnly "Nur Delegierte">
 <!ENTITY  menuitem.delegateCalendar.deliverMeetingRequestslist.delegateAndMe "Delegiert und ich">
