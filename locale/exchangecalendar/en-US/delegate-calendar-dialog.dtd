@@ -21,3 +21,5 @@
 <!ENTITY  delegateCalendar.permission.description.editor "Read, create, and modify items in the Calendar folder." >
 <!ENTITY  delegateCalendar.permission.description.reviewer "Read items in the Calendar folder." >
 <!ENTITY  delegateCalendar.permission.description.none "No access permissions to the Calendar folder." >
+
+<!ENTITY  delegateCalendar.permission.details.label "Permission Details: " >
