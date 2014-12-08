@@ -41,7 +41,8 @@
 <!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Nombre de mois en cache après aujourd'hui:">
 
 <!ENTITY button.offlineCacheproperties.clearCache "Supprimer les données hors connection (cache)">
-
 <!ENTITY ecsettings.tab.autoprocessingproperties "Traitement automatique">
+
 <!ENTITY label.autoprocessingproperties.deletecancelleditems "Suppression automatique des évènements annulés">
+<!ENTITY label.autoprocessingproperties.markeventtentative "Marquer automatiquement les invitations comme possible et copier l'organisateur">
 

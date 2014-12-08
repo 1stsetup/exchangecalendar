@@ -1,10 +1,10 @@
-<!ENTITY label.acceptbutton "Selecteer">
-<!ENTITY label.cancelbutton "Annuleer">
+<!ENTITY label.acceptbutton "Selecteren">
+<!ENTITY label.cancelbutton "Annuleren">
 
-<!ENTITY browsefolder.title "Bladeren door folders.">
+<!ENTITY browsefolder.title "Bladeren door mappen.">
 
-<!ENTITY treecol.label.foldername "Foldernaam">
-<!ENTITY treecol.label.folderclass "Folderklasse">
+<!ENTITY treecol.label.foldername "Mapnaam">
+<!ENTITY treecol.label.folderclass "Mapklasse">
 
 
 
