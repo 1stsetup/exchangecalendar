@@ -41,6 +41,21 @@ treechildren::-moz-tree-separator {
 	height: 2px;
 }
 
+treechildren::-moz-tree-checkbox 
+{
+  /* checked checkbox treecells. cbox-check.gif isn't available in
+     Firefox 1, 2, and 3 in Mac OS X so you should specify a URL to an image
+     in your extension or elsewhere. */
+ -moz-box-align: right;
+ border:.5px solid ;
+  -moz-border-top-colors: #EEF0F3 #C7D0D9;
+  -moz-border-right-colors: #63676B #A5ABB0;
+  -moz-border-bottom-colors: #63676B #A5ABB0;
+  -moz-border-left-colors: #EEF0F3 #C7D0D9;
+
+   color: #000000;
+}
+
 treechildren::-moz-tree-checkbox(checked)
 {
   /* checked checkbox treecells. cbox-check.gif isn't available in
