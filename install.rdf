@@ -92,6 +92,8 @@ Sommige van de iconen en plaatjes komen uit de Fugue Icons collectie gemaakt doo
 使用されている一部のアイコンやイメージは、Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)さんの、the Fugue Icons Collectionから取られました。</em:description>
 		</Description>
 	</em:localized>
+
+	<em:localized>
 		<Description>
 			<em:locale>ru</em:locale>
 			<em:name>Exchange EWS Provider</em:name>
@@ -103,5 +105,8 @@ Sommige van de iconen en plaatjes komen uit de Fugue Icons collectie gemaakt doo
 Голландский, французский, английский, немецкий, шведский, японский и русский вариант национальных языковых переводов этого приложения присутствуют тут.
 
 Некоторые значки и изображения используются из коллекции Fugue Icons созданной Юсукэ Камияманэ (http://p.yusukekamiyamane.com/)</em:description>
-		</Description>  </Description>
+		</Description>
+	</em:localized>
+
+	</Description>
 </RDF>
