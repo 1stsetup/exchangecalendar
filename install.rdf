@@ -63,6 +63,22 @@ Some of the icons and images used are from the Fugue Icons Collection made by Yu
 		</Description>
 	</em:localized>
 
+    <em:localized>
+        <Description>
+            <em:locale>de</em:locale>
+                <em:name>Exchange EWS Provider</em:name>
+                <em:description>Ermöglicht es Ihnen Kalender, Aufgaben und Kontakte mit einem Microsoft Exchange 2007/2010/2013 EWS Server aus Lightning heraus zu synchronisieren.
+
+Sie können diese Kalender- und Aufgabeneinträge betrachten, löschen, erstellen und aktualisieren. Sie können die "Out of Office"-Einstellungen verwalten.
+Sie können Kontakte und globale Adresslisten lesen und für die Autovervollständigung der Adressen nutzen.
+
+Übersetzungen in Niederländisch, Französisch, Deutsch Schwedisch und Japanisch.
+
+Einige der Icons und die Bilder werden aus der Fugue Icons Collection erstellt von Yusuke Kamiyamane (http://p.yusukekamiyamane.com/) genutzt.
+               </em:description>
+        </Description>
+    </em:localized>
+
 	<em:localized>
 		<Description>
 			<em:locale>nl</em:locale>
