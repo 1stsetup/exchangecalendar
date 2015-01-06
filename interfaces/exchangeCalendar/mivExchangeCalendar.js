@@ -7160,17 +7160,9 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			this.itemsFromExchange++;
 
 			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify, fromOfflineCache);
-			var aItem;
-			if ( isEvent(item) )
-			{
-				aItem=item.QueryInterface(Ci.mivExchangeEvent);
-			}
-			else
-			{
-				aItem=null;
-			}
+		
 			if (item) { 
-				var isOldCacheItem=true;
+				
 				if ( item.isCancelled && item.reminderIsSet &&  isEvent(item) )
 				{
 				    var aNewItem = item.QueryInterface(Ci.mivExchangeEvent);
@@ -7183,21 +7175,25 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 					
 					this.modifyItem(aNewItem, item); 
 					
-					if (this.debug) this.logInfo("updateCalendar2: hope! reminder is set  for item " +  aNewItem.title + " going to next item "  );
+					if (this.debug) this.logInfo("updateCalendar2: hope! reminder is set  for item " +  aNewItem.title + " going to modify next item"  );
 				}
 				//convertedItems.push(item);
 				else if (!this.itemCacheById[item.id]) {
 					// This is a new unknown item
-					//this.itemCacheById[item.id] = item;
+					//this.itemCacheById[item.id] = item; 
+					 
 					this.addItemToCache(item);
 					this.itemCount++;
-					isOldCacheItem=false;  
-
-					if ( isEvent(aItem) && this.markEventasTentative )
+				
+					if ( isEvent(item) && this.markEventasTentative )
 					{
-						if (this.debug) this.logInfo("updateCalendar2: setTentative:"+ item.title);  
+						var isOldCacheItem=false;  
+						var aItem=item.QueryInterface(Ci.mivExchangeEvent);
+
+						if (this.debug) this.logInfo("updateCalendar2: proceed setTentative:"+ item.title);  
 							this.setTentative(aItem,aItems[index],isOldCacheItem);
 					}
+					
 					if (this.debug) this.logInfo("updateCalendar2: onAddItem:"+ item.title);
 					if (doNotify) {
 						this.notifyTheObservers("onAddItem", [item]);
@@ -7223,8 +7219,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 						//this.addToOfflineCache(item, xml2json.toString(aItems[index]));
 					}
 				}
-				isOldCacheItem=true;
-			}
+ 			}
 
 			aItems[index] = null;
 
