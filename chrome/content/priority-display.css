@@ -1,0 +1,20 @@
+.priority-style{ 
+	  list-style-image: url("chrome://messenger/skin/icons/attachment.gif"); 
+}
+ 
+#threadTree treechildren::-moz-tree-row(priority-display-highest) {
+ }
+ 
+
+#threadTree treechildren::-moz-tree-row(priority-display-high) {
+ }
+
+ 
+
+#threadTree treechildren::-moz-tree-row(priority-display-low) {
+ }
+ 
+
+#threadTree treechildren::-moz-tree-row(priority-display-lowest) {
+ }
+
