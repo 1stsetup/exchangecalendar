@@ -53,34 +53,34 @@
 	      <hbox>
           <groupbox flex="1">
             <caption label="&pref.color;"/>
-            <hbox align="center">
+            <hbox align="center" style="margin-top: 5px">
               <label value="&highestColor.label;"   control="foregroundtextmenu"/>
               <spacer flex="1"/>
               <colorpicker type="button"   palettename="standard"
                            preference="extensions.extras.HighestColor"/>
             </hbox>
             <hbox align="center" style="margin-top: 5px">
-              <label value="&highColor.label;"   control="backgroundmenu"/>
+              <label value="&lowestColor.label;"   control="unvisitedlinkmenu"/>
               <spacer flex="1"/>
-              <colorpicker type="button"   palettename="standard"
-                           preference="extensions.extras.HighColor"/>
+              <colorpicker type="button"  palettename="standard"
+                           preference="extensions.extras.LowestColor"/>
             </hbox>
             <separator class="thin"/> 
           </groupbox>
     
           <groupbox flex="1">
             <caption label=" "/>
-            <hbox align="center">
-              <label value="&lowestColor.label;"   control="unvisitedlinkmenu"/>
+            <hbox align="center" style="margin-top: 5px">
+              <label value="&highColor.label;"   control="backgroundmenu"/>
               <spacer flex="1"/>
-              <colorpicker type="button"  palettename="standard"
-                           preference="extensions.extras.LowestColor"/>
-            </hbox>
+              <colorpicker type="button"   palettename="standard"
+                           preference="extensions.extras.HighestColor"/>
+            </hbox>  
             <hbox align="center" style="margin-top: 5px">
               <label value="&lowColor.label;"   control="visitedlinkmenu"/>
               <spacer flex="1"/>
               <colorpicker type="button"   palettename="standard"
-                           preference="extensions.extras.LowColor"/>
+                           preference="extensions.extras.LowestColor"/>
             </hbox>
             <separator class="thin"/>
             <hbox align="center"> 

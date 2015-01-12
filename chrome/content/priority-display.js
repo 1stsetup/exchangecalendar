@@ -4,20 +4,32 @@ var Cu=Components.utils;
 var Cc=Components.classes;
 var Ci=Components.interfaces;
 var prefService = Cc["@mozilla.org/preferences-service;1"]
-                     .getService(Ci.nsIPrefBranch); 
+	                    .getService(Ci.nsIPrefService);
+function setpref()
+{
+	 prefService = Cc["@mozilla.org/preferences-service;1"]
+	                    .getService(Ci.nsIPrefService); 
+}
  
-function gCP(pref) {
+function gCP(pref) { 
+	try{
 	return prefService.getCharPref("extensions.extras." + pref);
+	}
+	catch(ex){
+		setpref();}
 } 
 
-function gBP(pref) {
+function gBP(pref) { 
+ try{
 	return prefService.getBoolPref("extensions.extras." + pref);
+}
+catch(ex){
+	setpref();}
 } 
 
 function enhancePriority(){
 	this._document=document;
-	this._window=window;
-	 
+	this._window=window; 
 } 
 
 enhancePriority.prototype={
@@ -113,11 +125,11 @@ enhancePriority.prototype={
 					    				    break;
 					    				case "5":
 					    				    if (doHigh)
-					    					property = gCP("HighColor");
+					    					property = gCP("HighestColor");
 					    				    break;
 					    				case "3":
 					    				    if (doLow)
-					    					property = gCP("LowColor");
+					    					property = gCP("LowestColor");
 					    				    break;
 					    				case "2":
 					    				    if (doLow)
@@ -125,10 +137,10 @@ enhancePriority.prototype={
 					    				    break;
 					    				}
 					    				if (property) {  
-					    					property='lc-'+property.substr(1);
+					    					property='lcolor-'+property.substr(1);
 					    				    properties += this.setProperty(props,property);
 					    				}
-    					    		                              ;
+    					    		                             
 					    				if (columnHandler.old)
 					    				    properties += (columnHandler.old.
 					    						   getRowProperties(row, props));
@@ -179,8 +191,10 @@ enhancePriority.prototype={
 	    },
 	    
 		onload:function _onload(){ 
+
+				document.getElementById("priorityCol").setAttribute("width","25");
+				document.getElementById("priorityCol").setAttribute("fixed","true");  
 				
-				                     
 				prefService.setCharPref("extensions.extras.HighestIcon",
 				                          "chrome://exchangecalendar/skin/highest.gif");
 				prefService.setCharPref("extensions.extras.HighIcon",
@@ -190,15 +204,22 @@ enhancePriority.prototype={
 				prefService.setCharPref("extensions.extras.LowestIcon",
 				                          "chrome://exchangecalendar/skin/lowest.gif");
 				
-				if ( gBP("Iconify") == null ) 
-				 prefService.setBoolPref("extensions.extras.Iconify", true); 
-				if (  gBP("ShadeHigh")  == null ) 
-				prefService.setBoolPref("extensions.extras.ShadeHigh", true);
-				if (  gBP("ShadeHigh")  == null  ) 
-				prefService.setBoolPref("extensions.extras.ShadeLow", false);
+ 				if (!gCP("HighestColor")) {
+					prefService.setCharPref("extensions.extras.HighestColor",'#FFCC99');}
 				
-				if ( gCP("HighestColor") == null ) 
-					prefService.setBoolPref("extensions.extras.HighestColor", "#FF0000");
+				if (!gCP("LowestColor")) {
+					prefService.setCharPref("extensions.extras.LowestColor", '#99FF99');}
+				
+				if (!gBP("Iconify")) {
+				 prefService.setBoolPref("extensions.extras.Iconify", true); }
+				
+				if (!gBP("ShadeHigh")) {
+				prefService.setBoolPref("extensions.extras.ShadeHigh", true);}
+				
+				if (!gBP("ShadeHigh")) {
+				prefService.setBoolPref("extensions.extras.ShadeLow", false);} 
+			 
+			 
 	    },
 	
 };
