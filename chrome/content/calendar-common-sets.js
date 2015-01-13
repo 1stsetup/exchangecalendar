@@ -97,7 +97,17 @@ exchForewardEvent.prototype = {
 
 	erForewardItemRequestOK : function _erForewardItemRequestOK(aForewardItemRequest, aResp)
 	{
-		alert(aResp);
+		if(aResp){
+			var title="Forwarding Event";
+			var msg=aResp;
+			 var image = "chrome://exchangecalendar/skin/notify-icon.png";
+			  var win = Components.classes['@mozilla.org/embedcomp/window-watcher;1'].
+			                      getService(Components.interfaces.nsIWindowWatcher).
+			                      openWindow(null, 'chrome://global/content/alerts/alert.xul',
+			                                  '_blank', 'chrome,titlebar=no,popup=yes', null);
+			  win.arguments = [image,  title, msg, true, ''];
+			  
+		}
 	},
 
 	erForewardItemRequestError: function _erForewardItemRequestError(aForewardItemRequest, aCode, aMsg)
