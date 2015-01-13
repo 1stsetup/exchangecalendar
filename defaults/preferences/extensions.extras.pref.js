@@ -1,9 +1,3 @@
-/* debugging prefs */
-pref("browser.dom.window.dump.enabled", true);
-pref("javascript.options.showInConsole", true);
-pref("javascript.options.strict", true);
-pref("nglayout.debug.disable_xul_cache", true);
-pref("nglayout.debug.disable_xul_fastload", true);
 pref("extensions.extras.HighIcon", "chrome://exchangecalendar/skin/high.gif");
 pref("extensions.extras.HighestColor", "#FFCC99");
 pref("extensions.extras.HighestIcon", "chrome://exchangecalendar/skin/highest.gif");

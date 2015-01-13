@@ -3,28 +3,18 @@
 var Cu=Components.utils;
 var Cc=Components.classes;
 var Ci=Components.interfaces;
-var prefService = Cc["@mozilla.org/preferences-service;1"]
-	                    .getService(Ci.nsIPrefService);
-function setpref()
-{
-	 prefService = Cc["@mozilla.org/preferences-service;1"]
-	                    .getService(Ci.nsIPrefService); 
-}
  
-function gCP(pref) { 
-	try{
-	return prefService.getCharPref("extensions.extras." + pref);
-	}
-	catch(ex){
-		setpref();}
+ 
+function gCP(pref) {  
+	var prefService = Cc["@mozilla.org/preferences-service;1"]
+			                    .getService(Ci.nsIPrefService);
+	return prefService.getCharPref("extensions.extras." + pref); 
 } 
 
 function gBP(pref) { 
- try{
-	return prefService.getBoolPref("extensions.extras." + pref);
-}
-catch(ex){
-	setpref();}
+	var prefService = Cc["@mozilla.org/preferences-service;1"]
+		                    .getService(Ci.nsIPrefService);
+ 	return prefService.getBoolPref("extensions.extras." + pref); 
 } 
 
 function enhancePriority(){
@@ -190,36 +180,9 @@ enhancePriority.prototype={
 				ObserverService.addObserver( extrasObserver, "MsgCreateDBView", false);
 	    },
 	    
-		onload:function _onload(){ 
-
+		onload:function _onload(){  
 				document.getElementById("priorityCol").setAttribute("width","25");
-				document.getElementById("priorityCol").setAttribute("fixed","true");  
-				
-				prefService.setCharPref("extensions.extras.HighestIcon",
-				                          "chrome://exchangecalendar/skin/highest.gif");
-				prefService.setCharPref("extensions.extras.HighIcon",
-				                          "chrome://exchangecalendar/skin/high.gif");
-				prefService.setCharPref("extensions.extras.LowIcon",
-				                          "chrome://exchangecalendar/skin/low.gif");
-				prefService.setCharPref("extensions.extras.LowestIcon",
-				                          "chrome://exchangecalendar/skin/lowest.gif");
-				
- 				if (!gCP("HighestColor")) {
-					prefService.setCharPref("extensions.extras.HighestColor",'#FFCC99');}
-				
-				if (!gCP("LowestColor")) {
-					prefService.setCharPref("extensions.extras.LowestColor", '#99FF99');}
-				
-				if (!gBP("Iconify")) {
-				 prefService.setBoolPref("extensions.extras.Iconify", true); }
-				
-				if (!gBP("ShadeHigh")) {
-				prefService.setBoolPref("extensions.extras.ShadeHigh", true);}
-				
-				if (!gBP("ShadeHigh")) {
-				prefService.setBoolPref("extensions.extras.ShadeLow", false);} 
-			 
-			 
+				document.getElementById("priorityCol").setAttribute("fixed","true");    
 	    },
 	
 };
