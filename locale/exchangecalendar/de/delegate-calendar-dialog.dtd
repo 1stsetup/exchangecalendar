@@ -21,3 +21,5 @@
 <!ENTITY  delegateCalendar.permission.description.editor "Lese, erzeuge, and ändere Ereignisse im Kalenderordner." >
 <!ENTITY  delegateCalendar.permission.description.reviewer "Lese Ereignisse im Kalenderordner." >
 <!ENTITY  delegateCalendar.permission.description.none "Keine Zugriffsrechte auf den Kalenderordner." >
+
+<!ENTITY delegateCalendar.permission.details.label "Detaillierte Zugriffsrechte: " >
