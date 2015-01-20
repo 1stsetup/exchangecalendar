@@ -3,7 +3,22 @@
 var Cu=Components.utils;
 var Cc=Components.classes;
 var Ci=Components.interfaces;
- 
+Components.utils.import("resource://app/modules/gloda/public.js");
+Components.utils.import("resource://app/modules/gloda/explattr.js");
+Components.utils.import("resource:///modules/iteratorUtils.jsm"); 
+var tagService = Components.classes["@mozilla.org/messenger/tagservice;1"]  
+                                    .getService(Components.interfaces.nsIMsgTagService);  
+function tag(hdr){   
+	           var tagArray = tagService.getAllTags({});  
+	           for (var i = 0; i < tagArray.length; ++i)  
+	           {  
+	             var taginfo = tagArray[i];   
+	             if( taginfo.tag === "Important" ){ 
+		         toggleMessageTagPostEwsUpdate(taginfo.key, "addKeywordsToMessages" ,hdr); 
+		         OnTagsChange();
+	             }  
+	           }   
+}
  
 function gCP(pref) {  
 	var prefService = Cc["@mozilla.org/preferences-service;1"]
@@ -16,6 +31,42 @@ function gBP(pref) {
 		                    .getService(Ci.nsIPrefService);
  	return prefService.getBoolPref("extensions.extras." + pref); 
 } 
+  
+function toggleMessageTagPostEwsUpdate(key, addKey,hdr) {
+    var messages = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+    var msg = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+    var selectedMessages = gFolderDisplay.selectedMessages;
+    var toggler = addKey ? "addKeywordsToMessages" : "removeKeywordsFromMessages";
+    var prevHdrFolder = null;
+    // this crudely handles cross-folder virtual folders with selected messages
+    // that spans folders, by coalescing consecutive msgs in the selection
+    // that happen to be in the same folder. nsMsgSearchDBView does this
+    // better, but nsIMsgDBView doesn't handle commands with arguments,
+    // and (un)tag takes a key argument.
+    for (var i = 0; i < selectedMessages.length; ++i) {
+        var msgHdr = hdr;
+
+        if (msgHdr.label) {
+            // Since we touch all these messages anyway, migrate the label now.
+            // If we don't, the thread tree won't always show the correct tag state,
+            // because resetting a label doesn't update the tree anymore...
+            msg.clear();
+            msg.appendElement(msgHdr, false);
+            msgHdr.folder.addKeywordsToMessages(msg, "$label" + msgHdr.label);
+            msgHdr.label = 0;
+            // remove legacy label
+        }
+        if (prevHdrFolder != msgHdr.folder) {
+            if (prevHdrFolder)
+                prevHdrFolder[toggler](messages, key);
+            messages.clear();
+            prevHdrFolder = msgHdr.folder;
+        }
+        messages.appendElement(msgHdr, false);
+    }
+    if (prevHdrFolder)
+        prevHdrFolder[toggler](messages, key);
+ } 
 
 function enhancePriority(){
 	this._document=document;
@@ -65,35 +116,7 @@ enhancePriority.prototype={
 					    				}
 				    			    },
 				
-				    			    getExtensionProperties: function(row, props, which) {
-					    				var properties = "";
-					    				var hdr = gDBView.getMsgHdrAt(row);
-					    				var priority = hdr.getStringProperty("priority");
-					    				var doHigh = gBP(which + "High");
-					    				var doLow = gBP(which + "Low");
-					    				var property;
-					    				switch (priority) {
-					    				case "6":
-					    				    if (doHigh)
-					    					property = gCP("HighestColor"); 
-					    				    break;
-					    				case "5":
-					    				    if (doHigh)
-					    					property = gCP("HighColor");
-					    				    break;
-					    				case "3":
-					    				    if (doLow)
-					    					property = gCP("LowColor");
-					    				    break;
-					    				case "2":
-					    				    if (doLow)
-					    					property = gCP("LowestColor");
-					    				    break;
-					    				}
-					    				if (property) {  
-					    				    properties += this.setProperty(props,property);
-					    				}
-					    				return properties;
+				    			    getExtensionProperties: function(row, props, which) { 
 				    			    },
 				
 				    			    getCellProperties: function(row, col, props) {
@@ -108,14 +131,19 @@ enhancePriority.prototype={
 					    				var doHigh = gBP( "ShadeHigh");
 					    				var doLow = gBP( "ShadeLow");
 					    				var property;
+					    
 					    				switch (priority) {
 					    				case "6":
 					    				    if (doHigh)
 					    					property = gCP("HighestColor"); 
-					    				    break;
+					    				    if(gBP("tagImportant")){
+					    				    	tag(hdr);} 
+					    				    break;					    				    
 					    				case "5":
 					    				    if (doHigh)
 					    					property = gCP("HighestColor");
+					    				    if(gBP("tagImportant")){
+					    				    	tag(hdr);}	 
 					    				    break;
 					    				case "3":
 					    				    if (doLow)
@@ -183,9 +211,11 @@ enhancePriority.prototype={
 		onload:function _onload(){  
 				document.getElementById("priorityCol").setAttribute("width","25");
 				document.getElementById("priorityCol").setAttribute("fixed","true");    
+				document.getElementById("priorityCol").setAttribute("class","treecol-image  priorityColumnHeaderIcon")
 	    },
 	
 };
 var tmpEnhancePriority=new enhancePriority(window,document);
 window.addEventListener("load", tmpEnhancePriority.onload(), false);
 window.addEventListener("load", tmpEnhancePriority.execute(), false);
+ 

@@ -1,3 +1,8 @@
+.priorityColumnHeaderIcon
+{   
+  list-style-image: url("chrome://exchangecalendar/skin/threadCol-PriorityIcon.gif");   
+}
+
 #threadTree treechildren::-moz-tree-row(lcolor-FFFFFF), .blcolor-FFFFFF {
   background-color: #FFFFFF !important;
 }
