@@ -16,6 +16,9 @@
       <preference id="extensions.extras.ShadeLow"
 		  name="extensions.extras.ShadeLow"
 		  type="bool"/>
+	  <preference id="extensions.extras.tagImportant"
+          name="extensions.extras.tagImportant"
+          type="bool"/>
       <preference id="extensions.extras.HighestColor"
 		  name="extensions.extras.HighestColor"
 		  type="unichar"/>
@@ -48,7 +51,10 @@
     	    <checkbox id="shade-low-checkbox"
     		      preference="extensions.extras.ShadeLow"
     		      label="&shadeLow.label;"/>
-    	  </vbox>
+    	   <checkbox id="mark-imp-checkbox"
+                  preference="extensions.extras.tagImportant"
+                  label="&tagImportant.label;"/>
+     	  </vbox>
     	   
 	      <hbox>
           <groupbox flex="1">

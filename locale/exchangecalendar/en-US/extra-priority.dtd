@@ -6,12 +6,13 @@
 <!ENTITY iconify.label "Display priority icons only"> 
 <!ENTITY shadeHigh.label "Color background for high-priority messages">
 <!ENTITY shadeLow.label "Color background for low-priority messages">
+<!ENTITY tagImportant.label "Automatically tag high priority mail as Important">
  
- <!ENTITY highestColor.label "Highest">
+<!ENTITY highestColor.label "Highest">
 
 <!ENTITY highColor.label "High">
 <!ENTITY lowColor.label "Low">
 <!ENTITY lowestColor.label "Lowest">
  
 <!ENTITY prioritycolor  "Custom Color">
- <!ENTITY   pref.color "Color Preferences:">
+<!ENTITY pref.color "Color Preferences:">

@@ -3,4 +3,6 @@
  
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
         <script src="chrome://exchangecalendar/content/priority-display.js"/>
+        <script type="application/javascript" src="chrome://messenger/content/mailWindowOverlay.js"/>
+
 </overlay>
