@@ -6,18 +6,26 @@ var Ci=Components.interfaces;
 Components.utils.import("resource://app/modules/gloda/public.js");
 Components.utils.import("resource://app/modules/gloda/explattr.js");
 Components.utils.import("resource:///modules/iteratorUtils.jsm"); 
-var tagService = Components.classes["@mozilla.org/messenger/tagservice;1"]  
-                                    .getService(Components.interfaces.nsIMsgTagService);  
-function tag(hdr){   
+  
+var importantTag;
+
+function getImportantTag(){
+	var tagService = Components.classes["@mozilla.org/messenger/tagservice;1"]  
+	                                    .getService(Components.interfaces.nsIMsgTagService);
 	           var tagArray = tagService.getAllTags({});  
 	           for (var i = 0; i < tagArray.length; ++i)  
 	           {  
 	             var taginfo = tagArray[i];   
 	             if( taginfo.tag === "Important" ){ 
-		         toggleMessageTagPostEwsUpdate(taginfo.key, "addKeywordsToMessages" ,hdr); 
-		         OnTagsChange();
-	             }  
+	            	 	importantTag=taginfo.key;
+ 	            	 	return;
+	 	             }  
 	           }   
+}
+           
+function tag(hdr){ 
+	if(importantTag){
+		         toggleMessageTagPostEwsUpdate(importantTag, "addKeywordsToMessages" ,hdr); } 
 }
  
 function gCP(pref) {  
@@ -212,6 +220,7 @@ enhancePriority.prototype={
 				document.getElementById("priorityCol").setAttribute("width","25");
 				document.getElementById("priorityCol").setAttribute("fixed","true");    
 				document.getElementById("priorityCol").setAttribute("class","treecol-image  priorityColumnHeaderIcon")
+				getImportantTag();//get important tag
 	    },
 	
 };
