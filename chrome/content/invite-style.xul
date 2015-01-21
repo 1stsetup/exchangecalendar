@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://exchangecalendar/content/invite-style.css" type="text/css"?>
+
+<!DOCTYPE overlay SYSTEM "chrome://exchangecalendar/locale/inviteStyle.dtd">
+
+
+<overlay id="threadTreeInviteOverlay"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">\
+  
+<script type="application/javascript"
+        src="chrome://exchangecalendar/content/invite-style.js"/>
+        
+    <treecols id="threadCols">
+        <treecol id="NewCole" persist="hidden ordinal width" flex="1" hidden="false"
+             label="Helo" tooltiptext="Hi"/>
+    </treecols>
+</overlay>
