@@ -40,7 +40,7 @@
 
 	<xul:vbox flex="1">
 		<xul:toolbox anonid="FormatToolbox" mode="icons">
-			<xul:toolbar class="chromeclass-toolbar" anonid="FormatToolbar">
+			<xul:toolbar class="chromeclass-toolbar embedded-toolbar" anonid="FormatToolbar">
 				<xul:toolbarbutton anonid="cmd_bold"
 					class="bold-button"
 					tooltiptext="Bold"
@@ -175,7 +175,7 @@
 			</xul:toolbar>
 		</xul:toolbox>
 		<xul:toolbox anonid="FormatToolbox" mode="icons">
-			<xul:toolbar class="chromeclass-toolbar" anonid="FormatToolbar">
+			<xul:toolbar class="chromeclass-toolbar embedded-toolbar" anonid="FormatToolbar">
 				<xul:toolbaritem class="formatting-button">
 					<xul:menulist anonid="fontFaceMenuList" class="toolbar-focustarget" crop="right">
 						<xul:menupopup anonid="fontFaceSelect"/>

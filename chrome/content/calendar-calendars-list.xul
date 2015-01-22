@@ -52,6 +52,7 @@
     <command id="exchWebService_edit_calendar_command" oncommand="tmpCalPopUpMenu.editExchangeSettings()"/>
     <command id="exchWebService_oof_settings_command" oncommand="tmpCalPopUpMenu.editOofSettings()"/>
     <command id="exchWebService_clone_settings_command" oncommand="tmpCalPopUpMenu.cloneSettings()"/>
+    <command id="exchWebService_delegate_calendar_settings_command" oncommand="tmpCalPopUpMenu.delegateCalendarSettings()"/>
   </commandset>
 
   <popupset id="calendar-popupset">
@@ -69,6 +70,9 @@
       <menuitem id="exchWebService-list-calendars-context-exchange-clone-settings"
                 label="&calendar.context.exchange.clone.settings.label;"
                 observes="exchWebService_clone_settings_command"/>
+      <menuitem id="exchWebService-list-calendars-context-delegate-calendar-settings" 
+                label="&calendar.context.exchange.delegate.calendar.settings.label;" 
+                observes="exchWebService_delegate_calendar_settings_command" />     
     </menupopup>
     <tooltip id="calendar-list-tooltip"
              onpopupshowing="return tmpCalPopUpMenu.tooltipShowing(event)"/>
@@ -78,3 +82,5 @@
                       type="exchange"/>
 
 </overlay>
+ 
+ 

@@ -76,6 +76,7 @@
 <!--			<tab label="&ecsettings.tab.meetingrequestsettings;" hidden="true"/>  -->
 			<tab label="&ecsettings.tab.calendarfolderproperties;" />
 			<tab label="&ecsettings.tab.offlineCachingproperties;" />
+			<tab label="&ecsettings.tab.autoprocessingproperties;" />
 		</tabs>
 		<tabpanels flex="1">
 			<tabpanel id="exchWebService-adsettings">
@@ -382,6 +383,26 @@
 
 			</tabpanel>
 
+	            <tabpanel id="exchWebService-autoprocessing-properties">
+                 <vbox flex="1">
+                    <groupbox id="exchWebService-autoprocessingproperties-detaisgroupbox">
+                         <caption label="Preferences:" />
+                         <vbox>
+                             <hbox>
+                                 <checkbox label="&label.autoprocessingproperties.deletecancelleditems;" id="exchWebService-autoprocessingproperties-deletecancelleditems"
+                                      disabled="false"/> 
+                            </hbox>
+                        </vbox>  
+                         <vbox>
+                             <hbox>
+                                 <checkbox label="&label.autoprocessingproperties.markeventtentative;" id="exchWebService-autoprocessingproperties-markeventtentative"
+                                      disabled="false"/> 
+                            </hbox> 
+                        </vbox>  
+                    </groupbox>   
+                                              
+                </vbox> 
+            </tabpanel> 
 		</tabpanels>
 	</tabbox>
 

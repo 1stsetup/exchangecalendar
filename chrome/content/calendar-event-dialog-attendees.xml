@@ -60,6 +60,7 @@
                          type="autocomplete"
                          flex="1"
                          autocompletesearch="addrbook ldap exchangeAutoCompleteSearch"
+                         autocompletesearchparam="{}"
                          timeout="300"
                          maxrows="4"
                          completedefaultindex="true"
@@ -150,6 +151,20 @@
 					  this.setFocus(this.mMaxAttendees);
         			]]></body>
       			</method>
+                <method name="addDirectoryServerObserver">
+                    <body><![CDATA[
+                    if (this.mPrefs) {
+                        this.mPrefs.addObserver(
+                                "ldap_2.autoComplete.useDirectory",
+                                this.mDirectoryServerObserver,
+                                false);
+                        this.mPrefs.addObserver(
+                                "ldap_2.autoComplete.directoryServer",
+                                this.mDirectoryServerObserver,
+                                false);
+                    }
+                    ]]></body>
+                </method>
 		</implementation>
 	</binding>
 </bindings>

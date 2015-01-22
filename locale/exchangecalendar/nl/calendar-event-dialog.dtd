@@ -1,7 +1,6 @@
 <!ENTITY exchWebService.owner.label "Eigenaar:">
 <!ENTITY exchWebService.totalWork.label "Werk totaal:">
 <!ENTITY exchWebService.actualWork.label "Werk echt:">
-<!ENTITY exchWebService.mileage.label "Mileage:">
-<!ENTITY exchWebService.billingInformation.label "Facturing info:">
+<!ENTITY exchWebService.mileage.label "Rendement:">
+<!ENTITY exchWebService.billingInformation.label "Factuurinfo:">
 <!ENTITY exchWebService.companies.label "Bedrijf:">
-
