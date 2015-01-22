@@ -1,2 +1,2 @@
-<!ENTITY label.inviteCol "Invite">
-<!ENTITY tooltip.inviteCol "Invitation Status">
+<!ENTITY label.inviteCol "Calendar Invite">
+<!ENTITY tooltip.inviteCol "Sort by invitation">

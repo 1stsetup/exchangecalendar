@@ -3,16 +3,16 @@ function addInviteColumn()
 {
 	let threadcols=document.getElementById("threadCols");
 	let threadcol=document.createElement("treecol");
-	threadcol.setAttribute("fixed","true");
-	threadcol.setAttribute("cycler","true");
-	threadcol.setAttribute("persist","hidden ordinal");  
-	threadcol.setAttribute("id","inviteCol");
-	threadcol.setAttribute("currentView","unthreaded");
-	threadcol.setAttribute("class","treecol-image inviteColumnHeader");
-	threadcol.setAttribute("label","Calendar Invite");
-	threadcol.setAttribute("tooltiptext","Calendar Invite");	
-	threadcol.setAttribute("width","25");
-	threadcol.setAttribute("fixed","true");   
+	threadcol.setAttribute("fixed","");
+	threadcol.setAttribute("cycler","");
+ 	threadcol.setAttribute("id","inviteCol");
+	threadcol.setAttribute("currentView",""); 
+ 	threadcol.setAttribute("label","");  
+ 	threadcol.setAttribute("tooltipText","");  
+ 	threadcol.setAttribute("class","");
+ 	threadcol.setAttribute("width","");
+	threadcol.setAttribute("fixed",""); 
+	threadcol.setAttribute("persists","")
 	threadcols.appendChild(threadcol); 
   }
   
@@ -30,7 +30,9 @@ function updateInviteCell()
 	    			    _getAtom: function(aName) {}, 
 	    			    setProperty: function(prop, value) {}, 
 	    			    getExtensionProperties: function(row, props, which) {}, 
-	    			    getCellProperties: function(row, col, props) {}, 
+	    			    getCellProperties: function(row, col, props) {
+	    			    	
+	    			    }, 
 	    			    getRowProperties: function(row, props) { }, 
 	    			    getImageSrc: function(row, col) { 
 		    				var hdr = gDBView.getMsgHdrAt(row); 
@@ -50,12 +52,32 @@ function updateInviteCell()
 							 { 	return "chrome://exchangeCalendar/skin/declined.png"; 
 							 } 
 							 if(!res){
-								 return;
-								// return "chrome://exchangeCalendar/skin/invited.png"; 
+								 res = Subject.match(/Event Canceled:/);  
 							 }
 							 else
 							 {   return "chrome://exchangeCalendar/skin/tentative.png"; 
-							 }   
+							 }  
+							 
+							 if(!res){
+								 res = Subject.match(/Event Updated:/);  
+							 }
+							 else
+							 {   return "chrome://exchangeCalendar/skin/updated.png"; 
+							 }  
+							 
+							 if(!res){
+								 res = Subject.match(/Event Invitation:/);  
+							 }
+							 else
+							 {   return "chrome://exchangeCalendar/skin/updated.png"; 
+							 }  
+							 
+							 if(!res){
+									return;  
+							 }
+							 else
+							 {   return "chrome://exchangeCalendar/skin/invited.png"; 
+							 }  
 	    			    }, 
 	    			    getSortLongForRow: function(hdr) {}
 	    			}; 
@@ -72,8 +94,7 @@ function updateInviteCell()
 	    };
 var ObserverService = Cc["@mozilla.org/observer-service;1"]
     .getService(Ci.nsIObserverService);
-	ObserverService.addObserver( extrasObserver, "MsgCreateDBView", false);
-  
+	ObserverService.addObserver( extrasObserver, "MsgCreateDBView", false);  
 }
 
 window.addEventListener("load",addInviteColumn(),false);
