@@ -8,18 +8,18 @@
 <!ENTITY label.ecExchangeSettings.title "Paramètres du calendrier:">
 
 <!ENTITY label.poll.inbox "Interrogation de la boite pour invitations, modifications et annulations.">
-<!ENTITY label.poll.inbox.interval "Frequence d'interrogation de la boite en secondes:">
-<!ENTITY label.poll.calendar.interval "Frequence d'interrogation du calendrier en secondes:">
+<!ENTITY label.poll.inbox.interval "Frequence d'interrogation de la boite, en secondes:">
+<!ENTITY label.poll.calendar.interval "Frequence d'interrogation du calendrier, en secondes:">
 
 <!ENTITY label.nomeetingrequestsettings "Vous ne pouvez envoyer d'invitation car vous n'avez pas selectionné la bonne boite aux lettres">
 
 <!ENTITY label.autorespond.meetingrequest "Répondre automatiquement à une nouvelle invitation avec ">
 
-<!ENTITY menuitem.label.ec-autorespond-answer.tentative "Je pourrais participer">
+<!ENTITY menuitem.label.ec-autorespond-answer.tentative "Je participerai peut-être">
 <!ENTITY menuitem.label.ec-autorespond-answer.accepted "j'accepte">
 <!ENTITY menuitem.label.ec-autorespond-answer.declined "Je n'accepte pas">
 
-<!ENTITY label.autoremove.invitation_cancellation1 "Supprimer automatiquement l'invitation et le message d'annulation sans réponse de votre part à l'invitation.">
+<!ENTITY label.autoremove.invitation_cancellation1 "Supprimer automatiquement l'invitation et le message d'annulation sans réponse de votre part.">
 <!ENTITY label.autoremove.invitation_cancellation2 "Supprimer automatiquement une invitation confirmée à la réception d'un message d'annulation.">
 
 <!ENTITY label.autoremove.invitation_response1 "Supprimer automatiquement la réponse de tous si vous n'êtes pas l'organisateur de l'invitation.">
@@ -29,6 +29,7 @@
 
 <!ENTITY treecol.label.userid "Utilisateur">
 <!ENTITY treecol.label.email "Email">
+
 
 <!ENTITY ecsettings.tab.offlineCachingproperties "Cache hors connection">
 
