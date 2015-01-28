@@ -95,8 +95,8 @@ try{
 	onLoad: function _onLoad()
 	{
 		//onLoad();
-
-		if (this._window.arguments[0].calendarEvent.calendar.type != "exchangecalendar") {
+		 this._document.getElementById("exchWebService-body-editor").setAttribute("scrollbars","yes");
+ 		if (this._window.arguments[0].calendarEvent.calendar.type != "exchangecalendar") {
 			if (this._document.getElementById("item-description")) {
 				this._document.getElementById("item-description").hidden = false;
 			}
