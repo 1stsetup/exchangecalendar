@@ -225,6 +225,7 @@ try{
 			this._document.getElementById("exchWebService-details-separator").hidden = true;
 
 			this._document.getElementById("event-grid-location-row").hidden = false;
+			this._document.getElementById("event-grid-recurrence-row").hidden=false;
 
 			// Clear reminder select list for todo
 			this._document.getElementById("reminder-none-separator").hidden = false;
