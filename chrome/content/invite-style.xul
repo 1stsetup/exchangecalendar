@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+ 
+<?xml-stylesheet href="chrome://exchangecalendar/content/invite-style.css" type="text/css"?>
+
+<!DOCTYPE overlay SYSTEM "chrome://exchangecalendar/locale/inviteStyle.dtd">
+
+<overlay xmlns:html="http://www.w3.org/1999/xhtml"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+        <script src="chrome://exchangecalendar/content/invite-style.js"/>
+        <tree id="threadTree">
+                <treecols id="threadCols"> 
+                        <treecol id="inviteCol" persist="hidden ordinal width"
+                                currentView="unthreaded"   class="treecol-image inviteColumnHeader"  label="&label.inviteCol;"
+                                tooltiptext="&tooltip.inviteCol;" fixed="true" cycler="true"/>
+                </treecols>
+        </tree>
+</overlay>

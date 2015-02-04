@@ -1,20 +1,20 @@
 <!ENTITY label.acceptbutton "Opslaan">
-<!ENTITY label.cancelbutton "Annuleer">
+<!ENTITY label.cancelbutton "Annuleren">
 
 <!ENTITY ecsettings.tab.adsettings "Exchange/Windows AD">
-<!ENTITY ecsettings.tab.meetingrequestsettings "Vergader verzoeken">
-<!ENTITY ecsettings.tab.calendarfolderproperties "Folder eigenschappen">
+<!ENTITY ecsettings.tab.meetingrequestsettings "Vergaderverzoeken">
+<!ENTITY ecsettings.tab.calendarfolderproperties "Mapeigenschappen">
 
-<!ENTITY label.ecExchangeSettings.title "Settings voor agenda:">
+<!ENTITY label.ecExchangeSettings.title "Instellingen voor agenda:">
 
-<!ENTITY label.poll.inbox "Poll inbox voor vergader verzoeken, wijzigingen en annuleringen.">
+<!ENTITY label.poll.inbox "Poll inbox voor vergaderverzoeken, wijzigingen en annuleringen.">
 <!ENTITY label.poll.inbox.interval "Frequentie van inbox pollen in seconden:">
 <!ENTITY label.poll.calendar.interval "Frequentie van agenda pollen in seconden:">
 
-<!ENTITY label.nomeetingrequestsettings "Je kunt de vergader verzoek instellingen niet aanpassen
- omdat je niet de hoofd agenda van de mailbox hebt geselecteerd.">
+<!ENTITY label.nomeetingrequestsettings "U kunt de vergaderverzoekinstellingen niet aanpassen
+ omdat u niet de hoofdagenda van de mailbox hebt geselecteerd.">
 
-<!ENTITY label.autorespond.meetingrequest "Automatisch beantwoord een uitnodiging met ">
+<!ENTITY label.autorespond.meetingrequest "Uitnodigingen automatisch beantwoorden met ">
 
 <!ENTITY menuitem.label.ec-autorespond-answer.tentative "Ik zal misschien aanwezig zijn">
 <!ENTITY menuitem.label.ec-autorespond-answer.accepted "Ik zal aanwezig zijn">
@@ -30,16 +30,10 @@
 
 <!ENTITY treecol.label.userid "UserId">
 <!ENTITY treecol.label.email "Email">
-
-<!--
-written by deepak
-
-start
--->
 <!ENTITY ecsettings.tab.offlineCachingproperties "Offline buffer">
 
-<!ENTITY label.offlineCacheproperties.cachingStartDate "Start datum van buffer:">
-<!ENTITY label.offlineCacheproperties.cachingEndDate "Eind datum van buffer:">
+<!ENTITY label.offlineCacheproperties.cachingStartDate "Startdatum van buffer:">
+<!ENTITY label.offlineCacheproperties.cachingEndDate "Einddatum van buffer:">
 <!ENTITY label.offlineCacheproperties.totalEvents "Totaal aantal afspraken gebufferd:">
 <!ENTITY label.offlineCacheproperties.totalTasks "Totaal aantal taken gebufferd:">
 
@@ -47,4 +41,8 @@ start
 <!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Aantal maanden om te bufferen na vandaag:">
 
 <!ENTITY button.offlineCacheproperties.clearCache "Verwijder offline gebufferde data">
+
+<!ENTITY ecsettings.tab.autoprocessingproperties "Automatische verwerking">
+
+<!ENTITY label.autoprocessingproperties.deletecancelleditems "Verwijder automatisch geannuleerde gebeurtenissen">
 

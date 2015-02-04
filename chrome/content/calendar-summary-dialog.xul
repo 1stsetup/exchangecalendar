@@ -73,7 +73,43 @@
 				<listbox id="exchWebService-attachment-link" rows="3" flex="1"/>
 			</box>
 		</box>
+
+		<box id="item-attendees" hidden="true" orient="vertical">
+
+			<spacer id="required-attendee-spacer" class="default-spacer" hidden="true"/>
+			<calendar-caption id="required-attendee-caption" label="Required Attendee"
+			control="item-required-attendee-listbox" hidden="true"/>
+			<box orient="horizontal" id="item-required-attendee" hidden="true">
+				<spacer class="default-spacer"/>
+				<listbox id="item-required-attendee-listbox" rows="4" flex="1" disabled="true">
+					<listcols>
+						<listcol id="item-attendee-left-col" flex="1"/>
+						<listcol id="item-attendee-right-col" flex="1"/>
+					</listcols>
+					<listitem>
+						<listcell class="listcell-iconic status-icon" crop="end" hidden="true"/>
+						<listcell class="listcell-iconic status-icon" crop="end" hidden="true"/>
+					</listitem>
+				</listbox>
+			</box>
+
+			<spacer id="optional-attendee-spacer" class="default-spacer" hidden="true"/>
+			<calendar-caption id="optional-attendee-caption" label="Optional Attendee"
+			control="item-optional-attendee-listbox" hidden="true"/>
+			<box orient="horizontal" id="item-optional-attendee" hidden="true">
+				<spacer class="default-spacer"/>
+				<listbox id="item-optional-attendee-listbox" rows="4" flex="1" disabled="true">
+					<listcols>
+						<listcol id="item-attendee-left-col" flex="1"/>
+						<listcol id="item-attendee-right-col" flex="1"/>
+					</listcols>
+					<listitem>
+						<listcell class="listcell-iconic status-icon" crop="end" hidden="true"/>
+						<listcell class="listcell-iconic status-icon" crop="end" hidden="true"/>
+					</listitem>
+				</listbox>
+			</box>
+
+		</box>
 	</dialog>
 </overlay>
-
-

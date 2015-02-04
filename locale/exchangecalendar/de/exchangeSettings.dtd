@@ -29,11 +29,6 @@
 
 <!ENTITY treecol.label.userid "UserId">
 <!ENTITY treecol.label.email "Email">
-<!--
-written by deepak
-
-start
--->
 <!ENTITY ecsettings.tab.offlineCachingproperties "Offline Caching">
 
 <!ENTITY label.offlineCacheproperties.cachingStartDate "Startdatum im Offline-Cache:">
@@ -45,3 +40,7 @@ start
 <!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Wieviele Monate nach dem aktuellen Datum soll der Cache aktiv sein:">
 
 <!ENTITY button.offlineCacheproperties.clearCache "Offline-Cache löschen">
+<!ENTITY ecsettings.tab.autoprocessingproperties "Automatische Bearbeitung">
+
+<!ENTITY label.autoprocessingproperties.deletecancelleditems "Entferne abgesagte Besprechungen automatisch">
+<!ENTITY label.autoprocessingproperties.markeventtentative "Markiere Besprechungen automatisch als vielleicht und sende eine Antwort an den Organisator">
