@@ -8517,11 +8517,14 @@ else {
 
 	updateVersionInfoCache:function _updateVersionInfoCache(self, Addon)
 	{
+ 		this.logInfo("updateVersionInfoCache  : ");
+
 		if (this.noDB) return;
 		if (!Addon) return;
 		var version=Addon.version;
 		
 		var sqlStr2 = "DELETE FROM version"; 
+		try{
 		if (!this.executeQuery(sqlStr2)) {
 			if (this.debug) this.logInfo("removeExchCalDbCache : Error removing attachment from offlineCacheDB. Error:("+this.offlineCacheDB.lastError+")"+this.offlineCacheDB.lastErrorString);
 		}
@@ -8536,16 +8539,32 @@ else {
 		else {
 			if (this.debug) this.logInfo("removeExchCalDbCache: Inserted attachments_per_item into offlineCacheDB. Name:"+ version );
 		} 
+		}
+		catch(ex)
+		{
+	 		this.logInfo("updateVersionInfoCache: excepetion occured ");
+
+		}
+ 		this.logInfo("updateVersionInfoCache 21 : Done");
+
 		return true;
+		
 	},
 	
 	checkExchCalAddonVerion: function _checkExchCalAddonVersion()
 	{
-		Cu.import("resource://gre/modules/AddonManager.jsm");
- 		var self=this; 
-	    AddonManager.getAddonByID("exchangecalendar@extensions.1st-setup.nl",function(Addon){  
-		    																self.removeExchCalDbCache(self,Addon); 
-  	    																}); 
+ 
+		try{
+		    this.logInfo("checkExchCalAddonVerion: ");
+		    Cu.import("resource://gre/modules/AddonManager.jsm");
+	 		var self=this; 
+		    AddonManager.getAddonByID("exchangecalendar@extensions.1st-setup.nl",function(Addon){  
+			    																self.removeExchCalDbCache(self,Addon); 
+	  	    																}); 
+ 		}
+		catch(ex){
+		 	 this.logInfo("checkExchCalAddonVerion:  Exception occured ");
+		 	 }
 	}, 
 	
 	removeExchCalDbCache: function _removeExchCalDbCache(self,Addon){  
@@ -8631,6 +8650,7 @@ else {
 				if (this.debug) this.logInfo("removeExchCalDbCache 35: failed! New version not updated in cache" );  
 			}
   		}  
+		
  	}, 
 		
 	createOfflineCacheDB: function _createOfflineCacheDB()
@@ -8676,7 +8696,7 @@ else {
 			}
 	 		
 			//Check exchange calendar version clear cache
- 	 		this.checkExchCalAddonVerion();
+ 	 	 	this.checkExchCalAddonVerion();
 
 //			if (dbVersion < latestDBVersion) {
 				if (!this.offlineCacheDB.tableExists("version")) {
