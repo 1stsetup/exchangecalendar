@@ -13,3 +13,4 @@
 <!ENTITY exchWebService.manageEWSAccounts.name.label "Namn:">
 
 <!ENTITY exchWebService.manageEWSAccounts.menuitem "Konton för Exchanges webbtjänster">
+<!ENTITY exchWebService.manageEWSAccounts.usekerberos.label "Use Kerberos authentication.">
