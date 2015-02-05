@@ -9,9 +9,8 @@
         <script src="chrome://exchangecalendar/content/invite-style.js"/>
         <tree id="threadTree">
                 <treecols id="threadCols"> 
-                        <treecol id="inviteCol" persist="hidden ordinal width"
-                                currentView="unthreaded"   class="treecol-image inviteColumnHeader"  label="&label.inviteCol;"
-                                tooltiptext="&tooltip.inviteCol;" fixed="true" cycler="true"/>
+                      <treecol id="inviteCol"  name="inviteCol" class="treecol-image inviteColumnHeader"  persist="hidden ordinal width"    
+                                 label="&label.inviteCol;" cycler="true" currentView="unthreaded" tooltiptext="&tooltip.inviteCol;" fixed="true" width="25" sort="inviteCol" sortActive="true" sortDirection="ascending"/>
                 </treecols>
         </tree>
 </overlay>

@@ -3,37 +3,68 @@ Components.utils.import("resource:///modules/gloda/mimemsg.js");
 function addInviteColumn()
 {
 	let threadcols=document.getElementById("threadCols");
-	let threadcol=document.createElement("treecol");
-	threadcol.setAttribute("fixed","");
-	threadcol.setAttribute("cycler","");
- 	threadcol.setAttribute("id","inviteCol");
-	threadcol.setAttribute("currentView",""); 
- 	threadcol.setAttribute("label","");  
- 	threadcol.setAttribute("tooltipText","");  
- 	threadcol.setAttribute("class","");
- 	threadcol.setAttribute("width","");
-	threadcol.setAttribute("fixed",""); 
-	threadcol.setAttribute("persists","")
+	let threadcol=document.createElement("treecol"); 
+ 	threadcol.setAttribute("id","inviteCol"); 
+ 	threadcol.setAttribute("width","25"); 
 	threadcols.appendChild(threadcol); 
-  }
-  
-function onWindowLoad()
-{ 
+}
+    
+function showIcons()
+{   
     var extrasObserver = {
 			observe: function(aMsgFolder, aTopic, aData) {  
  		    if (gDBView) {
 	    			var columnHandler = {
 	    					
 	    			    getCellText: function(row, col) {}, 
-	    			    getSortStringForRow: function(hdr) {}, 
-	    			    isString: function() {}, 
+	    			    getSortStringForRow: function(hdr) { 
+ 		    				var Subject  = hdr.mime2DecodedSubject; 
+ 	    				   	let isInviteMail= hdr.getStringProperty("isInviteMail"); 
+ 	    				  
+    				         if( isInviteMail == "true" ){ 
+	    				     var res = Subject.match(/Accepted:/);  
+							 if(!res){
+								 res = Subject.match(/Declined:/);  
+							 }
+							 else{   
+								 return "accepted"; 
+							 }
+							  
+							 if(!res){
+								 res = Subject.match(/Tentative:/);  
+							 }
+							 else{ 	
+								 return "declined"; 
+							 } 
+							 if(!res){
+								 res = Subject.match(/Canceled:/);  
+							 }
+							 else{   
+								 return "tentative"; 
+							 }  
+							 
+							 if(!res){
+								 res = Subject.match(/Updated:/);  
+							 }
+							 else{   
+								 return "updated"; 
+							 }  
+							 
+							 if(!res){
+								 res = Subject.match(/Event Invitation:/);  
+							 }
+							 else{  
+								 return "updated"; 
+							 }   
+						 	 return "invited";   
+ 	    				  } 
+	    			    }, 
+	    			    isString: function() { return true; }, 
 	    			    _atoms: {}, 
 	    			    _getAtom: function(aName) {}, 
 	    			    setProperty: function(prop, value) {}, 
 	    			    getExtensionProperties: function(row, props, which) {}, 
-	    			    getCellProperties: function(row, col, props) {
-	    			    	
-	    			    }, 
+	    			    getCellProperties: function(row, col, props) {}, 
 	    			    getRowProperties: function(row, props) { }, 
 	    			    getImageSrc: function(row, col) { 
 		    				var hdr = gDBView.getMsgHdrAt(row); 
@@ -58,63 +89,60 @@ function onWindowLoad()
   	    				      }, true ,{examineEncryptedParts:true,}); // true means force the message into being downloaded... this might take some time! 	    				 
  	    				  }
  	    				   
- 	    				    if( isInviteMail == "true" ){
- 	 	    				   
-	    				    var res = Subject.match(/Accepted:/);  
+    				         if( isInviteMail == "true" ){ 
+	    				     var res = Subject.match(/Accepted:/);  
 							 if(!res){
 								 res = Subject.match(/Declined:/);  
 							 }
-							 else
-							 {   return "chrome://exchangeCalendar/skin/accepted.png"; 
+							 else{   
+								 return "chrome://exchangeCalendar/skin/accepted.png"; 
 							 }
 							  
 							 if(!res){
 								 res = Subject.match(/Tentative:/);  
 							 }
-							 else
-							 { 	return "chrome://exchangeCalendar/skin/declined.png"; 
+							 else{ 	
+								 return "chrome://exchangeCalendar/skin/declined.png"; 
 							 } 
 							 if(!res){
 								 res = Subject.match(/Canceled:/);  
 							 }
-							 else
-							 {   return "chrome://exchangeCalendar/skin/tentative.png"; 
+							 else{   
+								 return "chrome://exchangeCalendar/skin/tentative.png"; 
 							 }  
 							 
 							 if(!res){
 								 res = Subject.match(/Updated:/);  
 							 }
-							 else
-							 {   return "chrome://exchangeCalendar/skin/updated.png"; 
+							 else{   
+								 return "chrome://exchangeCalendar/skin/updated.png"; 
 							 }  
 							 
 							 if(!res){
 								 res = Subject.match(/Event Invitation:/);  
 							 }
-							 else
-							 {   return "chrome://exchangeCalendar/skin/updated.png"; 
-							 }  
-							 
-							 	return "chrome://exchangeCalendar/skin/invited.png";  
-						 
+							 else{  
+								 return "chrome://exchangeCalendar/skin/updated.png"; 
+							 }   
+						 	 return "chrome://exchangeCalendar/skin/invited.png";   
  	    				  }
 	    			    }, 
 	    			    getSortLongForRow: function(hdr) {}
 	    			}; 
-	
+	    			
 	    			try {
 	    			    columnHandler.old = gDBView.getColumnHandler("inviteCol");
 	    			}
 	    			catch (ex) {}
 	    			
-	    			gDBView.addColumnHandler("inviteCol", columnHandler); 
-	    			
+	    			gDBView.addColumnHandler("inviteCol", columnHandler);  
     		    }//ifend
     		}
 	    };
-var ObserverService = Cc["@mozilla.org/observer-service;1"]
-    .getService(Ci.nsIObserverService);
-	ObserverService.addObserver( extrasObserver, "MsgCreateDBView", false);  
+    
+    	var ObserverService = Cc["@mozilla.org/observer-service;1"]
+                     		.getService(Ci.nsIObserverService);
+		ObserverService.addObserver( extrasObserver, "MsgCreateDBView", false);  
 }
 
 function getMessageBody(aMessageHeader)
@@ -169,5 +197,5 @@ function onMessageAdded(){
 
 
 window.addEventListener("load",addInviteColumn(),false);
-window.addEventListener("load",onWindowLoad(),false);
+ window.addEventListener("load",showIcons(),false); 
 window.addEventListener("load",onMessageAdded(),false);
