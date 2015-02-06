@@ -10,7 +10,7 @@
         <tree id="threadTree">
                 <treecols id="threadCols"> 
                       <treecol id="inviteCol"  name="inviteCol" class="treecol-image inviteColumnHeader"  persist="hidden ordinal width"    
-                                 label="&label.inviteCol;" cycler="true" currentView="unthreaded" tooltiptext="&tooltip.inviteCol;" fixed="true" width="25" sort="inviteCol" sortActive="true" sortDirection="ascending"/>
+                                 label="&label.inviteCol;"   currentView="unthreaded" tooltiptext="&tooltip.inviteCol;" fixed="true" width="25" sort="inviteCol" sortActive="true" sortDirection="ascending"/>
                 </treecols>
         </tree>
 </overlay>
