@@ -3808,7 +3808,7 @@ dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 		return attendee;
 
 		let mbox = aElement.getTag("t:Mailbox");
-		let attendee = cal.createAttendee();
+		var attendee = cal.createAttendee();
 
 		if (!aType) {
 			aType = "REQ-PARTICIPANT";
