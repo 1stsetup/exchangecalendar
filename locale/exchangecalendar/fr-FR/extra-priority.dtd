@@ -2,10 +2,10 @@
 <!ENTITY general.label  "Général"> 
 <!ENTITY about.label "A propos"> 
  
-<!ENTITY about.description.label "Additions pour Thunderbird and SeaMonkey">
+<!ENTITY about.description.label "Additions pour Thunderbird et SeaMonkey">
 <!ENTITY iconify.label "Afficher seulement les icônes de priorité"> 
 <!ENTITY shadeHigh.label "Couleur de fond pour les messages en haute priorité">
-<!ENTITY shadeLow.label "Couleur de fond pour les message en basse priorité">
+<!ENTITY shadeLow.label "Couleur de fond pour les messages en basse priorité">
 <!ENTITY tagImportant.label "Marquer automatiquement comme Important les messages en hautre priorité">
  
 <!ENTITY highestColor.label "Très haute">
