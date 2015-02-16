@@ -851,16 +851,13 @@ calExchangeCalendar.prototype = {
 				if (this.offlineCacheDB) {
 					try {
 						if (this.offlineCacheDB) this.offlineCacheDB.close();
-						this.offlineCacheDB = null;
-					} catch(exc) {}
-				}
-
-				// Remove the offline cache database when we delete the calendar.
-				if (this.dbFile) {
-					this.dbFile.remove(true);
-					this.offlineCacheDB = null;
-				}
-			}
+						if (this.dbFile)  this.dbFile.remove(true); 
+						this.offlineCacheDB = null;  
+					} catch(exc) {
+					}
+				} 
+				// Remove the offline cache database when we delete the calendar. 
+			} 
 			return;
 		}
 
@@ -5850,7 +5847,9 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			if (this.debug) this.logInfo("Not adding to queue because we are disabled.");
 			return;
 		}
-
+		
+		if ( this.mIsOffline ){ if (this.debug) this.logInfo("addToQueue: you are offline!."); return; }
+		
 		//if (!aArgument["ServerVersion"]) aArgument["ServerVersion"] = this.exchangeStatistics.getServerVersion(this.serverUrl);
 
 		this.loadBalancer.addToQueue({ calendar: this,
@@ -8704,7 +8703,7 @@ else {
 			}
 	 		
 			//Check exchange calendar version clear cache
- 	 	 	this.checkExchCalAddonVerion();
+			if(!this.mIsOffline) this.checkExchCalAddonVerion();
 
 //			if (dbVersion < latestDBVersion) {
 				if (!this.offlineCacheDB.tableExists("version")) {
@@ -8910,7 +8909,7 @@ else {
 		this.createOfflineCacheDB();
 
 		if ((oldValue != aValue) && (aValue)) {
-			this.syncExchangeToOfflineCache();
+			 this.syncExchangeToOfflineCache();
 		}
 	},
 
@@ -9617,6 +9616,11 @@ catch(err) {
 
 	syncExchangeToOfflineCache: function _syncExchangeToOfflineCache()
 	{
+		if ((!this.useOfflineCache) || (!this.offlineCacheDB) || (this.mIsOffline) || (this.weAreSyncing) ) {
+			if (this.debug) this.logInfo("syncExchangeToOfflineCache: You are offline or already syncing or no cache enabled! " );
+			return;
+		}
+		if (this.debug) this.logInfo("syncExchangeToOfflineCache: You are online syncing  " );
 		// This will sync the specified period from Exchange to offlineCache.
 		var monthsAfter = this.globalFunctions.safeGetIntPref(this.prefs, "ecOfflineCacheMonthsAfterToday", 1, true)*31;
 		var monthsBefore = this.globalFunctions.safeGetIntPref(this.prefs, "ecOfflineCacheMonthsBeforeToday", 1, true)*31;
