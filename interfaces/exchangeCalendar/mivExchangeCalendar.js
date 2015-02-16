@@ -2048,24 +2048,22 @@ calExchangeCalendar.prototype = {
 
 	//  calIOperation getItem(in string aId, in calIOperationListener aListener);
 	getItem: function _getItem(aId, aListener, aRetry) {
-		if (this.debug) this.logInfo("getItem: aId:"+aId);
+ 		if (this.debug) this.logInfo("getItem: aId:"+aId);
 
 		if (!aListener)
 			return;
 
 		var item = null;
-
-
-		if (!item) {
-			for (var index in this.itemCacheById) {
+ 
+        for (var index in this.itemCacheById) {
 				if (this.itemCacheById[index]) {
 					if (this.itemCacheById[index].uid == aId) {
 						var item = this.itemCacheById[index];
 						break;
 					}
 				}
-			}
-		}
+		 }
+		 
 
 		if (!item) {
 			var cachedRequest = null;
@@ -2112,6 +2110,11 @@ calExchangeCalendar.prototype = {
 				if (this.debug) this.logInfo("Not found putting it in ItemSyncQue");
 				this.getItemSyncQueue.push( { id: aId,
 							      listener: aListener } );
+				this.notifyOperationComplete(aListener,
+                        Cr.NS_OK,
+                        Ci.calIOperationListener.GET,
+                        aId,
+                        null);
 				this.refresh();
 				return;
 			}
@@ -2138,6 +2141,11 @@ calExchangeCalendar.prototype = {
                                          Ci.calIOperationListener.GET,
                                          aId,
                                          "Can't deduce item type based on QI");
+			this.notifyOperationComplete(aListener,
+                    Cr.NS_OK,
+                    Ci.calIOperationListener.GET,
+                    aId,
+                    null);
 			return;
 		}
 
@@ -2148,12 +2156,12 @@ calExchangeCalendar.prototype = {
                                      Ci.calIOperationListener.GET,
                                      aId,
                                      null);
-	/*	
+	 	
 		aListener.onGetResult (this, 
 		                       Cr.NS_OK,
 		                       item_iid, null,
 		                       1, [item]);
-	*/	 
+		return;
 	},
 
 	typeString: function _typeString(o) {
