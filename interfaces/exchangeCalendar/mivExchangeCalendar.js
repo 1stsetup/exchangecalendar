@@ -819,7 +819,7 @@ calExchangeCalendar.prototype = {
 	setProperty: function setProperty(aName, aValue)
 	{
 
-		//if (this.debug) this.logInfo("setProperty. aName:"+aName+", aValue:"+aValue);
+		 if (this.debug) this.logInfo("setProperty. aName:"+aName+", aValue:"+aValue);
 		switch (aName) {
 		case "exchangeCurrentStatus":
 			//dump("name1:"+this.name+", exchangeCurrentStatus:"+this._exchangeCurrentStatus+", newStatus:"+aValue+"\n");
@@ -846,16 +846,19 @@ calExchangeCalendar.prototype = {
 		case "exchWebService.useOfflineCache":
 
 			this.useOfflineCache = aValue;
+		    if (this.debug) this.logInfo("setProperty: useOfflineCache = " + this.useOfflineCache + "  offlineCacheDB  "  + this.offlineCacheDB);  
 
-			if (!aValue) {
+			if (!this.useOfflineCache) {
 				if (this.offlineCacheDB) {
 					try {
-						if (this.offlineCacheDB) this.offlineCacheDB.close();
-						if (this.dbFile)  this.dbFile.remove(true); 
-						this.offlineCacheDB = null;  
+						if (this.offlineCacheDB) this.offlineCacheDB.close(); 
+						this.offlineCacheDB = null;   
 					} catch(exc) {
+ 					    if (this.debug) this.logInfo("setProperty: Can't Modify Cache status");  
 					}
 				} 
+				if (this.dbFile) this.dbFile.remove(true); 
+				this.offlineCacheDB = null;  
 				// Remove the offline cache database when we delete the calendar. 
 			} 
 			return;
