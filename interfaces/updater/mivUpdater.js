@@ -240,14 +240,16 @@ mivUpdater.prototype = {
 	addonByIDCallback: function _addonByIDCallback(aAddon)
 	{
 		if (aAddon) {
+			var url="https://api.github.com/repos/Ericsson/exchangecalendar/releases";
 			this._addon = aAddon;
-			this._updateURL = this.safeGetCharPref(null, EXTENSION_MAINPART+this._extensionID, "https://api.github.com/repos/Ericsson/exchangecalendar/releases", true);
-			this._updateURL = "https://api.github.com/repos/Ericsson/exchangecalendar/releases";
+			this._updateURL = this.safeGetCharPref(null, EXTENSION_MAINPART+this._extensionID, url, true);
+			this._updateURL = url;
 			this.xmlReq = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance();
 
 			var tmp = this;
 			this.xmlReq.addEventListener("error", function(evt) { tmp.onUpdateDetailsError(evt); }, false);
 			this.xmlReq.addEventListener("load", function(evt) { tmp.onUpdateDetailsLoad(evt, tmp.xmlReq); }, false);
+			this.xmlReq.addEventListener("progress", function(evt) { tmp.onUpdateDetailsProgress(evt); }, false);
 
 			var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
 
@@ -267,14 +269,21 @@ mivUpdater.prototype = {
 			}
 		}
 	},
-
+	
+	onUpdateDetailsProgress: function _onUpdateDetailsProgress(evt)
+	{
+		dump("\nonUpdateDetailsProgress- total: " + evt.total + " loaded: " +evt.loaded );
+	},
+	
 	onUpdateDetailsError: function _onUpdateDetailsError(evt)
 	{
-		this._callBack({addon: this._addon, extensionID: this._extensionID, versionChanged: 0, error: Ci.mivUpdater.ERR_GETTING_REMOTE_UPDATE_DETAILS});
+		dump("\nonUpdateDetailsError");  
+		this._callBack({addon: this._addon, extensionID: this._extensionID, versionChanged: 0, error: Ci.mivUpdater.ERR_ADDON_NOT_FOUND_BY_ID});
 	},
 
 	onUpdateDetailsLoad: function _onUpdateDetailsLoad(evt, xmlReq)
 	{
+		dump("\nonUpdateDetailsLoad"); 
 		if (xmlReq.readyState != 4) {
 			this._callBack({addon: null, extensionID: this._extensionID, versionChanged: 0, error: Ci.mivUpdater.ERR_WRONG_READYSTATE});
 		}

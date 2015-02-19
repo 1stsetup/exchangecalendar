@@ -179,13 +179,17 @@ exchCheck4Lightning.prototype = {
 
 	updaterCallBack: function _updaterCallBack(aResult)
 	{
-				if (aResult.versionChanged <= 0) {
-					this.globalFunctions.LOG("No new version available.");
+		 
+ 				if (aResult.versionChanged <= 0) {
+ 					if(aResult.error){
+ 					this.globalFunctions.LOG("updaterCallBack: Unable to fetch from url");
+ 					}
+					this.globalFunctions.LOG("updaterCallBack: No new version available.");
 				}
 				else {
-					this.globalFunctions.LOG("New version available.");
-					this.globalFunctions.LOG(" ++ Version:"+aResult.updateDetails.newVersion);
-					this.globalFunctions.LOG(" ++ URL:"+aResult.updateDetails.updateURL);
+					this.globalFunctions.LOG("updaterCallBack: New version available.");
+					this.globalFunctions.LOG("updaterCallBack: ++ Version:"+aResult.updateDetails.newVersion);
+					this.globalFunctions.LOG("updaterCallBack: ++ URL:"+aResult.updateDetails.updateURL);
 					var self = this;
 					if (this.globalFunctions.safeGetBoolPref(null, "extensions.1st-setup.others.warnAboutNewAddOnVersion", true, true)) {
 //						this.lightningAlertTimer2.initWithCallback(function(aResult){ self.lightningAlertCallback2(aResult);}, 15000, this.lightningAlertTimer2.TYPE_ONE_SHOT);
