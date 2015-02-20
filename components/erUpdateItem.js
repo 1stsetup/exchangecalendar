@@ -66,14 +66,21 @@ function erUpdateItemRequest(aArgument, aCbOk, aCbError, aListener)
 	this.serverUrl = aArgument.serverUrl;
 	this.listener = aListener;
 	this.updateReq = aArgument.updateReq;
-
+	this.onlySnoozeChanges=aArgument.onlySnoozeChanges;
+	
 	this.sendto = "sendtoall";
 	if (aArgument.sendto) {
 		this.sendto = aArgument.sendto;
 	}
 
 	this.isRunning = true;
-	this.execute("AutoResolve");
+	if(this.onlySnoozeChanges){
+		this.execute("AlwaysOverwrite"); 
+	}
+	else
+	{
+		this.execute("AutoResolve");
+	}
 }
 
 erUpdateItemRequest.prototype = {
