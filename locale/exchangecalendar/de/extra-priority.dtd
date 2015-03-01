@@ -1,18 +1,18 @@
 <!ENTITY prefwindow.title "Extras">
-<!ENTITY general.label  "General"> 
-<!ENTITY about.label "About"> 
+<!ENTITY general.label  "Allgemein"> 
+<!ENTITY about.label "Über"> 
  
-<!ENTITY about.description.label "Enhanced Features for thunderbird and seamonkey applications">
-<!ENTITY iconify.label "Display priority icons only"> 
-<!ENTITY shadeHigh.label "Color background for high-priority messages">
-<!ENTITY shadeLow.label "Color background for low-priority messages">
-<!ENTITY tagImportant.label "Automatically tag high priority mail as Important">
+<!ENTITY about.description.label "Fortgeschrittene Funktionen für die Thunderbird und Seamonkey Anwendungen">
+<!ENTITY iconify.label "Zeige nur Wichtigkeitssymbole"> 
+<!ENTITY shadeHigh.label "Farbenhintergrund für sehr dringliche Nachrichten">
+<!ENTITY shadeLow.label "Farbenhintergrund für wenig dringliche Nachrichten">
+<!ENTITY tagImportant.label "Automatisch sehr dringliche Nachrichten asl wichtig markieren">
  
-<!ENTITY highestColor.label "Highest">
+<!ENTITY highestColor.label "Am höchsten">
 
-<!ENTITY highColor.label "High">
-<!ENTITY lowColor.label "Low">
-<!ENTITY lowestColor.label "Lowest">
+<!ENTITY highColor.label "Hoch">
+<!ENTITY lowColor.label "Tief">
+<!ENTITY lowestColor.label "Am tiefsten">
  
-<!ENTITY prioritycolor  "Custom Color">
-<!ENTITY pref.color "Color Preferences:">
+<!ENTITY prioritycolor  "Angepasste Farbe">
+<!ENTITY pref.color "Farbeinstellung:">
