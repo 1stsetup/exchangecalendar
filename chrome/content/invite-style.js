@@ -66,13 +66,12 @@ showIconsAsInviteColumn.prototype.execute = function(){
   	    				  var isInviteMail= hdr.getStringProperty("isInviteMail"); 
  
   	    				 if( ( isInviteMail  == "false" ) || ( isInviteMail  == "true" ) ) { 
-	    					//  dump("\nxxxxxxxxx isInviteMail skipped  : " + isInviteMail + " : " + Subject);	    					  
  	    				  }
- 	    				  else  {	
-	    					//  dump("\nxxxxxxxxx isInviteMail proceeded  : " + isInviteMail + " : " + Subject);	    					  
-
- 	    					  setTimeout( function(){ tmpMailTools.fetchMail(hdr); } ,3000); 
- 	    				  }
+ 	    				  else  {	 
+ 	    					  var self=this;
+ 	    					  setTimeout( function(){ tmpMailTools.fetchMail(hdr); } ,0); 
+ 	    					  setTimeout( function(row,col){ self.getImageSrc(row,col); } ,5000);
+  	    				  }
   	    				  
  	    		/*		  if(   isInviteMail == ""  ){  
 	 	    				   	MsgHdrToMimeMessage(hdr, null, function (hdr, aMimeMessage) {  
