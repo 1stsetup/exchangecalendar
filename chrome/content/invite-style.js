@@ -5,7 +5,7 @@ addInviteColumn.prototype.execute= function(){
 	let threadcols=document.getElementById("threadCols");
 	let threadcol=document.createElement("treecol"); 
  	threadcol.setAttribute("id","inviteCol"); 
- 	threadcol.setAttribute("width","25"); 
+ 	threadcol.setAttribute("width","22"); 
 	threadcols.appendChild(threadcol); 
 }
     
@@ -170,8 +170,7 @@ mailTools.prototype.getMailBody = function(aMsgHdr,aCallback) {
 	  try {
 		  messageService.streamMessage(uri, messageStream, null, null, false, "");  
  	  }  catch (e) {
-		    dump("\ngetMailBody: " + e);
-		    this.working=false;  
+ 		    this.working=false;  
 	  }
 	  let body = "";
 	  inputStream.available(); 
@@ -203,11 +202,18 @@ mailTools.prototype.markMailAsInvite = function(aMsgHdr,bodyPlain){
 }
 
 mailTools.prototype.fetchMail = function(oneMsgHdr){
- 	 this.msgHdrs.push(oneMsgHdr);
 	//dump("\nxxxx fetchMail To be Processed :  " + this.msgHdrs.length ); 
-	 if( this.msgHdrs.length < 1 ) return; 
 	 
-	 if( this.msgHdrs.length > 20 ) return; 
+	 if( this.msgHdrs.length > 10 ) {
+		 this.msgHdrs.shift();
+	 	 this.msgHdrs.push(oneMsgHdr); 
+		 return; 
+	 }else
+	 {
+	 	 this.msgHdrs.push(oneMsgHdr); 
+	 }
+	 
+	 if( this.msgHdrs.length < 1 ) return; 
 
 	 	if ( this.working != true ) { 
 		 while ( this.msgHdrs.length > 0 ){
