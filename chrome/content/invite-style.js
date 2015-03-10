@@ -1,13 +1,4 @@
-Components.utils.import("resource:///modules/gloda/mimemsg.js");   
-  
-function addInviteColumn(){} 
-addInviteColumn.prototype.execute= function(){
-	let threadcols=document.getElementById("threadCols");
-	let threadcol=document.createElement("treecol"); 
- 	threadcol.setAttribute("id","inviteCol"); 
- 	threadcol.setAttribute("width","22"); 
-	threadcols.appendChild(threadcol); 
-}
+Components.utils.import("resource:///modules/gloda/mimemsg.js");
     
 function showIconsAsInviteColumn(){} 
 showIconsAsInviteColumn.prototype.execute = function(){   
@@ -126,7 +117,18 @@ showIconsAsInviteColumn.prototype.execute = function(){
 					 	 return "chrome://exchangeCalendar/skin/invited.png";   
     				  }
     			    }, 
-    			    getSortLongForRow: function(hdr) {}
+    			    getSortLongForRow: function(hdr) {},
+					isEditable: function(row, col) {
+						return false;
+					},
+					getCellProperties:   function(row, col, properties) {
+						return properties;
+					},
+					cycleCell: function(row, col) {
+					},
+					getRowProperties:    function(row, properties) {
+						return properties;
+					}
 			}; 
 	    			
 			try {
@@ -251,11 +253,8 @@ mailTools.prototype.onLoad = function(){
 }
   
 var tmpShowIconsAsInviteColumn = new showIconsAsInviteColumn();
-var tmpAddInviteColumn = new addInviteColumn();
 var tmpMailTools = new mailTools(window,document);  
 
-
-window.addEventListener("load",tmpAddInviteColumn.execute(),false);
 window.addEventListener("load",tmpShowIconsAsInviteColumn.execute(),false);
-//window.addEventListener("load",tmpMailTools.onLoad(),false);
+window.addEventListener("load",tmpMailTools.onLoad(),false);
 
