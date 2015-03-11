@@ -131,23 +131,10 @@ mivExchangeAuthPrompt2.prototype = {
 
 	When no password at al always ask. */
 
-		var password;
-		if (this.passwordCache[username+"|"+aURL+"|"+realm]) {
-			this.logInfo("getPassword: There is a password in the passwordCache["+username+"|"+aURL+"|"+realm+"]");
-			password = this.passwordCache[username+"|"+aURL+"|"+realm];
-		}
-		else {
-			this.logInfo("getPassword: There is no password in the passwordCache["+username+"|"+aURL+"|"+realm+"]");
-		}
-		if (this.showPassword) {
-			this.logInfo("getPassword: password(1)="+password);
-		}
-		else {
-			this.logInfo("getPassword: password(1)=********");
-		}
-
+		var password=null;
+		
 		if (!password) {
-			this.logInfo("getPassword: There is no password in the cache. Going to see if there is one in the passwordManager.");
+			this.logInfo("getPassword: Going to see if there is one in the passwordManager.");
 			var savedPassword = this.passwordManagerGet(username, aURL, realm);
 			if (savedPassword.result) {
 				this.logInfo("getPassword: There is a password stored in the passwordManager.");
@@ -157,13 +144,32 @@ mivExchangeAuthPrompt2.prototype = {
 				this.logInfo("getPassword: There is no password stored in the passwordManager.");
 			}
 		}
+		
 		if (this.showPassword) {
-			this.logInfo("getPassword: password(2)="+password);
+			this.logInfo("getPassword: password(1)="+password);
 		}
 		else {
-			this.logInfo("getPassword: password(2)=********");
+			this.logInfo("getPassword: password(1)=********");
 		}
+		 
+		if (!password) {
+			this.logInfo("getPassword: Going to see if there is one in the passwordCache."); 
 
+			if (this.passwordCache[username+"|"+aURL+"|"+realm]) {
+				this.logInfo("getPassword: There is a password in the passwordCache["+username+"|"+aURL+"|"+realm+"]");
+				password = this.passwordCache[username+"|"+aURL+"|"+realm];
+			}
+			else {
+				this.logInfo("getPassword: There is no password in the passwordCache["+username+"|"+aURL+"|"+realm+"]");
+			}
+			if (this.showPassword) {
+				this.logInfo("getPassword: password(2)="+password);
+			}
+			else {
+				this.logInfo("getPassword: password(2)=********");
+			}
+		}
+ 
 		if ((password) && (aChannel) && (aChannel.URI.password) && (decodeURIComponent(aChannel.URI.password) != "")) {
 			this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. Going to see if they are the same.");
 			if ((password == decodeURIComponent(aChannel.URI.password)) && (!useCached)) {

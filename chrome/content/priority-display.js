@@ -128,9 +128,16 @@ enhancePriority.prototype={
 				    			    },
 				
 				    			    getCellProperties: function(row, col, props) {
+										
 				    			    	
 				    			    },
-				
+									
+									isEditable: function(row, col) {
+										return false;
+									},
+									cycleCell: function(row, col) {
+									},
+									
 				    			    getRowProperties: function(row, props) {
 				    			    	var properties = "";
 				    			     
@@ -217,9 +224,6 @@ enhancePriority.prototype={
 	    },
 	    
 		onload:function _onload(){  
-				document.getElementById("priorityCol").setAttribute("width","25");
-				document.getElementById("priorityCol").setAttribute("fixed","true");    
-				document.getElementById("priorityCol").setAttribute("class","treecol-image  priorityColumnHeaderIcon")
 				getImportantTag();//get important tag
 	    },
 	

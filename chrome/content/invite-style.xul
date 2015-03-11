@@ -8,9 +8,12 @@
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
         <script src="chrome://exchangecalendar/content/invite-style.js"/>
         <tree id="threadTree">
-                <treecols id="threadCols"> 
+                
+                <treecols id="threadCols">
+                        
                       <treecol id="inviteCol"  name="inviteCol" class="treecol-image inviteColumnHeader"  persist="hidden ordinal width"    
                                  label="&label.inviteCol;"   currentView="unthreaded" tooltiptext="&tooltip.inviteCol;" fixed="true" width="25" sort="inviteCol" sortActive="true" sortDirection="ascending"/>
+                      <splitter class="tree-splitter"/>
                 </treecols>
         </tree>
 </overlay>
