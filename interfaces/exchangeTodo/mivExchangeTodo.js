@@ -162,6 +162,7 @@ try {
 				result.entryDate = null;
 			}
 		}
+
 		if (this._newDueDate !== undefined) {
 			if (this.dueDate) {
 				result.dueDate = this.dueDate.clone();
@@ -185,7 +186,7 @@ try {
 		if (this._newMileage) result.mileage = this._newMileage;
 		if (this._newBillingInformation) result.billingInformation = this._newBillingInformation;
 		if (this._newCompanies) result.companies = this.companies;
-		if (this._newIsCompleted !== null) result.isCompleted = this._newIsCompleted;
+		if (this._newIsCompleted !== null) result.isCompleted = this._newIsCompleted; 
 }
 catch(err){
   dump("mivExchangeTodo: Clone: error:"+err+"\n");
@@ -567,7 +568,16 @@ catch(err){
 	get updateXML()
 	{
 		this._nonPersonalDataChanged = false;
-
+		
+		const statusMapInt = {
+				"NotStarted"	: "0",
+				"InProgress" : "1"  ,
+				"Completed"	: "2",
+				"WaitingOnOthers"	: "3",
+				"Deferred"	: "4",
+				null: "0"
+		};  
+		
 		var updates = exchGlobalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 
 		if (this._newTitle !== undefined) {
@@ -608,21 +618,51 @@ catch(err){
 
 		if ((this._newPercentComplete) || ((this._newIsCompleted) && (this._newIsCompleted === true))) {
 			this._nonPersonalDataChanged = true;
-			this.addSetItemField(updates, "PercentComplete", this.percentComplete);
+			switch(this.itemClass){
+			case "IPM.Note":
+			 //Email Todo
+				 this.percentComplete = this.percentComplete/100.00 ;
+				dump("\nxxxxxxxxxxxxxx pc " + this.percentComplete );
+					this.addSetItemField(updates,"ExtendedFieldURI",this.percentComplete,{"DistinguishedPropertySetId":"Task","PropertyId":"33026","PropertyType":"Double"});
+		 		break;
+			default: 
+				this.addSetItemField(updates, "PercentComplete", this.percentComplete);
+			}
 		}
 
 		if ((this._newStatus) || (this._newIsCompleted !== undefined)) {
 			this._nonPersonalDataChanged = true;
 
 			if (this._newStatus) {
-				this.addSetItemField(updates, "Status", this._newStatus);
+				switch(this.itemClass){
+				case "IPM.Note":
+				 //Email Todo
+ 					this.addSetItemField(updates,"ExtendedFieldURI",statusMapInt[this._newStatus],{"DistinguishedPropertySetId":"Task","PropertyId":"33025","PropertyType":"Integer"});
+					break;
+				default: 
+					this.addSetItemField(updates, "Status", this._newStatus);
+				}
 			}
 			else {
 				if (this._newIsCompleted === false) {
-					this.addSetItemField(updates, "Status", "NotStarted");
+					switch(this.itemClass){
+					case "IPM.Note":
+					 //Email Todo
+						this.addSetItemField(updates,"ExtendedFieldURI","false",{"DistinguishedPropertySetId":"Task","PropertyId":"33052","PropertyType":"Boolean"});
+						break;
+					default: 
+						this.addSetItemField(updates, "Status", "NotStarted");
+					}
 				}
 				else {
-					this.addSetItemField(updates, "Status", "Completed");
+					switch(this.itemClass){
+					case "IPM.Note":
+					 //Email Todo
+						this.addSetItemField(updates,"ExtendedFieldURI","true",{"DistinguishedPropertySetId":"Task","PropertyId":"33052","PropertyType":"Boolean"});
+				 		break;
+					default: 
+						this.addSetItemField(updates, "Status", "Completed");
+					}
 				}
 			}
 		}
@@ -771,13 +811,26 @@ catch(err){
 //				var exchStart = cal.toRFC3339(tmpStart).substr(0, 19)+"Z";
 				var exchStart = cal.toRFC3339(tmpStart).substr(0, 19);
 			}
-			this._nonPersonalDataChanged = true;
-			this.addSetItemField(updates, "StartDate", exchStart);
+			this._nonPersonalDataChanged = true; 
+			switch(this.itemClass){
+			case "IPM.Note":
+			 //Email Todo
+				this.addSetItemField(updates,"ExtendedFieldURI",exchStart,{"DistinguishedPropertySetId":"Common","PropertyId":"34070","PropertyType":"SystemTime"});
+		 		break;
+			default: 
+				this.addSetItemField(updates, "StartDate", exchStart);
+			}
 		}
 		else {
-			if (((this._entryDate) && (this._newEntryDate === null)) || (this._entryDate === undefined)) {
+			if (((this._entryDate )) || (this._entryDate === undefined)) {
 				this._nonPersonalDataChanged = true;
-				this.addDeleteItemField(updates, "StartDate");
+				switch(this.itemClass){
+				case "IPM.Note":
+				 //Email Todo
+			 		break;
+				default: 
+					this.addDeleteItemField(updates, "StartDate");
+				}
 			}
 		}
 
@@ -802,7 +855,14 @@ catch(err){
 				var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19);
 			}
 			this._nonPersonalDataChanged = true;
-			this.addSetItemField(updates, "DueDate", exchEnd);
+			switch(this.itemClass){
+			case "IPM.Note":
+			 //Email Todo
+				this.addSetItemField(updates,"ExtendedFieldURI",exchEnd,{"DistinguishedPropertySetId":"Common","PropertyId":"34071","PropertyType":"SystemTime"});
+		 		break;
+			default: 
+				this.addSetItemField(updates, "DueDate", exchEnd);
+			}
 		}
 		else {
 			if (((this._dueDate) && (this._newDueDate === null)) || (this._dueDate === undefined)) {
@@ -833,12 +893,25 @@ catch(err){
 				var exchEnd = cal.toRFC3339(tmpEnd).substr(0, 19);
 			}
 			this._nonPersonalDataChanged = true;
-			this.addSetItemField(updates, "CompleteDate", exchEnd);
+			switch(this.itemClass){
+			case "IPM.Note":
+			 //Email Todo
+				this.addSetItemField(updates,"ExtendedFieldURI",exchEnd,{"DistinguishedPropertySetId":"Task","PropertyId":"33039","PropertyType":"SystemTime"});
+				break;
+			default: 
+				this.addSetItemField(updates, "CompleteDate", exchEnd);
+			} 
 		}
 		else {
 			if (((this._completedDate) && (this._newCompletedDate === null)) || (this._completedDate === undefined) || ((this._newIsCompleted) && (this._newIsCompleted === false))) {
 				this._nonPersonalDataChanged = true;
-				this.addDeleteItemField(updates, "CompleteDate");
+				switch(this.itemClass){
+				case "IPM.Note":
+				 //Email Todo
+			 		break;
+				default: 
+					this.addDeleteItemField(updates, "CompleteDate");
+				}
 			}
 		}
 
@@ -849,13 +922,23 @@ catch(err){
 		// Alarms and snoozes
 		this.checkAlarmChange(updates);
 
-		//dump("todo updates:"+updates.toString()+"\n");
+	    dump("\nxxxxxxxxxxxxxxxxxxxx todo updates:"+updates.toString()+"\n");
 		return updates;
 	},
 
 	preLoad: function _preLoad()
 	{
-		this._entryDate = this.tryToSetDateValue(this.getTagValue("t:StartDate", null), this._calEvent.entryDate);
+		switch(this.itemClass){
+		case "IPM.Note":
+			var tmpObject = this.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34070']");
+			if (tmpObject.length > 0) {
+				this._entryDate = this.tryToSetDateValue(xml2json.getTagValue(tmpObject[0], "t:Value", null),this._calEvent.entryDate);
+ 			} 
+ 		break;
+		default: 
+			this._entryDate = this.tryToSetDateValue(this.getTagValue("t:StartDate", null), this._calEvent.entryDate);
+		}
+	  
 		if (this._entryDate) {
 /*				this._entryDate.hour = 0;
 			this._entryDate.minute = 0;
@@ -877,8 +960,18 @@ catch(err){
 			}
 			this._calEvent.entryDate = this._entryDate.clone();
 		}
-
-		this._dueDate = this.tryToSetDateValue(this.getTagValue("t:DueDate", null), this._calEvent.dueDate);
+		
+		switch(this.itemClass){
+		case "IPM.Note":
+			var tmpObject = this.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34071']");
+			if (tmpObject.length > 0) {
+				this._dueDate = this.tryToSetDateValue(xml2json.getTagValue(tmpObject[0], "t:Value", null),this._calEvent.dueDate);
+ 			} 
+ 		break;
+		default: 
+			this._dueDate = this.tryToSetDateValue(this.getTagValue("t:DueDate", null), this._calEvent.dueDate);
+		}
+	  
 		if (this._dueDate) {
 			var timezone = exchTimeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._dueDate);
 			if (timezone) {
@@ -889,8 +982,19 @@ catch(err){
 	},
 
 	postLoad: function _postLoad()
-	{
-		this._completedDate = this.tryToSetDateValue(this.getTagValue("t:CompleteDate", null), this._calEvent.completedDate);
+	{	
+		
+		switch(this.itemClass){
+		case "IPM.Note":
+			var tmpObject = this.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '33039']");
+			if (tmpObject.length > 0) {
+				this._completedDate = this.tryToSetDateValue(xml2json.getTagValue(tmpObject[0], "t:Value", null), this._calEvent.completedDate); 
+ 			} 
+ 		break;
+		default: 
+			this._completedDate = this.tryToSetDateValue(this.getTagValue("t:CompleteDate", null), this._calEvent.completedDate); 	 
+		}
+	  
 		if (this._completedDate) {
 			var timezone = exchTimeZones.getCalTimeZoneByExchangeTimeZone(this.getTag("t:StartTimeZone"), "", this._completedDate);
 			if (timezone) {
@@ -898,8 +1002,18 @@ catch(err){
 			}
 			this._calEvent.completedDate = this._completedDate.clone();
 		}
-
-		this._percentComplete = this.getTagValue("t:PercentComplete", this._calEvent.percentComplete);
+		
+		switch(this.itemClass){
+		case "IPM.Note":
+			var tmpObject = this.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '33026']");
+			if (tmpObject.length > 0) {
+				this._percentComplete = xml2json.getTagValue(tmpObject[0], "t:Value", this._calEvent.percentComplete );
+				this._percentComplete = this._percentComplete * 100;
+ 			} 
+ 		break;
+		default: 
+				this._percentComplete = this.getTagValue("t:PercentComplete", this._calEvent.percentComplete);  
+		}
 		if (this._percentComplete) {
 			this._calEvent.percentComplete = this._percentComplete;
 		}
@@ -913,11 +1027,44 @@ catch(err){
 			null: "NONE"
 		};
 
-		this._status = this.getTagValue("t:Status", "NotStarted");
-		this._calEvent.status = statusMap[this._status];
+		switch(this.itemClass){
+		case "IPM.Note":
+			var tmpObject = this.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '33025']");
+			if (tmpObject.length > 0) {
+				var statusInt = xml2json.getTagValue(tmpObject[0], "t:Value",  0 );  
+					if( "statusInt"  === "2"  ){ 
+						statusInt = "Completed"; 
+				    } 
+					else if( statusInt  ===  "1" ){
+						statusInt = "InProgress"; 
+					}
+					else if( statusInt  === "3"  ){
+						statusInt = "WaitingOnOthers"; 
+					}
+					else if( statusInt  ===  "4"  ){
+						statusInt = "Deferred"; 
+					}
+					else if( statusInt ===  "0"  ){
+						statusInt = "NotStarted"; 
+					} 
+					else {
+						this._isCompleted = ( this._percentComplete  == 100 );
+						if(!this._isCompleted){ 
+							this._isCompleted = (this._status == "Completed");
+							statusInt = "NotStarted"; 
+						}
+					}
+				}
+		 this._status = statusInt; 
+ 		 
+ 		break;
+		default: 
+			this._status = this.getTagValue("t:Status", "NotStarted");
+			this._isCompleted = (this._status == "Completed"); 
+		} 
+ 		this._calEvent.status = statusMap[this._status];
 		this._calEvent.setProperty("STATUS", statusMap[this._status]);
 
-		this._isCompleted = (this._status == "Completed");
 		this._calEvent.isCompleted = this._isCompleted;
 
 		//dump("postLoad: title:"+this.title+", this._percentComplete:"+this._percentComplete+", isCompleted:"+this.isCompleted+", getProperty:"+this._calEvent.getProperty("STATUS")+", this.status:"+this.status+", entryDate:"+this.entryDate+"\n");

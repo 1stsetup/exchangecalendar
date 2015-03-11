@@ -57,6 +57,7 @@ Cu.import("resource://exchangecalendar/erFindFolder.js");
 Cu.import("resource://exchangecalendar/erGetFolder.js");
 Cu.import("resource://exchangecalendar/erFindCalendarItems.js");
 Cu.import("resource://exchangecalendar/erFindTaskItems.js");
+Cu.import("resource://exchangecalendar/erFindFollowupItems.js"); 
 Cu.import("resource://exchangecalendar/erGetItems.js");
 Cu.import("resource://exchangecalendar/erGetMasterOccurrenceId.js");
 Cu.import("resource://exchangecalendar/erGetMeetingRequestByUID.js");
@@ -2613,6 +2614,22 @@ calExchangeCalendar.prototype = {
 				null);
 		}
 
+		if ((wantTodos) && (this.supportsTasks)) {
+			if (this.debug) this.logInfo("Requesting followup tasks from exchange server.");
+  	    		var self = this;
+			this.addToQueue( erFindFollowupItemsRequest, 
+				{user: this.user, 
+				 mailbox: this.mailbox,
+				 serverUrl: this.serverUrl,
+				 folderBase: "inbox",
+				 itemFilter: aItemFilter,
+				 folderID: this.folderID,
+				 changeKey: this.changeKey,
+				 actionStart: Date.now() }, 
+				function(erFindFollowupItemsRequest, aIds) { self.findFollowupTaskItemsOK(erFindFollowupItemsRequest, aIds);}, 
+				function(erFindFollowupItemsRequest, aCode, aMsg) { self.findFollowupTaskItemsError(erFindFollowupItemsRequest, aCode, aMsg);},
+				null);
+		}
 	    },
 
 	getItemsFromMemoryCache: function _getItemsFromMemoryCache(aRangeStart, aRangeEnd, aItemFilter, aListener, aExporting)
@@ -5991,6 +6008,42 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		this.findCalendarItemsOK(erFindOccurrencesRequest, aIds, []);
 	},
 
+	findFollowupTaskItemsOK: function _findFollowupTaskItemsOK(erFindFollowupItemsRequest, aIds)
+	{
+ 	if (this.debug) this.logInfo("findFollowupTaskItemsOK: aIds.length:"+aIds.length);
+		this.saveCredentials(erFindFollowupItemsRequest.argument);
+		this.notConnected = false;
+
+		if (aIds.length == 0) {
+			return;
+		}
+ 
+       		var self = this;
+
+	 	this.addToQueue( erGetItemsRequest, 
+			{user: this.user, 
+			 mailbox: this.mailbox,
+			 folderBase: this.folderBase,
+			 serverUrl: this.serverUrl,
+			 ids: aIds,
+			 folderID: this.folderID,
+			 changeKey: this.changeKey,
+			 folderClass: "IPF.Note",
+			 GUID: calExchangeCalendarGUID }, 
+			function(erGetItemsRequest, aIds, aItemErrors) { self.getTaskItemsOK(erGetItemsRequest, aIds, aItemErrors);}, 
+			function(erGetItemsRequest, aCode, aMsg) { self.getTaskItemsError(erGetItemsRequest, aCode, aMsg);},
+			null); 
+
+	 	this.startCalendarPoller();
+	},
+
+	findFollowupTaskItemsError: function _findFollowupTaskItemsError(erFindFollowupItemsRequest, aCode, aMsg)
+	{
+		this.saveCredentials(erFindFollowupItemsRequest.argument);
+		this.notConnected = true;
+
+	},
+	
 	findTaskItemsOK: function _findTaskItemsOK(erFindTaskItemsRequest, aIds)
 	{
 //		if (this.debug) this.logInfo("findTaskItemsOK: aIds.length:"+aIds.length);
@@ -6000,7 +6053,6 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		if (aIds.length == 0) {
 			return;
 		}
-
        		var self = this;
 
 		this.addToQueue( erGetItemsRequest, 
@@ -6026,7 +6078,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		this.notConnected = true;
 
 	},
-
+	
 	tryToSetDateValue: function _TryToSetDateValue(ewsvalue, aDefault)
 	{
 		if ((ewsvalue) && (ewsvalue.toString().length)) {
@@ -6055,7 +6107,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 		// Process this.getItemSyncQueue
 		while (this.getItemSyncQueue.length > 0) {
-			if (this.debug) this.logInfo("processItemSyncQueue: id:"+this.getItemSyncQueue[0].id);
+ 			if (this.debug) this.logInfo("processItemSyncQueue: id:"+this.getItemSyncQueue[0].id);
 			this.getItem(this.getItemSyncQueue[0].id, this.getItemSyncQueue[0].listener, true);
 			this.getItemSyncQueue.shift();
 		}
@@ -6067,10 +6119,11 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 	getTaskItemsOK: function _getTaskItemsOK(erGetItemsRequest, aItems, aItemErrors)
 	{
 		if (this.debug) this.logInfo("getTaskItemsOK: aItems.length:"+aItems.length);
+		
 		this.saveCredentials(erGetItemsRequest.argument);
 		this.notConnected = false;
 
-if (this.debug) this.logInfo("getTaskItemsOK 2");
+		if (this.debug) this.logInfo("getTaskItemsOK 2");
 
 		if ((aItemErrors) && (aItemErrors.length > 0)) {
 			// Remove these items as they have an error
@@ -6095,7 +6148,7 @@ if (this.debug) this.logInfo("getTaskItemsOK 2");
 			return;
 		}
 
-if (this.debug) this.logInfo("getTaskItemsOK 3");
+		if (this.debug) this.logInfo("getTaskItemsOK 3");
 		this.updateCalendar(erGetItemsRequest, aItems, true);
 
 		if ((erGetItemsRequest.argument) && (erGetItemsRequest.argument.syncState)) {
@@ -6559,8 +6612,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 		}
 		
 		item.setProperty("DTSTAMP", this.tryToSetDateValue(xml2json.getTagValue(aCalendarItem, "t:DateTimeReceived")));
-
-		if (!isMeetingRequest) {
+  		if (!isMeetingRequest) {
 			//if (this.debug) this.logInfo(" == item.title:"+item.title+", calendarItemType:"+aCalendarItem.getTagValue("t:CalendarItemType"));
 			switch (item.calendarItemType) {
 				case "Single" :
@@ -6917,7 +6969,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 
 		item.addMailboxAlias(this.mailbox);
 		item.calendar = this.superCalendar;
-		item.exchangeData = aTask;
+	 	item.exchangeData = aTask;
 
 		return this.convertExchangeItemtoCalItem(aTask, item, fromOfflineCache, false);
 
@@ -7069,7 +7121,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 	convertExchangeToCal: function _convertExchangeToCal(aExchangeItem, erGetItemsRequest, doNotify, fromOfflineCache)
 	{
-		if (this.debug) this.logInfo("convertExchangeToCal:"+aExchangeItem, 2);
+//		if (this.debug) this.logInfo("convertExchangeToCal:"+aExchangeItem, 2);
 		if (!aExchangeItem) { 
 			if (this.debug) this.logInfo("convertExchangeToCal: !aExchangeItem", 2);
 			//dump("convertExchangeToCal. !aExchangeItem\n");
@@ -7097,9 +7149,12 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			case "IPM.Schedule.Meeting.Canceled":
 				return this.convertExchangeAppointmentToCalAppointment(aExchangeItem, false, erGetItemsRequest, doNotify, fromOfflineCache);
 				break;
-			case "IPM.Task" :
+			case "IPM.Task" : 
 				return this.convertExchangeTaskToCalTask(aExchangeItem, erGetItemsRequest, fromOfflineCache);
 				break;
+			case "IPM.Note" : 
+ 				return this.convertExchangeTaskToCalTask(aExchangeItem, erGetItemsRequest, fromOfflineCache);
+				break;	
 			default :
 				if (aExchangeItem.tagName == "CalendarEvent") {
 					return this.convertExchangeUserAvailabilityToCalAppointment(aExchangeItem);
@@ -8036,9 +8091,10 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 				//this.getItems(Ci.calICalendar.ITEM_FILTER_TYPE_TODO, 0, this.startCacheDate, this.endCacheDate, null);
 				break;
 			case "IPF.Note":
-				this.supportsEvents = true;
+				this.supportsEvents = false;
 				this.supportsTasks = true;
-				if (this.debug) this.logInfo("This folder supports events and tasks.");
+				if (this.debug) this.logInfo("This folder supports only tasks.");
+				itemType = Ci.calICalendar.ITEM_FILTER_TYPE_TODO; 
 				break;
 			default:
 				this.supportsEvents = false;
