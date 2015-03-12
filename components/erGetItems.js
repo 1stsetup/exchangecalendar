@@ -66,6 +66,7 @@ const MAPI_PidLidTaskDueDate = "33029";
 const MAPI_PidLidTaskStatus = "33025"; 
 const MAPI_PidLidPercentComplete = "33026";
 const MAPI_PidLidTaskComplete = "33052";  
+const MAPI_PidLidTaskDateCompleted = "33039";
 
 const MAPI_PidTagFlagStatus = "0x1090";
 const MAPI_PidTagFollowupIcon  = "0x1095";
@@ -73,7 +74,6 @@ const MAPI_PidTagToDoItemFlags = "0x0E2B";
 
 const MAPI_PidLidCommonEnd = "34071";
 const MAPI_PidLidCommonStart = "34070";
-const MAPI_PidLidTaskDateCompleted = "33039";
 
 function erGetItemsRequest(aArgument, aCbOk, aCbError, aListener)
 {

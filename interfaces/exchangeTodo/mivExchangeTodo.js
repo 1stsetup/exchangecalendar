@@ -570,13 +570,13 @@ catch(err){
 		this._nonPersonalDataChanged = false;
 		
 		const statusMapInt = {
-				"NotStarted"	: "0",
-				"InProgress" : "1"  ,
-				"Completed"	: "2",
+				"NotStarted"		: "0",
+				"InProgress"    	: "1"  ,
+				"Completed"	    	: "2",
 				"WaitingOnOthers"	: "3",
-				"Deferred"	: "4",
-				null: "0"
-		};  
+				"Deferred"			: "4",
+					null			: "0"
+			};  
 		
 		var updates = exchGlobalFunctions.xmlToJxon('<t:Updates xmlns:m="'+nsMessagesStr+'" xmlns:t="'+nsTypesStr+'"/>');
 
@@ -622,8 +622,7 @@ catch(err){
 			case "IPM.Note":
 			 //Email Todo
 				 this.percentComplete = this.percentComplete/100.00 ;
-				dump("\nxxxxxxxxxxxxxx pc " + this.percentComplete );
-					this.addSetItemField(updates,"ExtendedFieldURI",this.percentComplete,{"DistinguishedPropertySetId":"Task","PropertyId":"33026","PropertyType":"Double"});
+ 					this.addSetItemField(updates,"ExtendedFieldURI",this.percentComplete,{"DistinguishedPropertySetId":"Task","PropertyId":"33026","PropertyType":"Double"});
 		 		break;
 			default: 
 				this.addSetItemField(updates, "PercentComplete", this.percentComplete);
@@ -637,7 +636,13 @@ catch(err){
 				switch(this.itemClass){
 				case "IPM.Note":
 				 //Email Todo
- 					this.addSetItemField(updates,"ExtendedFieldURI",statusMapInt[this._newStatus],{"DistinguishedPropertySetId":"Task","PropertyId":"33025","PropertyType":"Integer"});
+					if (this._newIsCompleted === false) {
+						this.addSetItemField(updates,"ExtendedFieldURI","0",{"DistinguishedPropertySetId":"Task","PropertyId":"33052","PropertyType":"Boolean"});
+					}
+					else{
+						this.addSetItemField(updates,"ExtendedFieldURI","1",{"DistinguishedPropertySetId":"Task","PropertyId":"33052","PropertyType":"Boolean"});
+					}
+					this.addSetItemField(updates,"ExtendedFieldURI",statusMapInt[this._newStatus],{"DistinguishedPropertySetId":"Task","PropertyId":"33025","PropertyType":"Integer"});
 					break;
 				default: 
 					this.addSetItemField(updates, "Status", this._newStatus);
@@ -648,8 +653,9 @@ catch(err){
 					switch(this.itemClass){
 					case "IPM.Note":
 					 //Email Todo
-						this.addSetItemField(updates,"ExtendedFieldURI","false",{"DistinguishedPropertySetId":"Task","PropertyId":"33052","PropertyType":"Boolean"});
-						break;
+						this.addSetItemField(updates,"ExtendedFieldURI",statusMapInt["NotStarted"],{"DistinguishedPropertySetId":"Task","PropertyId":"33025","PropertyType":"Integer"});
+						this.addSetItemField(updates,"ExtendedFieldURI","0",{"DistinguishedPropertySetId":"Task","PropertyId":"33052","PropertyType":"Boolean"});
+ 						break;
 					default: 
 						this.addSetItemField(updates, "Status", "NotStarted");
 					}
@@ -658,7 +664,8 @@ catch(err){
 					switch(this.itemClass){
 					case "IPM.Note":
 					 //Email Todo
-						this.addSetItemField(updates,"ExtendedFieldURI","true",{"DistinguishedPropertySetId":"Task","PropertyId":"33052","PropertyType":"Boolean"});
+	 					this.addSetItemField(updates,"ExtendedFieldURI",statusMapInt["Completed"],{"DistinguishedPropertySetId":"Task","PropertyId":"33025","PropertyType":"Integer"});
+						this.addSetItemField(updates,"ExtendedFieldURI","1",{"DistinguishedPropertySetId":"Task","PropertyId":"33052","PropertyType":"Boolean"});
 				 		break;
 					default: 
 						this.addSetItemField(updates, "Status", "Completed");
@@ -908,6 +915,7 @@ catch(err){
 				switch(this.itemClass){
 				case "IPM.Note":
 				 //Email Todo
+					//this.addSetItemField(updates,"ExtendedFieldURI",exchEnd,{"DistinguishedPropertySetId":"Task","PropertyId":"33039","PropertyType":"SystemTime"});
 			 		break;
 				default: 
 					this.addDeleteItemField(updates, "CompleteDate");
@@ -922,7 +930,7 @@ catch(err){
 		// Alarms and snoozes
 		this.checkAlarmChange(updates);
 
-	    dump("\nxxxxxxxxxxxxxxxxxxxx todo updates:"+updates.toString()+"\n");
+	  //  dump("\nupdates:"+updates.toString()+"\n");
 		return updates;
 	},
 
@@ -1031,42 +1039,51 @@ catch(err){
 		case "IPM.Note":
 			var tmpObject = this.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '33025']");
 			if (tmpObject.length > 0) {
-				var statusInt = xml2json.getTagValue(tmpObject[0], "t:Value",  0 );  
-					if( "statusInt"  === "2"  ){ 
-						statusInt = "Completed"; 
+				var statusInt = xml2json.getTagValue(tmpObject[0], "t:Value", null );  
+				var noteStatus;
+					if( statusInt  === "2"  ){ 
+						noteStatus = "Completed"; 
 				    } 
-					else if( statusInt  ===  "1" ){
-						statusInt = "InProgress"; 
+					else if( statusInt  ===  "1" ) 	{
+						noteStatus = "InProgress"; 
 					}
-					else if( statusInt  === "3"  ){
-						statusInt = "WaitingOnOthers"; 
+					else if( statusInt  === "3"  ) 	{
+						noteStatus = "WaitingOnOthers"; 
 					}
-					else if( statusInt  ===  "4"  ){
-						statusInt = "Deferred"; 
+					else if( statusInt  ===  "4"  )	{
+						noteStatus = "Deferred"; 
 					}
-					else if( statusInt ===  "0"  ){
-						statusInt = "NotStarted"; 
+					else if( statusInt  ===  "0" )	{
+						noteStatus = "NotStarted"; 
 					} 
-					else {
-						this._isCompleted = ( this._percentComplete  == 100 );
-						if(!this._isCompleted){ 
-							this._isCompleted = (this._status == "Completed");
-							statusInt = "NotStarted"; 
-						}
+					else {  
+						noteStatus = "NotStarted"; 
+					}
+				} 
+			
+				if( noteStatus != "Completed" ){
+					var tmpObject_2 = this.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '33052']");
+					if (tmpObject_2.length > 0) {
+						 let noteCompleted = xml2json.getTagValue(tmpObject_2[0], "t:Value",  null );  
+ 						 if( noteCompleted ===  true  ){
+ 							noteStatus = "Completed";
+						 }
 					}
 				}
-		 this._status = statusInt; 
- 		 
+				
+			this._status = noteStatus;  
  		break;
 		default: 
 			this._status = this.getTagValue("t:Status", "NotStarted");
-			this._isCompleted = (this._status == "Completed"); 
-		} 
+		}  
+		
  		this._calEvent.status = statusMap[this._status];
-		this._calEvent.setProperty("STATUS", statusMap[this._status]);
+ 		
+		this._calEvent.setProperty("STATUS", statusMap[this._status]); 
 
-		this._calEvent.isCompleted = this._isCompleted;
-
+	    this._isCompleted = ( this._status  == "Completed" ); 
+ 
+		this._calEvent.isCompleted = this._isCompleted; 
 		//dump("postLoad: title:"+this.title+", this._percentComplete:"+this._percentComplete+", isCompleted:"+this.isCompleted+", getProperty:"+this._calEvent.getProperty("STATUS")+", this.status:"+this.status+", entryDate:"+this.entryDate+"\n");
 
 		this._totalWork = this.getTagValue("t:TotalWork", 0);

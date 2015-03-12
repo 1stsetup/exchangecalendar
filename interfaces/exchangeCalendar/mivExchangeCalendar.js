@@ -6960,7 +6960,7 @@ else { dump("Occurrence does not exist in cache anymore.\n");}
 
 	convertExchangeTaskToCalTask: function _convertExchangeTaskToCalTask(aTask, erGetItemsRequest, fromOfflineCache)
 	{
-		if (this.debug) this.logInfo("convertExchangeTaskToCalTask:"+xml2json.toString(aTask), 2);
+		//if (this.debug) this.logInfo("convertExchangeTaskToCalTask:"+xml2json.toString(aTask), 2);
 		//var item = createTodo();
 //		var item = Cc["@1st-setup.nl/exchange/calendartodo;1"]
 //				.createInstance(Ci.mivExchangeTodo, this);
