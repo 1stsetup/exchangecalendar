@@ -1,6 +1,6 @@
 <!ENTITY calendar.context.exchange.convert.label "Zu Exchange 2007/2010 Kalender und Aufgaben add-on konvertieren">
 <!ENTITY calendar.context.exchange.properties.label "Exchange (EWS) Einstellungen">
 <!ENTITY calendar.context.exchange.oof.settings.label "Abwesenheitseinstellungen">
-<!ENTITY calendar.context.exchange.clone.settings.label "Kopiere Einstellungen zu neuem Kalender">
-<!ENTITY calendar.context.exchange.delegate.calendar.settings.label "Delegiere Kalender">
+<!ENTITY calendar.context.exchange.clone.settings.label "Einstellungen zu neuem Kalender kopieren">
+<!ENTITY calendar.context.exchange.delegate.calendar.settings.label "Kalender delegieren">
 

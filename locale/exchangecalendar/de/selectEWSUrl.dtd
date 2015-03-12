@@ -1,7 +1,7 @@
 <!ENTITY label.acceptbutton "Auswählen">
 <!ENTITY label.cancelbutton "Abbrechen">
 
-<!ENTITY description.selectews "Geeignete EWS Server für Ihren Standort aus der Liste auswählen.">
+<!ENTITY description.selectews "Geeignete EWS-Server für Ihren Standort aus der Liste auswählen.">
 <!ENTITY label.selectews "EWS Serverliste:">
 
 
