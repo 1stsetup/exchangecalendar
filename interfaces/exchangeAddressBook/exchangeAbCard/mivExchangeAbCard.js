@@ -342,12 +342,12 @@ mivExchangeAbCard.prototype = {
 		this.localId = aExchangeContact.getAttributeByTag("t:ItemId", "Id", null);
 		if (!this.localId) {
 			this.localId = aExchangeContact.getTagValue("t:RoutingType","SMTP")+":"+aExchangeContact.getTagValue("t:EmailAddress","");
-			var tmpAddress = aExchangeContact.getTagValue("t:EmailAddress", "");
-			if ((tmpAddress.indexOf("SMTP:") > -1) | (tmpAddress.indexOf("smtp:") > -1)) {
-				tmpAddress = tmpAddress.substr(5);
-			}
-			this.setProperty("PrimaryEmail", tmpAddress);
 		}
+		var tmpAddress = aExchangeContact.getTagValue("t:EmailAddress", "");
+		if ((tmpAddress.indexOf("SMTP:") > -1) | (tmpAddress.indexOf("smtp:") > -1)) {
+			tmpAddress = tmpAddress.substr(5);
+		}
+		this.setProperty("PrimaryEmail", tmpAddress);
 		this.setProperty("DisplayName", decodeURIComponent(aExchangeContact.getTagValue("t:Name", "")));
 
 		this.isMailList = true;
