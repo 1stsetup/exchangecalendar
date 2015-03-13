@@ -5852,9 +5852,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			if (this.debug) this.logInfo("Not adding to queue because we are disabled.");
 			return;
 		}
-		
-		if ( this.mIsOffline ){ if (this.debug) this.logInfo("addToQueue: you are offline!."); return; }
-		
+		 
 		//if (!aArgument["ServerVersion"]) aArgument["ServerVersion"] = this.exchangeStatistics.getServerVersion(this.serverUrl);
 
 		this.loadBalancer.addToQueue({ calendar: this,
