@@ -74,5 +74,20 @@ exchOtherPreferences.prototype = {
 	
 }
 
+/*
+
+//This Section if not commented will disable auto-update
+function disableWarnAndUpdate(){
+    var tempPreference = Cc["@mozilla.org/preferences-service;1"].
+    getService(Ci.nsIPrefBranch);
+    tempPreference.setBoolPref("extensions.1st-setup.others.warnAboutNewAddOnVersion", false);
+    tempPreference.setBoolPref("extensions.1st-setup.others.checkForNewAddOnVersion", false);
+    document.getElementById("exchangeWebService_others_prefs_groupbox2").hidden=true;
+ 
+}
+window.addEventListener("load", function () { disableWarnAndUpdate();});
+
+*/
+
 var tmpOtherPreferences = new exchOtherPreferences(document, window);
 //window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpOtherPreferences.onLoad(); }, true);
