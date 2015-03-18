@@ -157,7 +157,7 @@ mivExchangeAutoCompleteResult.prototype = {
   //readonly attribute boolean typeAheadResult;
 	get typeAheadResult()
 	{
-		return this.matchCount() <= 1;
+		return this._cards.length <= 1;
 	},
 
   /**
