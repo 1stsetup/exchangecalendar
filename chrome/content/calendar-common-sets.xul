@@ -60,10 +60,6 @@
 	<!--<keyset>
  		 <key id="forward-key" modifiers="control" key="f" oncommand="tmpForewardEvent.onForEve();"/>
 	</keyset>-->	
-    
-    <menupopup id="taskitem-context-menu"
-               onpopupshowing="changeContextMenuForTask(event);"
-               onpopuphiding="handleTaskContextMenuStateChange(event);"> 
-    </menupopup> 
+  
                 
 </overlay>
