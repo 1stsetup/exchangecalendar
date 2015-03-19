@@ -28,7 +28,7 @@
 <dialog id="calendar-event-dialog"
         title="&event.title.label;"
         windowtype="Calendar:EventDialog"
-        onload="onLoad();"
+        onload="textInputToReadOnly();onLoad();"
         onunload="onEventDialogUnload();"
         ondialogaccept="return onAccept();"
         ondialogcancel="return onCancel();"
@@ -41,8 +41,28 @@
     </stringbundleset>
 
     <!-- Javascript includes -->
+    <script> 
+    function textInputToReadOnly(){ 
+        var args = window.arguments[0];
+        var item = args.calendarEvent;
+        item = item.clone();  
+        var calendar = item.calendar; 
+        if (item.hasProperty("DESCRIPTION")) {
+        var description = item.getProperty("DESCRIPTION");
+        if(description){
+            if ( description.length ) {
+                document.getElementById("item-description-box")
+                    .removeAttribute("hidden");
+                var textbox = document.getElementById("item-description");
+                        textbox.value = description;
+                        textbox.inputField.readOnly = true;
+                }
+            } 
+        }
+    } 
+    </script>
     <script type="application/javascript"
-            src="chrome://calendar/content/calendar-event-dialog.js"/>
+            src="chrome://calendar/content/calendar-event-dialog.js"/> 
     <script type="application/javascript"
             src="chrome://calendar/content/calendar-dialog-utils.js"/>
     <script type="application/javascript"
@@ -1175,21 +1195,34 @@
 
             <separator id="event-grid-description-separator"
                        class="groove" hidden="true"/>
-
+ 
+             <box id="item-description-box" hidden="true" orient="vertical" flex="1">
+                <spacer class="default-spacer"/>
+                <calendar-caption label="&read.only.description.label;"
+                                  control="item-description"/>
+                <box orient="horizontal" flex="1">
+                  <spacer class="default-spacer"/>
+                  <textbox id="item-description"
+                           multiline="true"
+                           rows="6"
+                           flex="1"/>
+                </box>
+              </box>
+ 
             <!-- Description -->
-            <row id="event-grid-description-row" flex="1" readonly="false">
+   	    <!--
+            <row id="event-grid-description-row" flex="1">
                 <label value="&event.description.label;"
                        accesskey="&event.description.accesskey;"
                        control="item-description"
                        disable-on-readonly="false"/>
                 <textbox id="item-description"
                          disable-on-readonly="false"
-                         readonly="true"
                          flex="1"
                          multiline="true"
-                         rows="12"/>
+                         rows="12" onload="function(){this.inputField.readOnly}" />
             </row>
-
+     -->
             <separator class="groove" id="event-grid-attachment-separator" hidden="true"/>
 
             <!-- Attachment -->
