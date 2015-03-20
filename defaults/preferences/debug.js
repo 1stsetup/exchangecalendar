@@ -14,6 +14,6 @@ pref("extensions.extras.LowestIcon", "chrome://exchangecalendar/skin/lowest.gif"
 pref("extensions.extras.ShadeHigh", true);
 pref("extensions.extras.ShadeLow", false);
 
-pref("extensions.1st-setup.others.warnAboutNewAddOnVersion",true);
-pref("extensions.1st-setup.others.checkForNewAddOnVersion",true);
+pref("extensions.1st-setup.others.warnAboutNewAddOnVersion",false);
+pref("extensions.1st-setup.others.checkForNewAddOnVersion",false);
 
