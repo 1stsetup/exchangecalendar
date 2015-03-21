@@ -338,22 +338,17 @@ mivExchangeAbCard.prototype = {
 			return;
 		}
 
-		if (aExchangeContact.tagName == "Contact") {
-			this.convertExchangeContactToCard(aParent, aExchangeContact);
+		this.directoryId = aParent.uuid;
+		this.localId = aExchangeContact.getAttributeByTag("t:ItemId", "Id", null);
+		if (!this.localId) {
+			this.localId = aExchangeContact.getTagValue("t:RoutingType","SMTP")+":"+aExchangeContact.getTagValue("t:EmailAddress","");
 		}
-		else {
-			this.directoryId = aParent.uuid;
-			this.localId = aExchangeContact.getAttributeByTag("t:ItemId", "Id", null);
-			if (!this.localId) {
-				this.localId = aExchangeContact.getTagValue("t:RoutingType","SMTP")+":"+aExchangeContact.getTagValue("t:EmailAddress","");
-				var tmpAddress = aExchangeContact.getTagValue("t:EmailAddress", "");
-				if ((tmpAddress.indexOf("SMTP:") > -1) | (tmpAddress.indexOf("smtp:") > -1)) {
-					tmpAddress = tmpAddress.substr(5);
-				}
-				this.setProperty("PrimaryEmail", tmpAddress);
-			}
-			this.setProperty("DisplayName", decodeURIComponent(aExchangeContact.getTagValue("t:Name", "")));
+		var tmpAddress = aExchangeContact.getTagValue("t:EmailAddress", "");
+		if ((tmpAddress.indexOf("SMTP:") > -1) | (tmpAddress.indexOf("smtp:") > -1)) {
+			tmpAddress = tmpAddress.substr(5);
 		}
+		this.setProperty("PrimaryEmail", tmpAddress);
+		this.setProperty("DisplayName", decodeURIComponent(aExchangeContact.getTagValue("t:Name", "")));
 
 		this.isMailList = true;
 		this.mailListURI = aURI;
