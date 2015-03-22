@@ -38,8 +38,8 @@
 
 <!ENTITY exchangeWebService.preference.loadbalancer.debug.caption "Loadbalancer:">
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.label "Loadbalancer:">
-<!ENTITY exchangeWebService.preference.loadbalancer.prefs.maxJobs.label "Maximum number of simultanious request to exchange server:">
-<!ENTITY exchangeWebService.preference.loadbalancer.prefs.sleepBetweenJobs.label "Minimum time, to wait, between request to exchange server:">
+<!ENTITY exchangeWebService.preference.loadbalancer.prefs.maxJobs.label "Maximum number of simultaneous request to exchange server:">
+<!ENTITY exchangeWebService.preference.loadbalancer.prefs.sleepBetweenJobs.label "Minimum time to wait between requests to exchange server:">
 <!ENTITY exchangeWebService.preference.userAgent.label "HTTP user agent:">
 
 
