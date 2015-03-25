@@ -340,6 +340,7 @@ try{
 	this.endDate = null;
 
 	this.syncState = null;
+	this.syncStatePseudoTask=null;
 	this.syncInboxState = null;
 	this._weAreSyncing = false;
 	this.firstSyncDone = false;
@@ -3184,11 +3185,21 @@ calExchangeCalendar.prototype = {
 			// The first thing we want to do is check the folderbase and folderpath for their id & changekey.
 			// It might have changed between restarts.
 			this.checkFolderPath();
-
-			this.syncState = this.globalFunctions.safeGetCharPref(this.prefs,"syncState", "");
-			if (this.syncState != "") {
-				this.saveToFile("syncState.txt", this.syncState);
-				this.prefs.deleteBranch("syncState");
+ 			if (this.syncState != "") {
+				switch(this.folderBase){
+				case "tasks":
+					this.syncState = this.globalFunctions.safeGetCharPref(this.prefs,"syncState", "");
+					this.syncStatePseudoTask = this.globalFunctions.safeGetCharPref(this.prefs,"syncStatePseudoTask", "");
+					this.saveToFile("syncState.txt", this.syncState);
+					this.saveToFile("syncStatePseudoTask.txt",this.syncStatePseudoTask); 
+					this.prefs.deleteBranch("syncStatePseudoTask");
+					this.prefs.deleteBranch("syncState");
+					break;
+				default:
+					this.syncState = this.globalFunctions.safeGetCharPref(this.prefs,"syncState", "");
+ 					this.saveToFile("syncState.txt", this.syncState);
+ 					this.prefs.deleteBranch("syncState"); 
+				}					
 			}
 
 /* Disabled as on startup we do not wish to use old syncstate until we get some offline caching implemented for this (2013-12-20)
@@ -3197,10 +3208,16 @@ calExchangeCalendar.prototype = {
 				this.saveToFile("syncInboxState.txt", this.syncInboxState);
 				this.prefs.deleteBranch("syncInboxState");
 			}
-*/
-
+*/ 
 			if (this.useOfflineCache) {
-				this.syncState = this.loadFromFile("syncState.txt");
+				switch(this.folderBase){
+				case "tasks":
+					this.syncState = this.loadFromFile("syncState.txt");
+					this.syncStatePseudoTask = this.loadFromFile("syncStatePseudoTask.txt");
+					break;
+				default:
+					this.syncState = this.loadFromFile("syncState.txt");
+				}					
 			}
 //			this.syncInboxState = this.loadFromFile("syncInboxState.txt");
 
@@ -4102,6 +4119,9 @@ try{
 		this.syncState = null;
 		//this.prefs.deleteBranch("syncState");
 		this.removeFile("syncState.txt");
+		if(this.folderBase=="tasks"){
+			this.removeFile("syncStatePseudoTask.txt"); 
+		}
 		this.weAreSyncing = false;
 		this.firstSyncDone = false;
 		
@@ -6151,9 +6171,17 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 		if ((erGetItemsRequest.argument) && (erGetItemsRequest.argument.syncState)) {
 				if (this.debug) this.logInfo("getTaskItemsOK: We have a syncState to save.");
-				this.syncState = erGetItemsRequest.argument.syncState;
 				//this.prefs.setCharPref("syncState", erGetItemsRequest.argument.syncState);
-				this.saveToFile("syncState.txt", erGetItemsRequest.argument.syncState);
+				
+				switch(erSyncFolderItemsRequest.folderBase){
+				case "inbox":
+					this.syncStatePseudoTask = erGetItemsRequest.argument.syncState;
+					this.saveToFile("syncStatePseudoTask.txt", erGetItemsRequest.argument.syncState);
+					break;
+				default:
+					this.syncState = erGetItemsRequest.argument.syncState;
+					this.saveToFile("syncState.txt", erGetItemsRequest.argument.syncState);  
+				}		 
 		}
 
 		aItems  = null;
@@ -7822,20 +7850,36 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			if (this.debug) this.logInfo("Creating erSyncFolderItemsRequest");
 			var self = this;
 			this.weAreSyncing = true;
-
-			this.addToQueue(erSyncFolderItemsRequest,
-					{user: this.user, 
-				 mailbox: this.mailbox,
-				 serverUrl: this.serverUrl,
-				 folderBase: this.folderBase,
-				 folderID: this.folderID,
-				 changeKey: this.changeKey,
-				 syncState: this.syncState,
-				 actionStart: Date.now() },
-				function(erSyncFolderItemsRequest, creations, updates, deletions, syncState) { self.syncFolderItemsOK(erSyncFolderItemsRequest, creations, updates, deletions, syncState);}, 
-				function(erSyncFolderItemsRequest, aCode, aMsg) { self.syncFolderItemsError(erSyncFolderItemsRequest, aCode, aMsg);},
-				null);
-
+		    this.logInfo("syncFolderItemsOK 32 : " +   this.syncStatePseudoTask + " :: "  + this.syncState); 
+			switch(this.folderBase){
+			case "tasks":
+				this.addToQueue(erSyncFolderItemsRequest,
+						{user: this.user, 
+					 mailbox: this.mailbox,
+					 serverUrl: this.serverUrl,
+					 folderBase: "inbox",
+					 folderID: null,
+					 changeKey: null,
+					 syncState: this.syncStatePseudoTask,
+					 actionStart: Date.now() },
+					function(erSyncFolderItemsRequest, creations, updates, deletions, syncState) { self.syncFolderItemsOK(erSyncFolderItemsRequest, creations, updates, deletions, syncState);}, 
+					function(erSyncFolderItemsRequest, aCode, aMsg) { self.syncFolderItemsError(erSyncFolderItemsRequest, aCode, aMsg);},
+					null);  
+				//Donot  break because we neet to call below section by default..
+				default:
+					this.addToQueue(erSyncFolderItemsRequest,
+							{user: this.user, 
+						 mailbox: this.mailbox,
+						 serverUrl: this.serverUrl,
+						 folderBase: this.folderBase,
+						 folderID: this.folderID,
+						 changeKey: this.changeKey,
+						 syncState: this.syncState,
+						 actionStart: Date.now() },
+						function(erSyncFolderItemsRequest, creations, updates, deletions, syncState) { self.syncFolderItemsOK(erSyncFolderItemsRequest, creations, updates, deletions, syncState);}, 
+						function(erSyncFolderItemsRequest, aCode, aMsg) { self.syncFolderItemsError(erSyncFolderItemsRequest, aCode, aMsg);},
+						null);  
+			} 
 		}
 		else {
 			if (this.debug) this.logInfo("not creating erSyncFolderItemsRequest because we are allready syncing");
@@ -7847,24 +7891,28 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		this.folderPathStatus = 0;
 		this.saveCredentials(erSyncFolderItemsRequest.argument);
 		this.notConnected = false;
-
-		if (this.debug) this.logInfo("syncFolderItemsOK: Creation:"+creations.length+", Updates:"+updates.length+", Deletions:"+deletions.length+", syncState:"+syncState);
+		if (this.debug) this.logInfo("syncFolderItemsOK: Creation:"+creations.length+", Updates:"+updates.length+", Deletions:"+deletions.length+", syncState:");
 
 		if ((creations.length > 0) || (updates.length > 0) || (deletions.length > 0)) {
 			this.addActivity(calGetString("calExchangeCalendar", "syncFolderEventMessage", [creations.length, updates.length, deletions.length, this.name], "exchangecalendar"), "", erSyncFolderItemsRequest.argument.actionStart, Date.now());
 		}
 
 		if (syncState) {
-
-			if ((this.syncState) && (syncState == this.syncState)) {
+			
+			if ((this.syncState) && (syncState == this.syncState || syncState == this.syncStatePseudoTask )) {
 				this.logError("Same syncState received.");
 			}
-
+			this.logInfo("syncFolderItemsOK 1:  "+ erSyncFolderItemsRequest.folderBase );
 			// This was the first time. we now save the syncState;
-			this.syncState = syncState;
-			this.saveToFile("syncState.txt", syncState);
-			this.weAreSyncing = false;
-
+			if( erSyncFolderItemsRequest.folderBase == "inbox" )	{
+				this.syncStatePseudoTask = syncState;  
+				this.saveToFile("syncStatePseudoTask.txt", syncState);
+			}
+			else{
+				this.syncState = syncState; 
+				this.saveToFile("syncState.txt", syncState);
+			}
+			this.weAreSyncing = false; 
 		}
 
 		var self = this;
@@ -7969,9 +8017,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			if (this.debug) this.logInfo("We have "+this.getItemSyncQueue.length+" items in this.getItemSyncQueue");
 			this.processItemSyncQueue();
 		}
-
-
-
+ 		getSyncState();
 	},
 
 	syncFolderItemsError: function _syncFolderItemsError(erSyncFolderItemsRequest, aCode, aMsg)
@@ -10314,6 +10360,7 @@ dump("getOccurrencesFromOfflineCache: found:"+result.length+"\n");
 	// When the file exists the content will be read and returned as a string.
 	// When the file does not exists it will return null.
 	loadFromFile: function _loadFromFile(aFilename)
+	
 	{
 		var file = Cc["@mozilla.org/file/directory_service;1"]
 				.getService(Components.interfaces.nsIProperties)
@@ -10427,6 +10474,7 @@ function ecObserver(inCalendar)
 				aCalendar.removeFile("syncState.txt");
 				aCalendar.removeFile("syncInboxState.txt");
 				aCalendar.removeFile("folderProperties.txt");
+				aCalendar.removeFile("syncStatePseudoTask.txt");
 				self.unregister();
 			}
 		},
