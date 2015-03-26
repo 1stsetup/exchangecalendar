@@ -4120,6 +4120,7 @@ try{
 		//this.prefs.deleteBranch("syncState");
 		this.removeFile("syncState.txt");
 		if(this.folderBase=="tasks"){
+			this.syncStatePseudoTask = null;  
 			this.removeFile("syncStatePseudoTask.txt"); 
 		}
 		this.weAreSyncing = false;
@@ -6187,7 +6188,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		aItems  = null;
 		erGetItemsRequest = null;
 
-if (this.debug) this.logInfo("getTaskItemsOK 4");
+		if (this.debug) this.logInfo("getTaskItemsOK 4");
 
 		this.processItemSyncQueue();
 
@@ -7254,62 +7255,68 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 			var item = this.convertExchangeToCal(aItems[index], erGetItemsRequest, doNotify, fromOfflineCache);
 		
-			if (item) { 
-				
+			if (item) { 				
 				if ( item.isCancelled && item.reminderIsSet &&  isEvent(item) )
 				{
-				    var aNewItem = item.QueryInterface(Ci.mivExchangeEvent);
-				    
+				    var aNewItem = item.QueryInterface(Ci.mivExchangeEvent);				    
 					if (this.debug) this.logInfo("updateCalendar2: This item is Cancelled resetting reminder to false :  " + aNewItem.title );
- 
-					this.itemCount++; 
+ 					this.itemCount++; 
 					aNewItem._reminderIsSet=false;
-					aNewItem._newAlarm=null;
-					
-					this.modifyItem(aNewItem, item); 
-					
+					aNewItem._newAlarm=null;					
+					this.modifyItem(aNewItem, item);					
 					if (this.debug) this.logInfo("updateCalendar2: hope! reminder is set  for item " +  aNewItem.title + " going to modify next item"  );
 				}
 				//convertedItems.push(item);
 				else if (!this.itemCacheById[item.id]) {
 					// This is a new unknown item
-					//this.itemCacheById[item.id] = item; 
-					 
-					this.addItemToCache(item);
-					this.itemCount++;
-				
-					if ( isEvent(item) && this.markEventasTentative )
-					{
-						var isOldCacheItem=false;  
-						var aItem=item.QueryInterface(Ci.mivExchangeEvent);
-
-						if (this.debug) this.logInfo("updateCalendar2: proceed setTentative:"+ item.title);  
-							this.setTentative(aItem,aItems[index],isOldCacheItem);
-					}
+					//this.itemCacheById[item.id] = item;  
+					if( ( this.isEmailTodo(item,aItems[index]) ===  false ) && ( this.isEmail(item) ===  true  ) ){
+					//We are not adding this item because its no longer email followup
+ 					} 
+					else{
+						this.addItemToCache(item);
+						this.itemCount++;
 					
-					if (this.debug) this.logInfo("updateCalendar2: onAddItem:"+ item.title);
-					if (doNotify) {
-						this.notifyTheObservers("onAddItem", [item]);
+						if ( isEvent(item) && this.markEventasTentative )
+						{
+							var isOldCacheItem=false;  
+							var aItem=item.QueryInterface(Ci.mivExchangeEvent);
+	
+							if (this.debug) this.logInfo("updateCalendar2: proceed setTentative:"+ item.title);  
+								this.setTentative(aItem,aItems[index],isOldCacheItem);
+						}
+						
+						if (this.debug) this.logInfo("updateCalendar2: onAddItem:"+ item.title);
+						if (doNotify) {
+							this.notifyTheObservers("onAddItem", [item]);
+						}
+	
+						if ((this.useOfflineCache) && (!fromOfflineCache)) {
+							cacheItem[item.id] = {calItem: item,
+									exchangeItemXML: xml2json.toString(aItems[index])};
+							//this.addToOfflineCache(item, xml2json.toString(aItems[index]));
+						}
 					}
-
-					if ((this.useOfflineCache) && (!fromOfflineCache)) {
-						cacheItem[item.id] = {calItem: item,
-								exchangeItemXML: xml2json.toString(aItems[index])};
-						//this.addToOfflineCache(item, xml2json.toString(aItems[index]));
-					}
-
 				}
 				else {
 					// I Allready known this one.
 					if (this.debug) this.logInfo("updateCalendar2: onModifyItem:"+ item.title);
 					//dump("updateCalendar: onModifyItem:"+ item.title);
-
-					this.singleModified(item, doNotify);
-
-					if ((this.useOfflineCache) && (!fromOfflineCache)) {
-						cacheItem[item.id] = {calItem: item,
-								exchangeItemXML: xml2json.toString(aItems[index])};
-						//this.addToOfflineCache(item, xml2json.toString(aItems[index]));
+					 
+					if(( this.isEmail(item) ===  true  ) && ( this.isEmailTodo(item,aItems[index]) ===  false ) ){
+  								//We are removing this item from cache because its no longer email followup  
+							this.notifyTheObservers("onDeleteItem", [this.itemCacheById[item.id]]);
+							this.removeFromOfflineCache(item);
+							this.removeItemFromCache(this.itemCacheById[item.id]); 
+ 					}
+					else{						
+						this.singleModified(item, doNotify);
+	
+						if ((this.useOfflineCache) && (!fromOfflineCache)) {
+							cacheItem[item.id] = {calItem: item,
+									exchangeItemXML: xml2json.toString(aItems[index])};
+							//this.addToOfflineCache(item, xml2json.toString(aItems[index]));
+						}
 					}
 				}
  			}
@@ -7321,6 +7328,33 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		if ((this.useOfflineCache) && (!fromOfflineCache)) {
 			this.addToOfflineCache(cacheItem);
 		}
+	},
+	
+	isEmailTodo: function _isEmailTodo(item,exchangeData){ 
+ 		if( this.isEmail(item) ){
+			var tmpObject = xml2json.XPath(exchangeData,"/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyTag = '0x1090']");
+			
+			if (tmpObject.length > 0) {
+				 	let ext_val = xml2json.getTagValue(tmpObject[0], "t:Value", "0");
+ 				 	if( (ext_val === "1") || (ext_val === "2") ){
+ 				 		return true;	
+				 	}
+				 	else{
+				 		return false;
+				 	}
+				} 
+			else{
+		 		return false;
+			}
+		} 
+ 		return false; 
+	},
+	
+	isEmail: function _isEmail(item){
+		if(item){
+			if( item.itemClass == "IPM.Note" ) return true;
+		}
+		return false;
 	},
 	
 	setTentative: function _setTentative(aItem, exchangeItem ,isOldCacheItem)
@@ -7850,9 +7884,10 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			if (this.debug) this.logInfo("Creating erSyncFolderItemsRequest");
 			var self = this;
 			this.weAreSyncing = true;
-		    this.logInfo("syncFolderItemsOK 32 : " +   this.syncStatePseudoTask + " :: "  + this.syncState); 
 			switch(this.folderBase){
 			case "tasks":
+			    this.logInfo("syncFolderItemsOK, this.syncStatePseudoTask: " +  this.syncStatePseudoTask ); 
+
 				this.addToQueue(erSyncFolderItemsRequest,
 						{user: this.user, 
 					 mailbox: this.mailbox,
@@ -7867,6 +7902,8 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 					null);  
 				//Donot  break because we neet to call below section by default..
 				default:
+				    this.logInfo("syncFolderItemsOK,  this.syncState: "  + this.syncState); 
+
 					this.addToQueue(erSyncFolderItemsRequest,
 							{user: this.user, 
 						 mailbox: this.mailbox,
@@ -7891,7 +7928,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		this.folderPathStatus = 0;
 		this.saveCredentials(erSyncFolderItemsRequest.argument);
 		this.notConnected = false;
-		if (this.debug) this.logInfo("syncFolderItemsOK: Creation:"+creations.length+", Updates:"+updates.length+", Deletions:"+deletions.length+", syncState:");
+		if (this.debug) this.logInfo("syncFolderItemsOK: Folderbase: "+erSyncFolderItemsRequest.folderBase+", Creation:"+creations.length+", Updates:"+updates.length+", Deletions:"+deletions.length+", syncState:" + syncState);
 
 		if ((creations.length > 0) || (updates.length > 0) || (deletions.length > 0)) {
 			this.addActivity(calGetString("calExchangeCalendar", "syncFolderEventMessage", [creations.length, updates.length, deletions.length, this.name], "exchangecalendar"), "", erSyncFolderItemsRequest.argument.actionStart, Date.now());
@@ -7902,8 +7939,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			if ((this.syncState) && (syncState == this.syncState || syncState == this.syncStatePseudoTask )) {
 				this.logError("Same syncState received.");
 			}
-			this.logInfo("syncFolderItemsOK 1:  "+ erSyncFolderItemsRequest.folderBase );
-			// This was the first time. we now save the syncState;
+ 			// This was the first time. we now save the syncState;
 			if( erSyncFolderItemsRequest.folderBase == "inbox" )	{
 				this.syncStatePseudoTask = syncState;  
 				this.saveToFile("syncStatePseudoTask.txt", syncState);

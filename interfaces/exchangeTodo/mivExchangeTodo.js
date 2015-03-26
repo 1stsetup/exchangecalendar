@@ -621,8 +621,8 @@ catch(err){
 			switch(this.itemClass){
 			case "IPM.Note":
 			 //Email Todo
-				 this.percentComplete = this.percentComplete/100.00 ;
- 					this.addSetItemField(updates,"ExtendedFieldURI",this.percentComplete,{"DistinguishedPropertySetId":"Task","PropertyId":"33026","PropertyType":"Double"});
+				   let percentComplete = this.percentComplete/100.00 ;
+ 					this.addSetItemField(updates,"ExtendedFieldURI",percentComplete,{"DistinguishedPropertySetId":"Task","PropertyId":"33026","PropertyType":"Double"});
 		 		break;
 			default: 
 				this.addSetItemField(updates, "PercentComplete", this.percentComplete);
@@ -637,6 +637,8 @@ catch(err){
 				case "IPM.Note":
 				 //Email Todo
 					if (this._newIsCompleted === false) {
+						let percentComplete = 0.0 ;
+	 					this.addSetItemField(updates,"ExtendedFieldURI",percentComplete,{"DistinguishedPropertySetId":"Task","PropertyId":"33026","PropertyType":"Double"});
 						this.addSetItemField(updates,"ExtendedFieldURI","0",{"DistinguishedPropertySetId":"Task","PropertyId":"33052","PropertyType":"Boolean"});
 					}
 					else{
