@@ -642,6 +642,8 @@ catch(err){
 						this.addSetItemField(updates,"ExtendedFieldURI","0",{"DistinguishedPropertySetId":"Task","PropertyId":"33052","PropertyType":"Boolean"});
 					}
 					else{
+						let percentComplete = 1.0 ;
+	 					this.addSetItemField(updates,"ExtendedFieldURI",percentComplete,{"DistinguishedPropertySetId":"Task","PropertyId":"33026","PropertyType":"Double"});
 						this.addSetItemField(updates,"ExtendedFieldURI","1",{"DistinguishedPropertySetId":"Task","PropertyId":"33052","PropertyType":"Boolean"});
 					}
 					this.addSetItemField(updates,"ExtendedFieldURI",statusMapInt[this._newStatus],{"DistinguishedPropertySetId":"Task","PropertyId":"33025","PropertyType":"Integer"});
