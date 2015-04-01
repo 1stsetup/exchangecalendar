@@ -1012,8 +1012,7 @@ catch(err){
 	addAlarm: function _addAlarm(aAlarm)
 	{
 		if (!aAlarm) return;
-
-		// As exchange can only handle one alarm. We make sure there is only one.
+ 		// As exchange can only handle one alarm. We make sure there is only one.
 
 		//dump("addAlarm 1: title:"+this.title+", aAlarm.alarmDate:"+aAlarm.alarmDate+", offset:"+aAlarm.offset+"("+this.calendarItemType+")\n");
 		var alarms = this.getAlarms({}); // Preload
@@ -2590,10 +2589,8 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 		this._reminderDueBy = this.tryToSetDateValueUTC(this.getTagValue("t:ReminderDueBy", null), null);
 
-		this._reminderMinutesBeforeStart = this.getTagValue("t:ReminderMinutesBeforeStart", 0);
-
-		this._reminderDueBy = this.tryToSetDateValueUTC(this.getTagValue("t:ReminderDueBy", null), null);
-
+		this._reminderMinutesBeforeStart = this.getTagValue("t:ReminderMinutesBeforeStart", 0); 
+ 
 		this._dateTimeReceived = this.tryToSetDateValueUTC(this.getTagValue("t:DateTimeReceived", null), null);
 
 		this._dateTimeSent = this.tryToSetDateValueUTC(this.getTagValue("t:DateTimeSent", null), null);
@@ -3575,15 +3572,15 @@ dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 									//dump("Reminder not active on item:"+nextOccurrence.startDate+". Going to look for next.\n");
 									var tmpDate = dismissedItem.endDate || dismissedItem.dueDate;
 									if (tmpDate) {
-										var nextOccurrence = this.recurrenceInfo.getNextOccurrence(nextOccurrence.endDate);
+										  nextOccurrence = this.recurrenceInfo.getNextOccurrence(nextOccurrence.endDate);
 									}
 									else {
-										var nextOccurrence =  null;
+									     nextOccurrence =  null;
 									}
 								}
 							}
 
-							if (!nextOccurrence) {
+							if (!nextOccurrence) { 
 								// No next occurrence.
 								//dump("No next occurrence so turning alarm of on master.\n");
 								reminderIsSetChanged = "false";
@@ -3596,7 +3593,7 @@ dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 				else {
 					// Single dismiss. We turn it off.
 					//dump("dismiss Single:"+this.title+", startDate:"+this.startDate+"\n");
-					reminderIsSetChanged = "false";
+					if(this.className == "mivExchangeEvent") reminderIsSetChanged = "false";
 				}
 			}
 			else {
@@ -3641,11 +3638,11 @@ dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 					  PropertyType: "SystemTime"} );
 		}
 
-		if ( this.isCancelled )
+		if ( this.isCancelled && (this.className == "mivExchangeEvent") )
 		{
 			reminderIsSetChanged="false";
 		}
-		
+ 
 		if (reminderIsSetChanged !== undefined) {
 			this.addSetItemField(updates, "ReminderIsSet", reminderIsSetChanged);
 		}

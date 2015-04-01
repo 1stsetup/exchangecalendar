@@ -50,6 +50,16 @@
 		xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 		
 		<script type="application/javascript" src="chrome://exchangecalendar/content/calendar-summary-dialog.js" />
+		
+		<box id="item-general-box" orient="vertical">
+		 <box orient="horizontal">
+	     <grid flex="1"> 
+		 <rows>
+		  <row id="reminder-row" hidden="false"/>
+		  </rows>
+		  </grid>
+		  </box>
+		</box>
 		<box id="item-description-box" flex="1">
 
 		<browser id="exchWebService-body-editor" 
