@@ -1,3 +1,24 @@
+Version 3.3.1:
+- New     New Column for invite mail in message list pane
+- New     Support for Thunderbird Nightly Aurora 38.0+
+- New     Locale improved
+- New     Delegating Calendar feature
+- New     Auto-update from Git-hub releases
+- New     High priority mails with auto tagging - important
+
+- Changed Meetings that are canceled are  removed
+- Changed New Event usability issue in lightning
+- Changed Priority column with updated icons,startup preference
+- Changed Cache Clear on Add on Update
+
+- Fixed  Dismissing  reminder
+- Fixed  Accept/Tentative/Reject button appearance
+- Fixed  Fix Address Book freeze when attempting to view "Properties"
+- Fixed  Tentative status does not get saved
+- Fixed  Unable to forward event  in Thunderbird
+- Fixed  Breaking other add on columns in message list pane
+- Fixed  UX error when saving Out of Office 
+
 Version 3.2.0:
 - changed add-on name to "Exchange EWS Provider" as it is shorter than including all the exchange versions it can connect to.
 - Fixes bug where sometimes the date/time is shifted on Free/busy info in calendar of someone else.
