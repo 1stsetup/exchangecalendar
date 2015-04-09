@@ -60,7 +60,7 @@ exchCalendarCreation.prototype = {
                     			.getService(Ci.nsIPrefService)
 		    			.getBranch("extensions.exchangecalendar@extensions.1st-setup.nl.createcalendar."),
 
-	doRadioExchangeCalendar: function _doRadioExchangeCalendar(aRadioGroep)
+	doRadioExchangeCalendar: function _doRadioExchangeCalendar(type)
 	{
 		if (this.firstTime) {
 			// Get the next page to change how it should advance.
@@ -71,13 +71,13 @@ exchCalendarCreation.prototype = {
 			this.firstTime = false;		
 		}
 
-		if (aRadioGroep.value == "exchangecalendar") {
+		if (type == "exchangecalendar") {
 			this.oldLocationTextBox = this._document.getElementById("calendar-uri").value;
 			this.oldCache = this._document.getElementById("cache").checked;
 
 			this._document.getElementById("calendar-uri").value = "https://auto/"+this.globalFunctions.getUUID();
-			this._document.getElementById("calendar-uri").parentNode.hidden = true;
-
+			this._document.getElementById("calendar-uri").hidden = true; 
+			
 			// Get the next page to set back new values.
 			var aCustomizePage = this._document.getElementById('calendar-wizard').getPageById("customizePage");
 			aCustomizePage.setAttribute( "next", "exchWebService_exchange1");
@@ -89,12 +89,11 @@ exchCalendarCreation.prototype = {
 
 			if(this._document.getElementById("exchange-cache-row")){
 				this._document.getElementById("exchange-cache-row").hidden = false;
-			}
-
+			}  
 		}
 		else {
-			this._document.getElementById("calendar-uri").value = this.oldLocationTextBox;
-			this._document.getElementById("calendar-uri").parentNode.hidden = false;
+			this._document.getElementById("calendar-uri").value = "";
+			this._document.getElementById("calendar-uri").hidden = false;
 
 			// Get the next page to set back  how it should advance.
 			var aCustomizePage = this._document.getElementById('calendar-wizard').getPageById("customizePage");
@@ -105,7 +104,7 @@ exchCalendarCreation.prototype = {
 			this._document.getElementById("cache").checked = this.oldCache;
 			
 			if(this._document.getElementById("exchange-cache-row")){
-				this._document.getElementById("exchange-cache-row").hidden = true;
+				this._document.getElementById("exchange-cache-row").hidden = true; 
 			}
 		
 		}
@@ -208,3 +207,13 @@ exchCalendarCreation.prototype = {
 
 var tmpCalendarCreation = new exchCalendarCreation(document, window);
 
+function ecCalendarWizard(type){
+	if(!type) true;
+ 	if( type!="exchangecalendar" ){
+		tmpCalendarCreation.doRadioExchangeCalendar(type); 
+ 		onSelectProvider(type); 
+	}
+	else{
+		tmpCalendarCreation.doRadioExchangeCalendar(type);
+	}
+}
