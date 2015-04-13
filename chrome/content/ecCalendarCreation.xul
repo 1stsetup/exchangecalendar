@@ -51,7 +51,7 @@
     <script type="application/javascript" src="chrome://exchangecalendar/content/ecCalendarCreation.js"/>
 
 
-    <radiogroup id="calendar-format" onselect="ecCalendarWizard(this.value);">
+    <radiogroup id="calendar-format" onselect="tmpCalendarCreation.doRadioExchangeCalendar(this.value);">
 	<vbox>
 	        <radio value="exchangecalendar" label="Microsoft Exchange 2007/2010/2013" id="exchWebService-radioexchangecalendar" />
 		<hbox id="exchange-cache-row" hidden="true">
@@ -66,7 +66,7 @@
                next="finishPage"
                label="&wizard.label;"
                description="&exchange1.description;"
-               onpageshow="tmpCalendarCreation.initExchange1();"
+               onpageshow="checkRequired();tmpCalendarCreation.initExchange1();"
                onpageadvanced="tmpCalendarCreation.saveSettings();">
 
 	<vbox id="exchWebService-exchange-settings"/>

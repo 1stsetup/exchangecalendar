@@ -64,7 +64,7 @@ exchCalendarCreation.prototype = {
 	{
 		if (this.firstTime) {
 			// Get the next page to change how it should advance.
-			var aCustomizePage = this._document.getElementById('calendar-wizard').getPageById("customizePage");
+			let aCustomizePage = this._document.getElementById('calendar-wizard').getPageById("customizePage");
 			this.oldNextPage = aCustomizePage.getAttribute("next");
 			this.oldOnPageAdvanced = aCustomizePage.getAttribute("onpageadvanced");
 
@@ -72,17 +72,20 @@ exchCalendarCreation.prototype = {
 		}
 
 		if (type == "exchangecalendar") {
+			
+			// Get the next page to set back new values.
+			let aCustomizePage = this._document.getElementById('calendar-wizard').getPageById("customizePage");
+			aCustomizePage.removeAttribute("next");
+			aCustomizePage.removeAttribute("onpageadvanced"); 
+			aCustomizePage.setAttribute( "next", "exchWebService_exchange1");
+			aCustomizePage.setAttribute( "onpageadvanced", "return true;");
+
 			this.oldLocationTextBox = this._document.getElementById("calendar-uri").value;
 			this.oldCache = this._document.getElementById("cache").checked;
 
 			this._document.getElementById("calendar-uri").value = "https://auto/"+this.globalFunctions.getUUID();
 			this._document.getElementById("calendar-uri").hidden = true; 
 			
-			// Get the next page to set back new values.
-			var aCustomizePage = this._document.getElementById('calendar-wizard').getPageById("customizePage");
-			aCustomizePage.setAttribute( "next", "exchWebService_exchange1");
-			aCustomizePage.setAttribute( "onpageadvanced", "return true;");
-
 			this._document.getElementById("cache").parentNode.hidden = true;
 			this._document.getElementById("cache").checked = false;
 			var temp = this._document.getElementById("cache").parentNode.parentNode;
@@ -90,6 +93,8 @@ exchCalendarCreation.prototype = {
 			if(this._document.getElementById("exchange-cache-row")){
 				this._document.getElementById("exchange-cache-row").hidden = false;
 			}  
+			tmpSettingsOverlay.exchWebServicesCheckRequired();
+
 		}
 		else {
 			this._document.getElementById("calendar-uri").value = "";
@@ -106,10 +111,9 @@ exchCalendarCreation.prototype = {
 			if(this._document.getElementById("exchange-cache-row")){
 				this._document.getElementById("exchange-cache-row").hidden = true; 
 			}
-		
+			 		onSelectProvider(type); 
 		}
-
-		tmpSettingsOverlay.exchWebServicesCheckRequired();
+		
 	},
 
 	initExchange1: function _initExchange1()
@@ -207,13 +211,3 @@ exchCalendarCreation.prototype = {
 
 var tmpCalendarCreation = new exchCalendarCreation(document, window);
 
-function ecCalendarWizard(type){
-	if(!type) true;
- 	if( type!="exchangecalendar" ){
-		tmpCalendarCreation.doRadioExchangeCalendar(type); 
- 		onSelectProvider(type); 
-	}
-	else{
-		tmpCalendarCreation.doRadioExchangeCalendar(type);
-	}
-}
