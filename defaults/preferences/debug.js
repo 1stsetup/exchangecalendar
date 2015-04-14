@@ -13,3 +13,4 @@ pref("extensions.extras.LowestColor", "#99FF99");
 pref("extensions.extras.LowestIcon", "chrome://exchangecalendar/skin/lowest.gif");
 pref("extensions.extras.ShadeHigh", true);
 pref("extensions.extras.ShadeLow", false); 
+pref("calendar.timezone.local.auto", true ); 
