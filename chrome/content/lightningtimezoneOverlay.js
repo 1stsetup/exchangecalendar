@@ -20,14 +20,14 @@ lightningTimzone.prototype = {
 		    this.resetTimezone = this.globalFunctions.safeGetBoolPref(this.prefs, "calendar.timezone.local.auto");
  			var timezone = this.globalFunctions.safeGetCharPref(this.prefs, "calendar.timezone.local") ;
 			if( timezone ){
-				if( this.resetTimezone === "true" ){ 
- 					this.prefs.setCharPref("calendar.timezone.local","");
- 					this.globalFunctions.LOG("lightningTimzone : Timzone Changed");
-				} 
-			}
-			else{
-				this.prefs.setCharPref("calendar.timezone.local","");
-				this.globalFunctions.LOG("lightningTimzone : Timzone Changed"); 
+				try{
+					if( this.resetTimezone ==   true  ){ 
+	 					this.prefs.setCharPref("calendar.timezone.local","");
+	 					this.globalFunctions.LOG("lightningTimzone : Timzone Changed");
+					} 
+				}catch(e){
+					this.prefs.setCharPref("calendar.timezone.local",timezone);
+				}
 			} 
 			
  			this.onTimezoneChange(); 
