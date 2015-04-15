@@ -22,8 +22,10 @@ lightningTimzone.prototype = {
 			if( timezone ){
 				try{
 					if( this.resetTimezone ==   true  ){ 
-	 					this.prefs.setCharPref("calendar.timezone.local","");
-	 					this.globalFunctions.LOG("lightningTimzone : Timzone Changed");
+						var self=this;
+	 					setTimeout(function(){self.prefs.setCharPref("calendar.timezone.local","");
+	 					self.globalFunctions.LOG("lightningTimzone : Timzone Changed");},
+	 					5000);
 					} 
 				}catch(e){
 					this.prefs.setCharPref("calendar.timezone.local",timezone);
