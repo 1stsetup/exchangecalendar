@@ -47,9 +47,9 @@
 
 <overlay id="calendarCreation"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-
+	
     <script type="application/javascript" src="chrome://exchangecalendar/content/ecCalendarCreation.js"/>
-
+    <script type="application/javascript" src="chrome://gdata-provider/content/gdata-calendar-creation.js"/>  
 
     <radiogroup id="calendar-format" onselect="tmpCalendarCreation.doRadioExchangeCalendar(this.value);">
 	<vbox>
