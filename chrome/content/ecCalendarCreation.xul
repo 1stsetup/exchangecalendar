@@ -55,7 +55,7 @@
 	<vbox>
 	        <radio value="exchangecalendar" label="Microsoft Exchange 2007/2010/2013" id="exchWebService-radioexchangecalendar" />
 		<hbox id="exchange-cache-row" hidden="true">
-			<checkbox id="exchange-cache" label="&exchange.cache.label;"/>
+			<checkbox id="exchange-cache" control="calendar-uri" label="&exchange.cache.label;"/>
 		</hbox>
 	</vbox>
     </radiogroup>

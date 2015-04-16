@@ -84,7 +84,7 @@ exchCalendarCreation.prototype = {
 			this.oldCache = this._document.getElementById("cache").checked;
 
 			this._document.getElementById("calendar-uri").value = "https://auto/"+this.globalFunctions.getUUID();
-			this._document.getElementById("calendar-uri").hidden = true; 
+			this._document.getElementById("calendar-uri").setAttribute("disabled",true);
 			
 			this._document.getElementById("cache").parentNode.hidden = true;
 			this._document.getElementById("cache").checked = false;
@@ -98,7 +98,7 @@ exchCalendarCreation.prototype = {
 		}
 		else {
 			this._document.getElementById("calendar-uri").value = "";
-			this._document.getElementById("calendar-uri").hidden = false;
+			this._document.getElementById("calendar-uri").removeAttribute("disabled",false);
 
 			// Get the next page to set back  how it should advance.
 			var aCustomizePage = this._document.getElementById('calendar-wizard').getPageById("customizePage");
