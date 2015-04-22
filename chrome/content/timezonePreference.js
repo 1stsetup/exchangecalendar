@@ -39,4 +39,4 @@ function checkUserTimezoneMenu(){
 	}  
 }
 
-window.addEventListener("load",function(){setTimeout(checkUserTimezoneMenu(),1000);},false);
+window.addEventListener("load",function(){ checkUserTimezoneMenu(); },false);

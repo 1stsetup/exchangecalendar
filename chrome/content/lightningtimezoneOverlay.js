@@ -24,8 +24,9 @@ lightningTimzone.prototype = {
 					if( this.resetTimezone ==   true  ){ 
 						var self=this;
 	 					setTimeout(function(){self.prefs.setCharPref("calendar.timezone.local","");
+	 					self.infoPopup("Timezone Information","System timezone changed and set to lightning automatically!");
 	 					self.globalFunctions.LOG("lightningTimzone : Timzone Changed");},
-	 					5000);
+	 					120000);
 					} 
 				}catch(e){
 					this.prefs.setCharPref("calendar.timezone.local",timezone);
@@ -51,8 +52,7 @@ lightningTimzone.prototype = {
 						if( oldOffset != currentOffset && oldOffset != undefined && currentOffset  != undefined ){
 							self.prefs.setCharPref("calendar.timezone.local","");
 							self.globalFunctions.LOG("lightningTimzone : Timzone Changed");
-							self.infoPopup("Timezone Information","System timezone changed and set to lightning automatically!");
-						} 
+ 						} 
 						oldOffset = currentOffset;
 					} 	
  			}
@@ -60,7 +60,7 @@ lightningTimzone.prototype = {
  			function change(){ 
 				change2();
  			}
- 			setInterval(change,3000);				
+ 			setInterval(change,3600000); //interval = 1000*60*60*1 Hour(s)			
  		},
 		
 		infoPopup:function _infoPopup(title, msg) {
