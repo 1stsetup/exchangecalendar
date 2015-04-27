@@ -503,6 +503,7 @@ exchDelegateCalendarSettings.prototype = {
 							    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+ calId+"."); 
  
 	       var tmpObject = new erGetDelegateRequest({ 
+	    			delegatingItem: "calendar" ,
 	    	   		mailbox : this.globalFunctions.safeGetCharPref(calPrefs, "ecMailbox") ,
 	    	   		user: this.globalFunctions.safeGetCharPref(calPrefs, "ecDomain")+"\\"+this.globalFunctions.safeGetCharPref(calPrefs, "ecUser"),	 		 
 	    	   		serverUrl: this.globalFunctions.safeGetCharPref(calPrefs, "ecServer"), },  
@@ -641,6 +642,7 @@ exchDelegateCalendarSettings.prototype = {
 									    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+ calId+".");  
 				   
 		            var tmpObject = new erRemoveDelegateRequest({ 
+	            	delegatingItem: "calendar", 
 	    			DelegateEmail : email ,
 	    	   		mailbox : this.globalFunctions.safeGetCharPref(calPrefs, "ecMailbox") ,
 	    	   		user: this.globalFunctions.safeGetCharPref(calPrefs, "ecDomain")+"\\"+this.globalFunctions.safeGetCharPref(calPrefs, "ecUser"),	 		 
@@ -739,7 +741,8 @@ exchDelegateCalendarSettings.prototype = {
 				   ViewPrivateItems: this._document.getElementById('ViewPrivateItems').checked ,
 				   DeliverMeetingRequests: this._document.getElementById('deliverMeetingRequestslist').value,
 		   }; 
-	       var tmpObject = new erAddDelegateRequest({ 
+	       var tmpObject = new erAddDelegateRequest({
+	    			delegatingItem: "calendar", 
 	    	   		delegateproperties : delegateProperties ,
 	    			delegateemail : email ,
 	    	   		mailbox : this.globalFunctions.safeGetCharPref(calPrefs, "ecMailbox") ,
@@ -812,6 +815,7 @@ exchDelegateCalendarSettings.prototype = {
 			   };
 			   
 		       var tmpObject = new erUpdateDelegateRequest({ 
+		    			delegatingItem: "calendar", 
 		    	   		delegateproperties : delegateProperties ,
 		    			delegateemail : email ,
 		    	   		mailbox : this.globalFunctions.safeGetCharPref(calPrefs, "ecMailbox") ,
