@@ -1,0 +1,26 @@
+ 
+<!ENTITY  label.delegatefolder.cancelbutton "Cancel">
+<!ENTITY  label.delegatefolder.userEmail "Email">
+ 
+<!ENTITY  label.delegatefolder.permission "Permission">
+
+<!ENTITY  menuitem.delegatefolder.permission.author "Author">
+<!ENTITY  menuitem.delegatefolder.permission.editor "Editor">
+<!ENTITY  menuitem.delegatefolder.permission.reviewer "Reviewer">
+<!ENTITY  menuitem.delegatefolder.permission.none "None">
+<!ENTITY  menuitem.delegatefolder.permission.owner "Owner" > 
+<!ENTITY  menuitem.delegatefolder.permission.publishingEditor "PublishingEditor" >
+<!ENTITY  menuitem.delegatefolder.permission.publishingAuthor "PublishingAuthor" >
+<!ENTITY  menuitem.delegatefolder.permission.noneditingAuthor "NoneditingAuthor" >
+<!ENTITY  menuitem.delegatefolder.permission.contributor "Contributor" >
+                            
+<!ENTITY  delegatefolder.permission.description.author "Read and create items in the folder." >
+<!ENTITY  delegatefolder.permission.description.editor "Read, create, and modify items in the folder." >
+<!ENTITY  delegatefolder.permission.description.reviewer "Read items in the folder." >
+<!ENTITY  delegatefolder.permission.description.none "No access permissions to the folder." >
+
+<!ENTITY  delegatefolder.permission.details.label "Permission Details: "> 
+<!ENTITY  delegatefolder.permission.details.caption "Folder Permission Level: "> 
+
+<!ENTITY  delegatefolder.tab.msg.label  "No Calendar or Task found for this mail account.">
+<!ENTITY  delegatefolder.tab.name  "Exchange Folder Sharing">
