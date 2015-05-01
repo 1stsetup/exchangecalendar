@@ -68,8 +68,26 @@ erUpdateFolderPermissionRequest.prototype = {
  						.addChildTag("Permissions", "nsTypes", null);
  		for( var i = 0 ; i < this.permissionSet.length ;  i++ ){
 	 		var perm = perms.addChildTag("Permission", "nsTypes", null);
-	 		perm.addChildTag("UserId", "nsTypes", null).addChildTag("PrimarySmtpAddress", "nsTypes",this.permissionSet[i].primarysmtpaddress);
-	 		perm.addChildTag("PermissionLevel", "nsTypes", this.permissionSet[i].permissionlevel);
+	 		if( this.permissionSet[i].sid == null )//if distinguished user
+	 		{
+	 			perm.addChildTag("UserId", "nsTypes", null).addChildTag("DistinguishedUser", "nsTypes",this.permissionSet[i].emailId); 
+	 		}
+	 		else
+	 		{
+	 			perm.addChildTag("UserId", "nsTypes", null).addChildTag("PrimarySmtpAddress", "nsTypes",this.permissionSet[i].emailId);
+	 		}
+	 		
+	 		if( this.permissionSet[i].permissionLevel == "Custom" ){
+		 		perm.addChildTag("CanCreateItems", "nsTypes", this.permissionSet[i].permissions.canCreateItems );
+		 		perm.addChildTag("CanCreateSubFolders", "nsTypes",  this.permissionSet[i].permissions.canCreateSubFolders );
+		 		perm.addChildTag("IsFolderOwner", "nsTypes", this.permissionSet[i].permissions.isFolderOwner );
+		 		perm.addChildTag("IsFolderVisible", "nsTypes", this.permissionSet[i].permissions.isFolderVisible  );
+		 		perm.addChildTag("IsFolderContact", "nsTypes", this.permissionSet[i].permissions.isFolderContact );
+		 		perm.addChildTag("EditItems", "nsTypes",  this.permissionSet[i].permissions.editItems );
+		 		perm.addChildTag("DeleteItems", "nsTypes", this.permissionSet[i].permissions.deleteItems );
+		 		perm.addChildTag("ReadItems", "nsTypes",  this.permissionSet[i].permissions.readItems ); 
+	 		}	 		
+	 		perm.addChildTag("PermissionLevel", "nsTypes", this.permissionSet[i].permissionLevel);
  		}
 		//exchWebService.commonFunctions.LOG("erUpdateFolderPermissionRequest.execute2 " + req + "\n" ); 
 	      

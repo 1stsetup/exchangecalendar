@@ -23,20 +23,21 @@
         <vbox>
             <vbox>
                 <listbox id="delegatee" enableColumnDrag="true" resizable="true"
-                         onclick="tmpDelegateFolderSettings.fillDetails()" height="100">
+                         onclick="tmpDelegateFolderSettings.showUserPermission();" height="100">
                     <listhead>
-                        <listheader label="Delegatee"  resizable="true" flex="1" enableColumnDrag="true" />
+                        <listheader label="&label.delegatefolder.userboxcolumn1;"  resizable="true" flex="1" enableColumnDrag="true" />
+                        <listheader label="&label.delegatefolder.userboxcolumn2;"  resizable="true" flex="2" enableColumnDrag="true" />  
                     </listhead>
                     <listcols>
+                        <listcol flex="3" />
                         <listcol flex="1" />
                     </listcols>
                 </listbox>
             </vbox> 
         </vbox>  
-        <!--right panel -->  
-        <vbox class="rightpanel"> 
-            <hbox><description class="separator"  /></hbox> 
-  
+        <!--second box-->  
+        <vbox> 
+            <hbox><description class="separator"  /></hbox>  
             <hbox> 
             <groupbox id="delegatefolder.email-detailsgroupbox">
                 <caption label="&label.delegatefolder.userEmail;" />  
@@ -62,60 +63,165 @@
                           oninput="this.setAttribute('dirty', 'true');"
                           ontextentered="" />  
                     </hbox> 
-                    <hbox><description class="separator"  /></hbox> 
-
+                    <hbox><description class="separator"  /></hbox>  
                     <hbox>
-                        <button id="delegateCalendaractionadd" label="Add" onclick="tmpDelegateFolderSettings.addDelegate()" />  
-                        <button id="delegateCalendaractionupdate" label="Update" onclick="tmpDelegateFolderSettings.updateDelegate()" /> 
-                        <button id="delegateCalendaractiondelete" label="Remove" onclick="tmpDelegateFolderSettings.removeDelegate()" />  
+            	     <groupbox>
+                        <grid>
+                        <columns>
+                          <column flex="1"/>
+                          <column flex="2"/>
+                          <column flex="3"/>
+                        </columns>
+                        <rows> 
+                        <row>
+                            <button id="delegateCalendaractionadd" label="Add" onclick="tmpDelegateFolderSettings.addDelegate()" />  
+                            <button id="delegateCalendaractiondelete" label="Remove" onclick="tmpDelegateFolderSettings.removeDelegate()" />  
+                            <button id="delegateCalendaractionupdate" label="Update" onclick="tmpDelegateFolderSettings.updateDelegate()" /> 
+                        </row>
+                        </rows>
+                        </grid>
+                        </groupbox>
                     </hbox>
                 </vbox>
             </groupbox>
             </hbox>
+            
             <hbox><description class="separator"/></hbox>   
             <groupbox id="delegatefolder.permission-detailsgroupbox">
                 <caption label="&delegatefolder.permission.details.caption;" />   
                 <hbox>      
-                    <label control="permission" value="&label.delegatefolder.permission;" width="180" /> 
-                    <menulist id="delegateCalendarpermission" onselect="tmpDelegateFolderSettings.permissionsSelectEvent()">
-                        <menupopup>
-                        	
-                        	
-                            <menuitem label="&menuitem.delegatefolder.permission.author;"     value="Author" />
-                            <menuitem label="&menuitem.delegatefolder.permission.editor;"     value="Editor" />
-                            <menuitem label="&menuitem.delegatefolder.permission.reviewer;"   value="Reviewer" />
-                            <menuitem label="&menuitem.delegatefolder.permission.none;"  selected="true"   value="None" />
-                            
-                            <menuitem label="&menuitem.delegatefolder.permission.owner;"  value="Owner" /> 
-                            <menuitem label="&menuitem.delegatefolder.permission.publishingEditor;"  value="PublishingEditor" />
-                            <menuitem label="&menuitem.delegatefolder.permission.publishingAuthor;"  value="PublishingAuthor" />
-                            <menuitem label="&menuitem.delegatefolder.permission.noneditingAuthor;"  value="NoneditingAuthor" />
-                            <menuitem label="&menuitem.delegatefolder.permission.contributor;"  value="Contributor" />
-
+                    <label control="permission" value="&label.delegatefolder.permissionLevel;" width="180" height="30"/> 
+                    <menulist align="center" id="menuPermissionLevel" onselect="tmpDelegateFolderSettings.permissionsSelectEvent(this.value);">
+                        <menupopup>  
+                            <menuitem label="&menuitem.delegatefolder.permission.author;"       value="Author"/>
+                            <menuitem label="&menuitem.delegatefolder.permission.editor;"       value="Editor"/>
+                            <menuitem label="&menuitem.delegatefolder.permission.reviewer;"     value="Reviewer"/>
+                            <menuitem label="&menuitem.delegatefolder.permission.none;"   selected="true"  value="None"/> 
+                            <menuitem label="&menuitem.delegatefolder.permission.owner;"        value="Owner" /> 
+                            <menuitem label="&menuitem.delegatefolder.permission.publishingEditor;"  value="PublishingEditor"/>
+                            <menuitem label="&menuitem.delegatefolder.permission.publishingAuthor;"  value="PublishingAuthor"/>
+                            <menuitem label="&menuitem.delegatefolder.permission.noneditingAuthor;"  value="NoneditingAuthor"/>
+                            <menuitem label="&menuitem.delegatefolder.permission.contributor;"  value="Contributor" /> 
+                            <menuitem label="&menuitem.delegatefolder.permission.custom;"  value="Custom" />  
                         </menupopup>
                     </menulist>
-                </hbox>  
-                <hbox>
-                
-             <description id="delegateCalendarpermissiondiv" hidden="true" width="" /> 
-             </hbox>  
+                </hbox>   
             </groupbox>
             <groupbox>
                       <caption label="Details:"/>
                        <grid>
                         <columns>
                           <column flex="1"/>
-                          <column flex="2"/>
+                          <column flex="1"/>
+                          <column flex="3"/>
                         </columns>
                         <rows>    
-                            <row><label control="permission"  value="CanCreateItems: "/><label control="permission" id="canCreateItems-label" value="-"/></row>
-                            <row><label control="permission"  value="CanCreateSubFolders: "  /><label control="permission" id="canCreateSubFolders-label" value="-"/></row>
-                            <row><label control="permission"  value="IsFolderOwner: "/><label control="permission" id="isFolderOwner-label" value="-"/></row>
-                            <row><label control="permission"  value="IsFolderVisible: "/><label control="permission" id="isFolderVisible-label" value="-"/></row>
-                            <row><label control="permission"  value="IsFolderContact: "/><label control="permission" id="isFolderContact-label" value="-"/></row>
-                            <row><label control="permission"  value="EditItems: "/><label control="permission" id="editItems-label" value="-"/></row>
-                            <row><label control="permission"  value="DeleteItems: "/><label control="permission" id="deleteItems-label" value="-"/></row>
-                            <row><label control="permission"  value="ReadItems: "/><label control="permission" id="readItems-label" value="-"/></row> 
+                            <row>
+                            	<hbox>
+                            	<label control="permission"  value="&delegatefolder.permissions.cancreateitems;"/>
+                                </hbox>
+                                <hbox>
+                                    <radiogroup   control="permission" id="cancreateitems" onclick="tmpDelegateFolderSettings.setPermissionCustom();">
+                                <hbox>
+                                    <radio label="&delegatefolder.permissions.true;" value="true"/>
+                                    <radio label="&delegatefolder.permissions.false;" value="false"/>  
+                                </hbox> 
+                                </radiogroup>
+                                </hbox>
+                            </row>
+                            <row>
+                                <hbox>
+                                <label control="permission"  value="&delegatefolder.permissions.cancreatesubfolders;" />
+                                </hbox>
+                                <hbox>
+                                    <radiogroup  control="permission" id="cancreatesubfolders" onclick="tmpDelegateFolderSettings.setPermissionCustom();">
+                                 <hbox>
+                                     <radio label="&delegatefolder.permissions.true;" value="true"/>
+                                    <radio label="&delegatefolder.permissions.false;" value="false"/>
+                                </hbox> 
+                             </radiogroup>
+                             </hbox> 
+                        	</row>
+                            <row>
+                            <hbox>
+                            <label control="permission"  value="&delegatefolder.permissions.isfolderowner;"/>
+                            </hbox>
+                            <hbox>
+                                <radiogroup  control="permission" id="isfolderowner" onclick="tmpDelegateFolderSettings.setPermissionCustom();">
+                                 <hbox>
+                                    <radio label="&delegatefolder.permissions.true;" value="true"/>
+                                    <radio label="&delegatefolder.permissions.false;" value="false"/>
+                                </hbox> 
+                             </radiogroup>  
+                            </hbox>
+                            </row>
+                            <row>
+                            <hbox>
+                            <label control="permission"  value="&delegatefolder.permissions.isfoldervisible;"/>
+                             </hbox>
+                             <hbox>
+                                <radiogroup  control="permission" id="isfoldervisible" onclick="tmpDelegateFolderSettings.setPermissionCustom();">
+                                <hbox>
+                                    <radio label="&delegatefolder.permissions.true;" value="true"/>
+                                    <radio label="&delegatefolder.permissions.false;" value="false"/>
+                                </hbox>
+                             </radiogroup>
+                             </hbox>  
+                            </row>
+                            <row>
+                            <hbox>
+                                <label control="permission"  value="&delegatefolder.permissions.isfoldercontact;"/>
+                                </hbox>
+                                <hbox>
+                                    <radiogroup  control="permission" id="isfoldercontact" onclick="tmpDelegateFolderSettings.setPermissionCustom();">
+                                <hbox>
+                                     <radio label="&delegatefolder.permissions.true;" value="true"/>
+                                    <radio label="&delegatefolder.permissions.false;" value="false"/>
+                               </hbox> 
+                               </radiogroup> 
+                               </hbox> 
+                            </row>
+                            <row>
+                            <hbox>
+                                <label control="permission"  value="&delegatefolder.permissions.edititems;"/>
+                                </hbox>
+                                <hbox>
+                                <radiogroup control="permission"  id="edititems" onclick="tmpDelegateFolderSettings.setPermissionCustom();">
+                                <hbox>
+                                    <radio label="&delegatefolder.permissions.none;" value="None"/>
+                                    <radio label="&delegatefolder.permissions.own;" value="Owned"/>
+                                    <radio label="&delegatefolder.permissions.all;" value="All"/> 
+                               </hbox> 
+                               </radiogroup>
+                               </hbox>  
+                            </row>
+                            <row>
+                            <hbox>
+                            <label control="permission"  value="&delegatefolder.permissions.deleteitems;"/>
+                            </hbox> 
+                            <hbox>
+                              <radiogroup  control="permission" id="deleteitems" onclick="tmpDelegateFolderSettings.setPermissionCustom();">
+                                <hbox>
+                                     <radio label="&delegatefolder.permissions.none;" value="None"/>
+                                    <radio label="&delegatefolder.permissions.own;" value="Owned"/>
+                                    <radio label="&delegatefolder.permissions.all;" value="All"/> 
+                               </hbox> 
+                               </radiogroup>
+                               </hbox>  
+                            </row> 
+                            <row>
+                            <hbox>
+                            <label control="permission"  value="&delegatefolder.permissions.readitems;"/>
+                            </hbox> 
+                            <hbox>                            
+                              <radiogroup  control="permission" id="readitems" onclick="tmpDelegateFolderSettings.setPermissionCustom();">
+                                <hbox>
+                                    <radio label="&delegatefolder.permissions.none;" value="None"/>
+                                    <radio label="&delegatefolder.permissions.full;" value="FullDetails"/>
+                                </hbox> 
+                                </radiogroup>
+                                </hbox>  
+                            </row>     
                         </rows>
                       </grid>
                 </groupbox>   

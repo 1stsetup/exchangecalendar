@@ -190,43 +190,7 @@ exchDelegateCalendarSettings.prototype = {
 		this.infoPopup(this._document.title, "Error:- " + aMsg + " (" + aCode +")" ); 
 	 },   
 	 
-	 addSharedUser: function _addSharedUser() {
-		 var email=this.validateEmail(this._document.getElementById("customshareduser"));
-		 if ( !email )
-		 {
-			 this._window.alert('Not Valid Email address! ' );
-		     this.onActionLoadEnd();
-			 this._window.sizeToContent() ; 
-		 } 
-		 else
-		 {
-			 var calendarEmailDomain=this.emailDomain(email);
-			 var displayName =  email.replace('@'+calendarEmailDomain,"");
-			 var cboxitem = this._document.createElement("treeitem"); 
-	         var cboxrow = this._document.createElement("treerow");
-	         var tree = this._document.getElementById("shared"); 
-	         //add checkbox
-	         var cboxcell = this._document.createElement("treecell");
-	         
-		     cboxcell.setAttribute("value","false");
-	         cboxcell.setAttribute("editable",true);  
-	         cboxcell.setAttribute("name", "checkbox"  );  
-	         	 cboxrow.appendChild(cboxcell); 
-	         	  
-	         	 //add user
-	         cboxcell = this._document.createElement("treecell");
-	         cboxcell.setAttribute("label", displayName  ); 
-	         cboxcell.setAttribute("name", "name"  ); 
-	         cboxcell.setAttribute("value",  email  ); 
-	         cboxcell.setAttribute("editable",false);
-	         	 cboxrow.appendChild(cboxcell); 
-         	 cboxitem.appendChild(cboxrow); 
-	         tree.appendChild(cboxitem);
-	         
-		 }
-	 },
-	 
-	 getDelegator : function _getDelegator() { },
+	 addSharedUser: function _addSharedUser() { }, 
 	 
 	 calendarEmail: function _calendarEmail()
 	 {   
@@ -315,20 +279,12 @@ exchDelegateCalendarSettings.prototype = {
 	 			 } 
 			 }
 			 return;
-	 },
+	 }, 
 	 
-	 changeDelegatorCalendar :function _changeDelegatorCalendar(event) { }, 
-	 
-	 deleteCalendar: function _deleteCalendar(checkBox)	 { },
-	 
-	 createCalendar: function _createCalendar(checkBox)	{ },
- 
 	 getDelegate: function _getDelegate() { 
 		    var self=this;  
 			this.onActionLoad();  
-            var listBox = this._document.getElementById("delegatee"); 
-            this.emptyList(listBox);   
- 		    //Get Folders in Inbox includes hidden
+   		    //Get Folders in Inbox includes hidden
  		    var tmpObject = new  erFindInboxFolderRequest( 
 					{user: this.globalFunctions.safeGetCharPref( this.calPrefs, "ecDomain")+"\\"+this.globalFunctions.safeGetCharPref( this.calPrefs, "ecUser") , 
 					 mailbox:this.globalFunctions.safeGetCharPref( this.calPrefs, "ecMailbox") ,
@@ -375,37 +331,39 @@ exchDelegateCalendarSettings.prototype = {
 		 refresh: function _refresh() {
 		      this.getDelegate(); 
  		 },
-		  	 
-		 fillDetails :function _fillDetails() { 
-  			 try{
-  			 			var node = this._document.getElementById("delegatee").getSelectedItem(0);  
- 						var childNodes = node.childNodes;  
-						var listName = childNodes[0].getAttribute("label");
-						var regex = /[^()]+/g;
-				        var email = listName.match(regex);
-				        var listEmail=childNodes[0].getAttribute("value");  
-  			  }  catch(e){}      
-				        if( !listEmail ){ 
-				        	listEmail = this.getEmail();
+		 
+ 		selectedUserEmail: function _selectedUserEmail(){
+ 			 try{
+ 				var node = this._document.getElementById("delegatee").getSelectedItem(0);  
+ 				var childNodes = node.childNodes;  
+ 				var listName = childNodes[0].getAttribute("label");
+ 				var regex = /[^()]+/g;
+ 				var email = listName.match(regex);
+ 				var listEmail=childNodes[0].getAttribute("value");  
+ 				}  catch(e){}      
+
+               return listEmail;
+ 		},
+ 		 
+ 		showUserPermission: function _resetUserPermission(aEmail) { 
+ 			if(!aEmail){
+ 				aEmail = this.selectedUserEmail();
+ 			} 
+				        if( !aEmail ){ 
+				        	aEmail = this.getEmail();
 				        }
+				        
+				        if( !aEmail ){
+				        	return;
+						}	
 				        
 				        for( var index=0;index<this.delegatesList.length;index++)
 					 	{   			
-				        	if( this.delegatesList[index].emailId == listEmail )
-				        	{
-	 					       // this._document.getElementById('email').value = listEmail;   
-						       // this._document.getElementById('deliverMeetingRequestslist').value = '';
- 						       this._document.getElementById('delegateCalendarpermission').value = this.delegatesList[index].permissions.permissionLevel;
- 						        
- 						       this._document.getElementById("canCreateItems-label").value = this.delegatesList[index].permissions.canCreateItems;
- 						       this._document.getElementById("canCreateSubFolders-label").value = this.delegatesList[index].permissions.canCreateSubFolders;
- 						       this._document.getElementById("isFolderOwner-label").value = this.delegatesList[index].permissions.isFolderOwner;
- 						       this._document.getElementById("isFolderVisible-label").value = this.delegatesList[index].permissions.isFolderVisible;
- 						       this._document.getElementById("isFolderContact-label").value = this.delegatesList[index].permissions.isFolderContact;
- 						       this._document.getElementById("editItems-label").value = this.delegatesList[index].permissions.editItems;
- 						       this._document.getElementById("deleteItems-label").value = this.delegatesList[index].permissions.deleteItems;
- 						       this._document.getElementById("readItems-label").value = this.delegatesList[index].permissions.readItems; 
- 						       break;
+				        	if( this.delegatesList[index].emailId == aEmail )
+				        	{ 
+				        	  this._document.getElementById('menuPermissionLevel').value = this.delegatesList[index].permissionLevel;
+  						      this.updatePermissionDetails(this.delegatesList[index].permissions); 
+					          break;
 				        	}
 					 	} 
 			this._window.sizeToContent() ;
@@ -417,20 +375,47 @@ exchDelegateCalendarSettings.prototype = {
 			 for (var index=0;index<this.delegatesList.length;index++)
 			 {   
 				 	var row =   this._document.createElement("listitem"); 
-				 	var cell =   this._document.createElement("listcell");
-					 cell.setAttribute("label", this.delegatesList[index].name+" ("+this.delegatesList[index].emailId+")");
-        	         cell.setAttribute("value", this.delegatesList[index].emailId);
-        	         row.appendChild(cell);  
+				 	var celluser =   this._document.createElement("listcell");
+					 celluser.setAttribute("label", this.delegatesList[index].name+" ("+this.delegatesList[index].emailId+")");
+        	         celluser.setAttribute("value", this.delegatesList[index].emailId);
+        	         row.appendChild(celluser);  
+        	         var cellperm =   this._document.createElement("listcell");
+					 cellperm.setAttribute("label", this.delegatesList[index].permissionLevel);
+        	         cellperm.setAttribute("value", this.delegatesList[index].permissionLevel);
+        	         row.appendChild(cellperm); 
         	         listBox.appendChild(row);   
 			 }	 
-			 this.fillDetails();  
+			 this.updatePermissionDetails(this.delegatesList[index].permissions)
   		 },
-		 
+  		   
+  		 getCustomPermissions:function _getCustomPermissions(){
+		 try{
+		 	var cancreateitems = this._document.getElementById("cancreateitems").value;
+		 	var cancreatesubfolders = this._document.getElementById("cancreatesubfolders").value;
+		 	var isfolderowner = this._document.getElementById("isfolderowner").value;
+		 	var isfoldervisible = this._document.getElementById("isfoldervisible").value;
+		 	var isfoldercontact = this._document.getElementById("isfoldercontact").value;
+		 	var edititems = this._document.getElementById("edititems").value;
+		 	var deleteitems = this._document.getElementById("deleteitems").value;
+		 	var readitems = this._document.getElementById("readitems").value;
+  			 }catch(e){}
+          return { "canCreateItems":cancreateitems,
+		 	"canCreateSubFolders":cancreatesubfolders,
+		 	"isFolderOwner":isfolderowner,
+		 	"isFolderVisible":isfoldervisible,
+		 	"isFolderContact":isfoldercontact,
+		 	"editItems":edititems,
+		 	"deleteItems":deleteitems,
+		 	"readItems":readitems } ; 
+  		 },
+  		 
 		removeDelegate   :function _removeDelegate() {
-   			 var self=this;
-
+   			 var self=this; 
 			 this.onActionLoad(); 
-				 var email = this.getEmail();  
+			 var email = this.selectedUserEmail(); 
+		        if( !email ){ 
+		        	email = this.getEmail();
+        		}
 				 if ( !email )
 				 {
 					 this._window.alert('Not Valid Email address! ' );
@@ -439,23 +424,21 @@ exchDelegateCalendarSettings.prototype = {
 				 } 
 				 else
 				 {	  
-					   var permissionSet = [];
-					   var existing=false;
-					   for(var i = 0; i < this.delegatesList.length; i++ ){
+ 					   var existing=false; 
+					   
+					   var newDelegatesList = this.cloneList(); 
+		 			   for(var i = 0; i < this.delegatesList.length; i++ ){
 						   if(this.delegatesList[i].emailId){
-							   if( this.getEmail() == this.delegatesList[i].emailId ){
-								   existing=true; 
-								   continue;  
-							   }  
-							   else{
-								   permissionSet.push({"primarysmtpaddress":this.delegatesList[i].emailId ,
-					   				 	"permissionlevel": this.delegatesList[i].permissions.permissionLevel}); 
-							   }
+							   if( email ==  this.delegatesList[i].emailId ){
+								   existing=true;  
+								   newDelegatesList.splice(i, 1);
+								   continue;
+							   }   
 						   }
-					   }
-					     
+					   } 
+					   
 				       var tmpObject = new erUpdateFolderPermissionRequest({ 
-		   	   		 		permissionSet : permissionSet,
+		   	   		 		permissionSet : newDelegatesList,
 				            folderId : this.folderId ,
 				            changeKey : this.changeKey ,
 			    	   		mailbox : this.globalFunctions.safeGetCharPref( this.calPrefs, "ecMailbox") ,
@@ -506,32 +489,30 @@ exchDelegateCalendarSettings.prototype = {
 		 }  
 	     else
 	     {     
-			    var permissionSet = [];
-				   var existing=false;
-				   for(var i = 0; i < this.delegatesList.length; i++ ){
+ 				   var existing=false; 
+ 				   var newDelegatesList = this.cloneList();
+				   
+ 				   for(var i = 0; i < this.delegatesList.length; i++ ){
 					   if(this.delegatesList[i].emailId){
-						   if( this.getEmail() == this.delegatesList[i].emailId ){
-							   existing=true; 
-							   try{
-								   permissionSet.push({"primarysmtpaddress":this.getEmail(),
-									   				 	"permissionlevel":this._document.getElementById('delegateCalendarpermission').selectedItem.value});
-								   
-							   }
-							   catch(e){} 
+						   if( email == this.delegatesList[i].emailId ){
+							   existing=true;   
 							   continue;
-						   }  
-						   else{
-							   permissionSet.push({"primarysmtpaddress":this.delegatesList[i].emailId ,
-				   				 	"permissionlevel": this.delegatesList[i].permissions.permissionLevel}); 
-						   }
+						   }   
 					   }
-				   }
+				   } 
 				   
 				   if(  existing != true ){
-					   permissionSet.push({"primarysmtpaddress":this.getEmail(),
-		   				 	"permissionlevel":this._document.getElementById('delegateCalendarpermission').selectedItem.value});
-	    
-					   existing = null; 
+					   var len = newDelegatesList.length;
+					   newDelegatesList[len] = {"emailId":email,
+		   				 	"permissionLevel":this._document.getElementById('menuPermissionLevel').selectedItem.value,
+		   				 	"sid":"","permissions":{}} ;
+					  
+					   newDelegatesList[len].permissionLevel = this._document.getElementById('menuPermissionLevel').selectedItem.value; 
+					   
+					   if(newDelegatesList[len].permissionLevel == "Custom"){
+						   newDelegatesList[len].permissions = this.getCustomPermissions();							   
+					   }
+ 					   existing = null; 
 				   }
 				   else{
 					    this._window.alert('Already added! do Update');
@@ -541,7 +522,7 @@ exchDelegateCalendarSettings.prototype = {
 				   }
 				   
 			       var tmpObject = new erUpdateFolderPermissionRequest({ 
-	   	   		 		permissionSet : permissionSet,
+	   	   		 		permissionSet : newDelegatesList,
 			            folderId : this.folderId ,
 			            changeKey : this.changeKey ,
 		    	   		mailbox : this.globalFunctions.safeGetCharPref( this.calPrefs, "ecMailbox") ,
@@ -555,11 +536,22 @@ exchDelegateCalendarSettings.prototype = {
 	  	  this.onActionLoadEnd();
 		  this._window.sizeToContent() ; 
 	 }, 
-  
-	updateDelegate :function _updateDelegate() {
+	  
+	 cloneList: function _cloneList(){
+		  return this.delegatesList.slice(0); 
+	 },
+	 
+	 setPermissionCustom:function _setPermissionCustom(){
+		 this._document.getElementById('menuPermissionLevel').value="Custom";
+	 },
+	 
+	 updateDelegate :function _updateDelegate() {
      		 var self=this; 
 		 	 this.onActionLoad();  
-			 var email = this.getEmail();  
+		 	var email = this.selectedUserEmail(); 
+	        if( !email ){ 
+	        	email = this.getEmail();
+    		}
 			 if ( !email )
 			 {
 				 this._window.alert('Not Valid Email address! ' );
@@ -570,28 +562,25 @@ exchDelegateCalendarSettings.prototype = {
 			 { 
 			   var permissionSet = [];
 			   var existing=false;
-			   for(var i = 0; i < this.delegatesList.length; i++ ){
+			   var newDelegatesList = this.cloneList(); 
+ 			   for(var i = 0; i < this.delegatesList.length; i++ ){
 				   if(this.delegatesList[i].emailId){
-					   if( this.getEmail() == this.delegatesList[i].emailId ){
-						   existing=true; 
-						   try{
-							   permissionSet.push({"primarysmtpaddress":this.getEmail(),
-								   				 	"permissionlevel":this._document.getElementById('delegateCalendarpermission').selectedItem.value});
-							   
+					   if( email == this.delegatesList[i].emailId ){
+						   existing=true;  
+						   newDelegatesList[i].permissionLevel = this._document.getElementById('menuPermissionLevel').selectedItem.value;
+						   
+						   if(newDelegatesList[i].permissionLevel == "Custom"){
+							   newDelegatesList[i].permissions = this.getCustomPermissions();							   
 						   }
-						   catch(e){} 
+						   
 						   continue;
-					   }  
-					   else{
-						   permissionSet.push({"primarysmtpaddress":this.delegatesList[i].emailId ,
-			   				 	"permissionlevel": this.delegatesList[i].permissions.permissionLevel}); 
-					   }
+					   }   
 				   }
-			   }
-		
+			   } 
+  			   	
 			   if(  existing != true ){
 				  /* permissionSet.push({"primarysmtpaddress":this.getEmail(),
-	   				 	"permissionlevel":this._document.getElementById('delegateCalendarpermission').selectedItem.value});
+	   				 	"permissionlevel":this._document.getElementById('menuPermissionLevel').selectedItem.value});
     				*/
 				   	existing = null;  
 				   	this._window.alert('Already not added! do add');
@@ -601,7 +590,7 @@ exchDelegateCalendarSettings.prototype = {
 			   }
 			   
 		       var tmpObject = new erUpdateFolderPermissionRequest({ 
-   	   		 		permissionSet : permissionSet,
+   	   		 		permissionSet : newDelegatesList,
 		            folderId : this.folderId ,
 		            changeKey : this.changeKey ,
 	    	   		mailbox : this.globalFunctions.safeGetCharPref( this.calPrefs, "ecMailbox") ,
@@ -617,27 +606,116 @@ exchDelegateCalendarSettings.prototype = {
 		  this._window.sizeToContent() ;
 	 },
 	  
-	permissionsSelectEvent :function _permissionsSelectEvent() {
-	 return;
- 		if (  this._document.getElementById('delegateCalendarpermission').selectedItem.value == 'Author') {
-			 // this._document.getElementById('deliverMeetingRequestslist').setAttribute("disabled", "false");
- 			  this._document.getElementById('delegateCalendarpermissiondiv').value = 'Read and create items in the Calendar folder.';
-        }
-        if (  this._document.getElementById('delegateCalendarpermission').selectedItem.value == 'Editor') {
-         	  this._document.getElementById('delegateCalendarpermissiondiv').value = 'Read, create, and modify items in the Calendar folder.';
-        	//  this._document.getElementById('deliverMeetingRequestslist').setAttribute("disabled", "false");
-        }
-        if (  this._document.getElementById('delegateCalendarpermission').selectedItem.value == 'Reviewer') {
- 			  this._document.getElementById('delegateCalendarpermissiondiv').value = 'Read items in the Calendar folder.';
-			//  this._document.getElementById('deliverMeetingRequestslist').setAttribute("disabled", "true");
-        }
-        if (this._document.getElementById('delegateCalendarpermission').selectedItem.value == 'None') {
- 			 this._document.getElementById('delegateCalendarpermissiondiv').value = 'No access permissions to the Calendar folder.';
-		//	this._document.getElementById('deliverMeetingRequestslist').setAttribute("disabled", "false");
-        } 
-        this._window.sizeToContent() ;
-	}, 
-               
+	permissionsSelectEvent : function _permissionsSelectEvent(selectedValue) {
+		if(!selectedValue) return;
+ 		switch(selectedValue){
+			case "Author": 
+				this.updatePermissionDetails({"canCreateItems":true,
+					"canCreateSubFolders":false,
+					"isFolderOwner":false,
+					"isFolderVisible":true,
+					"isFolderContact":false,
+					"editItems":"Own",
+					"deleteItems":"Own",
+					"readItems":"FullDetails"});
+				break;
+			case "Editor": 
+				this.updatePermissionDetails({"canCreateItems":true,
+					"canCreateSubFolders":false,
+					"isFolderOwner":false,
+					"isFolderVisible":true,
+					"isFolderContact":false,
+					"editItems":"All",
+					"deleteItems":"All",
+					"readItems":"FullDetails"});
+					break; 
+			case "Reviewer": 
+				this.updatePermissionDetails({"canCreateItems":false,
+					"canCreateSubFolders":false,
+					"isFolderOwner":false,
+					"isFolderVisible":true,
+					"isFolderContact":false,
+					"editItems":"None",
+					"deleteItems":"None",
+					"readItems":"FullDetails"});
+						break;
+			case "None": 
+				this.updatePermissionDetails({"canCreateItems":false,
+					"canCreateSubFolders":false,
+					"isFolderOwner":false,
+					"isFolderVisible":false,
+					"isFolderContact":false,
+					"editItems":"None",
+					"deleteItems":"None",
+					"readItems":"None"});
+					break;
+			case "Owner": 
+				this.updatePermissionDetails({"canCreateItems":true,
+					"canCreateSubFolders":true,
+					"isFolderOwner":true,
+					"isFolderVisible":true,
+					"isFolderContact":true,
+					"editItems":"All",
+					"deleteItems":"All",
+					"readItems":"FullDetails"});
+					break;
+			case "PublishingEditor": 
+				this.updatePermissionDetails({"canCreateItems":true,
+					"canCreateSubFolders":true,
+					"isFolderOwner":false,
+					"isFolderVisible":true,
+					"isFolderContact":false,
+					"editItems":"All",
+					"deleteItems":"All",
+					"readItems":"FullDetails"});
+					break;
+			case "PublishingAuthor": 
+				this.updatePermissionDetails({"canCreateItems":true,
+					"canCreateSubFolders":true,
+					"isFolderOwner":false,
+					"isFolderVisible":true,
+					"isFolderContact":false,
+					"editItems":"Own",
+					"deleteItems":"Own",
+					"readItems":"FullDetails"});
+					break;
+			case "NoneditingAuthor": 
+				this.updatePermissionDetails({"canCreateItems":true,
+					"canCreateSubFolders":false,
+					"isFolderOwner":false,
+					"isFolderVisible":true,
+					"isFolderContact":false,
+					"editItems":"None",
+					"deleteItems":"Own",
+					"readItems":"FullDetails"});
+					break;
+			case "Contributor": 
+				this.updatePermissionDetails({"canCreateItems":true,
+					"canCreateSubFolders":false,
+					"isFolderOwner":false,
+					"isFolderVisible":true,
+					"isFolderContact":false,
+					"editItems":"None",
+					"deleteItems":"None",
+					"readItems":"None"});
+					break;
+			default: 
+		}        
+ 	}, 
+ 	
+ 	updatePermissionDetails: function _updatePermissionDetails(aPermission){
+ 		if(!aPermission){
+ 		return;	
+ 		}
+	       this._document.getElementById("cancreateitems").value = aPermission.canCreateItems;
+	       this._document.getElementById("cancreatesubfolders").value = aPermission.canCreateSubFolders;
+	       this._document.getElementById("isfolderowner").value = aPermission.isFolderOwner;
+	       this._document.getElementById("isfoldervisible").value = aPermission.isFolderVisible;
+	       this._document.getElementById("isfoldercontact").value = aPermission.isFolderContact;
+	       this._document.getElementById("edititems").value = aPermission.editItems;
+	       this._document.getElementById("deleteitems").value = aPermission.deleteItems;
+	       this._document.getElementById("readitems").value = aPermission.readItems; 
+ 	},               
 	 	
 	doCancel:function _doCancel() {
 		this._window.sizeToContent() ;

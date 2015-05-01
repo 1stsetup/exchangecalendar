@@ -142,8 +142,8 @@ erGetFolderPermissionRequest.prototype = {
 	 				var displayName = userId[0].getTagValue("t:DisplayName");
 	 				
 	 				if ( email === undefined ){
-	 					email = null;
 	 					displayName = userId[0].getTagValue("t:DistinguishedUser");
+	 					email = displayName; 
 	 					sid = null;
 	 				} 
 	 				
@@ -173,6 +173,7 @@ erGetFolderPermissionRequest.prototype = {
 		 					 name : displayName ,
 		 					 emailId : email ,
 		 					 sid : sid, 
+	 	 	 				 permissionLevel : permissionLevel, 
 		 					 permissions : {  			   
 		 	 					  canCreateItems : canCreateItems,
 		 	 	 				  canCreateSubFolders : canCreateSubFolders,
@@ -181,8 +182,7 @@ erGetFolderPermissionRequest.prototype = {
 		 	 	 				  isFolderContact : isFolderContact,
 		 	 	 				  editItems : editItems,
 		 	 	 				  deleteItems : deleteItems,
-		 	 	 				  readItems : readItems,
-		 	 	 				  permissionLevel : permissionLevel, } , };
+		 	 	 				  readItems : readItems,} , };
 	 				
 	 				delegatees.push(user);
 	 				permissions.push(perm);
