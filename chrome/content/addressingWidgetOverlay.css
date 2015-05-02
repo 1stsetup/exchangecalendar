@@ -7,6 +7,6 @@ treechildren::-moz-tree-image(exchange-abook) {
   margin-bottom: 2px;
   -moz-margin-start: 2px;
   -moz-margin-end: -3px;
-  list-style-image: url("chrome://exchangecalendar/content/exchange-addrbook.png");
+  list-style-image: url("chrome://exchangecalendar/skin/exchange-addrbook.png");
 }
 

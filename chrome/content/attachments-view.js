@@ -251,8 +251,10 @@ exchAttachments.prototype = {
 				this._document.getElementById("button-url").hidden = true;
 				this._document.getElementById("event-toolbar").setAttribute("currentset", "button-save,button-attendees,button-privacy,button-url,exchWebService-add-attachment-button,button-delete");
 				this._document.getElementById("exchWebService-add-attachment-button").hidden = false;
+				if(this._document.getElementById("options-attachments-menuitem")){
 				this._document.getElementById("options-attachments-menuitem").setAttribute("label", this._document.getElementById("exchWebService-add-attachment-button").getAttribute("label"));
 				this._document.getElementById("options-attachments-menuitem").setAttribute("command", "exchWebService_addAttachmentDialog");
+				}
 			}
 			catch (ex) {this.globalFunctions.LOG("  -- Could not add exchange attachment buttons:"+ex.toString());}
 
