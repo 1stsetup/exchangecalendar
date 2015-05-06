@@ -74,6 +74,7 @@ const MAPI_PidTagToDoItemFlags = "0x0E2B";
 
 const MAPI_PidLidCommonEnd = "34071";
 const MAPI_PidLidCommonStart = "34070";
+const MAPI_MessageId = "0x1035";
 
 function erGetItemsRequest(aArgument, aCbOk, aCbError, aListener)
 {
@@ -168,6 +169,9 @@ erGetItemsRequest.prototype = {
 		xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidReminderDelta);
 		xml2json.setAttribute(extFieldURI, "PropertyType", "Integer");
 
+		extFieldURI= xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+		xml2json.setAttribute(extFieldURI,"PropertyTag", MAPI_MessageId);
+		xml2json.setAttribute(extFieldURI,"PropertyType","String");
 		
 			// Calendar fields
 		switch (this.folderClass) {
@@ -424,7 +428,7 @@ erGetItemsRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//dump("erGetItemsRequest.onSendOk: "+xml2json.toString(aResp)+"\n");
+		exchWebService.commonFunctions.LOG("erGetItemsRequest.onSendOk: "+ String(aResp)+"\n");
 		var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']/m:Items/*");
 
 		var rmErrorSearch = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage");
