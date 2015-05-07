@@ -5,12 +5,5 @@
 	<script type="application/javascript" src="chrome://exchangecalendar/content/rtews.js"/>
 	<stringbundleset id="stringbundleset">
 		<stringbundle id="string-bundle" src="chrome://exchangecalendar/locale/rtews.properties"/>
-	</stringbundleset>
-	<menupopup id="taskPopup">
-		<menu id='rtews-menu' class='menu-iconic' label="&rtews.rtforexch;">
-			<menupopup>
-				<menuitem label="&rtews.configure.label;" oncommand="rtews.launchConfigWizard()"/>
-			</menupopup>
-		</menu>
-	</menupopup>
+	</stringbundleset> 
 </overlay>
