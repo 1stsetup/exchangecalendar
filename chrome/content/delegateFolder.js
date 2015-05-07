@@ -615,8 +615,8 @@ exchDelegateCalendarSettings.prototype = {
 					"isFolderOwner":false,
 					"isFolderVisible":true,
 					"isFolderContact":false,
-					"editItems":"Own",
-					"deleteItems":"Own",
+					"editItems":"Owned",
+					"deleteItems":"Owned",
 					"readItems":"FullDetails"});
 				break;
 			case "Editor": 
@@ -675,8 +675,8 @@ exchDelegateCalendarSettings.prototype = {
 					"isFolderOwner":false,
 					"isFolderVisible":true,
 					"isFolderContact":false,
-					"editItems":"Own",
-					"deleteItems":"Own",
+					"editItems":"Owned",
+					"deleteItems":"Owned",
 					"readItems":"FullDetails"});
 					break;
 			case "NoneditingAuthor": 
@@ -686,7 +686,7 @@ exchDelegateCalendarSettings.prototype = {
 					"isFolderVisible":true,
 					"isFolderContact":false,
 					"editItems":"None",
-					"deleteItems":"Own",
+					"deleteItems":"Owned",
 					"readItems":"FullDetails"});
 					break;
 			case "Contributor": 
