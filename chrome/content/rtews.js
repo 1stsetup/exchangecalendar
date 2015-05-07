@@ -5,825 +5,49 @@
  * 3.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  * http://www.gnu.org/licenses/gpl.html
-*/
+ */
 
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils; 
 
+Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+Cu.import("resource://interfaces/xml2json/xml2json.js");
+Cu.import("resource://gre/modules/Services.jsm");
+
 Cu.import("resource:///modules/iteratorUtils.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
+Cu.import("resource://exchangecalendar/erGetItems.js");
+Cu.import("resource://exchangecalendar/erFindInboxFolder.js");
+Cu.import("resource://exchangecalendar/erSubscribe.js"); 
+Cu.import("resource://exchangecalendar/erGetEvents.js");
+Cu.import("resource://exchangecalendar/erFindItems.js");
+Cu.import("resource://exchangecalendar/erUpdateItem.js");
+
+
+var eventTypes = ["NewMailEvent","ModifiedEvent","MovedEvent","CopiedEvent","CreatedEvent"];
  
-if ( typeof (rtews) == "undefined")
-    var rtews = {};
-
-/*
- * Utility methods
- *
- */
-rtews.Utils = {
-    log : function(title, msg) {
-        dump("\n[RemoteTaggerEWS]: " + title + " **: " + msg + "\n");
-    }
-};
-  
-/*
- * @Constructor
- * Preference listener
- */
-
-rtews.PrefListener = function(branch_name, callback) {
-    var prefService = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService);
-
-    this._branch = prefService.getBranch(branch_name);
-    this._branch.QueryInterface(Ci.nsIPrefBranch2);
-    this._callback = callback;
-};
-
-rtews.PrefListener.prototype.observe = function(subject, topic, data) {
-    if (topic == 'nsPref:changed') {
-        this._callback(this._branch, data);
-    }
-};
-
-/*
- * @param {boolean=} trigger if true. triggers the registered function
- *   on registration, that is, when this method is called.
- */
-rtews.PrefListener.prototype.register = function(trigger) {
-    this._branch.addObserver('', this, false);
-
-    if (trigger) {
-        var that = this;
-        this._branch.getChildList('', {}).forEach(function(pref_leaf_name) {
-            that._callback(that._branch, pref_leaf_name);
-        });
-    }
-};
-
-rtews.PrefListener.prototype.unregister = function() {
-    if (this._branch) {
-        this._branch.removeObserver('', this);
-    }
-}; 
-
-
-
-
-
-if ( typeof (rtews) == "undefined")
-    var rtews = {};
-
-/*
- * Maintains folder table
- *
- */
-rtews.FolderTable = {
+if ( typeof (rtews) == "undefined") 
+var rtews = {
+    globalFunctions : Cc["@1st-setup.nl/global/functions;1"]
+	             				.getService(Ci.mivFunctions),  
+	calPrefs	: null,  
+ 	user 		: null,
+ 	mailbox  	: null,
+ 	serverUrl 	: null,	
+ 	identities  : null,
+	session 	: {
+					subscriptionId:"",
+					watermark:"",
+					},		
+	
+	pollOffset : 10000 ,//time for getevents
+	
     folderByEwsId : {},
     folderByImapPath : {},
-    foldersByIdentity : {},
-
-    processFolders : function(response, identity) {
-        function Folder(id, name, parentId, changeKey) {
-            this.id = id;
-            this.name = name;
-            this.pId = parentId;
-            this.changeKey = changeKey;
-            this.path = "";
-        };
-
-        var folderElms = response.getElementsByTagName("t:Folder");
-        var folders = [];
-        var obj = {};
-
-        for (var x = 0, len = folderElms.length; x < len; x++) {
-            var folderClass = folderElms[x].getElementsByTagName("t:FolderClass")[0].childNodes[0].nodeValue;
-            if (folderClass == "IPF.Note") {
-                var fId = rtews.getItemIdFromResponse(folderElms[x].getElementsByTagName("t:FolderId")[0]);
-                var fName = folderElms[x].getElementsByTagName("t:DisplayName")[0].childNodes[0].nodeValue;
-                var fPId = rtews.getItemIdFromResponse(folderElms[x].getElementsByTagName("t:ParentFolderId")[0]);
-
-                var fo = new Folder(fId.id, fName, fPId.id, fId.changeKey);
-
-                obj[fId.id] = fo;
-            }
-        }
-
-        //Find path of the folder
-        var __parents = [];
-        //Find parent of the given objects. Loops parent of parent to build the path
-        function getParent(o) {
-            var parent = obj[o.pId];
-
-            __parents.push(o.name);
-
-            if (parent) {
-                getParent(parent);
-            }
-        }
-
-        this.foldersByIdentity[identity.email] = [];
-
-        for (var p in obj) {
-            __parents = [];
-
-            getParent(obj[p]);
-
-            var path = [];
-            path.push(identity.serverURI);
-            path.push(__parents.reverse().join("/"));
-
-            obj[p].path = path.join("/").toLowerCase();
-
-            folders.push(obj[p]);
-
-            this.folderByEwsId[obj[p].id] = obj[p];
-            this.folderByImapPath[obj[p].path] = obj[p];
-            this.foldersByIdentity[identity.email].push(obj[p]);
-        }
-    },
-
-    getFoldersByIdentity : function(identity) {
-        return this.foldersByIdentity[identity.email] != undefined ? this.foldersByIdentity[identity.email] : null;
-    },
-
-    gerFolderByEwsId : function(id) {
-        return this.folderByEwsId[id] != undefined ? this.folderByEwsId[id] : null;
-    },
-    gerFolderByImapPath : function(path) {
-        return this.folderByImapPath[path.toLowerCase()] != undefined ? this.folderByImapPath[path.toLowerCase()] : null;
-    },
-};
-
-
-
-
-if ( typeof (rtews) == "undefined")
-    var rtews = {};
-
-/*
- * @Constructor
- * Soap request object
- *
- */
-rtews.EwsRequest = function(url, cred, method, parameters, callback, errorCallback) {
-    this.request = null;
-    this.url = url;
-    this.cred = cred;
-    this.namespace = "http://schemas.microsoft.com/exchange/services/2006/messages";
-    this.method = method;
-    this.parameters = parameters;
-    this.callback = callback;
-    this.errorCallback = errorCallback;
-    this.status = null;
-    this.loginTimeout = 15000;
-    this.tmeoutTimer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
-};
-
-rtews.EwsRequest.prototype = {
-    send : function() {
-        try {
-            var body = null, soapaction;
-
-            soapaction = this.namespace + "/" + this.method;
-
-            this.request = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
-            this.request.addEventListener("load", this, false);
-            this.request.addEventListener("error", this, false);
-            this.request.addEventListener("abort", this, false);
-            this.request.overrideMimeType('text/xml');
-            this.request.open("POST", this.url, true, this.cred.email);
-            this.request.setRequestHeader("Content-Type", "text/xml");
-            this.request.setRequestHeader("SOAPAction", soapaction);
-            this.request.channel.notificationCallbacks = this;
-            this.request.channel instanceof Ci.nsIHttpChannel;
-            this.request.channel.redirectionLimit = 0;
-
-            var srm = new rtews.EwsRequestMessage();
-            body = srm[this.method](this.parameters);
-
-            rtews.Utils.log("SOAP request", this.method + ": " + this.url + ": \n" + body);
-
-            this.request.send(body);
-        } catch(e) {
-            rtews.Utils.log("SoapRequest " + this.method + " send", e);
-        }
-
-    },
-    handleEvent : function(event) {
-        this.cancelTimeout();
-
-        var xml = this.request.responseXML;
-        if (this.request.readyState == 4) {
-            if (this.request.status == 200 && this.checkSuccess(xml)) {
-                this.status = "success";
-                this.callback(xml, this);
-            } else {
-                this.status = "error";
-
-                if (this.errorCallback) {
-                    this.errorCallback(this);
-                }
-                rtews.Utils.log("SOAP request error", this.method + ": " + this.url + "Returned " + this.request.status + " response code.");
-            }
-            rtews.Utils.log("SOAP response", this.method + ": " + this.url + ": \n" + this.request.responseText);
-        }
-    },
-    checkSuccess : function(response) {
-        if (this.method == "AutoDiscover") {
-            return response.getElementsByTagName("Autodiscover")[0] != null;
-        } else {
-            var resCodeElm = response.getElementsByTagName("m:ResponseCode")[0];
-            return resCodeElm && resCodeElm.childNodes[0].nodeValue == "NoError";
-        }
-    },
-    getCredentials : function(hostname) {
-        var cred = {
-            password : null,
-            username : null
-        };
-        try {
-            var loginManager = Cc["@mozilla.org/login-manager;1"].getService(Ci.nsILoginManager);
-            var logins = loginManager.findLogins({}, hostname, null, hostname);
-
-            // Find user from returned array of nsILoginInfo objects
-            for (var i = 0; i < logins.length; i++) {
-                var login = logins[i];
-                var username = login.username;
-                var foundLogin = false;
-
-                if (username == this.cred.username) {
-                    foundLogin = true;
-                }
-
-                if (foundLogin) {
-                    cred = {
-                        password : login.password,
-                        username : username
-                    };
-
-                    break;
-                }
-            }
-        } catch(e) {
-            rtews.Utils.log("rtews.EwsRequest getCredentials", e);
-        }
-        return cred;
-    },
-    asyncPromptAuth : function(authChannel, authCallback, authContext, aLevel, authInfo) {
-        var authChannelHostname = authChannel.URI.scheme + "://" + authChannel.URI.host;
-
-        return this.asyncPromptAuth2(authChannelHostname, authCallback, authContext, authInfo);
-    },
-    asyncPromptAuth2 : function _asyncPromptAuth2(authChannelHostname, authCallback, authContext, authInfo) {
-        this.cancelTimeout();
-
-        var authDomain = this.cred.domain;
-        var authUserName = this.cred.username;
-
-        var domainAndUser = authDomain && authDomain.length ? authDomain + "\\" + authUserName : authUserName;
-
-        try {
-            var credentials = this.getCredentials(authChannelHostname);
-
-            // setup authInfo to support domain
-            if (authDomain && authDomain.length) {
-                authInfo.domain = authDomain;
-                authInfo.flags |= Ci.nsIAuthInformation.NEED_DOMAIN;
-            }
-            authInfo.username = authUserName;
-            authInfo.password = credentials.password;
-
-            var cancelable = this.asyncPromptConsumer(authCallback, authContext);
-
-            //For first attempt pass the credentials if we have them
-            if (!(authInfo.flags & Ci.nsIAuthInformation.PREVIOUS_FAILED) && credentials.password != null) {
-                this.startTimeout();
-
-                this.timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
-
-                this.timer.initWithCallback(function() {
-                    authCallback.onAuthAvailable(authContext, authInfo);
-                }, 0, Ci.nsITimer.TYPE_ONE_SHOT);
-
-                return cancelable;
-            }
-
-            //Prompt for password
-            var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService);
-            var username = {
-                value : authUserName
-            };
-            var password = {
-                value : ""
-            };
-            var check = {
-                value : true
-            };
-
-            var bundleService = Cc["@mozilla.org/intl/stringbundle;1"].getService(Ci.nsIStringBundleService);
-            var dialogStringBundle = bundleService.createBundle("chrome://global/locale/commonDialogs.properties");
-            var passMgrStringBundle = bundleService.createBundle("chrome://passwordmgr/locale/passwordmgr.properties");
-
-            var authenticationRequired = dialogStringBundle.GetStringFromName("PromptPassword2");
-            var enterPasswordFor = dialogStringBundle.formatStringFromName("EnterPasswordFor", [domainAndUser, authChannelHostname], 2);
-            var rememberPassword = passMgrStringBundle.GetStringFromName("rememberPassword");
-
-            var result = prompts.promptPassword(null, authenticationRequired, enterPasswordFor, password, rememberPassword, check);
-
-            if (result) {
-                if (check.value) {
-                    this.savePassword(authChannelHostname, username.value, password.value);
-                }
-
-                authInfo.username = username.value;
-                authInfo.password = password.value;
-
-                this.startTimeout();
-                this.timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
-                this.timer.initWithCallback(function() {
-                    authCallback.onAuthAvailable(authContext, authInfo);
-                }, 0, Ci.nsITimer.TYPE_ONE_SHOT);
-            } else {
-                authCallback.onAuthCancelled(authContext, true);
-            }
-
-            return cancelable;
-
-        } catch (e) {
-            rtews.Utils.log("rtews.EwsRequest asyncPromptAuth2", e);
-        }
-    },
-    asyncPromptConsumer : function(authCallback, authContext) {
-        var consumer = {
-            QueryInterface : XPCOMUtils.generateQI([Ci.nsICancelable]),
-            callback : authCallback,
-            context : authContext,
-            cancel : function() {
-                this.callback.onAuthCancelled(this.context, false);
-                this.callback = null;
-                this.context = null;
-            }
-        };
-
-        return consumer;
-    },
-    savePassword : function(hostname, username, password) {
-        try {
-            var foundLogins = Services.logins.findLogins({}, hostname, null, hostname);
-            var newLoginInfo = Cc["@mozilla.org/login-manager/loginInfo;1"].createInstance(Ci.nsILoginInfo);
-            newLoginInfo.init(hostname, null, hostname, username, password, "", "");
-
-            if (foundLogins && foundLogins.length) {
-                for each (login in foundLogins) {
-                    if (login.matches(newLoginInfo, true)) {
-                        Services.logins.removeLogin(login);
-                    }
-                }
-            }
-            Services.logins.addLogin(newLoginInfo);
-        } catch(e) {
-            rtews.Utils.log("rtews.EwsRequest savePassword", e);
-        }
-    },
-    promptAuth : function(authChannel, level, authInfo) {
-        throw Components.results.NS_ERROR_NOT_IMPLEMENTED;
-    },
-    getInterface : function(iid) {
-        return this.QueryInterface(iid);
-    },
-    QueryInterface : function(iid) {
-        if (!iid.equals(Ci.nsIBadCertListener2) && !iid.equals(Ci.nsIAuthPrompt2) && !iid.equals(Ci.nsIDOMEventListener) && !iid.equals(Ci.nsIInterfaceRequestor) && !iid.equals(Ci.nsISupports))
-            throw Components.results.NS_ERROR_NO_INTERFACE;
-        return this;
-    },
-    startTimeout : function() {
-        var that = this;
-        this.tmeoutTimer.initWithCallback(function() {
-            that.request.abort();
-        }, this.loginTimeout, Ci.nsITimer.TYPE_ONE_SHOT);
-    },
-
-    cancelTimeout : function() {
-        this.tmeoutTimer.cancel();
-    },
-};
-
-
-if ( typeof (rtews) == "undefined")
-    var rtews = {};
-
-/*
- * @Constructor
- * EWS Operations handler
- *
- */
-rtews.EwsHandler = function(identity) {
-    this.server = identity.server;
-    this.url = identity.ewsUrl;
-    this.email = identity.email;
-    this.folders = identity.folders;
-    this.session = null;
-    this.pollInterval = null;
-    this.cred = {
-        username : identity.username,
-        domain : identity.domain,
-        email : identity.email,
-        server : identity.server
-    };
-};
-
-rtews.EwsHandler.prototype = {
-    subscribe : function() {
-        var that = this;
-        var subParams = {
-            email : this.email,
-            folders : this.folders
-        };
-
-        new rtews.EwsRequest(this.url, this.cred, "Subscribe", subParams, function(response) {
-            that.session = that.getSubscriptionDetails(response);
-            that.poll();
-        }).send();
-    },
-    unSubscribe : function(callback) {
-        var that = this;
-        window.clearInterval(this.pollInterval);
-
-        new rtews.EwsRequest(this.url, this.cred, "Unsubscribe", this.session, function() {
-            callback();
-        }).send();
-    },
-    poll : function() {
-        var that = this;
-        this.pollInterval = setInterval(function() {
-            if (that.session == null) {
-                return;
-            }
-
-            //Check for new event on the mail box
-            that.getEvent();
-
-        }, rtews.prefBranch.getIntPref("pollinterval"));
-    },
-    getSubscriptionDetails : function(response) {
-        var sub = null;
-        var idElm = response.getElementsByTagName("m:SubscriptionId")[0];
-        var wmElm = response.getElementsByTagName("m:Watermark")[0];
-
-        if (idElm && wmElm) {
-            sub = {
-                subscriptionId : idElm.childNodes[0].nodeValue,
-                watermark : wmElm.childNodes[0].nodeValue
-            };
-        }
-
-        return sub;
-    },
-    getEvent : function() {
-        var that = this;
-
-        new rtews.EwsRequest(that.url, that.cred, "GetEvents", that.session, function(response) {
-            var watermarklElm, folderIdElms, moreEvents;
-
-            watermarklElm = response.getElementsByTagName("t:Watermark");
-            that.session.watermark = watermarklElm[watermarklElm.length - 1].childNodes[0].nodeValue;
-
-            //Check if there are more events to be fetched
-            moreEvents = response.getElementsByTagName("t:MoreEvents")[0].childNodes[0].nodeValue;
-            if (moreEvents.toLowerCase() == "true") {
-                that.getEvent();
-            }
-
-            var itemIds = response.getElementsByTagName("t:ItemId");
-            var newItemIds = [];
-            var oldItemIds = response.getElementsByTagName("t:OldItemId");
-
-            if (itemIds.length == 0) {
-                return;
-            }
-
-            if (oldItemIds.length > 0) {
-                //Filter out old ids. create a new list of ids
-                for (var x = 0; x < itemIds.length; x++) {
-                    var id = itemIds[x].getAttribute("Id");
-                    for (var i = 0; i < oldItemIds.length; i++) {
-                        var oId = oldItemIds[i].getAttribute("Id");
-                        if (id != oId) {
-                            newItemIds.push(itemIds[x]);
-                        }
-                    }
-                }
-            } else {
-                newItemIds = itemIds;
-            }
-
-            if (newItemIds.length == 0) {
-                return;
-            }
-
-            var itemList = [];
-
-            for (var x = 0; x < newItemIds.length; x++) {
-                var item = rtews.getItemIdFromResponse(newItemIds[x]);
-                itemList.push(item);
-            }
-
-            if (itemList.length > 0) {
-                that.getAndUpdateItems(itemList);
-            }
-
-        }).send();
-    },
-    getAndUpdateItems : function(itemList) {
-        var that = this;
-
-        this.getItems(itemList, function(response) {
-            var returnItems = response.getElementsByTagName("m:Items");
-            var updates = [];
-
-            for (var x = 0; x < returnItems.length; x++) {
-                var returnItem = returnItems[x];
-
-                var itemId = rtews.getItemIdFromResponse(returnItem.getElementsByTagName("t:ItemId")[0]);
-                var parentItemId = rtews.getItemIdFromResponse(returnItem.getElementsByTagName("t:ParentFolderId")[0]);
-                var categoriesElm = returnItem.getElementsByTagName("t:Categories")[0];
-                var valueElm = returnItem.getElementsByTagName("t:Value")[0];
-
-                if (!valueElm) {
-                    continue;
-                }
-
-                var messageId = valueElm.childNodes[0].nodeValue.replace('<', '').replace('>', '');
-
-                if (messageId.length == 0) {
-                    continue;
-                }
-
-                var categories = [];
-                var tags = [];
-                if (categoriesElm) {
-                    var categoryValueElms = categoriesElm.getElementsByTagName("t:String");
-                    var errCategory = [];
-
-                    for (var i = 0, len = categoryValueElms.length; i < len; i++) {
-                        var category = categoryValueElms[i].childNodes[0].nodeValue;
-                        var tKey = rtews.Tags.getKeyForTag(category);
-
-                        if (tKey != null) {
-                            tags.push(tKey);
-                        } else {
-                            var newTagKey = rtews.Tags.addTag(category);
-
-                            if (newTagKey != null) {
-                                tags.push(newTagKey);
-                            } else {
-                                errCategory.push(category);
-                            }
-                        }
-                    }
-
-                    //Prompt categories that were not converted to tags.
-                    if (errCategory.length) {
-                        var stringBundle = document.getElementById("string-bundle");
-                        Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService).alert(null, stringBundle.getString("rtews.title"), stringBundle.getString("rtews.tagAddError") + " " + errCategory.join(", "));
-                    }
-                }
-
-                var fo = rtews.FolderTable.gerFolderByEwsId(parentItemId.id);
-                if (fo != null) {
-                    updates.push({
-                        msgId : messageId,
-                        tags : tags,
-                        path : fo.path
-                    });
-                }
-            }
-
-            if (updates.length) {
-                setTimeout(function() {
-                    var updateMsg = new rtews.UpdateMessage(updates);
-                    updateMsg.update();
-                }, 500);
-            }
-        });
-    },
-    getItems : function(itemList, callback) {
-        var that = this;
-
-        var getItemParams = {
-            items : itemList
-        };
-
-        new rtews.EwsRequest(this.url, this.cred, "GetItem", getItemParams, function(response) {
-            callback(response);
-        }).send();
-    },
-    findFolders : function(callback) {
-        var ffReqParams = {
-            email : this.email
-        };
-
-        new rtews.EwsRequest(this.url, this.cred, "FindFolder", ffReqParams, function(response, request) {
-            callback(response, request);
-        }).send();
-    },
-    findItem : function(messageId, folder, callback) {
-        var folders = (folder == null) ? this.folders : new Array(folder);
-
-        var findItemParams = {
-            messageid : messageId,
-            folders : folders,
-        };
-
-        new rtews.EwsRequest(this.url, this.cred, "FindItem", findItemParams, function(response) {
-            var itemId = rtews.getItemIdFromResponse(response.getElementsByTagName("t:ItemId")[0]);
-
-            callback(itemId);
-
-            if (itemId == null) {
-                rtews.Utils.log("SOAP Response", "FindItem: Message item not found on server");
-            }
-
-        }).send();
-    },
-    updateItem : function(item, categories, callback) {
-        var updateItemParams = {
-            itemid : item.id,
-            changekey : item.changeKey,
-            categories : categories
-        };
-
-        new rtews.EwsRequest(this.url, this.cred, "UpdateItem", updateItemParams, function(response) {
-            callback();
-        }).send();
-    }
-};
-
-if ( typeof (rtews) == "undefined")
-    var rtews = {};
-
-/*
- * @Constructor
- * EWS SOAP request message
- *
- */
-rtews.EwsRequestMessage = function() {
-    var sr = "";
-    sr += '<?xml version="1.0" encoding="utf-8"?>';
-    sr += '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">';
-    sr += '<soap:Body>';
-    sr += 'MESSAGEBODY';
-    sr += '</soap:Body>';
-    sr += '</soap:Envelope>';
-
-    this.src = sr;
-};
-
-rtews.EwsRequestMessage.prototype = {
-    UpdateItem : function(parameters) {
-        var sr = "";
-        sr += '<UpdateItem MessageDisposition="SaveOnly" ConflictResolution="AlwaysOverwrite" xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">';
-        sr += '<ItemChanges>';
-        sr += '<t:ItemChange>';
-        sr += '<t:ItemId Id="' + parameters.itemid + '" ChangeKey="' + parameters.changekey + '" />';
-        sr += '<t:Updates>';
-        sr += '<t:SetItemField>';
-        sr += '<t:FieldURI FieldURI="item:Categories"/>';
-        sr += '<t:Message>';
-        sr += '<t:Categories>';
-        for (var category in parameters.categories) {
-            sr += '<t:String>' + parameters.categories[category] + '</t:String>';
-        }
-        sr += '</t:Categories>';
-        sr += '</t:Message>';
-        sr += '</t:SetItemField>';
-        sr += '</t:Updates>';
-        sr += '</t:ItemChange>';
-        sr += '</ItemChanges>';
-        sr += '</UpdateItem>';
-
-        return this.src.replace("MESSAGEBODY", sr);
-    },
-    FindItem : function(parameters) {
-        var sr = "";
-        sr += '<FindItem Traversal="Shallow" xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">';
-        sr += ' <ItemShape>';
-        sr += '<t:BaseShape>IdOnly</t:BaseShape>';
-        sr += '</ItemShape>';
-        sr += '<IndexedPageItemView MaxEntriesReturned="10" Offset="0" BasePoint="Beginning" />';
-        sr += '<Restriction>';
-        sr += '<t:IsEqualTo>';
-        sr += '<t:ExtendedFieldURI PropertyTag="0x1035" PropertyType="String"/>';
-        sr += '<t:FieldURIOrConstant>';
-        sr += '<t:Constant Value="' + parameters.messageid + '" />';
-        sr += '</t:FieldURIOrConstant>';
-        sr += '</t:IsEqualTo>';
-        sr += '</Restriction>';
-        sr += '<ParentFolderIds>';
-        for (var x = 0, len = parameters.folders.length; x < len; x++) {
-            sr += '<t:FolderId Id="' + parameters.folders[x].id + '" />';
-        }
-        sr += '</ParentFolderIds>';
-        sr += '</FindItem>';
-
-        return this.src.replace("MESSAGEBODY", sr);
-    },
-    GetItem : function(parameters) {
-        var sr = "";
-        sr += '<GetItem xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">';
-        sr += '<ItemShape>';
-        sr += '<t:BaseShape>IdOnly</t:BaseShape>';
-        sr += '<t:AdditionalProperties>';
-        sr += '<t:FieldURI FieldURI="item:Categories"/>';
-        sr += '<t:FieldURI FieldURI="item:ParentFolderId"/>';
-        sr += '<t:ExtendedFieldURI PropertyTag="0x1035" PropertyType="String"/>';
-        sr += '</t:AdditionalProperties>';
-        sr += '</ItemShape>';
-        sr += '<ItemIds>';
-        for (var x = 0, len = parameters.items.length; x < len; x++) {
-            sr += '<t:ItemId Id="' + parameters.items[x].id + '" ChangeKey="' + parameters.items[x].changeKey + '" />';
-        }
-        sr += '</ItemIds>';
-        sr += '</GetItem>';
-
-        return this.src.replace("MESSAGEBODY", sr);
-    },
-    Subscribe : function(parameters) {
-        var sr = "";
-        sr += '<Subscribe xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">';
-        sr += '<PullSubscriptionRequest>';
-        sr += '<t:FolderIds>';
-        for (var x = 0, len = parameters.folders.length; x < len; x++) {
-            sr += '<t:FolderId Id="' + parameters.folders[x].id + '" />';
-        }
-        sr += '</t:FolderIds>';
-        sr += '<t:EventTypes>';
-        sr += '<t:EventType>NewMailEvent</t:EventType>';
-        sr += '<t:EventType>ModifiedEvent</t:EventType>';
-        sr += '<t:EventType>MovedEvent</t:EventType>';
-        sr += '<t:EventType>CopiedEvent</t:EventType>';
-        sr += '<t:EventType>CreatedEvent</t:EventType>';
-        sr += '</t:EventTypes>';
-        sr += '<t:Timeout>1440</t:Timeout>';
-        sr += '</PullSubscriptionRequest>';
-        sr += '</Subscribe>';
-
-        return this.src.replace("MESSAGEBODY", sr);
-    },
-    Unsubscribe : function(parameters) {
-        var sr = "";
-        sr += '<Unsubscribe xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">';
-        sr += '<SubscriptionId>' + parameters.subscriptionId + '</SubscriptionId>';
-        sr += '</Unsubscribe>';
-
-        return this.src.replace("MESSAGEBODY", sr);
-    },
-    GetEvents : function(parameters) {
-        var sr = "";
-        sr += '<GetEvents xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">';
-        sr += '<SubscriptionId>' + parameters.subscriptionId + '</SubscriptionId>';
-        sr += '<Watermark>' + parameters.watermark + '</Watermark>';
-        sr += '</GetEvents>';
-
-        return this.src.replace("MESSAGEBODY", sr);
-    },
-    FindFolder : function(parameters) {
-        var sr = "";
-        sr += '<FindFolder Traversal="Deep" xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">';
-        sr += '<FolderShape>';
-        sr += '<t:BaseShape>AllProperties</t:BaseShape>';
-        sr += '</FolderShape>';
-        sr += '<ParentFolderIds>';
-        sr += '<t:DistinguishedFolderId Id="msgfolderroot">';
-        sr += '<t:Mailbox>';
-        sr += '<t:EmailAddress>' + parameters.email + '</t:EmailAddress>';
-        sr += '</t:Mailbox>';
-        sr += '</t:DistinguishedFolderId>';
-        sr += '</ParentFolderIds>';
-        sr += '</FindFolder>';
-
-        return this.src.replace("MESSAGEBODY", sr);
-    },
-    AutoDiscover : function(parameters) {
-        var sr = "";
-        sr += '<?xml version="1.0" encoding="utf-8"?>';
-        sr += '<Autodiscover xmlns="' + parameters.ns + '">';
-        sr += '<Request>';
-        sr += '<EMailAddress>' + encodeURI(parameters.email) + '</EMailAddress>';
-        sr += '<AcceptableResponseSchema>' + parameters.schema + '</AcceptableResponseSchema>';
-        sr += '</Request>';
-        sr += '</Autodiscover>';
-
-        return sr;
-    }
-};
-
-  
-if ( typeof (rtews) == "undefined")
-    var rtews = {};
-
+    foldersByIdentity : {}, 
+}; 
 /*
  * @Constructor
  * Message updater
@@ -843,10 +67,10 @@ rtews.UpdateMessage.prototype = {
         var folderPath = this.updates[0].path;
 
         that.searchGloda(messageId, folderPath, function(msgHdrs) {
-            rtews.Utils.log("UpdateMessage.update", folderPath + " : " + messageId);
+            rtews.globalFunctions.LOG("UpdateMessage.update "+ folderPath + " : " + messageId);
             
             if (msgHdrs.length == 0) {
-                rtews.Utils.log("GetItem callback:", "Message not found in database with id " + messageId);
+            	rtews.globalFunctions.LOG("UpdateMessage.update: Message not found in database with id " + messageId);
                 that.pendingUpdates.push(that.updates[0]);
             } else {
                 for (var x = 0; x < msgHdrs.length; x++) {
@@ -888,7 +112,7 @@ rtews.UpdateMessage.prototype = {
                 msgHdr.folder[toggler](messages, keywords[t]);
             }
         } catch(e) {
-            rtews.Utils.log("rtews.addKeywordsToMessage", e);
+        	rtews.globalFunctions.LOG("rtews.addKeywordsToMessage"+ e);
         }
 
         OnTagsChange();
@@ -926,21 +150,18 @@ rtews.UpdateMessage.prototype = {
                         }
                         callback(msgHdrs);
                     } catch (e) {
-                        rtews.Utils.log("Gloda serch complete", e);
+                    	rtews.globalFunctions.LOG("Gloda serch complete"+ e);
                         callback(msgHdrs);
                     }
                 }
             };
             var collection = query.getCollection(queryListener);
         } catch(e) {
-            rtews.Utils.log("Gloda serch", e);
+        	rtews.globalFunctions.LOG("Gloda serch"+ e);
         }
     }
 };
-
-if ( typeof (rtews) == "undefined")
-    var rtews = {};
-
+ 
 rtews.Tags = {
     tagService : Cc["@mozilla.org/messenger/tagservice;1"].getService(Ci.nsIMsgTagService),
 
@@ -958,32 +179,23 @@ rtews.Tags = {
     },
 
     getTagsForKeys : function(keys) {
-        var tags = [];
-
+        var tags = []; 
         for (var x = 0; x < keys.length; x++) {
             var tag = this.getTagForKey(keys[x]);
             if (tag != null) {
                 tags.push(tag);
             }
-        }
-
+        } 
         return tags;
     },
 
     addTag : function(name) {
-        this.tagService.addTag(name, "", "");
-
+        this.tagService.addTag(name, "", ""); 
         return this.getKeyForTag(name);
     }
 };
- 
-if ( typeof (rtews) == "undefined")
-    var rtews = {};
-
-rtews.identities = null;
-rtews.folderMap = {};
-
-/*
+  
+ /*
  * Handler to launch the configuration window
  */
 rtews.launchConfigWizard = function() {
@@ -1012,72 +224,354 @@ rtews.getItemIdFromResponse = function(itemIdElm) {
         id : itemIdElm.getAttribute('Id'),
         changeKey : itemIdElm.getAttribute('ChangeKey')
     };
+}; 
+
+rtews.findFolders = function(identity){
+    this.globalFunctions.LOG("findFolders:" ); 
+	this.identity = identity;
+	var self = this;
+	var tmpObject = new  erFindInboxFolderRequest(
+							{user:this.user, 
+							mailbox: this.mailbox  ,
+							serverUrl:this.serverUrl,
+							folderBase: "msgfolderroot",
+							folderPath: "",
+							actionStart: Date.now()}, 
+							function(erFindInboxFolderRequest, folders) { self.findFoldersOK(erFindInboxFolderRequest, folders);}, 
+							function(erFindInboxFolderRequest, aCode, aMsg) { self.findFoldersError(erFindInboxFolderRequest, aCode, aMsg);},
+							null);  
 };
 
+rtews.findFoldersOK = function(erFindInboxFolderRequest, folders){
+	this.globalFunctions.LOG("findFoldersOK: " + folders );
+	this.processFolders(folders,this.identity);
+	var folders = this.getFoldersByIdentity(this.identity); 
+     
+	if (folders.length > 0) {
+		   this.subscribe(folders); 
+    } 
+};
+ 
+rtews.subscribe  = function(folders){
+	this.globalFunctions.LOG("Subscribe: ");
+  	var self = this;
+  	var tmpObject = new erSubscribeRequest(
+			   		{user: this.user, 
+			   		mailbox: this.mailbox,
+			   		serverUrl: this.serverUrl,
+			   		folderBase: "",
+		   			changeKey: "" ,
+		   			folderIds : folders,
+		   			actionStart: Date.now(),
+		   			timeout: "10",
+		   			eventTypes : eventTypes , }, 
+		   			function(erSubscribeRequest, subscriptionId, watermark) { self.subscribeOK(erSubscribeRequest, subscriptionId, watermark);}, 
+		   			function(erSubscribeRequest, aCode, aMsg) { self.subscribeError(erSubscribeRequest, aCode, aMsg);},
+		   			null);
+}; 
+
+rtews.subscribeOK  = function(erSubscribeRequest, subscriptionId, watermark){
+	this.globalFunctions.LOG("subscribeOK " + subscriptionId +  " watermark  " + watermark );
+	this.session.subscriptionId=subscriptionId;
+	this.session.watermark=watermark;
+	this.poll();
+};
+
+rtews.poll = function() {
+    var self = this;
+    this.Running = false; 
+    this.pollInterval = setInterval(function() { 
+		if (self.session == null) {
+	        return;
+	    }  
+		if ( self.Running == true )  {
+	        	 self.globalFunctions.LOG("getEvents is in process..");
+	        	 return; 
+		} 
+        //Check for new event on the mail box
+		self.getEvents(); 
+    }, this.pollOffset );
+},
+   
+rtews.getItemsError = function(erGetItemsRequest, aCode, aMsg){ 
+	this.globalFunctions.LOG("getItemsError: "+ aMsg);
+};
+ 
+rtews.getItemsOK = function(erGetItemsRequest, aItems, aItemErrors){ 
+	this.globalFunctions.LOG("getItemsOK: Received items for update: " + aItems.length); 
+ 	if( aItems.length > 0 ){
+	function getItem(aItem){ 
+	   	let id = xml2json.getAttributeByTag(aItem,'t:ItemId','Id'); 
+	   	let changeKey = xml2json.getAttributeByTag(aItem,'t:ItemId','ChangeKey');  
+        return { "Id" : id , "ChangeKey": changeKey, };
+	}  
+	
+	function getParentItem(aItem){ 
+	   	let id = xml2json.getAttributeByTag(aItem,'t:ParentFolderId','Id'); 
+	   	let changeKey = xml2json.getAttributeByTag(aItem,'t:ParentFolderId','ChangeKey');  
+        return { "Id" : id , "ChangeKey": changeKey, };
+	}  
+	
+	for(var item = 0 ; item < aItems.length ; item++ ){ 
+ 		var itemId = getItem(aItems[item]);  
+        var parentItemId = getParentItem(aItems[item]);  
+        
+        var messageIdElm = xml2json.XPath(aItems[item],"/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyTag = '0x1035']");
+        var messageId;
+        if (messageIdElm.length > 0) {
+			 messageId =  xml2json.getTagValue(messageIdElm[0], "t:Value", null);
+		} 
+        
+        messageId = messageId.replace('<', '').replace('>', '');
+
+        if (!messageId) {
+            continue;
+        }
+        
+        var categories = [];
+        var tags = []; 
+       
+        var categoriesElm = xml2json.XPath(aItems[item],'/t:Categories/t:String');
+        for(var index = 0 ; index < categoriesElm.length ; index++ ) {  
+        	categories.push(categoriesElm[index].c); 
+        }
+      
+        if ( categories.length > 0 ) {
+              var errCategory = [];
+ 
+            for(var index = 0 ; index < categories.length ; index++ ) {  
+            	var category = categories[index]; 
+            	
+            	if(category){
+	                var tKey = rtews.Tags.getKeyForTag(category);
+	
+                     if (tKey != null) {
+                        tags.push(tKey);
+                    } 
+                    else {
+                        var newTagKey = rtews.Tags.addTag(category);
+
+                        if (newTagKey != null) {
+                             tags.push(newTagKey);
+                        } 
+                        else {
+                             errCategory.push(category);
+                        }
+                    }
+            	}
+            }
+             //Prompt categories that were not converted to tags.
+            if (errCategory.length) {
+                var stringBundle = document.getElementById("string-bundle");
+                Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService).alert(null, stringBundle.getString("rtews.title"), stringBundle.getString("rtews.tagAddError") + " " + errCategory.join(", "));
+            } 
+        } 
+ 	}
+	var updates = []; 
+   	var folderEwsId = this.gerFolderByEwsId(parentItemId.Id);
+	this.globalFunctions.LOG("getItemsOK: Going to tag update: " + messageId+  ":" +  folderEwsId.path  +  ":" +  tags);
+
+	if ( folderEwsId != null) {
+	        updates.push({
+	            msgId : messageId,
+	            tags : tags,
+	            path : folderEwsId.path
+	        }); 
+	}
+	
+	if (updates.length) {
+	    setTimeout(function() {
+	        var updateMsg = new rtews.UpdateMessage(updates);
+	        updateMsg.update();
+	    }, 500);
+	}  
+ 	}
+};
+
+rtews.getAndUpdateItems = function(aIds) { 
+	
+	var that = this;   
+	var tmpObject = new erGetItemsRequest(
+			{user: this.user, 
+			 mailbox:  this.mailbox,
+ 			 serverUrl:  this.serverUrl,
+			 ids:  aIds,
+ 			 folderClass: "IPM.Note",  }, 
+			function(erGetItemsRequest, aIds, aItemErrors) { that.getItemsOK(erGetItemsRequest, aIds, aItemErrors);}, 
+			function(erGetItemsRequest, aCode, aMsg) { that.getItemsError(erGetItemsRequest, aCode, aMsg);},
+			null);  
+};
+ 
+rtews.getEvents = function(){ 
+	var that = this;
+	that.Running = true; 
+	      
+	var tmpObject = new erGetEventsRequest(
+					{user: this.user, 
+					mailbox: this.mailbox,
+					serverUrl: this.serverUrl, 
+					actionStart: Date.now(),
+					subscriptionId :  that.session.subscriptionId ,
+					watermark :  that.session.watermark , }, 
+					function(erGetEventsRequest, aResp) {  getEventsOK(erGetEventsRequest, aResp);}, 
+					function(erGetEventsRequest, aCode, aMsg) {  getEventsError(erGetEventsRequest, aCode, aMsg);},
+					null);  
+	    
+	function getEventsOK(erGetEventsRequest, response){ 
+		that.globalFunctions.LOG("getEventsOK:"); 
+		if(response.length > 0 ){ 
+			var note = response[0].XPath("/m:GetEventsResponseMessage/m:Notification");
+			var subscriptionId  = note[0].getTagValue("t:SubscriptionId");
+			var moreEvents  = note[0].getTagValue("t:MoreEvents");
+			var previousWatermark = note[0].getTagValue("t:PreviousWatermark");  
+			 
+		    var _Watermark = response[0].XPath("/m:GetEventsResponseMessage/m:Notification/*/t:Watermark");  
+		    var watermark =  _Watermark[_Watermark.length-1].value;
+			 
+			that.session.watermark = watermark;
+		    that.Running = false; 
+		    
+			var itemIds = []; 
+			var _itemIds = response[0].XPath("/m:GetEventsResponseMessage/m:Notification/*/t:ItemId"); 
+   				if( _itemIds.length > 0) {
+  					for ( var index = 0 ; index < _itemIds.length ; index++ ){ 
+	  					itemIds.push(_itemIds[index]);
+  					}
+  				}  
+  			    
+  				if (itemIds.length == 0) {
+  			        return;
+  			    }
+  
+  				var  oldItemIds = [];
+  				var _oldItemIds = response[0].XPath("/m:GetEventsResponseMessage/m:Notification/*/t:OldItemId"); 
+			if( _oldItemIds.length > 0) {
+				for ( var index = 0 ; index < _oldItemIds.length ; index++ ){ 
+  					oldItemIds.push(_oldItemIds[index]);
+				}
+			}    
+			var newItemIds = [];
+			if (oldItemIds.length > 0) {
+  		        for (var itemId = 0; itemId < itemIds.length; itemId++) {
+  		            var id = itemIds[itemId].getAttribute("Id");
+  		            
+  		            for (var oldItemId = 0; oldItemId < oldItemIds.length; oldItemId++) {
+  		                var oId = oldItemIds[oldItemId].getAttribute("Id");
+  		                if (id != oId) {
+  		                    newItemIds.push(itemIds[itemId]);
+  		                }
+  		            }
+  		        }
+  		    } 
+  			else {
+  				newItemIds = itemIds.splice(0);;
+  		    }
+			
+			function getItem(aItem){ 
+			   	let id = aItem.getAttribute('Id'); 
+				let changeKey = aItem.getAttribute('ChangeKey');  
+				return { "Id" : id , "ChangeKey": changeKey, };
+			}  
+			
+		   if ( newItemIds.length == 0)  return;  
+		   var itemList = []; 
+		   for(var index = 0; index < newItemIds.length; index++) { 
+			 itemList.push( getItem(newItemIds[index] ));
+		   } 
+		   try{
+			   that.getAndUpdateItems(itemList);
+		   }
+		   catch(e){}
+			  
+		}
+		else{ 
+			that.Running = false;
+		}
+	};  
+	   
+    function getEventsError(erGetEventsRequest, aCode, aMsg){
+		that.globalFunctions.LOG("getEventsError aCode:" + aCode + " aMsg: " +  aMsg );  
+		that.Running = false ;  
+	};  
+};
+  
+rtews.subscribeError = function(erSubscribeRequest, aCode, aMsg){ 
+	this.globalFunctions.LOG("subscribeError aCode:" + aCode + " aMsg: " +  aMsg ); 
+};
+
+rtews.getFoldersByIdentity = function(identity) {
+    return this.foldersByIdentity[this.identity.email] != undefined ? this.foldersByIdentity[this.identity.email] : null;
+};
+
+rtews.gerFolderByEwsId = function(id) {
+    return this.folderByEwsId[id] != undefined ? this.folderByEwsId[id] : null;
+};
+
+rtews.gerFolderByImapPath = function(path) {
+    return this.folderByImapPath[path.toLowerCase()] != undefined ? this.folderByImapPath[path.toLowerCase()] : null;
+};
+ 
+rtews.findFoldersError = function(erFindInboxFolderRequest, aCode, aMsg){
+	this.globalFunctions.LOG("findFoldersError aCode:" + aCode + " aMsg: " +  aMsg ); 
+};
+
+rtews.processFolders = function(response, identity) {  
+	    
+    function Folder(id, name, parentId, changeKey) {
+       this.id = id;
+       this.name = name;
+       this.pId = parentId;
+       this.changeKey = changeKey;
+       this.path = "";
+    };
+
+    var folderElms = response;
+    var folders = [];
+    var obj = {};
+
+    for (var x = 0, len = folderElms.length; x < len; x++) {
+       var folderClass = folderElms[x].folderClass;
+       if (folderClass == "IPF.Note") {
+           var fId = folderElms[x].id;
+           var fName = folderElms[x].name;
+           var fPId = folderElms[x].pId;
+           
+           var fo = new Folder(fId, fName, fPId, fId.changeKey);
+
+           obj[fId] = fo;
+       }
+    } 
+   //Find path of the folder
+    var __parents = [];
+   //Find parent of the given objects. Loops parent of parent to build the path
+    function getParent(o) {
+       var parent = obj[o.pId]; 
+       __parents.push(o.name); 
+       if (parent) {
+           getParent(parent);
+       }
+    } 
+    this.foldersByIdentity[identity.email] = []; 
+    for (var p in obj) {
+       __parents = []; 
+       getParent(obj[p]); 
+       var path = [];
+       path.push(identity.serverURI);
+       path.push(__parents.reverse().join("/")); 
+       obj[p].path = path.join("/").toLowerCase(); 
+       folders.push(obj[p]); 
+       this.folderByEwsId[obj[p].id] = obj[p];
+       this.folderByImapPath[obj[p].path] = obj[p];
+       this.foldersByIdentity[identity.email].push(obj[p]);
+    }
+};
+ 
 /*
- * Initialize each identity. Creates new EWS Handler for each identity
+ * Initialize each identity. 
  *
  */
 rtews.processIdentity = function(identity) {
-    var ewsHandler = new rtews.EwsHandler(identity);
-    identity.ewsObj = ewsHandler;
-
-    ewsHandler.findFolders(function(response, request) {
-        rtews.FolderTable.processFolders(response, identity);
-        var folders = rtews.FolderTable.getFoldersByIdentity(identity);
-
-        rtews.Utils.log("rtews.processIdentity folders:", JSON.stringify(folders));
-
-        if (folders.length > 0) {
-            ewsHandler.folders = folders;
-            ewsHandler.subscribe();
-        }
-    });
-};
-
-/*
- *  Initialize the plugin.
- */
-rtews.load = function() {
-    var that = this;
-    this.prefBranch = Services.prefs.getBranch("extensions.rtews.");
-
-    var prefListener = new rtews.PrefListener("extensions.rtews.", function(branch, name) {
-        switch (name) {
-            case "users":
-                //If there is change in identities, disable current jobs and remove the subscriptions
-                if (that.identities != null) {
-                    for (var x = 0, len = that.identities.length; x < len; x++) {
-                        if (that.identities[x].ewsObj) {
-                            that.identities[x].ewsObj.unSubscribe(function() {
-                                delete that.identities[x].ewsObj;
-                                delete that.identities[x];
-                            });
-                        }
-                    }
-                    that.identities = null;
-                }
-
-                //Fetch the updated identities preferences
-                try {
-                    var userPref = that.prefBranch.getCharPref("users");
-                    that.identities = JSON.parse(userPref);
-                } catch(e) {
-                    that.identities = [];
-                }
-
-                //Initialize the identities
-                for (var x = 0, len = that.identities.length; x < len; x++) {
-                    if (that.identities[x].ewsUrl && that.identities[x].enabled) {
-                        that.processIdentity(that.identities[x]);
-                    }
-                }
-
-                break;
-        }
-
-    });
-    prefListener.register(true);
+    this.findFolders(identity); 
 };
 
 rtews.addSyncMenu = function(menuPopup) {
@@ -1089,83 +583,148 @@ rtews.addSyncMenu = function(menuPopup) {
     var newMenuSeperator = document.createElement("menuseparator");
     newMenuSeperator.setAttribute("id", "mailContext-sep-afterTagSync");
     menuPopup.appendChild(newMenuSeperator);
-};
-
+}; 
 /*
  * Event handler for Sync Tags menu item.
  *
  */
 rtews.syncTags = function() {
     var selectedMessages = gFolderDisplay.selectedMessages;
-    var identity = rtews.getIdentity(gFolderDisplay.displayedFolder.server.prettyName);
-
-    if (!identity) {
-        var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService);
-        prompts.alert(null, "", document.getElementById("string-bundle").getString("rtews.accNotConfigured"));
-
-        return;
-    }
-
-    var ewsObj = identity.ewsObj;
-
-    if (!ewsObj) {
-        return;
-    }
-
+    var that = this;
     for (var i = 0; i < selectedMessages.length; ++i) {
         var msgHdr = selectedMessages[i];
-        var messageId = "&lt;" + msgHdr.messageId + "&gt;";
-        var folder = rtews.FolderTable.gerFolderByImapPath(msgHdr.folder.URI);
+        var messageId = '<' + msgHdr.messageId + '>';
+        var folder = this.gerFolderByImapPath(msgHdr.folder.URI);
 
-        rtews.Utils.log("rtews.syncTags folder:", JSON.stringify(folder) + " " + messageId);
+        this.globalFunctions.LOG("rtews.syncTags folder:" + JSON.stringify(folder) + " " + messageId);
 
         if (!folder) {
             continue;
         }
-
-        ewsObj.findItem(messageId, folder, function(item) {
-            if (item != null) {
-                var itemList = [];
-                itemList.push(item);
-
-                ewsObj.getAndUpdateItems(itemList);
-            }
-        });
-    }
-};
-
+     
+        var tmpObject = new erFindItemsRequest(
+				{user: this.user, 
+				mailbox: this.mailbox,
+				serverUrl: this.serverUrl, 
+				actionStart: Date.now(),
+				folderID : folder.id ,
+				messageId: messageId, }, 
+				function(erFindItemsRequest, aIds) { findItemsOK(erFindItemsRequest, aIds);}, 
+				function(erFindItemsRequest, aCode, aMsg) {  findItemsError(erFindItemsRequest, aCode, aMsg);},
+				null);  
+        
+        function findItemsOK(erFindItemsRequest, aIds){
+        	that.globalFunctions.LOG("findItemsOK: Fount items: " + aIds.length ); 
+        	if( aIds.length > 0 ){  
+    			   that.getAndUpdateItems(aIds); 
+         	}
+        	else{
+        		that.globalFunctions.LOG("findItemsOK: no item found for the message id"); 
+        	}
+        } 
+        
+        function findItemsError(erFindItemsRequest, aCode, aMsg){
+            that.globalFunctions.LOG("findItemsError:  aCode:" + aCode + " aMsg: " +  aMsg ); 
+        }  
+    } 
+};   
 /*
  * Updates the tags (categories) on exchange server before updating locally.
  *
  */
 rtews.toggleTags = function(msgHdr, identity, toggleType, categories, key, addKey) {
     var ewsObj = identity.ewsObj;
-    var folder = rtews.FolderTable.gerFolderByImapPath(msgHdr.folder.URI);
-    var messageId = "&lt;" + msgHdr.messageId + "&gt;";
+    var folder = this.gerFolderByImapPath(msgHdr.folder.URI);
+    var messageId = '<' + msgHdr.messageId + '>';
 
-    rtews.Utils.log("rtews.toggleTags folder:", JSON.stringify(folder) + " " + messageId);
-
+    this.globalFunctions.LOG("rtews.toggleTags folder:"+ JSON.stringify(folder) + " " + messageId);
+    var that = this;
     if (!folder) {
         return;
     }
+    
+    var tmpObject = new erFindItemsRequest(
+			{user: this.user, 
+			mailbox: this.mailbox,
+			serverUrl: this.serverUrl, 
+			actionStart: Date.now(),
+			folderID : folder.id ,
+			messageId: messageId, }, 
+			function(erFindItemsRequest, aIds) {  findItemsOK(erFindItemsRequest, aIds);}, 
+			function(erFindItemsRequest, aCode, aMsg) {  findItemsError(erFindItemsRequest, aCode, aMsg);},
+			null);  
+    
+    function findItemsOK(erFindItemsRequest, aIds){
+    	that.globalFunctions.LOG("findItemsOK: Fount items: " + aIds.length ); 
+    	if( aIds.length > 0 ){  
+    		that.updateItem(aIds,msgHdr, identity, toggleType, categories, key, addKey); 
+     	}
+    	else{
+        	 that.globalFunctions.LOG("findItemsOK: no item found for the message id"); 
+    	}
+    } 
+    
+    function findItemsError(erFindItemsRequest, aCode, aMsg){
+        that.globalFunctions.LOG("findItemsError:  aCode:" + aCode + " aMsg: " +  aMsg ); 
+    }  
+}; 
 
-    ewsObj.findItem(messageId, folder, function(item) {
-        if (item != null) {
-            ewsObj.updateItem(item, categories, function() {
-                if (toggleType == "removeAll") {
-                    rtews.removeAllMessageTagsPostEwsUpdate();
-                } else {
-                    rtews.toggleMessageTagPostEwsUpdate(key, addKey);
-                }
-            });
-        }
-    });
-};
+rtews.updateItem = function(aIds, msgHdr, identity, toggleType, categories, key, addKey){  
+	this.globalFunctions.LOG("updateItem: aIds " + aIds.length + " ,   toggleType " + toggleType );
+	
+	var that = this;
+		
+	var item = aIds[0]; 
+	
+	var changes =  '<nsTypes:ItemChange>';
+		changes += '<nsTypes:ItemId Id="' + item.Id + '" ChangeKey="' + item.ChangeKey + '" />';
+    	changes += '<nsTypes:Updates>';
+		changes += '<nsTypes:SetItemField>';
+		changes += '<nsTypes:FieldURI FieldURI="item:Categories"/>';
+		changes += '<nsTypes:Message>';
+		changes += '<nsTypes:Categories>'; 
+		if( categories.length > 0 ){
+		   for (var index  in  categories  ) {
+				changes += '<nsTypes:String>' + categories[index] + '</nsTypes:String>';
+		    } 
+		}  
+	    changes += '</nsTypes:Categories>'; 
+	    changes += '</nsTypes:Message>';
+	    changes += '</nsTypes:SetItemField>';
+	    changes += '</nsTypes:Updates>';
+	    changes += '</nsTypes:ItemChange>';
+  
+	this.globalFunctions.LOG("updateItem: changes " + changes);
 
+    var tmpObject = new erUpdateItemRequest({user: this.user, 
+			 mailbox: this.mailbox,
+			 folderBase: this.folderBase,
+			 serverUrl: this.serverUrl,
+  			 updateReq: changes,
+ 	 		 actionStart: Date.now(),
+ 			 onlySnoozeChanges:false, }, 
+			function(erUpdateItemRequest, aId, aChangeKey) {  updateItemOK(erUpdateItemRequest, aId, aChangeKey);}, 
+			function(erUpdateItemRequest, aCode, aMsg) {  updateItemError(erUpdateItemRequest, aCode, aMsg);},
+			null);
+	
+	
+	function updateItemOK(erUpdateItemRequest, aId, aChangeKey){
+		that.globalFunctions.LOG("updateItem OK:" + aId + " : " +  aChangeKey );  
+		if (toggleType == "removeAll") { 
+	        that.removeAllMessageTagsPostEwsUpdate();
+	    } else { 
+	        that.toggleMessageTagPostEwsUpdate(key, addKey);
+	    }
+	}
+	
+	function updateItemError(erUpdateItemRequest, aCode, aMsg){
+        that.globalFunctions.LOG("updateItemError:  aCode:" + aCode + " aMsg: " +  aMsg );   
+	}
+}; 
 /*
  * Custom method to handle tag menu click event
  *
- */
+ */   
 rtews.toggleMessageTagPostEwsUpdate = function(key, addKey) {
     var messages = Cc["@mozilla.org/array;1"].createInstance(Ci.nsIMutableArray);
     var msg = Cc["@mozilla.org/array;1"].createInstance(Ci.nsIMutableArray);
@@ -1253,8 +812,171 @@ rtews.removeAllMessageTagsPostEwsUpdate = function(msgHdr) {
     if (prevHdrFolder)
         prevHdrFolder.removeKeywordsFromMessages(messages, allKeys);
     OnTagsChange();
-};
+};  
 
+/*
+ *  Initialize 
+ */
+rtews.load = function() {
+    var that = this; 
+    this.identities = getAllAccounts(); 
+    
+    this.user = this.identities[0].domain +"\\"+this.identities[0].username ;
+    this.mailbox = this.identities[0].email ;
+    this.serverUrl = this.identities[0].ewsUrl ;
+   
+    
+    var active = false;
+    
+    for (var account = 0, len = this.identities.length; account < len; account++) {
+        if (that.identities[account].ewsUrl && that.identities[account].enabled) {
+            if(!active){
+            that.processIdentity(that.identities[account]);} 
+            
+            active = true; 
+     //       that.globalFunctions.LOG("xxxxxxxxxxxxxxxxx account: " + that.identities[account].email +  JSON.stringify(that.identities[account]) );
+        }
+    } 
+ };
+ 
+function getAllAccounts(){
+    
+	var _accounts = [];
+    var appInfo = Components.classes["@mozilla.org/xre/app-info;1"]
+                                     .getService(Components.interfaces.nsIXULAppInfo);
+     var versionChecker = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
+                                .getService(Components.interfaces.nsIVersionComparator);
+      var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"]
+                         .getService(Components.interfaces.nsIMsgAccountManager);
+     var accounts = acctMgr.accounts;
+     if (versionChecker.compare(appInfo.version, "20.0") >= 0){
+    	 for (var i = 0; i < accounts.length; i++) {
+         	     
+         	    	var account = accounts.queryElementAt(i, Components.interfaces.nsIMsgAccount);   
+         			var identities = account.identities;
+         			for (var index=0; index < identities.length; index++) {
+         				var identity = identities.queryElementAt(index, Ci.nsIMsgIdentity);
+         				var calAccount = getCalendarAccount(identity.email); 
+         				 
+         				var enabled = false;
+         				
+         				if(calAccount){
+         					enabled = true;
+         				} 
+         			
+         				try{
+ 						var details = {
+	 						"server":account.incomingServer.prettyName,
+							"serverURI":account.incomingServer.serverURI,
+	                	  	"email":calAccount.getCharPref("ecMailbox"),
+	                	  	"username":calAccount.getCharPref("ecUser"),
+	                	  	"name":identity.fullName,
+	                	  	"domain":calAccount.getCharPref("ecDomain"),
+	                 	  	"enabled":enabled,
+	                	  	"ewsUrl":calAccount.getCharPref("ecServer"),};
+         				}catch(e){}
+         				 
+         				_accounts.push(details);  
+          			} 
+          }
+     }
+     else{
+	 		for (let i = 0; i < accounts.Count(); i++) {  
+        	     
+     	    	var account = accounts.queryElementAt(i, Components.interfaces.nsIMsgAccount);   
+     			var identities = account.identities;
+     			for (let index=0; index < identities.length; index++) {
+     				let identity = identities.queryElementAt(index, Ci.nsIMsgIdentity);
+     				let calAccount = getCalendarAccount(identity.email);
+     				 
+     				let enabled = false;
+     				
+     				if(calAccount){
+     					enabled = true;
+     				} 
+     			
+     				try{
+						let details = {
+ 						"server":account.incomingServer.prettyName,
+						"serverURI":account.incomingServer.serverURI,
+                	  	"email":calAccount.getCharPref("ecMailbox"),
+                	  	"username":calAccount.getCharPref("ecUser"),
+                	  	"name":identity.fullName,
+                	  	"domain":calAccount.getCharPref("ecDomain"),
+                 	  	"enabled":enabled,
+                	  	"ewsUrl":calAccount.getCharPref("ecServer"),};
+     				}catch(e){}
+     				 
+     				_accounts.push(details);  
+      			}  
+	 		}
+     }  
+	 return _accounts;
+} 
+
+function findAccountFromFolder(aFolder) {
+    if (!aFolder)  
+        return null;  
+     var appInfo = Components.classes["@mozilla.org/xre/app-info;1"]
+                                     .getService(Components.interfaces.nsIXULAppInfo);
+     var versionChecker = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
+                                .getService(Components.interfaces.nsIVersionComparator);
+     var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"]
+                         .getService(Components.interfaces.nsIMsgAccountManager);
+     var accounts = acctMgr.accounts;
+     if (versionChecker.compare(appInfo.version, "20.0") >= 0){
+    	 for (var i = 0; i < accounts.length; i++) {
+         	    var account = accounts.queryElementAt(i, Components.interfaces.nsIMsgAccount); 
+
+		        var rootFolder = account.incomingServer.rootFolder; // nsIMsgFolder  
+		        if (rootFolder.hasSubFolders) {  
+		            var subFolders = rootFolder.subFolders; // nsIMsgFolder  
+		            while(subFolders.hasMoreElements()) {  
+		                if (aFolder == subFolders.getNext().QueryInterface(Components.interfaces.nsIMsgFolder))  
+		                    return account.QueryInterface(Components.interfaces.nsIMsgAccount);  
+		            }  
+		        }   
+         }
+     }
+     else{
+	 	for (let i = 0; i < accounts.Count(); i++) {
+	 	    let account = accounts.QueryElementAt(i, Components.interfaces.nsIMsgAccount); 
+	
+	        let rootFolder = account.incomingServer.rootFolder; // nsIMsgFolder  
+	        if (rootFolder.hasSubFolders) {  
+	            let subFolders = rootFolder.subFolders; // nsIMsgFolder  
+	            while(subFolders.hasMoreElements()) {  
+	                if (aFolder == subFolders.getNext().QueryInterface(Components.interfaces.nsIMsgFolder))  
+	                    return account.QueryInterface(Components.interfaces.nsIMsgAccount);  
+	            }  
+	    	}  
+	     }
+     }  
+    return null;  
+}
+
+function getCalendarAccount(aEmail){ 
+	if (!aEmail)  
+		return null;
+ 
+	///Get Calendar manager
+	var calManager = Cc["@mozilla.org/calendar/manager;1"]
+	        			.getService(Ci.calICalendarManager);
+	var cals = calManager.getCalendars({});
+	
+	for( var i = 0; i < cals.length; i++ ){
+		var cal = cals[i];
+		if( cal.mailbox == aEmail ){  
+			try{
+				return Cc["@mozilla.org/preferences-service;1"]
+				            .getService(Ci.nsIPrefService)
+				            .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+  cal.id +".");
+			}catch(e){}
+			break;
+		}
+	} 
+	return null;
+ } 
 /*
  * Overrides default method for applying tag.
  *
@@ -1284,8 +1006,7 @@ function ToggleMessageTag(key, addKey) {
 
         rtews.toggleTags(msgHdr, identity, "single", categories, key, addKey);
     }
-}
-
+} 
 /*
  * Overrides default remove all method.
  *
@@ -1306,8 +1027,7 @@ function RemoveAllMessageTags() {
 
         rtews.toggleTags(msgHdr, identity, "removeAll", []);
     }
-}
-
+} 
 /*
  * Overrides default method for initialize tag menu
  *
@@ -1351,5 +1071,6 @@ function InitMessageTags(menuPopup) {
         menuPopup.appendChild(newMenuItem);
     }
 }
+
 
 window.addEventListener("load", rtews.load());
