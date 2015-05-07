@@ -42,6 +42,30 @@ function erUpdateDelegateRequest(aArgument, aCbOk, aCbError, aListener)
 	this.mailbox = aArgument.mailbox;
 	this.delegateemail=aArgument.delegateemail;
 	this.delegateproperties=aArgument.delegateproperties;
+	this.delegatingItem = aArgument.delegatingItem;
+	
+    this.permission = ""; 
+	switch( this.delegatingItem ){
+		case "calendar":
+			 this.permission = "CalendarFolderPermissionLevel";
+			break;
+		case  "tasks":
+			 this.permission = "TasksFolderPermissionLevel";
+			break;
+		case  "inbox":
+			 this.permission = "InboxFolderPermissionLevel";
+			break;
+		case "contacts":
+			 this.permission = "ContactsFolderPermissionLevel";  
+			break;
+		case "notes":
+			 this.permission = "NotesFolderPermissionLevel";
+			break;
+		case "journal":
+			 this.permission = "JournalFolderPermissionLevel";
+			break;
+		default:
+ 	}
 	
 	this.isRunning = true;
 	this.execute();
@@ -63,7 +87,7 @@ erUpdateDelegateRequest.prototype = {
 		userid.addChildTag("PrimarySmtpAddress","nsTypes",this.delegateemail); 
 		
 		var delegatepermissions = delegateuser.addChildTag("DelegatePermissions","nsTypes", null); 
-		delegatepermissions.addChildTag("CalendarFolderPermissionLevel","nsTypes", this.delegateproperties.DelegatePermissions );
+		delegatepermissions.addChildTag(this.permission,"nsTypes", this.delegateproperties.DelegatePermissions );
 		delegateuser.addChildTag("ReceiveCopiesOfMeetingMessages","nsTypes", this.delegateproperties.ReceiveCopiesOfMeetingMessages); 
 		delegateuser.addChildTag("ViewPrivateItems","nsTypes", this.delegateproperties.ViewPrivateItems );
 		req.addChildTag("DeliverMeetingRequests", "nsMessages",this.delegateproperties.DeliverMeetingRequests );      

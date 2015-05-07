@@ -41,6 +41,31 @@ function erRemoveDelegateRequest(aArgument, aCbOk, aCbError, aListener)
 	this.listener = aListener;
 	this.mailbox = aArgument.mailbox;
 	this.DelegateEmail=aArgument.DelegateEmail;
+	this.delegatingItem = aArgument.delegatingItem;
+
+    this.permission = ""; 
+	switch( this.delegatingItem ){
+		case "calendar":
+			 this.permission = "CalendarFolderPermissionLevel";
+			break;
+		case  "tasks":
+			 this.permission = "TasksFolderPermissionLevel";
+			break;
+		case  "inbox":
+			 this.permission = "InboxFolderPermissionLevel";
+			break;
+		case "contacts":
+			 this.permission = "ContactsFolderPermissionLevel";  
+			break;
+		case "notes":
+			 this.permission = "NotesFolderPermissionLevel";
+			break;
+		case "journal":
+			 this.permission = "JournalFolderPermissionLevel";
+			break;
+		default:
+ 	}
+	
 	this.isRunning = true;
 	this.execute();
 }

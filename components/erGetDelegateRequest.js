@@ -39,7 +39,31 @@ function erGetDelegateRequest(aArgument, aCbOk, aCbError, aListener)
 	this.serverUrl = aArgument.serverUrl;
 	this.listener = aListener;
 	this.mailbox = aArgument.mailbox;
+	this.delegatingItem = aArgument.delegatingItem;
 
+    this.permission = ""; 
+	switch( this.delegatingItem ){
+		case "calendar":
+			 this.permission = "CalendarFolderPermissionLevel";
+			break;
+		case  "tasks":
+			 this.permission = "TasksFolderPermissionLevel";
+			break;
+		case  "inbox":
+			 this.permission = "InboxFolderPermissionLevel";
+			break;
+		case "contacts":
+			 this.permission = "ContactsFolderPermissionLevel";  
+			break;
+		case "notes":
+			 this.permission = "NotesFolderPermissionLevel";
+			break;
+		case "journal":
+			 this.permission = "JournalFolderPermissionLevel";
+			break;
+		default:
+ 	}
+	
 	this.isRunning = true;
 	this.execute();
 }
@@ -91,7 +115,7 @@ erGetDelegateRequest.prototype = {
 						 	SID: delegateUser.getTag("t:UserId").getTagValue("t:SID"),
 						 	PrimarySmtpAddress: delegateUser.getTag("t:UserId").getTagValue("t:PrimarySmtpAddress"),
 						  	DisplayName: delegateUser.getTag("t:UserId").getTagValue("t:DisplayName"), 
-						    DelegatePermissions: delegateUser.getTag("t:DelegatePermissions").getTagValue("t:CalendarFolderPermissionLevel"),
+						    DelegatePermissions: delegateUser.getTag("t:DelegatePermissions").getTagValue("t:"+this.permission),
 						 	ReceiveCopiesOfMeetingMessages:delegateUser.getTagValue("t:ReceiveCopiesOfMeetingMessages"),
 						 	ViewPrivateItems: delegateUser.getTagValue("t:ViewPrivateItems"),
 						 	DeliverMeetingRequests: DeliverMeetingRequests ,
