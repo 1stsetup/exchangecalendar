@@ -74,6 +74,8 @@ erFindInboxFolderRequest.prototype = {
 		fs.addChildTag("BaseShape", "nsTypes", "IdOnly");
 		var ap = fs.addChildTag("AdditionalProperties", "nsTypes", null);
 		ap.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI","folder:DisplayName");	
+		ap.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI","folder:ParentFolderId");	
+		ap.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI","folder:FolderClass");	
 		
 		var extProp = ap.addChildTag("ExtendedFieldURI", "nsTypes", null);
 		extProp.setAttribute("PropertyTag","4340");
@@ -124,6 +126,8 @@ erFindInboxFolderRequest.prototype = {
 						 fldrs[i] = { id : folder[i].getAttributeByTag("t:FolderId", "Id") ,
 						 changeKey : folder[i].getAttributeByTag("t:FolderId", "ChangeKey"),
 						 name : folder[i].getTagValue("t:DisplayName"),
+						 pId : folder[i].getAttributeByTag("t:ParentFolderId","Id"),
+						 folderClass: folder[i].getTagValue("t:FolderClass"),
 						};  
 					}
 				}
