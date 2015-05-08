@@ -194,14 +194,6 @@ rtews.Tags = {
         return this.getKeyForTag(name);
     }
 };
-  
- /*
- * Handler to launch the configuration window
- */
-rtews.launchConfigWizard = function() {
-    window.openDialog("chrome://exchangecalendar/content/rtewsConfigWizard.xul", "rtewsConfigWizard", "chrome,modal,titlebar,centerscreen", {});
-};
-
 /*
  * Fetch configured identity based on the email
  */
@@ -219,12 +211,6 @@ rtews.getIdentity = function(server) {
  * Gets the ItemId element from response of the FindItem SOAP request
  *
  */
-rtews.getItemIdFromResponse = function(itemIdElm) {
-    return {
-        id : itemIdElm.getAttribute('Id'),
-        changeKey : itemIdElm.getAttribute('ChangeKey')
-    };
-}; 
 
 rtews.findFolders = function(identity){
     this.globalFunctions.LOG("findFolders:" ); 
