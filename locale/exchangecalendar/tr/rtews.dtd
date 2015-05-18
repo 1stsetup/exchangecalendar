@@ -1,0 +1,15 @@
+ <!ENTITY rtews.selectaccountdesc "Ayarlanacak yeni posta hesabını seçiniz. Bu hesap, bir Microsoft Exchange hesabı olmalıdır.">
+ <!ENTITY rtews.accconfigured "Hesap zaten ayarlanmış">
+ <!ENTITY rtews.dicoverdesc "Microsoft Exchange Server (EWS) URL'sini otomatik keşif ile bulmayı ya da kendiniz ayarlamayı seçebilirsiniz.">
+ <!ENTITY rtews.dicoverdesc2 "Kendiniz ayarlamak için, URL'yi aşağıya giriniz.">
+ <!ENTITY rtews.autodiscover "Otomatik keşif">
+ <!ENTITY rtews.doautodicover "Otomatik keşfet">
+ <!ENTITY rtews.manual "Kendiniz yapın">
+ <!ENTITY rtews.test "EWS URL'sini doğrulamak için buraya tıklayınız">
+ <!ENTITY rtews.msexchewsurl "Microsoft Exchange EWS URL'si doğrulandı. Ayarlamayı bitirmek için Bitir'e basınız">
+ <!ENTITY rtews.selectaccount "Hesap Seç">
+ <!ENTITY rtews.configure.label "Ayarla...">
+ <!ENTITY rtews.rtforexch "Microsoft Exchange için Uzaktan Etiketleme">
+ <!ENTITY rtews.confirmAccDetail "Şu hesap detaylarını onaylayınız">
+ <!ENTITY rtews.username "Kullanızı Adı">
+ <!ENTITY rtews.domain "Alan">
