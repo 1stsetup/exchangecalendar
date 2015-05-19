@@ -1,9 +1,9 @@
 ##Exchange EWS Provider
 =====================
-Thank you for checking out Ericsson's Exchange EWS Provider. Ericsson and the Ericsson QA team are grateful for the help and hard work of many contributors like yourself.
-The following contributors have contributed to Exchange EWS Provider:
+Thank you for checking out Ericsson's Exchange EWS Provider. Ericsson and the Ericsson QA team are grateful for the help and hard work of many [contributors][contributors] like yourself.
 
-https://github.com/Ericsson/exchangecalendar/contributors
+Current Release Vs. Download trend is something like [this](https://rawgit.com/muthusuba/github-tools/master/downloads-trend.html)
+
 
 Getting involved as a contributor
 ------------------------------------------
@@ -13,11 +13,14 @@ If you know some Javascript, it's worth having a look at the Object Oriented Pro
 
 If you need to brush-up on programming, but are eager to start contributing immediately, please consider helping us find bugs in Github [Exchange EWS Provider][Exchange EWS Provider] or find bugs in the Issues tested by the [EricssonQA][EricssonQA] team. To brush up on Javascript skills before engaging with us, Dive Into Javascript [mozilla][mozilla] is an excellent resource. W3schools also has [notes on Javascript][w3schools] available through their website.  The programming concepts you will need to know include functions, working with classes, and some object-oriented programming basics. To brush up on XUL, Mozilla [XUL][XUL] is an easy and simple place to learn XUL, More of XUL are dynamically configured and cross-plateform.
 
+Special thanks to all our [contributors][contributors]
+
 [w3schools]:  http://www.w3schools.com/js/
 [mozilla]:  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide
 [EricssonQA]:  https://github.com/Ericsson/exchangecalendar/
 [Exchange EWS Provider]:  https://github.com/Ericsson/exchangecalendar/issues
 [XUL]:  https://developer.mozilla.org/en-US/Add-ons/Overlay_Extensions/XUL_School
+[contributors]: https://github.com/Ericsson/exchangecalendar/contributors
 
 Questions are always welcome
 ----------------------------
