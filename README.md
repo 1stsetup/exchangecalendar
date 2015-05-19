@@ -2,7 +2,7 @@
 =====================
 Thank you for checking out Ericsson's Exchange EWS Provider. Ericsson and the Ericsson QA team are grateful for the help and hard work of many [contributors][contributors] like yourself.
 
-Current Release Vs. Download trend is something like [this](https://rawgit.com/muthusuba/github-tools/master/downloads-trend.html)
+Current Release Vs. Download trend is something like [this](https://rawgit.com/muthusuba/github-tools/master/downloads-trend.html?user=Ericsson&repo=exchangecalendar)
 
 
 Getting involved as a contributor
