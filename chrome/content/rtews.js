@@ -619,7 +619,6 @@ rtews.syncTags = function() {
  *
  */
 rtews.toggleTags = function(msgHdr, identity, toggleType, categories, key, addKey) {
-    var ewsObj = identity.ewsObj;
     var folder = this.gerFolderByImapPath(msgHdr.folder.URI);
     var messageId = '<' + msgHdr.messageId + '>';
 
@@ -691,15 +690,14 @@ rtews.updateItem = function(aIds, msgHdr, identity, toggleType, categories, key,
  			 onlySnoozeChanges:false, }, 
 			function(erUpdateItemRequest, aId, aChangeKey) {  updateItemOK(erUpdateItemRequest, aId, aChangeKey);}, 
 			function(erUpdateItemRequest, aCode, aMsg) {  updateItemError(erUpdateItemRequest, aCode, aMsg);},
-			null);
-	
+			null);	
 	
 	function updateItemOK(erUpdateItemRequest, aId, aChangeKey){
 		that.globalFunctions.LOG("updateItem OK:" + aId + " : " +  aChangeKey );  
 		if (toggleType == "removeAll") { 
-	        that.removeAllMessageTagsPostEwsUpdate();
+	        that.removeAllMessageTagsPostEwsUpdate(msgHdr);
 	    } else { 
-	        that.toggleMessageTagPostEwsUpdate(key, addKey);
+	        that.toggleMessageTagPostEwsUpdate(key, addKey, msgHdr);
 	    }
 	}
 	
@@ -711,10 +709,16 @@ rtews.updateItem = function(aIds, msgHdr, identity, toggleType, categories, key,
  * Custom method to handle tag menu click event
  *
  */   
-rtews.toggleMessageTagPostEwsUpdate = function(key, addKey) {
+rtews.toggleMessageTagPostEwsUpdate = function(key, addKey,msgHdr) {
     var messages = Cc["@mozilla.org/array;1"].createInstance(Ci.nsIMutableArray);
     var msg = Cc["@mozilla.org/array;1"].createInstance(Ci.nsIMutableArray);
-    var selectedMessages = gFolderDisplay.selectedMessages;
+    
+    if (msgHdr == undefined) {
+        var selectedMessages = gFolderDisplay.selectedMessages;
+    } else {
+        var selectedMessages = [msgHdr];
+    }
+    
     var toggler = addKey ? "addKeywordsToMessages" : "removeKeywordsFromMessages";
     var prevHdrFolder = null;
     // this crudely handles cross-folder virtual folders with selected messages
@@ -799,8 +803,8 @@ rtews.removeAllMessageTagsPostEwsUpdate = function(msgHdr) {
         prevHdrFolder.removeKeywordsFromMessages(messages, allKeys);
     OnTagsChange();
 };  
-
 /*
+ * 
  *  Initialize 
  */
 rtews.load = function() {
@@ -825,8 +829,7 @@ rtews.load = function() {
     } 
  };
  
-function getAllAccounts(){
-    
+function getAllAccounts(){    
 	var _accounts = [];
     var appInfo = Components.classes["@mozilla.org/xre/app-info;1"]
                                      .getService(Components.interfaces.nsIXULAppInfo);
