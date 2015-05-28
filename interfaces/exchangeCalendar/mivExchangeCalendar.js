@@ -850,19 +850,20 @@ calExchangeCalendar.prototype = {
 			this.useOfflineCache = aValue;
 		    if (this.debug) this.logInfo("setProperty: useOfflineCache = " + this.useOfflineCache + "  offlineCacheDB  "  + this.offlineCacheDB);  
 
-			if (!this.useOfflineCache) {
+		    if (!aValue) {
 				if (this.offlineCacheDB) {
 					try {
-						if (this.offlineCacheDB) this.offlineCacheDB.close(); 
-						this.offlineCacheDB = null;   
-					} catch(exc) {
- 					    if (this.debug) this.logInfo("setProperty: Can't Modify Cache status");  
-					}
-				} 
-				if (this.dbFile) this.dbFile.remove(true); 
-				this.offlineCacheDB = null;  
-				// Remove the offline cache database when we delete the calendar. 
-			} 
+						 if (this.offlineCacheDB) this.offlineCacheDB.close();
+                                                 this.offlineCacheDB = null;
+                                         } catch(exc) {}
+                                }
+ 
+                                // Remove the offline cache database when we delete the calendar.
+                            if (this.dbFile) {
+                                    this.dbFile.remove(true);
+                                     this.offlineCacheDB = null;
+                            }
+                    } 
 			return;
 		}
 
@@ -8052,8 +8053,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		if (this.getItemSyncQueue.length > 0) {
 			if (this.debug) this.logInfo("We have "+this.getItemSyncQueue.length+" items in this.getItemSyncQueue");
 			this.processItemSyncQueue();
-		}
- 		getSyncState();
+		} 
 	},
 
 	syncFolderItemsError: function _syncFolderItemsError(erSyncFolderItemsRequest, aCode, aMsg)
