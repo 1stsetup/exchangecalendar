@@ -954,14 +954,19 @@ function getCalendarAccount(aEmail){
 	var cals = calManager.getCalendars({});
 	
 	for( var i = 0; i < cals.length; i++ ){
-		var cal = cals[i];
-		if( cal.mailbox == aEmail ){  
-			try{
-				return Cc["@mozilla.org/preferences-service;1"]
-				            .getService(Ci.nsIPrefService)
-				            .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+  cal.id +".");
-			}catch(e){}
-			break;
+		var cal = cals[i]; 
+		if( cal.type == "exchangecalendar" ){
+		
+			if( cal.mailbox == aEmail ){  
+				try{
+					return Cc["@mozilla.org/preferences-service;1"]
+					            .getService(Ci.nsIPrefService)
+					            .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+  cal.id +".");
+				}catch(e){
+					dump("e"+e);
+					}
+				break;
+			}
 		}
 	} 
 	return null;
