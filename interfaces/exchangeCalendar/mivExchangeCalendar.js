@@ -2189,7 +2189,8 @@ calExchangeCalendar.prototype = {
 	getItems: function _getItems(aItemFilter, aCount,
                                     aRangeStart, aRangeEnd, aListener) 
 	{
-		if (this.debug) this.logInfo("getItems 0: aListener:"+aListener);
+	
+		//if (this.debug) this.logInfo("getItems 0: aListener:"+aListener);
 		if (this.debug) this.logInfo("getItems 1: aCount:"+aCount);
 
 		//dump("getItems name:"+this.name+", aListener:"+aListener);
@@ -5952,14 +5953,17 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 	startCalendarPoller: function _startCalendarPoller()
 	{
 	        var self = this;
-		var timerCallback = {
+	        var timerCallback = {
 			notify: function setTimeout_notify() {
-				self.refresh();
-			}
-		};
-
-		if (!this.calendarPoller) {
-
+						self.refresh();
+	        		}
+	        };
+		
+		if( 60 > this.globalFunctions.safeGetIntPref(this.prefs, "ecCalendarPollInterval",0) ){  
+			this.prefs.setIntPref("ecCalendarPollInterval",60);
+		}
+		
+ 		if (!this.calendarPoller) { 
 			// start the calendar poller
 			this.calendarPoller = Cc["@mozilla.org/timer;1"]
 					.createInstance(Ci.nsITimer);
