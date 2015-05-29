@@ -655,7 +655,9 @@ calExchangeCalendar.prototype = {
 				this.syncExchangeToOfflineCache();
 			}*/ // Not necessary anymore as it will follow the cache by default.
 		}
-
+		
+		//Enable cache on startup :)
+		this.prefs.setBoolPref("useOfflineCache",true);
 	},
 
 	set readOnly(aValue)
@@ -2189,7 +2191,7 @@ calExchangeCalendar.prototype = {
 	getItems: function _getItems(aItemFilter, aCount,
                                     aRangeStart, aRangeEnd, aListener) 
 	{
-	
+		this.startCalendarPoller();
 		//if (this.debug) this.logInfo("getItems 0: aListener:"+aListener);
 		if (this.debug) this.logInfo("getItems 1: aCount:"+aCount);
 
