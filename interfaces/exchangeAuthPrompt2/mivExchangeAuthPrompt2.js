@@ -367,16 +367,14 @@ mivExchangeAuthPrompt2.prototype = {
 							authInfo.username = username.substr(username.indexOf("\\")+1);
 							this.logInfo("asyncPromptAuthNotifyCallback: We have a domainname part in the username. Going to use it. domain="+authInfo.domain);
 						}
+						else if (username.indexOf("@") > -1) {
+							authInfo.username = username;
+							authInfo.domain = undefined;
+							this.logInfo("asyncPromptAuthNotifyCallback: We have an E-Mail address as username, therefore discarding the domain property.");
+						}
 						else {
-							if (username.indexOf("@") > -1) {
-								authInfo.username = username.substr(0,username.indexOf("@"));
-								authInfo.domain = username.substr(username.indexOf("@")+1);
-								this.logInfo("asyncPromptAuthNotifyCallback: We have a domainname part in the username. Going to use it. domain="+authInfo.domain);
-							}
-							else {
-								this.logInfo("asyncPromptAuthNotifyCallback: We do not have a domainname part in the username. Specifying empty one.");
-								authInfo.username = username;
-							}
+							this.logInfo("asyncPromptAuthNotifyCallback: We do not have a domainname part in the username. Specifying empty one.");
+							authInfo.username = username;
 						}
 					}
 					else {
