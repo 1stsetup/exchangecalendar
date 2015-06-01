@@ -5889,7 +5889,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 	findCalendarItemsOK: function _findCalendarItemsOK(erFindCalendarItemsRequest, aIds, aOccurrences, doNotCheckCache)
 	{
-		if (this.debug) this.logInfo("findCalendarItemsOK: aIds.length="+aIds.length+", aOccurrences.length="+aOccurrences.length);
+		if (this.debug) this.logInfo("xxxxxxxxfindCalendarItemsOK: aIds.length="+aIds.length+", aOccurrences.length="+aOccurrences.length);
 
 		if (erFindCalendarItemsRequest) this.saveCredentials(erFindCalendarItemsRequest.argument);
 		this.notConnected = false;
@@ -5917,8 +5917,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 				newIdList.push(item);
 			}
 		}
-//dump("     findCalendarItemsOK: newIdList.length:"+newIdList.length+"\n");
-
+ 
 		// Remove Occurrence/Exception items in the lists which we already have in memory
 		var newOccurrenceList = new Array();
 //dump("     findCalendarItemsOK: aOccurrences.length:"+aOccurrences.length+"\n");
@@ -6018,7 +6017,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 	findFollowupTaskItemsOK: function _findFollowupTaskItemsOK(erFindFollowupItemsRequest, aIds)
 	{
- 	if (this.debug) this.logInfo("findFollowupTaskItemsOK: aIds.length:"+aIds.length);
+ 	if (this.debug) this.logInfo("xxxxxxxxxxfindFollowupTaskItemsOK: aIds.length:"+aIds.length);
 		this.saveCredentials(erFindFollowupItemsRequest.argument);
 		this.notConnected = false;
 
@@ -6054,7 +6053,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 	
 	findTaskItemsOK: function _findTaskItemsOK(erFindTaskItemsRequest, aIds)
 	{
-//		if (this.debug) this.logInfo("findTaskItemsOK: aIds.length:"+aIds.length);
+ 		if (this.debug) this.logInfo("findTaskItemsOK: aIds.length:"+aIds.length);
 		this.saveCredentials(erFindTaskItemsRequest.argument);
 		this.notConnected = false;
 
@@ -6126,7 +6125,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 	getTaskItemsOK: function _getTaskItemsOK(erGetItemsRequest, aItems, aItemErrors)
 	{
-		if (this.debug) this.logInfo("getTaskItemsOK: aItems.length:"+aItems.length);
+		if (this.debug) this.logInfo("xxxxxxxxxxxxxgetTaskItemsOK: aItems.length:"+aItems.length);
 		
 		this.saveCredentials(erGetItemsRequest.argument);
 		this.notConnected = false;
@@ -7786,7 +7785,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 	getCalendarItemsOK: function _getCalendarItemsOK(erGetItemsRequest, aItems, aItemErrors)
 	{
-//		if (this.debug) this.logInfo("getCalendarItemsOK: aItems.length="+aItems.length);
+ 		if (this.debug) this.logInfo("getCalendarItemsOK: aItems.length="+aItems.length);
  		this.saveCredentials(erGetItemsRequest.argument);
 		this.notConnected = false;
 
@@ -7950,20 +7949,35 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		for each(var creation in creations) { changes.push(creation); }
 		for each(var update in updates) { changes.push(update); }
 		if (changes.length > 0) {
-			this.addToQueue( erGetItemsRequest, 
-				{user: this.user, 
-				 mailbox: this.mailbox,
-				 folderBase: this.folderBase,
-				 serverUrl: this.serverUrl,
-				 ids: changes,
-				 folderID: this.folderID,
-				 changeKey: this.changeKey,
-				 folderClass: this.folderClass,
-				 GUID: calExchangeCalendarGUID,
-				 syncState: syncState }, 
-				function(erGetItemsRequest, aIds, aItemErrors) { self.getTaskItemsOK(erGetItemsRequest, aIds, aItemErrors);}, 
-				function(erGetItemsRequest, aCode, aMsg) { self.getTaskItemsError(erGetItemsRequest, aCode, aMsg);},
-				null);
+			dump("\nxxxxxxxxx 123 ");
+			switch(erSyncFolderItemsRequest.folderBase){
+			case "task": 
+				this.findTaskItemsOK(erSyncFolderItemsRequest,changes);
+				break;
+			case "calendar":
+				this.findCalendarItemsOK(erSyncFolderItemsRequest,changes,[]);
+				break;
+			case "inbox":
+				this.findFollowupTaskItemsOK(erSyncFolderItemsRequest,changes);
+				break;
+			default: 
+				this.logError("Changes could not be made."); 
+			}
+			
+//			this.addToQueue( erGetItemsRequest, 
+//				{user: this.user, 
+//				 mailbox: this.mailbox,
+//				 folderBase: this.folderBase,
+//				 serverUrl: this.serverUrl,
+//				 ids: changes,
+//				 folderID: this.folderID,
+//				 changeKey: this.changeKey,
+//				 folderClass: this.folderClass,
+//				 GUID: calExchangeCalendarGUID,
+//				 syncState: syncState }, 
+//				function(erGetItemsRequest, aIds, aItemErrors) { self.getTaskItemsOK(erGetItemsRequest, aIds, aItemErrors);}, 
+//				function(erGetItemsRequest, aCode, aMsg) { self.getTaskItemsError(erGetItemsRequest, aCode, aMsg);},
+//				null);
 		}
 
 		if (!syncState) return;
