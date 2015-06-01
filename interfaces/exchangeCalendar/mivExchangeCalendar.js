@@ -2872,6 +2872,7 @@ calExchangeCalendar.prototype = {
 		//var self = this;
 
 		if (this.OnlyShowAvailability) {
+			if (!this.lastValidRangeStart) this.lastValidRangeStart = aRangeStart.clone(); 
 			this.getOnlyFreeBusyInformation(this.lastValidRangeStart, this.lastValidRangeEnd);
 		}		
 		else {
@@ -3175,9 +3176,7 @@ calExchangeCalendar.prototype = {
 		}
 
 		if (this.firstrun) {
-			this.firstrun = false;
-			//callee is unknown
-			//getFreeBusyService().addProvider(this);
+			this.firstrun = false; 
 
 			// The first thing we want to do is check the folderbase and folderpath for their id & changekey.
 			// It might have changed between restarts.
@@ -7940,8 +7939,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		for each(var creation in creations) { changes.push(creation); }
 		for each(var update in updates) { changes.push(update); }
 		if (changes.length > 0) {
-			dump("\nxxxxxxxxxnewchange");
- 			switch(erSyncFolderItemsRequest.folderBase){
+  			switch(erSyncFolderItemsRequest.folderBase){
 			case "task": 
 				this.findTaskItemsOK(erSyncFolderItemsRequest,changes);
 				break;
