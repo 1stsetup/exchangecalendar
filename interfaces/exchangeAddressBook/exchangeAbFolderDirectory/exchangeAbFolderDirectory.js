@@ -519,7 +519,7 @@ exchangeAbFolderDirectory.prototype = {
 					 serverUrl: this.serverUrl,
 					 folderID: this.folderID,
 					 changeKey: this.changeKey,
-					 ids: { name: wordToSearch },
+					 ids: { name: decodeURI(wordToSearch) },
 					 searchScope: "ActiveDirectory",
  					 GALQuery: true,
 			 		 actionStart: Date.now()},
