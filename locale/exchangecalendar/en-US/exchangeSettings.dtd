@@ -42,4 +42,8 @@
 <!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Number of months to cache items after today:">
 
 <!ENTITY button.offlineCacheproperties.clearCache "Clear offline cached data">
+<!ENTITY ecsettings.tab.autoprocessingproperties "Automatic Processing">
 
+<!ENTITY label.autoprocessingproperties.deletecancelleditems "Automatically remove cancelled events">
+<!ENTITY label.autoprocessingproperties.markeventtentative "Automatically mark event as tentative and send response to organizer">
+ 

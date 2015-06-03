@@ -51,8 +51,36 @@
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
     <script type="application/javascript" src="chrome://exchangecalendar/content/calendar-event-dialog.js"/> 
+    <script type="application/javascript" src="chrome://calendar/content/calendar-event-dialog.js"/>
+
+	<command id="cmd_attendees"
+			 oncommand="exchWebService.eventDialog.editAttendees();"/>
 
 	<rows id="event-grid-rows">
+
+		<row id="event-grid-attendee-row-3" align="center" insertbefore = "event-grid-attendee-row">
+ 		       <label value="Required Attendees (I):"
+ 		              accesskey="&event.attendees.accesskey;"
+ 		              control="attendee-list"
+ 		              disable-on-readonly="true"/>
+ 		       <label id="req-attendee-list-3"
+ 		              class="text-link"
+ 		              crop="right"
+ 		              tooltiptext=""
+ 		              onclick="showAttendeePopup(event)"/>
+                </row>
+ 	
+ 		<row id="event-grid-attendee-row-4" align="center" insertbefore = "event-grid-attendee-row">
+ 		       <label value="Optional Attendees (I):"
+ 		              accesskey="&event.attendees.accesskey;"
+ 		              control="attendee-list"
+ 		              disable-on-readonly="true"/>
+ 		       <label id="opt-attendee-list-4"
+ 		              class="text-link"
+ 		              crop="right"
+ 		              tooltiptext=""
+ 		              onclick="showAttendeePopup(event)"/>
+		</row>
 		<row id="exchWebService-owner-row" collapsed="true" insertafter="event-grid-title-row">
 			<label value="&exchWebService.owner.label;"/>
 			<label id="exchWebService-owner-label" value=""/>

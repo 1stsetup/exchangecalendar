@@ -155,6 +155,85 @@ function exchEventSummaryDialog(aDocument, aWindow)
 
 exchEventSummaryDialog.prototype = {
 
+	showOptionalAttendees: function _showOptionalAttendees()
+	{
+		var args = this._window.arguments[0];
+	        var item = args.calendarEvent;
+		var attendees = item.getAttendees({});
+                var optionalAttendeeList = new Array();
+		var requiredAttendeeList = new Array();
+                for each (var attendee in attendees) {
+			if(attendee.role == "OPT-PARTICIPANT")
+			{			
+				optionalAttendeeList.push(attendee);
+			}
+			else 
+			{
+				requiredAttendeeList.push(attendee); 
+			}      
+                }
+
+		
+		
+		if(requiredAttendeeList && requiredAttendeeList.length){
+			this._document.getElementById("required-attendee-spacer").removeAttribute("hidden");  
+			this._document.getElementById("required-attendee-caption").removeAttribute("hidden");  			
+			this._document.getElementById("item-required-attendee").removeAttribute("hidden");   
+			this.displayAttendees(requiredAttendeeList, "item-required-attendee-listbox"); 
+		}
+
+                if(optionalAttendeeList && optionalAttendeeList.length){ 
+			this._document.getElementById("item-optional-attendee").removeAttribute("hidden");
+			this._document.getElementById("optional-attendee-spacer").removeAttribute("hidden");  
+			this._document.getElementById("optional-attendee-caption").removeAttribute("hidden");                 	
+			this.displayAttendees(optionalAttendeeList, "item-optional-attendee-listbox");
+		}
+
+		// hide existing attendees box
+		var item_attendees_box = this._document.getElementById("item-attendees");
+		
+		var children = item_attendees_box.children;
+		children[0].setAttribute("hidden", true);
+		children[1].setAttribute("hidden", true);
+		children[2].setAttribute("hidden", true);
+		children[3].setAttribute("hidden", true);
+                
+  	},
+
+	displayAttendees: function _displayAttendees(attendees, listBox)
+	{		
+         		var listbox = this._document.getElementById(listBox);
+			var itemNode = listbox.getElementsByTagName("listitem")[0];
+         		var num_items = Math.ceil(attendees.length/2)-1;
+         		while (num_items--) {
+             			var newNode = itemNode.cloneNode(true);
+             			listbox.appendChild(newNode);
+         		}
+         		var list = listbox.getElementsByTagName("listitem");
+         		var page = 0;
+         		var line = 0;
+         		for each (var attendee in attendees) {
+					var itemNode = list[line];
+             				var listcell = itemNode.getElementsByTagName("listcell")[page];
+             				if (attendee.commonName && attendee.commonName.length) {
+                 				listcell.setAttribute("label", attendee.commonName);
+             				} else {
+                 				listcell.setAttribute("label",  attendee.toString());
+             				}
+             				listcell.setAttribute("tooltiptext", attendee.toString());
+             				listcell.setAttribute("status", attendee.participationStatus);
+             				listcell.removeAttribute("hidden");
+
+	             			page++;
+	             			if (page > 1) {
+               				page = 0;
+               				line++;
+					}
+				
+             		} //end of for
+         	
+	},	
+
 //exchWebService.forewardEvent2 = {
 	onForward : function _onForward()
 	{	
@@ -461,6 +540,7 @@ try{
 	onLoad: function _onLoad()
 	{
 		//dump("onLoad\n");
+                this.showOptionalAttendees();
 		if (this._document.getElementById("calendar-event-summary-dialog")) {
 			//this._window.removeEventListener("load", this.onLoad, false);
 			var args = this._window.arguments[0];

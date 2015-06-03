@@ -596,7 +596,7 @@ try {
 					// Make a card from the contact details.
 					var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
 						.createInstance(Ci.mivExchangeAbCard);
-					newCard.convertExchangeDistListToCard(this, contact[0], dirName);
+					newCard.convertExchangeDistListToCard(this, mailbox[0], dirName);
 					this.updateList(newCard);
 
 					break; 

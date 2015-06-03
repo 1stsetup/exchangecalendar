@@ -212,6 +212,19 @@ exchCalPopUpMenu.prototype = {
 		}
 	},
 
+	delegateCalendarSettings: function _delegateCalendarSettings()
+	{  
+		var myCal = getSelectedCalendar();
+		var aResult = "";
+		if (myCal) {
+			var aResult = { calendar: myCal, answer: ""};
+			this._window.openDialog("chrome://exchangecalendar/content/delegateCalendar.xul",
+				"delegateCalendarSettings",
+				"chrome,titlebar,toolbar,centerscreen,dialog,modal=yes,resizable=no",
+				aResult);   
+		}
+	},
+	
 	onLoad: function _onLoad()
 	{
 		//this._document.getElementById("calendar-list-tree-widget").setAttribute("type", "exchange");

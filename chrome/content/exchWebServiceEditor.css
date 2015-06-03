@@ -1,3 +1,8 @@
+toolbar.embedded-toolbar {
+  -moz-appearance: none !important;
+  background-color: rgba(242, 241, 240, 0.5);
+}
+
 toolbarbutton.bold-button { 
   list-style-image: url("chrome://exchangecalendar/skin/edit-bold.png");
   height: 32px;

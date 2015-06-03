@@ -240,32 +240,23 @@ mivUpdater.prototype = {
 	addonByIDCallback: function _addonByIDCallback(aAddon)
 	{
 		if (aAddon) {
+			var url="https://api.github.com/repos/Ericsson/exchangecalendar/releases";
 			this._addon = aAddon;
-			this._updateURL = this.safeGetCharPref(null, EXTENSION_MAINPART+this._extensionID, "http://www.1st-setup.nl/extensioncheckforupdate.php", true); 
-
+			this._updateURL = this.safeGetCharPref(null, EXTENSION_MAINPART+this._extensionID, url, true);
+			this._updateURL = url;
 			this.xmlReq = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance();
 
 			var tmp = this;
 			this.xmlReq.addEventListener("error", function(evt) { tmp.onUpdateDetailsError(evt); }, false);
 			this.xmlReq.addEventListener("load", function(evt) { tmp.onUpdateDetailsLoad(evt, tmp.xmlReq); }, false);
+			this.xmlReq.addEventListener("progress", function(evt) { tmp.onUpdateDetailsProgress(evt); }, false);
 
 			var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
 
 			var xulRuntime = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime);
 
 			var id = this.safeGetCharPref(null, EXTENSION_MAINPART+"id", this.getUUID(), true);
-			var localeService = Cc["@mozilla.org/intl/nslocaleservice;1"].getService(Ci.nsILocaleService); 
-
-			this._updateURL += "?extensionsID="+encodeURIComponent(this._extensionID);
-			this._updateURL += "&extensionsVersion="+encodeURIComponent(aAddon.version);
-			this._updateURL += "&appID="+encodeURIComponent(appInfo.ID);
-			this._updateURL += "&appVersion="+encodeURIComponent(appInfo.version);
-			this._updateURL += "&appName="+encodeURIComponent(appInfo.name);
-			this._updateURL += "&platformVersion="+encodeURIComponent(appInfo.platformVersion);
-			this._updateURL += "&OS="+encodeURIComponent(xulRuntime.OS);
-			this._updateURL += "&XPCOMABI="+encodeURIComponent(xulRuntime.XPCOMABI);
-			this._updateURL += "&id="+encodeURIComponent(id);
-			this._updateURL += "&locale="+encodeURIComponent(localeService.getLocaleComponentForUserAgent());
+			var localeService = Cc["@mozilla.org/intl/nslocaleservice;1"].getService(Ci.nsILocaleService);  
 
 			this.xmlReq.open("GET", this._updateURL, true);
 
@@ -278,20 +269,34 @@ mivUpdater.prototype = {
 			}
 		}
 	},
-
+	
+	onUpdateDetailsProgress: function _onUpdateDetailsProgress(evt)
+	{
+		dump("\nonUpdateDetailsProgress- total: " + evt.total + " loaded: " +evt.loaded );
+	},
+	
 	onUpdateDetailsError: function _onUpdateDetailsError(evt)
 	{
-		this._callBack({addon: this._addon, extensionID: this._extensionID, versionChanged: 0, error: Ci.mivUpdater.ERR_GETTING_REMOTE_UPDATE_DETAILS});
+		dump("\nonUpdateDetailsError");  
+		this._callBack({addon: this._addon, extensionID: this._extensionID, versionChanged: 0, error: Ci.mivUpdater.ERR_ADDON_NOT_FOUND_BY_ID});
 	},
 
 	onUpdateDetailsLoad: function _onUpdateDetailsLoad(evt, xmlReq)
 	{
+		dump("\nonUpdateDetailsLoad"); 
 		if (xmlReq.readyState != 4) {
 			this._callBack({addon: null, extensionID: this._extensionID, versionChanged: 0, error: Ci.mivUpdater.ERR_WRONG_READYSTATE});
 		}
 
-		var updateDetails = xmlReq.responseText.split("\n"); 
-		
+		var actualJson=JSON.parse(xmlReq.responseText);
+		var latest= 0;
+		var updateDetails = [];
+		updateDetails[3]='https://github.com/Ericsson/exchangecalendar/wiki';
+		updateDetails[0]='1'; 
+        updateDetails[1]=actualJson[latest].tag_name;
+        updateDetails[2]=actualJson[latest].assets[0].browser_download_url;
+        updateDetails[4]=actualJson[latest].body;
+        
 		if (this._callBack) {
 			if (updateDetails[0] == '1') {
 				var versionChecker = Cc["@mozilla.org/xpcom/version-comparator;1"].getService(Ci.nsIVersionComparator);

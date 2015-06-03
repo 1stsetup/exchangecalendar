@@ -5,14 +5,14 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>exchangecalendar@extensions.1st-setup.nl</em:id>
-    <em:version>3.2.0-Beta77</em:version>
+    <em:version>3.4.0-beta1</em:version>
 
     <em:targetApplication>
       <Description>
       	<!-- Thunderbird -->
         <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
         <em:minVersion>12.0</em:minVersion>
-        <em:maxVersion>30.0a2</em:maxVersion>
+        <em:maxVersion>31.*</em:maxVersion>
       </Description>
     </em:targetApplication>
 
@@ -21,7 +21,7 @@
           <!-- Seamonkey -->
         <em:id>{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}</em:id>
         <em:minVersion>2.6</em:minVersion>
-        <em:maxVersion>2.20</em:maxVersion>
+        <em:maxVersion>2.26.*</em:maxVersion>
       </Description>
     </em:targetApplication>
 
@@ -34,7 +34,7 @@ You can view, delete, create and update calendar and task/todo items. And manage
 Dutch, French, English, German, Swedish and Japanese localizations.
 
 Some of the icons and images used are from the Fugue Icons Collection made by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)</em:description>
-    <em:creator>Michel Verbraak (info@1st-setup.nl)</em:creator>
+    <em:creator>Ericsson (exchangecalendar@ericsson.com)</em:creator>
     <em:developer>Michel Verbraak</em:developer>
     <em:translator>Michel Verbraak (nl)</em:translator>
     <em:translator>Michel Verbraak (en-US)</em:translator>
@@ -62,6 +62,22 @@ Dutch, French, English, German, Swedish and Japanese localizations.
 Some of the icons and images used are from the Fugue Icons Collection made by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)</em:description>
 		</Description>
 	</em:localized>
+
+    <em:localized>
+        <Description>
+            <em:locale>de</em:locale>
+                <em:name>Exchange EWS Provider</em:name>
+                <em:description>Ermöglicht es Ihnen Kalender, Aufgaben und Kontakte mit einem Microsoft Exchange 2007/2010/2013 EWS Server aus Lightning heraus zu synchronisieren.
+
+Sie können diese Kalender- und Aufgabeneinträge betrachten, löschen, erstellen und aktualisieren. Sie können die "Out of Office"-Einstellungen verwalten.
+Sie können Kontakte und globale Adresslisten lesen und für die Autovervollständigung der Adressen nutzen.
+
+Übersetzungen in Niederländisch, Französisch, Deutsch Schwedisch und Japanisch.
+
+Einige der Icons und die Bilder werden aus der Fugue Icons Collection erstellt von Yusuke Kamiyamane (http://p.yusukekamiyamane.com/) genutzt.
+               </em:description>
+        </Description>
+    </em:localized>
 
 	<em:localized>
 		<Description>
@@ -92,6 +108,8 @@ Sommige van de iconen en plaatjes komen uit de Fugue Icons collectie gemaakt doo
 使用されている一部のアイコンやイメージは、Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)さんの、the Fugue Icons Collectionから取られました。</em:description>
 		</Description>
 	</em:localized>
+
+	<em:localized>
 		<Description>
 			<em:locale>ru</em:locale>
 			<em:name>Exchange EWS Provider</em:name>
@@ -103,5 +121,8 @@ Sommige van de iconen en plaatjes komen uit de Fugue Icons collectie gemaakt doo
 Голландский, французский, английский, немецкий, шведский, японский и русский вариант национальных языковых переводов этого приложения присутствуют тут.
 
 Некоторые значки и изображения используются из коллекции Fugue Icons созданной Юсукэ Камияманэ (http://p.yusukekamiyamane.com/)</em:description>
-		</Description>  </Description>
+		</Description>
+	</em:localized>
+
+	</Description>
 </RDF>
