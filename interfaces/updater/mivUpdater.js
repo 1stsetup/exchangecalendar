@@ -292,13 +292,13 @@ mivUpdater.prototype = {
 		var latest= 0;
 		var updateDetails = [];
 		updateDetails[3]='https://github.com/Ericsson/exchangecalendar/wiki';
-		updateDetails[0]='1'; 
+		updateDetails[0]=actualJson[latest].prerelease; 
         updateDetails[1]=actualJson[latest].tag_name;
         updateDetails[2]=actualJson[latest].assets[0].browser_download_url;
         updateDetails[4]=actualJson[latest].body;
         
 		if (this._callBack) {
-			if (updateDetails[0] == '1') {
+			if ( updateDetails[1] ) {
 				var versionChecker = Cc["@mozilla.org/xpcom/version-comparator;1"].getService(Ci.nsIVersionComparator);
 
 				var tmpMsg = "";
@@ -309,8 +309,13 @@ mivUpdater.prototype = {
 						counter++;
 					}
 				}
-
-				this._callBack({updater: this, addon: this._addon, extensionID: this._extensionID, versionChanged: versionChecker.compare(updateDetails[1], this._addon.version), error: 0, updateDetails: {newVersion: updateDetails[1], updateURL: updateDetails[2], infoURL:updateDetails[3], msg: tmpMsg}});
+				
+				if( updateDetails[0] == false ){
+					this._callBack({updater: this, addon: this._addon, extensionID: this._extensionID, versionChanged: versionChecker.compare(updateDetails[1], this._addon.version), error: 0, updateDetails: {newVersion: updateDetails[1], updateURL: updateDetails[2], infoURL:updateDetails[3], msg: tmpMsg}});
+				}
+				else{
+					this._callBack({updater: this, addon: this._addon, extensionID: this._extensionID, versionChanged: 0 , error: 0, updateDetails: {newVersion: updateDetails[1], updateURL: updateDetails[2], infoURL:updateDetails[3], msg: tmpMsg}});
+				}
 			}
 			else {
 				this._callBack({addon: this._addon, extensionID: this._extensionID, versionChanged: 0, error: Ci.mivUpdater.ERR_GETTING_REMOTE_UPDATE_DETAILS});
