@@ -27,6 +27,7 @@ var Cr = Components.results;
 var components = Components;
 
 // Initialize the preferences
+function initPreferences(){
 var exchangeContactsInitPrefs = Cc["@mozilla.org/preferences-service;1"]
     	.getService(Ci.nsIPrefService)
     	.getBranch("ldap_2.servers.exchangecontacts.");
@@ -36,4 +37,15 @@ exchangeContactsInitPrefs.setCharPref("uri", "exchWebService-contactRoot-directo
 
 Cc["@mozilla.org/preferences-service;1"]
             .getService(Ci.nsIPrefService).savePrefFile(null);
+}
 
+window.addEventListener("load",function(){
+	var exchangeContactsInitPrefs = Cc["@mozilla.org/preferences-service;1"]
+	                               	.getService(Ci.nsIPrefService)
+	                               	.getBranch("");
+	if(exchangeContactsInitPrefs.getPrefType('ldap_2.servers.exchangecontacts')){
+		exchangeContactsInitPrefs.deleteBranch('ldap_2.servers.exchangecontacts');
+	}
+	initPreferences();
+},false);
+ 
