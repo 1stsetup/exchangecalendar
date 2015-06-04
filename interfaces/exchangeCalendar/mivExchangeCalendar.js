@@ -7994,18 +7994,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 					this.itemCacheById[item.id] = null;
 					delete this.itemCacheById[item.id];*/
 					this.removeItemFromCache(item);
-					this.removeFromOfflineCache(item);
-					if ( this.deleteCancelledInvitation &&  item.isCancelled &&  item.isInvitation   )  
-					{
- 						this.deleteItem(item);		
-						this.removeFromMeetingRequestCache(item); 
-						if ( item.isRemoved )  {
-							if (this.debug) this.logInfo("Deleted event " + item.title );
-					    }
-						else {
-							if (this.debug) this.logInfo("Something wrong! could not deleted from exchange calendar - " + item.title );
-						}
-					}
+					this.removeFromOfflineCache(item); 
 				}
 				else {
 					// Find matching master record.
