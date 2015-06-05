@@ -121,7 +121,7 @@ const fieldPathMap = {
 	'MeetingRequestWasSent'		: 'calendar',
 	'MeetingTimeZone'		: 'calendar',
 	'MeetingWorkspaceUrl'		: 'calendar',
-	'Mileage'			: 'task',
+ 	'Mileage'			: 'task',
 	'MimeContent'			: 'item',
 	'ModifiedOccurrences'		: 'calendar',
 	'MyResponseType'		: 'calendar',
@@ -246,7 +246,7 @@ mivExchangeBaseItem.prototype = {
 		this._exchangeData = null;
 		this.updatedItem = {};
 		this.newItem = {};
-
+		
 		this._changesAttendees = [];
 		this._changesAttachments = [];
 		this._changesAlarm = [];
@@ -267,7 +267,7 @@ mivExchangeBaseItem.prototype = {
 		this._isMutable = true;
 
 		this._cloneCount = 0;
-
+		
 //		this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 //					.getService(Ci.mivFunctions);
 
@@ -441,6 +441,7 @@ try{
 		this._changeKey = aItem._changeKey;
 		this._uid = aItem._uid;
 		this._itemClass = aItem._itemClass;
+		this._messageId = aItem._messageId; 
 		this._isMeeting = aItem._isMeeting;
 		this._isRecurring = aItem._isRecurring;
 		this._meetingRequestWasSent = aItem._meetingRequestWasSent;
@@ -2107,7 +2108,13 @@ try {
 	{
 		return this._itemClass;
 	},
-
+	
+	// the exchange messageId of this event
+	//readonly attribute AUTF8String messageId;
+	get messageId()
+	{
+		return this._messageId;
+	},
 	// the exchange isCancelled of this event
 	//readonly attribute boolean isCancelled;
 	get isCancelled()
@@ -2605,8 +2612,8 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 		this._uid = this.getTagValue("t:UID", undefined);
 
-		this._itemClass = this.getTagValue("t:ItemClass", null);
-
+		this._itemClass = this.getTagValue("t:ItemClass", null); 
+		
 		this._isMeeting = (this.getTagValue("t:IsMeeting", "false") == "true");
 
 		this._isRecurring = (this.getTagValue("t:IsRecurring", "false") == "true");
@@ -2627,8 +2634,17 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 
 		this._parentId = this.getAttributeByTag("t:ParentFolderId", "Id", null);
 
-		this._parentChangeKey = this.getAttributeByTag("t:ParentFolderId", "ChangeKey", null);
-
+		this._parentChangeKey = this.getAttributeByTag("t:ParentFolderId", "ChangeKey", null); 
+		
+		//MessageId of item used to locate mail item.
+        var messageIdElm = this.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyTag = '0x1035']");
+        if (messageIdElm.length > 0) {
+        	this._messageId =  xml2json.getTagValue(messageIdElm[0], "t:Value", null);
+		}  
+       
+        this._messageId = this._messageId.replace('<', '').replace('>', ''); 
+        messageIdElm = null;
+        
 		this.preLoad();
 
 		// Do the initializaton of this one.
@@ -2694,7 +2710,7 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
 			}
 			break;
 		}
-
+	
 		var tmpObject = this.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']");
 		if (tmpObject.length > 0) {
 //dump(this.title+"| /t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '34144']:"+tmpObject[0].getTagValue("t:Value", null)+"\n");
