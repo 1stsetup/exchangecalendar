@@ -27,27 +27,10 @@ Cu.import("resource://exchangecalendar/erUpdateItem.js");
 
 
 var eventTypes = ["NewMailEvent","ModifiedEvent","MovedEvent","CopiedEvent","CreatedEvent"];
- 
-if ( typeof (rtews) == "undefined") 
-var rtews = {
-    globalFunctions : Cc["@1st-setup.nl/global/functions;1"]
-	             				.getService(Ci.mivFunctions),  
-	calPrefs	: null,  
- 	user 		: null,
- 	mailbox  	: null,
- 	serverUrl 	: null,	
- 	identities  : null,
-	session 	: {
-					subscriptionId:"",
-					watermark:"",
-					},		
-	
-	pollOffset : 10000 ,//time for getevents
-	
-    folderByEwsId : {},
-    folderByImapPath : {},
-    foldersByIdentity : {}, 
-}; 
+
+//hold all array of ews objects
+var ewsTaggerObj = [];
+
 /*
  * @Constructor
  * Message updater
@@ -67,10 +50,10 @@ rtews.UpdateMessage.prototype = {
         var folderPath = this.updates[0].path;
 
         that.searchGloda(messageId, folderPath, function(msgHdrs) {
-            rtews.globalFunctions.LOG("UpdateMessage.update "+ folderPath + " : " + messageId);
+            dump("UpdateMessage.update "+ folderPath + " : " + messageId);
             
             if (msgHdrs.length == 0) {
-            	rtews.globalFunctions.LOG("UpdateMessage.update: Message not found in database with id " + messageId);
+            	dump("UpdateMessage.update: Message not found in database with id " + messageId);
                 that.pendingUpdates.push(that.updates[0]);
             } else {
                 for (var x = 0; x < msgHdrs.length; x++) {
@@ -112,7 +95,7 @@ rtews.UpdateMessage.prototype = {
                 msgHdr.folder[toggler](messages, keywords[t]);
             }
         } catch(e) {
-        	rtews.globalFunctions.LOG("rtews.addKeywordsToMessage"+ e);
+        	dump("rtews.addKeywordsToMessage"+ e);
         }
 
         OnTagsChange();
@@ -120,8 +103,7 @@ rtews.UpdateMessage.prototype = {
 
     /*
      * Search the GLODA for message
-     *
-     */
+      */
     searchGloda : function(messageId, folderPath, callback) {
         try {
             var query = Gloda.newQuery(Gloda.NOUN_MESSAGE);
@@ -150,14 +132,14 @@ rtews.UpdateMessage.prototype = {
                         }
                         callback(msgHdrs);
                     } catch (e) {
-                    	rtews.globalFunctions.LOG("Gloda serch complete"+ e);
+                    	dump("Gloda serch complete"+ e);
                         callback(msgHdrs);
                     }
                 }
             };
             var collection = query.getCollection(queryListener);
         } catch(e) {
-        	rtews.globalFunctions.LOG("Gloda serch"+ e);
+        	dump("Gloda serch"+ e);
         }
     }
 };
@@ -194,567 +176,587 @@ rtews.Tags = {
         return this.getKeyForTag(name);
     }
 };
-/*
- * Fetch configured identity based on the email
- */
-rtews.getIdentity = function(server) {
-    var ids = rtews.identities;
-    for (var x = 0, len = ids.length; x < len; x++) {
-        if (ids[x] && ids[x].enabled == true && ids[x].server == server) {
-            return ids[x];
-        }
-    }
-    return null;
-};
 
-/*
- * Gets the ItemId element from response of the FindItem SOAP request
- *
- */
+function rtews(identity){  
+		this.identity = identity; 
+ 	    this.user = identity.domain +"\\"+identity.username ;
+	    this.mailbox = identity.email ; 
+	    this.serverUrl = identity.ewsUrl ; 
+	    
+	    this.folderByImapPath = [];
+	    this.folderByEwsId = [];
+	    this.foldersByIdentity = {};
+	    
+	    this.session  = {
+			subscriptionId:"",
+			watermark:"",
+		};
+	    
+	   this.retry = true;
 
-rtews.findFolders = function(identity){
-    this.globalFunctions.LOG("findFolders:" ); 
-	this.identity = identity;
-	var self = this;
-	var tmpObject = new  erFindInboxFolderRequest(
-							{user:this.user, 
-							mailbox: this.mailbox  ,
-							serverUrl:this.serverUrl,
-							folderBase: "msgfolderroot",
-							folderPath: "",
-							actionStart: Date.now()}, 
-							function(erFindInboxFolderRequest, folders) { self.findFoldersOK(erFindInboxFolderRequest, folders);}, 
-							function(erFindInboxFolderRequest, aCode, aMsg) { self.findFoldersError(erFindInboxFolderRequest, aCode, aMsg);},
-							null);  
-};
+	   this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+		             				.getService(Ci.mivFunctions);   
+	   this.prefs	 =	 Cc["@mozilla.org/preferences-service;1"]
+	                   				.getService(Ci.nsIPrefBranch); 
+}
 
-rtews.findFoldersOK = function(erFindInboxFolderRequest, folders){
-	this.globalFunctions.LOG("findFoldersOK: " + folders );
-	this.processFolders(folders,this.identity);
-	var folders = this.getFoldersByIdentity(this.identity); 
-     
-	if (folders.length > 0) {
-		   this.subscribe(folders); 
-    } 
-};
- 
-rtews.subscribe  = function(folders){
-	this.globalFunctions.LOG("Subscribe: ");
-  	var self = this;
-  	var tmpObject = new erSubscribeRequest(
-			   		{user: this.user, 
-			   		mailbox: this.mailbox,
-			   		serverUrl: this.serverUrl,
-			   		folderBase: "",
-		   			changeKey: "" ,
-		   			folderIds : folders,
-		   			actionStart: Date.now(),
-		   			timeout: "10",
-		   			eventTypes : eventTypes , }, 
-		   			function(erSubscribeRequest, subscriptionId, watermark) { self.subscribeOK(erSubscribeRequest, subscriptionId, watermark);}, 
-		   			function(erSubscribeRequest, aCode, aMsg) { self.subscribeError(erSubscribeRequest, aCode, aMsg);},
-		   			null);
-}; 
-
-rtews.subscribeOK  = function(erSubscribeRequest, subscriptionId, watermark){
-	this.globalFunctions.LOG("subscribeOK " + subscriptionId +  " watermark  " + watermark );
-	this.session.subscriptionId=subscriptionId;
-	this.session.watermark=watermark;
-	this.poll();
-};
-
-rtews.poll = function() {
-    var self = this;
-    this.Running = false; 
-    this.pollInterval = setInterval(function() { 
-		if (self.session == null) {
-	        return;
-	    }  
-		if ( self.Running == true )  {
-	        	 self.globalFunctions.LOG("getEvents is in process..");
-	        	 return; 
-		} 
-        //Check for new event on the mail box
-		self.getEvents(); 
-    }, this.pollOffset );
-},
-   
-rtews.getItemsError = function(erGetItemsRequest, aCode, aMsg){ 
-	this.globalFunctions.LOG("getItemsError: "+ aMsg);
-};
- 
-rtews.getItemsOK = function(erGetItemsRequest, aItems, aItemErrors){ 
-	this.globalFunctions.LOG("getItemsOK: Received items for update: " + aItems.length); 
- 	if( aItems.length > 0 ){
-	function getItem(aItem){ 
-	   	let id = xml2json.getAttributeByTag(aItem,'t:ItemId','Id'); 
-	   	let changeKey = xml2json.getAttributeByTag(aItem,'t:ItemId','ChangeKey');  
-        return { "Id" : id , "ChangeKey": changeKey, };
-	}  
+rtews.prototype = {  
+	pollOffset : 10000 ,//time for getevents 
+	/*
+	 * Gets the ItemId element from response of the FindItem SOAP request
+	 *
+	 */ 
+ 	findFolders: function _findFolders(identity){
+	    this.globalFunctions.LOG("findFolders: " + this.serverUrl);
+	    
+	    //Call API
+ 		var self = this;
+		var tmpObject = new  erFindInboxFolderRequest(
+								{user:this.user, 
+								mailbox: this.mailbox,
+								serverUrl:this.serverUrl,
+								folderBase: "msgfolderroot",
+								folderPath: "",
+								actionStart: Date.now()}, 
+								function(erFindInboxFolderRequest, folders) { self.findFoldersOK(erFindInboxFolderRequest, folders);}, 
+								function(erFindInboxFolderRequest, aCode, aMsg) { self.findFoldersError(erFindInboxFolderRequest, aCode, aMsg);},
+								null);  
+	},
 	
-	function getParentItem(aItem){ 
-	   	let id = xml2json.getAttributeByTag(aItem,'t:ParentFolderId','Id'); 
-	   	let changeKey = xml2json.getAttributeByTag(aItem,'t:ParentFolderId','ChangeKey');  
-        return { "Id" : id , "ChangeKey": changeKey, };
-	}  
+	findFoldersOK:  function _findFoldersOK(erFindInboxFolderRequest, folders){
+		//this.globalFunctions.LOG("findFoldersOK: " + JSON.stringify(folders));
+ 		this.processFolders(folders); 
+		var folders = this.getFoldersByIdentity(this.identity);  
+ 		if (folders.length > 0) {
+			   this.subscribe(folders); 
+	    } 
+	},
+	 
+	subscribe: function _subscribe(folders){
+		this.globalFunctions.LOG("Subscribe: ");
+	  	var self = this;
+	  	var tmpObject = new erSubscribeRequest(
+				   		{user: this.user, 
+				   		mailbox: this.mailbox,
+				   		serverUrl: this.serverUrl,
+				   		folderBase: "",
+			   			changeKey: "" ,
+			   			folderIds : folders,
+			   			actionStart: Date.now(),
+			   			timeout: "10",
+			   			eventTypes : eventTypes , }, 
+			   			function(erSubscribeRequest, subscriptionId, watermark) { self.subscribeOK(erSubscribeRequest, subscriptionId, watermark);}, 
+			   			function(erSubscribeRequest, aCode, aMsg) { self.subscribeError(erSubscribeRequest, aCode, aMsg);},
+			   			null);
+	},
 	
-	for(var item = 0 ; item < aItems.length ; item++ ){ 
- 		var itemId = getItem(aItems[item]);  
-        var parentItemId = getParentItem(aItems[item]);  
-        
-        var messageIdElm = xml2json.XPath(aItems[item],"/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyTag = '0x1035']");
-        var messageId;
-        if (messageIdElm.length > 0) {
-			 messageId =  xml2json.getTagValue(messageIdElm[0], "t:Value", null);
-		} 
-        
-        messageId = messageId.replace('<', '').replace('>', '');
-
-        if (!messageId) {
-            continue;
-        }
-        
-        var categories = [];
-        var tags = []; 
-       
-        var categoriesElm = xml2json.XPath(aItems[item],'/t:Categories/t:String');
-        for(var index = 0 ; index < categoriesElm.length ; index++ ) {  
-        	categories.push(categoriesElm[index].c); 
-        }
-      
-        if ( categories.length > 0 ) {
-              var errCategory = [];
- 
-            for(var index = 0 ; index < categories.length ; index++ ) {  
-            	var category = categories[index]; 
-            	
-            	if(category){
-	                var tKey = rtews.Tags.getKeyForTag(category);
+	subscribeOK: function _subscribeOK(erSubscribeRequest, subscriptionId, watermark){
+		this.globalFunctions.LOG("subscribeOK " + subscriptionId +  " watermark  " + watermark );
+		this.session.subscriptionId=subscriptionId;
+		this.session.watermark=watermark;
+		
+		this.saveIdentities();
+		this.poll();
+	},
 	
-                     if (tKey != null) {
-                        tags.push(tKey);
-                    } 
-                    else {
-                        var newTagKey = rtews.Tags.addTag(category);
-
-                        if (newTagKey != null) {
-                             tags.push(newTagKey);
-                        } 
-                        else {
-                             errCategory.push(category);
-                        }
-                    }
-            	}
-            }
-             //Prompt categories that were not converted to tags.
-            if (errCategory.length) {
-                var stringBundle = document.getElementById("string-bundle");
-                Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService).alert(null, stringBundle.getString("rtews.title"), stringBundle.getString("rtews.tagAddError") + " " + errCategory.join(", "));
-            } 
-        } 
- 	}
-	var updates = []; 
-   	var folderEwsId = this.gerFolderByEwsId(parentItemId.Id);
-	this.globalFunctions.LOG("getItemsOK: Going to tag update: " + messageId+  ":" +  folderEwsId.path  +  ":" +  tags);
-
-	if ( folderEwsId != null) {
-	        updates.push({
-	            msgId : messageId,
-	            tags : tags,
-	            path : folderEwsId.path
-	        }); 
-	}
+	unsubscribe: function _unsubscribe(){ 
+		var that = this;
+		that.Running = true; 
+		      
+		var tmpObject = new erUnsubscribeRequest(
+						{user: this.user, 
+						mailbox: this.mailbox,
+						serverUrl: this.serverUrl, 
+						actionStart: Date.now(),
+						subscriptionId :  this.session.subscriptionId ,
+						watermark :  this.session.watermark , }, 
+						function(erUnsubscribeRequest, aResp) {  unsubscribeOK(erUnsubscribeRequest, aResp);}, 
+						function(erUnsubscribeRequest, aCode, aMsg) {  unsubscribeError(erUnsubscribeRequest, aCode, aMsg);},
+						null);  
+	},
 	
-	if (updates.length) {
-	    setTimeout(function() {
-	        var updateMsg = new rtews.UpdateMessage(updates);
-	        updateMsg.update();
-	    }, 500);
-	}  
- 	}
-};
-
-rtews.getAndUpdateItems = function(aIds) { 
+	unsubscribeOK: function _unsubscribeOK(erUnsubscribeRequest, aResp){
+		this.globalFunctions.LOG("unsubscribeOK ");
+	},
 	
-	var that = this;   
-	var tmpObject = new erGetItemsRequest(
-			{user: this.user, 
-			 mailbox:  this.mailbox,
- 			 serverUrl:  this.serverUrl,
-			 ids:  aIds,
- 			 folderClass: "IPM.Note",  }, 
-			function(erGetItemsRequest, aIds, aItemErrors) { that.getItemsOK(erGetItemsRequest, aIds, aItemErrors);}, 
-			function(erGetItemsRequest, aCode, aMsg) { that.getItemsError(erGetItemsRequest, aCode, aMsg);},
-			null);  
-};
- 
-rtews.getEvents = function(){ 
-	var that = this;
-	that.Running = true; 
+	unsubscribeError: function _unsubscribeError(erUnsubscribeRequest, aCode, aMsg){
+		this.globalFunctions.LOG("unsubscribeError: "+ aMsg);
+	},
+	
+	poll: function _poll() {
+	    var self = this;
+	    this.Running = false; 
+	    this.pollInterval = setInterval(function() { 
+			if (self.session == null) {
+		        return;
+		    }  
+			if ( self.Running == true )  {
+		        	 self.globalFunctions.LOG("getEvents is in process..");
+		        	 return; 
+			} 
+	        //Check for new event on the mail box
+			self.getEvents(); 
+	    }, this.pollOffset );
+	},
+	   
+	getItemsError: function _getItemsError(erGetItemsRequest, aCode, aMsg){ 
+		this.globalFunctions.LOG("getItemsError: "+ aMsg);
+	},
+	 
+	getItemsOK: function _getItemsOK(erGetItemsRequest, aItems, aItemErrors){ 
+		this.globalFunctions.LOG("getItemsOK: Received items for update: " + aItems.length); 
+	 	if( aItems.length > 0 ){
+		function getItem(aItem){ 
+		   	let id = xml2json.getAttributeByTag(aItem,'t:ItemId','Id'); 
+		   	let changeKey = xml2json.getAttributeByTag(aItem,'t:ItemId','ChangeKey');  
+	        return { "Id" : id , "ChangeKey": changeKey, };
+		}  
+		
+		function getParentItem(aItem){ 
+		   	let id = xml2json.getAttributeByTag(aItem,'t:ParentFolderId','Id'); 
+		   	let changeKey = xml2json.getAttributeByTag(aItem,'t:ParentFolderId','ChangeKey');  
+	        return { "Id" : id , "ChangeKey": changeKey, };
+		}  
+		
+		for(var item = 0 ; item < aItems.length ; item++ ){ 
+	 		var itemId = getItem(aItems[item]);  
+	        var parentItemId = getParentItem(aItems[item]);  
+	        
+	        var messageIdElm = xml2json.XPath(aItems[item],"/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyTag = '0x1035']");
+	        var messageId;
+	        if (messageIdElm.length > 0) {
+				 messageId =  xml2json.getTagValue(messageIdElm[0], "t:Value", null);
+			} 
+	        
+	        messageId = messageId.replace('<', '').replace('>', '');
+	
+	        if (!messageId) {
+	            continue;
+	        }
+	        
+	        var categories = [];
+	        var tags = []; 
+	       
+	        var categoriesElm = xml2json.XPath(aItems[item],'/t:Categories/t:String');
+	        for(var index = 0 ; index < categoriesElm.length ; index++ ) {  
+	        	categories.push(categoriesElm[index].c); 
+	        }
 	      
-	var tmpObject = new erGetEventsRequest(
+	        if ( categories.length > 0 ) {
+	              var errCategory = [];
+	 
+	            for(var index = 0 ; index < categories.length ; index++ ) {  
+	            	var category = categories[index]; 
+	            	
+	            	if(category){
+		                var tKey = rtews.Tags.getKeyForTag(category);
+		
+	                     if (tKey != null) {
+	                        tags.push(tKey);
+	                    } 
+	                    else {
+	                        var newTagKey = rtews.Tags.addTag(category);
+	
+	                        if (newTagKey != null) {
+	                             tags.push(newTagKey);
+	                        } 
+	                        else {
+	                             errCategory.push(category);
+	                        }
+	                    }
+	            	}
+	            }
+	             //Prompt categories that were not converted to tags.
+	            if (errCategory.length) {
+	                var stringBundle = document.getElementById("string-bundle");
+	                Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService).alert(null, stringBundle.getString("rtews.title"), stringBundle.getString("rtews.tagAddError") + " " + errCategory.join(", "));
+	            } 
+	        } 
+	 	}
+		var updates = []; 
+	   	var folderEwsId = this.gerFolderByEwsId(parentItemId.Id);
+		this.globalFunctions.LOG("getItemsOK: Going to tag update: " + messageId+  ":" +  folderEwsId.path  +  ":" +  tags);
+	
+		if ( folderEwsId != null) {
+		        updates.push({
+		            msgId : messageId,
+		            tags : tags,
+		            path : folderEwsId.path
+		        }); 
+		}
+		
+		if (updates.length) {
+		    setTimeout(function() {
+		        var updateMsg = new rtews.UpdateMessage(updates);
+		        updateMsg.update();
+		    }, 500);
+		}  
+	 	}
+	},
+	
+	getAndUpdateItems: function _getAndUpdateItems(aIds) { 
+		var that = this;   
+		var tmpObject = new erGetItemsRequest(
+				{user: this.user, 
+				 mailbox:  this.mailbox,
+	 			 serverUrl:  this.serverUrl,
+				 ids:  aIds,
+	 			 folderClass: "IPM.Note",  }, 
+				function(erGetItemsRequest, aIds, aItemErrors) { that.getItemsOK(erGetItemsRequest, aIds, aItemErrors);}, 
+				function(erGetItemsRequest, aCode, aMsg) { that.getItemsError(erGetItemsRequest, aCode, aMsg);},
+				null);  
+	},
+	 
+	getEvents: function _getEvents(){ 
+		var that = this;
+		that.Running = true; 
+		      
+		var tmpObject = new erGetEventsRequest(
+						{user: this.user, 
+						mailbox: this.mailbox,
+						serverUrl: this.serverUrl, 
+						actionStart: Date.now(),
+						subscriptionId :  this.session.subscriptionId ,
+						watermark :  this.session.watermark , }, 
+						function(erGetEventsRequest, aResp) {  getEventsOK(erGetEventsRequest, aResp);}, 
+						function(erGetEventsRequest, aCode, aMsg) {  getEventsError(erGetEventsRequest, aCode, aMsg);},
+						null);  
+		    
+		function getEventsOK(erGetEventsRequest, response){ 
+			that.globalFunctions.LOG("getEventsOK:" + that.mailbox); 
+			if(response.length > 0 ){ 
+				var note = response[0].XPath("/m:GetEventsResponseMessage/m:Notification");
+				var subscriptionId  = note[0].getTagValue("t:SubscriptionId");
+				var moreEvents  = note[0].getTagValue("t:MoreEvents");
+				var previousWatermark = note[0].getTagValue("t:PreviousWatermark");  
+				 
+			    var _Watermark = response[0].XPath("/m:GetEventsResponseMessage/m:Notification/*/t:Watermark");  
+			    var watermark =  _Watermark[_Watermark.length-1].value;
+				 
+				that.session.watermark = watermark;
+			    that.Running = false; 
+			    
+				var itemIds = []; 
+				var _itemIds = response[0].XPath("/m:GetEventsResponseMessage/m:Notification/*/t:ItemId"); 
+	   				if( _itemIds.length > 0) {
+	  					for ( var index = 0 ; index < _itemIds.length ; index++ ){ 
+		  					itemIds.push(_itemIds[index]);
+	  					}
+	  				}  
+	  			    
+	  				if (itemIds.length == 0) {
+	  			        return;
+	  			    }
+	  
+	  				var  oldItemIds = [];
+	  				var _oldItemIds = response[0].XPath("/m:GetEventsResponseMessage/m:Notification/*/t:OldItemId"); 
+				if( _oldItemIds.length > 0) {
+					for ( var index = 0 ; index < _oldItemIds.length ; index++ ){ 
+	  					oldItemIds.push(_oldItemIds[index]);
+					}
+				}    
+				var newItemIds = [];
+				if (oldItemIds.length > 0) {
+	  		        for (var itemId = 0; itemId < itemIds.length; itemId++) {
+	  		            var id = itemIds[itemId].getAttribute("Id");
+	  		            
+	  		            for (var oldItemId = 0; oldItemId < oldItemIds.length; oldItemId++) {
+	  		                var oId = oldItemIds[oldItemId].getAttribute("Id");
+	  		                if (id != oId) {
+	  		                    newItemIds.push(itemIds[itemId]);
+	  		                }
+	  		            }
+	  		        }
+	  		    } 
+	  			else {
+	  				newItemIds = itemIds.splice(0);
+	  		    }
+				
+				function getItem(aItem){ 
+				   	let id = aItem.getAttribute('Id'); 
+					let changeKey = aItem.getAttribute('ChangeKey');  
+					return { "Id" : id , "ChangeKey": changeKey, };
+				}  
+				
+			   if ( newItemIds.length == 0)  return;  
+			   var itemList = []; 
+			   for(var index = 0; index < newItemIds.length; index++) { 
+				   itemList.push( getItem(newItemIds[index] ));
+			   } 
+			   try{
+				   that.getAndUpdateItems(itemList);
+			   }
+			   catch(e){}
+				  
+			}
+			else{ 
+				that.Running = false;
+			}
+		};  
+		   
+	    function getEventsError(erGetEventsRequest, aCode, aMsg){
+			that.globalFunctions.LOG("getEventsError aCode:" + aCode + " aMsg: " +  aMsg );  
+			that.Running = false ;  
+			
+			//if error reset tags syncing 
+			if(this.retry) this.reset();		
+			this.retry=false;
+		};  
+	},
+	
+	reset: function _reset(){
+		this.pollInterval = 0; 
+		this.getIdentities();
+		this.unsubscribe();
+		this.processIdentity();		
+	},
+	
+	getIdentities: function_ getIdentities(){
+	//	this.globalFunctions.LOG("getIdentities " );
+
+		var pref = this.getCalendarPref(this.identity.email);
+		if(pref){
+			this.session.subscriptionId = this.globalFunctions.safeGetCharPref(pref,"subscriptionId");
+		}
+	},
+	
+	saveIdentities:function _saveIdentities(){
+	//	this.globalFunctions.LOG("saveIdentities " );
+
+		var pref = this.getCalendarPref(this.identity.email);
+		if(pref){
+			pref.setCharPref("subscriptionId",this.session.subscriptionId);
+		}
+		
+	},
+	  
+	subscribeError: function _subscribeError(erSubscribeRequest, aCode, aMsg){ 
+		this.globalFunctions.LOG("subscribeError aCode:" + aCode + " aMsg: " +  aMsg ); 
+	},
+	
+	getFoldersByIdentity: function _getFoldersByIdentity(identity) {
+	    return this.foldersByIdentity[this.identity.email] != undefined ? this.foldersByIdentity[this.identity.email] : null;
+	},
+	
+	gerFolderByEwsId: function _gerFolderByEwsId(id) {
+	    return this.folderByEwsId[id] != undefined ? this.folderByEwsId[id] : null;
+	},
+	
+	gerFolderByImapPath: function _gerFolderByImapPath(path) {
+ 	    return this.folderByImapPath[path.toLowerCase()] != undefined ? this.folderByImapPath[path.toLowerCase()] : null;
+	},
+	 
+	findFoldersError: function _findFoldersError(erFindInboxFolderRequest, aCode, aMsg){
+		this.globalFunctions.LOG("findFoldersError aCode:" + aCode + " aMsg: " +  aMsg ); 
+	},
+	
+	processFolders: function _processFolders(response) {  
+		var identity = this.identity; 
+		
+	    var folderElms = response;
+	    var folders = [];
+	    var obj = {};
+	
+		function Folder(id, name, parentId, changeKey) {
+	       this.id = id;
+	       this.name = name;
+	       this.pId = parentId;
+	       this.changeKey = changeKey;
+	       this.path = "";
+	    }
+
+	    for (var x = 0, len = folderElms.length; x < len; x++) {
+	       var folderClass = folderElms[x].folderClass;
+	       if (folderClass == "IPF.Note") {
+	           var fId = folderElms[x].id;
+	           var fName = folderElms[x].name;
+	           var fPId = folderElms[x].pId;
+	           
+	           var fo = new Folder(fId, fName, fPId, fId.changeKey);
+	
+	           obj[fId] = fo;
+	       }
+	    } 
+	    
+	   //Find path of the folder
+	    var __parents = [];
+	   //Find parent of the given objects. Loops parent of parent to build the path
+	    function getParent(o) {
+	       var parent = obj[o.pId]; 
+	       __parents.push(o.name); 
+	       if (parent) {
+	           getParent(parent);
+	       }
+	    } 
+	    
+	    this.foldersByIdentity[identity.email] = [];   
+	   
+	    for (var p in obj) { 
+	       __parents = []; 
+	       getParent(obj[p]); 
+	       var path = [];
+	       path.push(identity.serverURI);
+	       path.push(__parents.reverse().join("/")); 
+	       obj[p].path = path.join("/").toLowerCase(); 
+	       folders.push(obj[p]);  
+	       this.folderByEwsId[obj[p].id] = obj[p];
+	       this.folderByImapPath[obj[p].path] = obj[p];
+ 	       this.foldersByIdentity[identity.email].push(obj[p]); 
+ 	    }   
+	}, 
+	/*
+	 * Initialize each identity.  
+	 */
+	processIdentity: function _processIdentity() {
+	    this.findFolders(); 
+	}, 
+	/*
+	 * Event handler for Sync Tags menu item. s
+	 */
+	syncTags: function _syncTags() {
+	    var selectedMessages = gFolderDisplay.selectedMessages;
+	    var that = this;
+	    for (var i = 0; i < selectedMessages.length; ++i) {
+	        var msgHdr = selectedMessages[i];
+	        var messageId = '<' + msgHdr.messageId + '>';
+	        var folder = this.gerFolderByImapPath(msgHdr.folder.URI);
+	
+	        this.globalFunctions.LOG("rtews.syncTags folder:" +  messageId);
+	
+	        if (!folder) {
+	            continue;
+	        }
+	     
+	        var tmpObject = new erFindItemsRequest(
 					{user: this.user, 
 					mailbox: this.mailbox,
 					serverUrl: this.serverUrl, 
 					actionStart: Date.now(),
-					subscriptionId :  that.session.subscriptionId ,
-					watermark :  that.session.watermark , }, 
-					function(erGetEventsRequest, aResp) {  getEventsOK(erGetEventsRequest, aResp);}, 
-					function(erGetEventsRequest, aCode, aMsg) {  getEventsError(erGetEventsRequest, aCode, aMsg);},
+					folderID : folder.id ,
+					messageId: messageId, }, 
+					function(erFindItemsRequest, aIds) { findItemsOK(erFindItemsRequest, aIds);}, 
+					function(erFindItemsRequest, aCode, aMsg) {  findItemsError(erFindItemsRequest, aCode, aMsg);},
 					null);  
+	        
+	        function findItemsOK(erFindItemsRequest, aIds){
+	        	that.globalFunctions.LOG("findItemsOK: Fount items: " + aIds.length ); 
+	        	if( aIds.length > 0 ){  
+	    			   that.getAndUpdateItems(aIds); 
+	         	}
+	        	else{
+	        		that.globalFunctions.LOG("findItemsOK: no item found for the message id"); 
+	        	}
+	        } 
+	        
+	        function findItemsError(erFindItemsRequest, aCode, aMsg){
+	            that.globalFunctions.LOG("findItemsError:  aCode:" + aCode + " aMsg: " +  aMsg ); 
+	        }  
+	    } 
+	},   
+	/*
+	 * Updates the tags (categories) on exchange server before updating locally. 
+	 */
+	toggleTags:function _toggleTags(msgHdr, identity, toggleType, categories, key, addKey) {
+		
+	    var folder = this.gerFolderByImapPath(msgHdr.folder.URI);
+	    var messageId = '<' + msgHdr.messageId + '>';
+	
+	    this.globalFunctions.LOG("rtews.toggleTags folder:"+  messageId); 
+ 	   
+	    var that = this;
+	    if (!folder) {
+	        return;
+	    }
 	    
-	function getEventsOK(erGetEventsRequest, response){ 
-		that.globalFunctions.LOG("getEventsOK:"); 
-		if(response.length > 0 ){ 
-			var note = response[0].XPath("/m:GetEventsResponseMessage/m:Notification");
-			var subscriptionId  = note[0].getTagValue("t:SubscriptionId");
-			var moreEvents  = note[0].getTagValue("t:MoreEvents");
-			var previousWatermark = note[0].getTagValue("t:PreviousWatermark");  
-			 
-		    var _Watermark = response[0].XPath("/m:GetEventsResponseMessage/m:Notification/*/t:Watermark");  
-		    var watermark =  _Watermark[_Watermark.length-1].value;
-			 
-			that.session.watermark = watermark;
-		    that.Running = false; 
-		    
-			var itemIds = []; 
-			var _itemIds = response[0].XPath("/m:GetEventsResponseMessage/m:Notification/*/t:ItemId"); 
-   				if( _itemIds.length > 0) {
-  					for ( var index = 0 ; index < _itemIds.length ; index++ ){ 
-	  					itemIds.push(_itemIds[index]);
-  					}
-  				}  
-  			    
-  				if (itemIds.length == 0) {
-  			        return;
-  			    }
-  
-  				var  oldItemIds = [];
-  				var _oldItemIds = response[0].XPath("/m:GetEventsResponseMessage/m:Notification/*/t:OldItemId"); 
-			if( _oldItemIds.length > 0) {
-				for ( var index = 0 ; index < _oldItemIds.length ; index++ ){ 
-  					oldItemIds.push(_oldItemIds[index]);
-				}
-			}    
-			var newItemIds = [];
-			if (oldItemIds.length > 0) {
-  		        for (var itemId = 0; itemId < itemIds.length; itemId++) {
-  		            var id = itemIds[itemId].getAttribute("Id");
-  		            
-  		            for (var oldItemId = 0; oldItemId < oldItemIds.length; oldItemId++) {
-  		                var oId = oldItemIds[oldItemId].getAttribute("Id");
-  		                if (id != oId) {
-  		                    newItemIds.push(itemIds[itemId]);
-  		                }
-  		            }
-  		        }
-  		    } 
-  			else {
-  				newItemIds = itemIds.splice(0);;
-  		    }
-			
-			function getItem(aItem){ 
-			   	let id = aItem.getAttribute('Id'); 
-				let changeKey = aItem.getAttribute('ChangeKey');  
-				return { "Id" : id , "ChangeKey": changeKey, };
-			}  
-			
-		   if ( newItemIds.length == 0)  return;  
-		   var itemList = []; 
-		   for(var index = 0; index < newItemIds.length; index++) { 
-			 itemList.push( getItem(newItemIds[index] ));
-		   } 
-		   try{
-			   that.getAndUpdateItems(itemList);
-		   }
-		   catch(e){}
-			  
-		}
-		else{ 
-			that.Running = false;
-		}
-	};  
-	   
-    function getEventsError(erGetEventsRequest, aCode, aMsg){
-		that.globalFunctions.LOG("getEventsError aCode:" + aCode + " aMsg: " +  aMsg );  
-		that.Running = false ;  
-	};  
-};
-  
-rtews.subscribeError = function(erSubscribeRequest, aCode, aMsg){ 
-	this.globalFunctions.LOG("subscribeError aCode:" + aCode + " aMsg: " +  aMsg ); 
-};
-
-rtews.getFoldersByIdentity = function(identity) {
-    return this.foldersByIdentity[this.identity.email] != undefined ? this.foldersByIdentity[this.identity.email] : null;
-};
-
-rtews.gerFolderByEwsId = function(id) {
-    return this.folderByEwsId[id] != undefined ? this.folderByEwsId[id] : null;
-};
-
-rtews.gerFolderByImapPath = function(path) {
-    return this.folderByImapPath[path.toLowerCase()] != undefined ? this.folderByImapPath[path.toLowerCase()] : null;
-};
- 
-rtews.findFoldersError = function(erFindInboxFolderRequest, aCode, aMsg){
-	this.globalFunctions.LOG("findFoldersError aCode:" + aCode + " aMsg: " +  aMsg ); 
-};
-
-rtews.processFolders = function(response, identity) {  
-	    
-    function Folder(id, name, parentId, changeKey) {
-       this.id = id;
-       this.name = name;
-       this.pId = parentId;
-       this.changeKey = changeKey;
-       this.path = "";
-    };
-
-    var folderElms = response;
-    var folders = [];
-    var obj = {};
-
-    for (var x = 0, len = folderElms.length; x < len; x++) {
-       var folderClass = folderElms[x].folderClass;
-       if (folderClass == "IPF.Note") {
-           var fId = folderElms[x].id;
-           var fName = folderElms[x].name;
-           var fPId = folderElms[x].pId;
-           
-           var fo = new Folder(fId, fName, fPId, fId.changeKey);
-
-           obj[fId] = fo;
-       }
-    } 
-   //Find path of the folder
-    var __parents = [];
-   //Find parent of the given objects. Loops parent of parent to build the path
-    function getParent(o) {
-       var parent = obj[o.pId]; 
-       __parents.push(o.name); 
-       if (parent) {
-           getParent(parent);
-       }
-    } 
-    this.foldersByIdentity[identity.email] = []; 
-    for (var p in obj) {
-       __parents = []; 
-       getParent(obj[p]); 
-       var path = [];
-       path.push(identity.serverURI);
-       path.push(__parents.reverse().join("/")); 
-       obj[p].path = path.join("/").toLowerCase(); 
-       folders.push(obj[p]); 
-       this.folderByEwsId[obj[p].id] = obj[p];
-       this.folderByImapPath[obj[p].path] = obj[p];
-       this.foldersByIdentity[identity.email].push(obj[p]);
-    }
-};
- 
-/*
- * Initialize each identity. 
- *
- */
-rtews.processIdentity = function(identity) {
-    this.findFolders(identity); 
-};
-
-rtews.addSyncMenu = function(menuPopup) {
-    var newMenuItem = document.createElement("menuitem");
-    newMenuItem.setAttribute('oncommand', 'rtews.syncTags(event.target);');
-    newMenuItem.setAttribute("label", "EWS Sync Tags");
-    menuPopup.appendChild(newMenuItem);
-
-    var newMenuSeperator = document.createElement("menuseparator");
-    newMenuSeperator.setAttribute("id", "mailContext-sep-afterTagSync");
-    menuPopup.appendChild(newMenuSeperator);
-}; 
-/*
- * Event handler for Sync Tags menu item.
- *
- */
-rtews.syncTags = function() {
-    var selectedMessages = gFolderDisplay.selectedMessages;
-    var that = this;
-    for (var i = 0; i < selectedMessages.length; ++i) {
-        var msgHdr = selectedMessages[i];
-        var messageId = '<' + msgHdr.messageId + '>';
-        var folder = this.gerFolderByImapPath(msgHdr.folder.URI);
-
-        this.globalFunctions.LOG("rtews.syncTags folder:" + JSON.stringify(folder) + " " + messageId);
-
-        if (!folder) {
-            continue;
-        }
-     
-        var tmpObject = new erFindItemsRequest(
+	    var tmpObject = new erFindItemsRequest(
 				{user: this.user, 
 				mailbox: this.mailbox,
 				serverUrl: this.serverUrl, 
 				actionStart: Date.now(),
 				folderID : folder.id ,
 				messageId: messageId, }, 
-				function(erFindItemsRequest, aIds) { findItemsOK(erFindItemsRequest, aIds);}, 
+				function(erFindItemsRequest, aIds) {  findItemsOK(erFindItemsRequest, aIds);}, 
 				function(erFindItemsRequest, aCode, aMsg) {  findItemsError(erFindItemsRequest, aCode, aMsg);},
 				null);  
-        
-        function findItemsOK(erFindItemsRequest, aIds){
-        	that.globalFunctions.LOG("findItemsOK: Fount items: " + aIds.length ); 
-        	if( aIds.length > 0 ){  
-    			   that.getAndUpdateItems(aIds); 
-         	}
-        	else{
-        		that.globalFunctions.LOG("findItemsOK: no item found for the message id"); 
-        	}
-        } 
-        
-        function findItemsError(erFindItemsRequest, aCode, aMsg){
-            that.globalFunctions.LOG("findItemsError:  aCode:" + aCode + " aMsg: " +  aMsg ); 
-        }  
-    } 
-};   
-/*
- * Updates the tags (categories) on exchange server before updating locally.
- *
- */
-rtews.toggleTags = function(msgHdr, identity, toggleType, categories, key, addKey) {
-    var folder = this.gerFolderByImapPath(msgHdr.folder.URI);
-    var messageId = '<' + msgHdr.messageId + '>';
-
-    this.globalFunctions.LOG("rtews.toggleTags folder:"+ JSON.stringify(folder) + " " + messageId);
-    var that = this;
-    if (!folder) {
-        return;
-    }
-    
-    var tmpObject = new erFindItemsRequest(
-			{user: this.user, 
-			mailbox: this.mailbox,
-			serverUrl: this.serverUrl, 
-			actionStart: Date.now(),
-			folderID : folder.id ,
-			messageId: messageId, }, 
-			function(erFindItemsRequest, aIds) {  findItemsOK(erFindItemsRequest, aIds);}, 
-			function(erFindItemsRequest, aCode, aMsg) {  findItemsError(erFindItemsRequest, aCode, aMsg);},
-			null);  
-    
-    function findItemsOK(erFindItemsRequest, aIds){
-    	that.globalFunctions.LOG("findItemsOK: Fount items: " + aIds.length ); 
-    	if( aIds.length > 0 ){  
-    		that.updateItem(aIds,msgHdr, identity, toggleType, categories, key, addKey); 
-     	}
-    	else{
-        	 that.globalFunctions.LOG("findItemsOK: no item found for the message id"); 
-    	}
-    } 
-    
-    function findItemsError(erFindItemsRequest, aCode, aMsg){
-        that.globalFunctions.LOG("findItemsError:  aCode:" + aCode + " aMsg: " +  aMsg ); 
-    }  
-}; 
-
-rtews.updateItem = function(aIds, msgHdr, identity, toggleType, categories, key, addKey){  
-	this.globalFunctions.LOG("updateItem: aIds " + aIds.length + " ,   toggleType " + toggleType );
-	
-	var that = this;
+	    
+	    function findItemsOK(erFindItemsRequest, aIds){
+	    	that.globalFunctions.LOG("findItemsOK: Fount items: " + aIds.length ); 
+	    	if( aIds.length > 0 ){  
+	    		that.updateItem(aIds,msgHdr, identity, toggleType, categories, key, addKey); 
+	     	}
+	    	else{
+	        	 that.globalFunctions.LOG("findItemsOK: no item found for the message id"); 
+	    	}
+	    } 
+	    
+	    function findItemsError(erFindItemsRequest, aCode, aMsg){
+	        that.globalFunctions.LOG("findItemsError:  aCode:" + aCode + " aMsg: " +  aMsg ); 
+	    }  
+	},
+	/*
+	 * Update Mail item with category
+	 */
+	updateItem: function _updateItem(aIds, msgHdr, identity, toggleType, categories, key, addKey){  
+		this.globalFunctions.LOG("updateItem: aIds " + aIds.length + " ,   toggleType " + toggleType );
 		
-	var item = aIds[0]; 
+		var that = this;
+			
+		var item = aIds[0]; 
+		
+		var changes =  '<nsTypes:ItemChange>';
+			changes += '<nsTypes:ItemId Id="' + item.Id + '" ChangeKey="' + item.ChangeKey + '" />';
+	    	changes += '<nsTypes:Updates>';
+			changes += '<nsTypes:SetItemField>';
+			changes += '<nsTypes:FieldURI FieldURI="item:Categories"/>';
+			changes += '<nsTypes:Message>';
+			changes += '<nsTypes:Categories>'; 
+			if( categories.length > 0 ){
+			   for (var index  in  categories  ) {
+					changes += '<nsTypes:String>' + categories[index] + '</nsTypes:String>';
+			    } 
+			}  
+		    changes += '</nsTypes:Categories>'; 
+		    changes += '</nsTypes:Message>';
+		    changes += '</nsTypes:SetItemField>';
+		    changes += '</nsTypes:Updates>';
+		    changes += '</nsTypes:ItemChange>';
+	  
+		this.globalFunctions.LOG("updateItem: changes " + changes);
 	
-	var changes =  '<nsTypes:ItemChange>';
-		changes += '<nsTypes:ItemId Id="' + item.Id + '" ChangeKey="' + item.ChangeKey + '" />';
-    	changes += '<nsTypes:Updates>';
-		changes += '<nsTypes:SetItemField>';
-		changes += '<nsTypes:FieldURI FieldURI="item:Categories"/>';
-		changes += '<nsTypes:Message>';
-		changes += '<nsTypes:Categories>'; 
-		if( categories.length > 0 ){
-		   for (var index  in  categories  ) {
-				changes += '<nsTypes:String>' + categories[index] + '</nsTypes:String>';
-		    } 
-		}  
-	    changes += '</nsTypes:Categories>'; 
-	    changes += '</nsTypes:Message>';
-	    changes += '</nsTypes:SetItemField>';
-	    changes += '</nsTypes:Updates>';
-	    changes += '</nsTypes:ItemChange>';
-  
-	this.globalFunctions.LOG("updateItem: changes " + changes);
-
-    var tmpObject = new erUpdateItemRequest({user: this.user, 
-			 mailbox: this.mailbox,
-			 folderBase: this.folderBase,
-			 serverUrl: this.serverUrl,
-  			 updateReq: changes,
- 	 		 actionStart: Date.now(),
- 			 onlySnoozeChanges:false, }, 
-			function(erUpdateItemRequest, aId, aChangeKey) {  updateItemOK(erUpdateItemRequest, aId, aChangeKey);}, 
-			function(erUpdateItemRequest, aCode, aMsg) {  updateItemError(erUpdateItemRequest, aCode, aMsg);},
-			null);	
-	
-	function updateItemOK(erUpdateItemRequest, aId, aChangeKey){
-		that.globalFunctions.LOG("updateItem OK:" + aId + " : " +  aChangeKey );  
-		if (toggleType == "removeAll") { 
-	        that.removeAllMessageTagsPostEwsUpdate(msgHdr);
-	    } else { 
-	        that.toggleMessageTagPostEwsUpdate(key, addKey, msgHdr);
-	    }
-	}
-	
-	function updateItemError(erUpdateItemRequest, aCode, aMsg){
-        that.globalFunctions.LOG("updateItemError:  aCode:" + aCode + " aMsg: " +  aMsg );   
-	}
-}; 
-/*
- * Custom method to handle tag menu click event
- *
- */   
-rtews.toggleMessageTagPostEwsUpdate = function(key, addKey,msgHdr) {
-    var messages = Cc["@mozilla.org/array;1"].createInstance(Ci.nsIMutableArray);
-    var msg = Cc["@mozilla.org/array;1"].createInstance(Ci.nsIMutableArray);
-    
-    if (msgHdr == undefined) {
-        var selectedMessages = gFolderDisplay.selectedMessages;
-    } else {
-        var selectedMessages = [msgHdr];
-    }
-    
-    var toggler = addKey ? "addKeywordsToMessages" : "removeKeywordsFromMessages";
-    var prevHdrFolder = null;
-    // this crudely handles cross-folder virtual folders with selected messages
-    // that spans folders, by coalescing consecutive msgs in the selection
-    // that happen to be in the same folder. nsMsgSearchDBView does this
-    // better, but nsIMsgDBView doesn't handle commands with arguments,
-    // and (un)tag takes a key argument.
-    for (var i = 0; i < selectedMessages.length; ++i) {
-        var msgHdr = selectedMessages[i];
-
-        if (msgHdr.label) {
-            // Since we touch all these messages anyway, migrate the label now.
-            // If we don't, the thread tree won't always show the correct tag state,
-            // because resetting a label doesn't update the tree anymore...
-            msg.clear();
-            msg.appendElement(msgHdr, false);
-            msgHdr.folder.addKeywordsToMessages(msg, "$label" + msgHdr.label);
-            msgHdr.label = 0;
-            // remove legacy label
-        }
-        if (prevHdrFolder != msgHdr.folder) {
-            if (prevHdrFolder)
-                prevHdrFolder[toggler](messages, key);
-            messages.clear();
-            prevHdrFolder = msgHdr.folder;
-        }
-        messages.appendElement(msgHdr, false);
-    }
-    if (prevHdrFolder)
-        prevHdrFolder[toggler](messages, key);
-    OnTagsChange();
-};
+	    var tmpObject = new erUpdateItemRequest({user: this.user, 
+				 mailbox: this.mailbox,
+				 folderBase: this.folderBase,
+				 serverUrl: this.serverUrl,
+	  			 updateReq: changes,
+	 	 		 actionStart: Date.now(),
+	 			 onlySnoozeChanges:false, }, 
+				function(erUpdateItemRequest, aId, aChangeKey) {  updateItemOK(erUpdateItemRequest, aId, aChangeKey);}, 
+				function(erUpdateItemRequest, aCode, aMsg) {  updateItemError(erUpdateItemRequest, aCode, aMsg);},
+				null);	
+		
+		function updateItemOK(erUpdateItemRequest, aId, aChangeKey){
+			that.globalFunctions.LOG("updateItem OK:" + aId + " : " +  aChangeKey );  
+			if (toggleType == "removeAll") { 
+		        rtews.removeAllMessageTagsPostEwsUpdate(msgHdr);
+		    } else { 
+		    	rtews.toggleMessageTagPostEwsUpdate(key, addKey, msgHdr);
+		    }
+		}
+		
+		function updateItemError(erUpdateItemRequest, aCode, aMsg){
+	        that.globalFunctions.LOG("updateItemError:  aCode:" + aCode + " aMsg: " +  aMsg );   
+		}
+	}, 
+	/*
+	 *  Initialize 
+	 */
+	load: function _load() { 
+    		this.processIdentity();    
+	 },
+ };
 
 /*
- * Custom method for remove all tags menuitem
- *
+ * Custom method for remove all tags menuitem 
  */
 rtews.removeAllMessageTagsPostEwsUpdate = function(msgHdr) {
     //Check if a message header is passed
@@ -804,30 +806,141 @@ rtews.removeAllMessageTagsPostEwsUpdate = function(msgHdr) {
     OnTagsChange();
 };  
 /*
- * 
- *  Initialize 
- */
-rtews.load = function() {
-    var that = this; 
-    this.identities = getAllAccounts(); 
+ * Custom method to handle tag menu click event 
+ */   
+rtews.toggleMessageTagPostEwsUpdate = function(key, addKey,msgHdr) {
+    var messages = Cc["@mozilla.org/array;1"].createInstance(Ci.nsIMutableArray);
+    var msg = Cc["@mozilla.org/array;1"].createInstance(Ci.nsIMutableArray);
     
-    this.user = this.identities[0].domain +"\\"+this.identities[0].username ;
-    this.mailbox = this.identities[0].email ;
-    this.serverUrl = this.identities[0].ewsUrl ;
-   
+    if (msgHdr == undefined) {
+        var selectedMessages = gFolderDisplay.selectedMessages;
+    } else {
+        var selectedMessages = [msgHdr];
+    }
     
-    var active = false;
-    
-    for (var account = 0, len = this.identities.length; account < len; account++) {
-        if (that.identities[account].ewsUrl && that.identities[account].enabled) {
-            if(!active){
-            that.processIdentity(that.identities[account]);} 
-            
-            active = true; 
-     //       that.globalFunctions.LOG("xxxxxxxxxxxxxxxxx account: " + that.identities[account].email +  JSON.stringify(that.identities[account]) );
+    var toggler = addKey ? "addKeywordsToMessages" : "removeKeywordsFromMessages";
+    var prevHdrFolder = null;
+    // this crudely handles cross-folder virtual folders with selected messages
+    // that spans folders, by coalescing consecutive msgs in the selection
+    // that happen to be in the same folder. nsMsgSearchDBView does this
+    // better, but nsIMsgDBView doesn't handle commands with arguments,
+    // and (un)tag takes a key argument.
+    for (var i = 0; i < selectedMessages.length; ++i) {
+        var msgHdr = selectedMessages[i];
+
+        if (msgHdr.label) {
+            // Since we touch all these messages anyway, migrate the label now.
+            // If we don't, the thread tree won't always show the correct tag state,
+            // because resetting a label doesn't update the tree anymore...
+            msg.clear();
+            msg.appendElement(msgHdr, false);
+            msgHdr.folder.addKeywordsToMessages(msg, "$label" + msgHdr.label);
+            msgHdr.label = 0;
+            // remove legacy label
         }
-    } 
- };
+        if (prevHdrFolder != msgHdr.folder) {
+            if (prevHdrFolder)
+                prevHdrFolder[toggler](messages, key);
+            messages.clear();
+            prevHdrFolder = msgHdr.folder;
+        }
+        messages.appendElement(msgHdr, false);
+    }
+    if (prevHdrFolder)
+        prevHdrFolder[toggler](messages, key);
+    OnTagsChange();
+};
+
+rtews.syncTags = function(event){
+	 var identity = rtews.getIdentity(gFolderDisplay.displayedFolder.server.prettyName); 
+	 rtewsObj(identity).syncTags();
+};
+
+rtews.addSyncMenu = function (menuPopup) {
+    var newMenuItem = document.createElement("menuitem");
+    newMenuItem.setAttribute('oncommand', 'rtews.syncTags(event.target);');
+    newMenuItem.setAttribute("label", "EWS Sync Tags");
+    menuPopup.appendChild(newMenuItem);
+
+    var newMenuSeperator = document.createElement("menuseparator");
+    newMenuSeperator.setAttribute("id", "mailContext-sep-afterTagSync");
+    menuPopup.appendChild(newMenuSeperator);
+};
+
+/*
+ * Fetch configured identity based on the email
+ */
+rtews.getIdentity = function(server) {
+    var ids = identities;
+    for (var x = 0, len = ids.length; x < len; x++) {
+        if (ids[x] && ids[x].enabled == true && ids[x].server == server) {
+            return ids[x];
+        }
+    }
+    return null;
+};  
+
+//Get all the identities 
+const identities = getAllAccounts();   
+
+/*
+ * Initialilize 
+ */
+function init(){ 
+	    for (var account = 0, len =  identities.length; account < len; account++) {
+	        if (identities[account].ewsUrl && identities[account].enabled) {
+ 	            
+	        	var tmp = new rtews(identities[account]);
+	        	tmp.load();
+	        	ewsTaggerObj[account] = tmp;
+	        	tmp = null;
+// 	           / dump("\nxxxxxxxxxxxxxxxxx account: " + ewsTaggerObj[account].identity.email +  JSON.stringify(identities[account]) );
+	        }  
+	    }  
+}
+/*
+ * Get ews obj of respective mail account
+ */
+function rtewsObj(identity){
+	if(!identity){
+		return null;
+	}
+	for(var obj in ewsTaggerObj ){
+		 if( ( ewsTaggerObj[obj].identity.email == identity.email  ) &&  ( ewsTaggerObj[obj].identity.serverURI == identity.serverURI  )){
+			 return ewsTaggerObj[obj]; 
+		 }
+	} 
+	return null; 
+}
+
+//Lets initialize
+window.addEventListener("load",init(),false);
+ 
+function removeDuplicateAccount(identities){  
+		var newidentities =[];
+	    function find(arr, key, val) { //Find array element which has a key value of val 
+		  for (var ai, i = arr.length; i--;)
+		    if ((ai = arr[i]) && ai[key] == val)
+		      return true;
+		  return null;
+		}
+	    
+	    for (var account = 0, len = identities.length; account < len; account++) {
+	    	if( account == 0 && identities[account]!= null){
+	    		newidentities.push(identities[account]);
+	    		continue;
+ 	    	}
+	    	
+	    	var test  = find(newidentities,"serverURI",identities[account].serverURI); 
+	    	if(!test){
+	    		newidentities.push(identities[account]); 
+	    	} 
+	    	test=null;
+	    } 
+	    
+	    //return filtered accounts
+	    return newidentities;
+}
  
 function getAllAccounts(){    
 	var _accounts = [];
@@ -845,7 +958,7 @@ function getAllAccounts(){
          			var identities = account.identities;
          			for (var index=0; index < identities.length; index++) {
          				var identity = identities.queryElementAt(index, Ci.nsIMsgIdentity);
-         				var calAccount = getCalendarAccount(identity.email); 
+         				var calAccount = getCalendarPref(identity.email); 
          				 
          				var enabled = false;
          				
@@ -876,7 +989,7 @@ function getAllAccounts(){
      			var identities = account.identities;
      			for (let index=0; index < identities.length; index++) {
      				let identity = identities.queryElementAt(index, Ci.nsIMsgIdentity);
-     				let calAccount = getCalendarAccount(identity.email);
+     				let calAccount = getCalendarPref(identity.email);
      				 
      				let enabled = false;
      				
@@ -900,7 +1013,9 @@ function getAllAccounts(){
       			}  
 	 		}
      }  
-	 return _accounts;
+     
+     var _newaccounts = removeDuplicateAccount(_accounts);
+	 return _newaccounts;
 } 
 
 function findAccountFromFolder(aFolder) {
@@ -944,7 +1059,7 @@ function findAccountFromFolder(aFolder) {
     return null;  
 }
 
-function getCalendarAccount(aEmail){ 
+function getCalendarPref(aEmail){ 
 	if (!aEmail)  
 		return null;
  
@@ -980,7 +1095,7 @@ function ToggleMessageTag(key, addKey) {
 
     //if we don't have the id configured run the default toggle functionality
     if (identity == null) {
-        rtews.toggleMessageTagPostEwsUpdate(key, addKey);
+        rtewsObj.toggleMessageTagPostEwsUpdate(key, addKey);
         return;
     }
 
@@ -997,15 +1112,16 @@ function ToggleMessageTag(key, addKey) {
         }
 
         var categories = rtews.Tags.getTagsForKeys(keywords);
-
-        rtews.toggleTags(msgHdr, identity, "single", categories, key, addKey);
+ 
+        rtewsObj(identity).toggleTags(msgHdr, identity, "single", categories, key, addKey);
     }
-} 
+}  
+
 /*
  * Overrides default remove all method.
  *
  */
-function RemoveAllMessageTags() {
+function RemoveAllMessageTag() {
     var identity = rtews.getIdentity(gFolderDisplay.displayedFolder.server.prettyName);
 
     //if we don't have the id configured run the default toggle functionality
@@ -1017,9 +1133,8 @@ function RemoveAllMessageTags() {
     var selectedMessages = gFolderDisplay.selectedMessages;
 
     for (var i = 0; i < selectedMessages.length; ++i) {
-        var msgHdr = selectedMessages[i];
-
-        rtews.toggleTags(msgHdr, identity, "removeAll", []);
+        var msgHdr = selectedMessages[i];        
+        rtewsobj(identity).toggleTags(msgHdr, identity, "removeAll", []);
     }
 } 
 /*
@@ -1065,6 +1180,4 @@ function InitMessageTags(menuPopup) {
         menuPopup.appendChild(newMenuItem);
     }
 }
-
-
-window.addEventListener("load", rtews.load());
+ 
