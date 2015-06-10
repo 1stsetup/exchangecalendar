@@ -511,7 +511,7 @@ rtews.prototype = {
 		this.processIdentity();		
 	},
 	
-	getIdentities: function_ getIdentities(){
+	getIdentities: function _getIdentities(){
 	//	this.globalFunctions.LOG("getIdentities " );
 
 		var pref = this.getCalendarPref(this.identity.email);
