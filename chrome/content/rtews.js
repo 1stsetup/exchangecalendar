@@ -887,16 +887,24 @@ const identities = getAllAccounts();
  * Initialilize 
  */
 function init(){ 
-	    for (var account = 0, len =  identities.length; account < len; account++) {
-	        if (identities[account].ewsUrl && identities[account].enabled) {
+		if( identities.length > 0 ){
+			for (var account = 0 ; account < identities.length ; account++) {
+				if (identities[account].ewsUrl && identities[account].enabled) {
  	            
-	        	var tmp = new rtews(identities[account]);
-	        	tmp.load();
-	        	ewsTaggerObj[account] = tmp;
-	        	tmp = null;
+					var tmp = new rtews(identities[account]);
+					tmp.load();
+					ewsTaggerObj[account] = tmp;
+					tmp = null;
 // 	           / dump("\nxxxxxxxxxxxxxxxxx account: " + ewsTaggerObj[account].identity.email +  JSON.stringify(identities[account]) );
-	        }  
-	    }  
+	        	}  
+ 	    	}  
+		}
+		else
+		{
+			dump("\nrtews: No mail account and calendar account is matching");
+			return;
+			
+		}
 }
 /*
  * Get ews obj of respective mail account
@@ -911,10 +919,7 @@ function rtewsObj(identity){
 		 }
 	} 
 	return null; 
-}
-
-//Lets initialize
-window.addEventListener("load",init(),false);
+} 
  
 function removeDuplicateAccount(identities){  
 		var newidentities =[];
@@ -948,7 +953,7 @@ function getAllAccounts(){
                                      .getService(Components.interfaces.nsIXULAppInfo);
      var versionChecker = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
                                 .getService(Components.interfaces.nsIVersionComparator);
-      var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"]
+     var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"]
                          .getService(Components.interfaces.nsIMsgAccountManager);
      var accounts = acctMgr.accounts;
      if (versionChecker.compare(appInfo.version, "20.0") >= 0){
@@ -1180,4 +1185,5 @@ function InitMessageTags(menuPopup) {
         menuPopup.appendChild(newMenuItem);
     }
 }
- 
+//Lets initialize
+window.addEventListener("load",init(),false);

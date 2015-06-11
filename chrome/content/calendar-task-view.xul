@@ -59,7 +59,7 @@
     <vbox id="calendar-task-box" onselect="taskHtmlDetailsView(event);"/>
      <vbox id="calendar-task-details-container">
         <browser id="calendar-task-details-description2"
-             name="messagepane"
+             name="messagepane02"
              height="0"
              flex="1"
              minwidth="1"
@@ -70,7 +70,7 @@
              disablehistory="true"
              autofind="false"
              type="content-primary"
-             onresize="return messagePaneOnResize(event);"
+             onresize="return true;"
              src="about:blank"  insertbefore="calendar-task-details-description" />
        </vbox>
    
