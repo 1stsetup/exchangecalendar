@@ -4,140 +4,142 @@ function showIconsAsInviteColumn(){}
 showIconsAsInviteColumn.prototype.execute = function(){   
     var extrasObserver = {
 			observe: function(aMsgFolder, aTopic, aData) {  
- 		    if (gDBView) {
-    			var columnHandler = { 
-    			    getCellText: function(row, col) {}, 
-    			    getSortStringForRow: function(hdr) { 
-	    				var Subject  = hdr.mime2DecodedSubject; 
-    				   	var isInviteMail= hdr.getStringProperty("isInviteMail");   
-    				   	
-    				   	if( isInviteMail == "true"   ){ 
-    				     var res = Subject.match(/Accepted:/);  
-						 if(!res){
-							 res = Subject.match(/Declined:/);  
-						 }
-						 else{   
-							 return "accepted"; 
-						 }
-						  
-						 if(!res){
-							 res = Subject.match(/Tentative:/);  
-						 }
-						 else{ 	
-							 return "declined"; 
-						 } 
-						 if(!res){
-							 res = Subject.match(/Canceled:/);  
-						 }
-						 else{   
-							 return "tentative"; 
-						 }  
-						 
-						 if(!res){
-							 res = Subject.match(/Updated:/);  
-						 }
-						 else{   
-							 return "updated"; 
-						 }  
-						 
-						 if(!res){
-							 res = Subject.match(/Event Invitation:/);  
-						 }
-						 else{  
-							 return "updated"; 
-						 }   
-					 	 return "invited";   
-    				  } 
-    			    }, 
-    			    isString: function() { return true; }, 
-    			    getImageSrc: function(row, col) { 
-    			    	var hdr = gDBView.getMsgHdrAt(row); 
-	    				var Subject  = hdr.mime2DecodedSubject; 
-    				   	var msgFolder=hdr.folder;
-  	    				  var isInviteMail= hdr.getStringProperty("isInviteMail"); 
- 
-  	    				 if( ( isInviteMail  == "false" ) || ( isInviteMail  == "true" ) ) { 
- 	    				  }
- 	    				  else  {	 
- 	    					  var self=this;
- 	    					  setTimeout( function(){ tmpMailTools.fetchMail(hdr); } ,0); 
- 	    					  setTimeout( function(row,col){ self.getImageSrc(row,col); } ,5000);
-  	    				  }
-  	    				  
- 	    		/*		  if(   isInviteMail == ""  ){  
-	 	    				   	MsgHdrToMimeMessage(hdr, null, function (hdr, aMimeMessage) {  
-		    			              try {
-		  	    			             let attachments = aMimeMessage.allUserAttachments || aMimeMessage.allAttachments;
-		  	    			             if  ( attachments.length == 1){
-		 	    			                   for (let [index, att] in Iterator(attachments))
-		 	    			                   {
-					 	    			             if ( att.name == "invite.ics" ){
-					 	 	    					 	hdr.setStringProperty("isInviteMail","true");
-					 	    			             }
-		 	    			                   }
-		 	    			            } 
-		    			              } catch (err) {} 
-	  	    				      }, true ,{examineEncryptedParts:true,}); // true means force the message into being downloaded... this might take some time! 	    				 
- 	    				  	} */ //Thunderbird crashes during new account.
-				         if( isInviteMail == "true" ){ 
-    				     var res = Subject.match(/Accepted:/);  
-						 if(!res){
-							 res = Subject.match(/Declined:/);  
-						 }
-						 else{   
-							 return "chrome://exchangeCalendar/skin/accepted.png"; 
-						 }
-						  
-						 if(!res){
-							 res = Subject.match(/Tentative:/);  
-						 }
-						 else{ 	
-							 return "chrome://exchangeCalendar/skin/declined.png"; 
-						 } 
-						 if(!res){
-							 res = Subject.match(/Canceled:/);  
-						 }
-						 else{   
-							 return "chrome://exchangeCalendar/skin/tentative.png"; 
-						 }  
-						 
-						 if(!res){
-							 res = Subject.match(/Updated:/);  
-						 }
-						 else{   
-							 return "chrome://exchangeCalendar/skin/updated.png"; 
-						 }  
-						 
-						 if(!res){
-							 res = Subject.match(/Event Invitation:/);  
-						 }
-						 else{  
-							 return "chrome://exchangeCalendar/skin/updated.png"; 
-						 }   
-					 	 return "chrome://exchangeCalendar/skin/invited.png";   
-    				  }
-    			    }, 
-    			    getSortLongForRow: function(hdr) {},
-					isEditable: function(row, col) {
-						return false;
-					},
-					getCellProperties:   function(row, col, properties) {
-						return properties;
-					},
-					cycleCell: function(row, col) {
-					},
-					getRowProperties:    function(row, properties) {
-						return properties;
-					}
-			}; 
-	    			
-			try {
-			    columnHandler.old = gDBView.getColumnHandler("inviteCol");
-			}
-			catch (ex) {}
-			
-			gDBView.addColumnHandler("inviteCol", columnHandler);  
- 		    }//ifend
+	 		   	try{
+    			if (gDBView) {
+		    			var columnHandler = { 
+		    			    getCellText: function(row, col) {}, 
+		    			    getSortStringForRow: function(hdr) { 
+			    				var Subject  = hdr.mime2DecodedSubject; 
+		    				   	var isInviteMail= hdr.getStringProperty("isInviteMail");   
+		    				   	
+		    				   	if( isInviteMail == "true"   ){ 
+		    				     var res = Subject.match(/Accepted:/);  
+								 if(!res){
+									 res = Subject.match(/Declined:/);  
+								 }
+								 else{   
+									 return "accepted"; 
+								 }
+								  
+								 if(!res){
+									 res = Subject.match(/Tentative:/);  
+								 }
+								 else{ 	
+									 return "declined"; 
+								 } 
+								 if(!res){
+									 res = Subject.match(/Canceled:/);  
+								 }
+								 else{   
+									 return "tentative"; 
+								 }  
+								 
+								 if(!res){
+									 res = Subject.match(/Updated:/);  
+								 }
+								 else{   
+									 return "updated"; 
+								 }  
+								 
+								 if(!res){
+									 res = Subject.match(/Event Invitation:/);  
+								 }
+								 else{  
+									 return "updated"; 
+								 }   
+							 	 return "invited";   
+		    				  } 
+		    			    }, 
+		    			    isString: function() { return true; }, 
+		    			    getImageSrc: function(row, col) { 
+		    			    	var hdr = gDBView.getMsgHdrAt(row); 
+			    				var Subject  = hdr.mime2DecodedSubject; 
+		    				   	var msgFolder=hdr.folder;
+		  	    				  var isInviteMail= hdr.getStringProperty("isInviteMail"); 
+		 
+		  	    				 if( ( isInviteMail  == "false" ) || ( isInviteMail  == "true" ) ) { 
+		 	    				  }
+		 	    				  else  {	 
+		 	    					  var self=this;
+		 	    					  setTimeout( function(){ tmpMailTools.fetchMail(hdr); } ,0); 
+		 	    					  setTimeout( function(row,col){ self.getImageSrc(row,col); } ,5000);
+		  	    				  }
+		  	    				  
+		 	    		/*		  if(   isInviteMail == ""  ){  
+			 	    				   	MsgHdrToMimeMessage(hdr, null, function (hdr, aMimeMessage) {  
+				    			              try {
+				  	    			             let attachments = aMimeMessage.allUserAttachments || aMimeMessage.allAttachments;
+				  	    			             if  ( attachments.length == 1){
+				 	    			                   for (let [index, att] in Iterator(attachments))
+				 	    			                   {
+							 	    			             if ( att.name == "invite.ics" ){
+							 	 	    					 	hdr.setStringProperty("isInviteMail","true");
+							 	    			             }
+				 	    			                   }
+				 	    			            } 
+				    			              } catch (err) {} 
+			  	    				      }, true ,{examineEncryptedParts:true,}); // true means force the message into being downloaded... this might take some time! 	    				 
+		 	    				  	} */ //Thunderbird crashes during new account.
+						         if( isInviteMail == "true" ){ 
+		    				     var res = Subject.match(/Accepted:/);  
+								 if(!res){
+									 res = Subject.match(/Declined:/);  
+								 }
+								 else{   
+									 return "chrome://exchangeCalendar/skin/accepted.png"; 
+								 }
+								  
+								 if(!res){
+									 res = Subject.match(/Tentative:/);  
+								 }
+								 else{ 	
+									 return "chrome://exchangeCalendar/skin/declined.png"; 
+								 } 
+								 if(!res){
+									 res = Subject.match(/Canceled:/);  
+								 }
+								 else{   
+									 return "chrome://exchangeCalendar/skin/tentative.png"; 
+								 }  
+								 
+								 if(!res){
+									 res = Subject.match(/Updated:/);  
+								 }
+								 else{   
+									 return "chrome://exchangeCalendar/skin/updated.png"; 
+								 }  
+								 
+								 if(!res){
+									 res = Subject.match(/Event Invitation:/);  
+								 }
+								 else{  
+									 return "chrome://exchangeCalendar/skin/updated.png"; 
+								 }   
+							 	 return "chrome://exchangeCalendar/skin/invited.png";   
+		    				  }
+		    			    }, 
+		    			    getSortLongForRow: function(hdr) {},
+							isEditable: function(row, col) {
+								return false;
+							},
+							getCellProperties:   function(row, col, properties) {
+								return properties;
+							},
+							cycleCell: function(row, col) {
+							},
+							getRowProperties:    function(row, properties) {
+								return properties;
+							}
+		    			}; 
+				    			
+						try {
+						    columnHandler.old = gDBView.getColumnHandler("inviteCol");
+						}
+						catch (ex) {}
+						
+						gDBView.addColumnHandler("inviteCol", columnHandler);  
+ 		    	}//ifend
+	 		   	}catch(e){}
 			}
 	    };
     

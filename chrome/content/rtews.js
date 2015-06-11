@@ -759,6 +759,7 @@ rtews.prototype = {
  * Custom method for remove all tags menuitem 
  */
 rtews.removeAllMessageTagsPostEwsUpdate = function(msgHdr) {
+	dump("\nxxxxxxxxxxx ");
     //Check if a message header is passed
     //Else use the selected messages
     if (msgHdr == undefined) {
@@ -887,24 +888,16 @@ const identities = getAllAccounts();
  * Initialilize 
  */
 function init(){ 
-		if( identities.length > 0 ){
-			for (var account = 0 ; account < identities.length ; account++) {
-				if (identities[account].ewsUrl && identities[account].enabled) {
+	    for (var account = 0, len =  identities.length; account < len; account++) {
+	        if (identities[account].ewsUrl && identities[account].enabled) {
  	            
-					var tmp = new rtews(identities[account]);
-					tmp.load();
-					ewsTaggerObj[account] = tmp;
-					tmp = null;
+	        	var tmp = new rtews(identities[account]);
+	        	tmp.load();
+	        	ewsTaggerObj[account] = tmp;
+	        	tmp = null;
 // 	           / dump("\nxxxxxxxxxxxxxxxxx account: " + ewsTaggerObj[account].identity.email +  JSON.stringify(identities[account]) );
-	        	}  
- 	    	}  
-		}
-		else
-		{
-			dump("\nrtews: No mail account and calendar account is matching");
-			return;
-			
-		}
+	        }  
+	    }  
 }
 /*
  * Get ews obj of respective mail account
@@ -919,9 +912,14 @@ function rtewsObj(identity){
 		 }
 	} 
 	return null; 
-} 
+}
+
+//Lets initialize
+window.addEventListener("load",init(),false);
  
-function removeDuplicateAccount(identities){  
+function removeDuplicateAccount(identities){ 
+	dump("\nrtews: removeDuplicateAccount: " + identities.length);
+	if( identities.length > 0 ){
 		var newidentities =[];
 	    function find(arr, key, val) { //Find array element which has a key value of val 
 		  for (var ai, i = arr.length; i--;)
@@ -930,49 +928,90 @@ function removeDuplicateAccount(identities){
 		  return null;
 		}
 	    
-	    for (var account = 0, len = identities.length; account < len; account++) {
-	    	if( account == 0 && identities[account]!= null){
-	    		newidentities.push(identities[account]);
-	    		continue;
- 	    	}
-	    	
-	    	var test  = find(newidentities,"serverURI",identities[account].serverURI); 
-	    	if(!test){
-	    		newidentities.push(identities[account]); 
-	    	} 
-	    	test=null;
+	    for (var account in identities) {
+	    	if( identities[account]!= null ){
+		    	if( account == 0 ){
+		    		newidentities.push(identities[account]);
+		    		continue;
+	 	    	}
+		    	
+		    	var test  = find(newidentities,"serverURI",identities[account].serverURI); 
+		    	if(!test){
+		    		newidentities.push(identities[account]); 
+		    	} 
+		    	test=null;
+	    	}
 	    } 
 	    
 	    //return filtered accounts
 	    return newidentities;
+	}
+	else
+	{
+		return [];
+	} 
 }
  
 function getAllAccounts(){    
-	var _accounts = [];
-    var appInfo = Components.classes["@mozilla.org/xre/app-info;1"]
+	 var _accounts = [];
+     var appInfo = Components.classes["@mozilla.org/xre/app-info;1"]
                                      .getService(Components.interfaces.nsIXULAppInfo);
      var versionChecker = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
                                 .getService(Components.interfaces.nsIVersionComparator);
-     var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"]
+	 var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"]
                          .getService(Components.interfaces.nsIMsgAccountManager);
      var accounts = acctMgr.accounts;
-     if (versionChecker.compare(appInfo.version, "20.0") >= 0){
-    	 for (var i = 0; i < accounts.length; i++) {
-         	     
-         	    	var account = accounts.queryElementAt(i, Components.interfaces.nsIMsgAccount);   
-         			var identities = account.identities;
-         			for (var index=0; index < identities.length; index++) {
-         				var identity = identities.queryElementAt(index, Ci.nsIMsgIdentity);
-         				var calAccount = getCalendarPref(identity.email); 
-         				 
-         				var enabled = false;
-         				
-         				if(calAccount){
-         					enabled = true;
-         				} 
-         			
-         				try{
- 						var details = {
+     dump("\nxxxxxxxxx " +versionChecker.compare(appInfo.version, "20.0"));
+     if(accounts){
+	     if (versionChecker.compare(appInfo.version, "20.0") >= 0){
+	    	 for (var i = 0; i < accounts.length; i++) {
+	         	     
+	         	    	var account = accounts.queryElementAt(i, Components.interfaces.nsIMsgAccount);   
+	         			var identities = account.identities;
+	         			for (var index=0; index < identities.length; index++) {
+	         				var identity = identities.queryElementAt(index, Ci.nsIMsgIdentity);
+	         				var calAccount = getCalendarPref(identity.email); 
+	         				 
+	         				var enabled = false;
+	         				
+	         				if(calAccount){
+	         					enabled = true;
+	         				} 
+	         			
+	         				try{
+	 						var details = {
+		 						"server":account.incomingServer.prettyName,
+								"serverURI":account.incomingServer.serverURI,
+		                	  	"email":calAccount.getCharPref("ecMailbox"),
+		                	  	"username":calAccount.getCharPref("ecUser"),
+		                	  	"name":identity.fullName,
+		                	  	"domain":calAccount.getCharPref("ecDomain"),
+		                 	  	"enabled":enabled,
+		                	  	"ewsUrl":calAccount.getCharPref("ecServer"),};
+	         				}catch(e){}
+	         				 
+	         				_accounts.push(details);  
+	          			} 
+	          }
+	     }
+	     else{
+	    	 dump("\nxxxxxx 11 " + accounts.length);
+		 		for (let i = 0; i < accounts.length; i++) {  
+	        	     
+	     	    	var account = accounts.queryElementAt(i, Components.interfaces.nsIMsgAccount);   
+	     			var identities = account.identities;
+	     			for (let index=0; index < identities.length; index++) {
+	     				let identity = identities.queryElementAt(index, Ci.nsIMsgIdentity);
+	     				let calAccount = getCalendarPref(identity.email);
+	     				 
+	     				let enabled = false;
+	     				
+	     				if(calAccount){
+	     					enabled = true;
+	     				} 
+	     			
+	     				try{
+							let details = {
 	 						"server":account.incomingServer.prettyName,
 							"serverURI":account.incomingServer.serverURI,
 	                	  	"email":calAccount.getCharPref("ecMailbox"),
@@ -981,46 +1020,21 @@ function getAllAccounts(){
 	                	  	"domain":calAccount.getCharPref("ecDomain"),
 	                 	  	"enabled":enabled,
 	                	  	"ewsUrl":calAccount.getCharPref("ecServer"),};
-         				}catch(e){}
-         				 
-         				_accounts.push(details);  
-          			} 
-          }
+	     				}catch(e){}
+	     				 
+	     				_accounts.push(details);  
+	      			}  
+		 		}
+	     }  
+	     var _newaccounts = removeDuplicateAccount(_accounts);
+	     return _newaccounts;
      }
-     else{
-	 		for (let i = 0; i < accounts.Count(); i++) {  
-        	     
-     	    	var account = accounts.queryElementAt(i, Components.interfaces.nsIMsgAccount);   
-     			var identities = account.identities;
-     			for (let index=0; index < identities.length; index++) {
-     				let identity = identities.queryElementAt(index, Ci.nsIMsgIdentity);
-     				let calAccount = getCalendarPref(identity.email);
-     				 
-     				let enabled = false;
-     				
-     				if(calAccount){
-     					enabled = true;
-     				} 
-     			
-     				try{
-						let details = {
- 						"server":account.incomingServer.prettyName,
-						"serverURI":account.incomingServer.serverURI,
-                	  	"email":calAccount.getCharPref("ecMailbox"),
-                	  	"username":calAccount.getCharPref("ecUser"),
-                	  	"name":identity.fullName,
-                	  	"domain":calAccount.getCharPref("ecDomain"),
-                 	  	"enabled":enabled,
-                	  	"ewsUrl":calAccount.getCharPref("ecServer"),};
-     				}catch(e){}
-     				 
-     				_accounts.push(details);  
-      			}  
-	 		}
-     }  
-     
-     var _newaccounts = removeDuplicateAccount(_accounts);
-	 return _newaccounts;
+     else
+     {   
+    	 var _newaccounts = [];
+    	 return _newaccounts; 
+     }
+   
 } 
 
 function findAccountFromFolder(aFolder) {
@@ -1100,7 +1114,7 @@ function ToggleMessageTag(key, addKey) {
 
     //if we don't have the id configured run the default toggle functionality
     if (identity == null) {
-        rtewsObj.toggleMessageTagPostEwsUpdate(key, addKey);
+    	rtews.toggleMessageTagPostEwsUpdate(key, addKey);
         return;
     }
 
@@ -1161,8 +1175,10 @@ function InitMessageTags(menuPopup) {
     var tagRemoveLabel = document.getElementById("bundle_messenger").getString("mailnews.tags.remove");
     SetMessageTagLabel(menuPopup.lastChild.previousSibling, 0, tagRemoveLabel);
 
-    rtews.addSyncMenu(menuPopup);
-
+    var identity = rtews.getIdentity(gFolderDisplay.displayedFolder.server.prettyName); 
+    if( identity != null ){
+    	rtews.addSyncMenu(menuPopup);
+    }
     // now rebuild the list
     var msgHdr = gFolderDisplay.selectedMessage;
     var curKeys = msgHdr.getStringProperty("keywords");
@@ -1185,5 +1201,4 @@ function InitMessageTags(menuPopup) {
         menuPopup.appendChild(newMenuItem);
     }
 }
-//Lets initialize
-window.addEventListener("load",init(),false);
+ 
