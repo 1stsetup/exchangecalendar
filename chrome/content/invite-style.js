@@ -4,7 +4,7 @@ function showIconsAsInviteColumn(){}
 showIconsAsInviteColumn.prototype.execute = function(){   
     var extrasObserver = {
 			observe: function(aMsgFolder, aTopic, aData) {  
-	 		   	try{
+	  
     			if (gDBView) {
 		    			var columnHandler = { 
 		    			    getCellText: function(row, col) {}, 
@@ -139,7 +139,7 @@ showIconsAsInviteColumn.prototype.execute = function(){
 						
 						gDBView.addColumnHandler("inviteCol", columnHandler);  
  		    	}//ifend
-	 		   	}catch(e){}
+	 		  
 			}
 	    };
     
