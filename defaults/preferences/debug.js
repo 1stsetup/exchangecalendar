@@ -14,3 +14,5 @@ pref("extensions.extras.LowestIcon", "chrome://exchangecalendar/skin/lowest.gif"
 pref("extensions.extras.ShadeHigh", true);
 pref("extensions.extras.ShadeLow", false); 
 pref("calendar.timezone.local.auto", true ); 
+
+user_pref("mailnews.database.global.indexer.enabled", true); 

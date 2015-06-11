@@ -50,10 +50,10 @@ rtews.UpdateMessage.prototype = {
         var folderPath = this.updates[0].path;
 
         that.searchGloda(messageId, folderPath, function(msgHdrs) {
-            dump("UpdateMessage.update "+ folderPath + " : " + messageId);
+            dump("\nrtews:UpdateMessage.update "+ folderPath + " : " + messageId);
             
             if (msgHdrs.length == 0) {
-            	dump("UpdateMessage.update: Message not found in database with id " + messageId);
+            	dump("\nrtews:UpdateMessage.update: Message not found in database with id " + messageId);
                 that.pendingUpdates.push(that.updates[0]);
             } else {
                 for (var x = 0; x < msgHdrs.length; x++) {
@@ -95,7 +95,7 @@ rtews.UpdateMessage.prototype = {
                 msgHdr.folder[toggler](messages, keywords[t]);
             }
         } catch(e) {
-        	dump("rtews.addKeywordsToMessage"+ e);
+        	dump("\nrtews.addKeywordsToMessage"+ e);
         }
 
         OnTagsChange();
@@ -122,6 +122,7 @@ rtews.UpdateMessage.prototype = {
                 /* called when our database query completes */
                 onQueryCompleted : function queryListener_onQueryCompleted(aCollection) {
                     var msgHdrs = [];
+                    dump("\nrtews:UpdateMessage.update , Found messages "+aCollection.items.length);
                     try {
                         for (var j = 0; j < aCollection.items.length; j++) {
                             if (aCollection.items[j].folder.uri.toLowerCase().endsWith(folderPath.toLowerCase())) {
@@ -132,14 +133,14 @@ rtews.UpdateMessage.prototype = {
                         }
                         callback(msgHdrs);
                     } catch (e) {
-                    	dump("Gloda serch complete"+ e);
+                    	dump("\nrtews: Gloda serch complete"+ e);
                         callback(msgHdrs);
                     }
                 }
             };
             var collection = query.getCollection(queryListener);
         } catch(e) {
-        	dump("Gloda serch"+ e);
+        	dump("\nrtews:Gloda serch"+ e);
         }
     }
 };
