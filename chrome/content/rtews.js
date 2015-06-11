@@ -198,10 +198,11 @@ function rtews(identity){
 		             				.getService(Ci.mivFunctions);   
 	   this.prefs	 =	 Cc["@mozilla.org/preferences-service;1"]
 	                   				.getService(Ci.nsIPrefBranch); 
+	   this.pollOffset  = 6000;//time for getevents 
+
 }
 
 rtews.prototype = {  
-	pollOffset : 10000 ,//time for getevents 
 	/*
 	 * Gets the ItemId element from response of the FindItem SOAP request
 	 *
@@ -253,10 +254,8 @@ rtews.prototype = {
 	subscribeOK: function _subscribeOK(erSubscribeRequest, subscriptionId, watermark){
 		this.globalFunctions.LOG("subscribeOK " + subscriptionId +  " watermark  " + watermark );
 		this.session.subscriptionId=subscriptionId;
-		this.session.watermark=watermark;
-		
-		this.saveIdentities();
-		this.poll();
+		this.session.watermark=watermark; 
+ 		this.poll();
 	},
 	
 	unsubscribe: function _unsubscribe(){ 
@@ -408,6 +407,7 @@ rtews.prototype = {
 	},
 	 
 	getEvents: function _getEvents(){ 
+		this.globalFunctions.LOG("getEvents: "+ this.mailbox );
 		var that = this;
 		that.Running = true; 
 		      
@@ -514,7 +514,7 @@ rtews.prototype = {
 	getIdentities: function _getIdentities(){
 	//	this.globalFunctions.LOG("getIdentities " );
 
-		var pref = this.getCalendarPref(this.identity.email);
+		var pref = getCalendarPref(this.identity.email);
 		if(pref){
 			this.session.subscriptionId = this.globalFunctions.safeGetCharPref(pref,"subscriptionId");
 		}
@@ -523,7 +523,7 @@ rtews.prototype = {
 	saveIdentities:function _saveIdentities(){
 	//	this.globalFunctions.LOG("saveIdentities " );
 
-		var pref = this.getCalendarPref(this.identity.email);
+		var pref = getCalendarPref(this.identity.email);
 		if(pref){
 			pref.setCharPref("subscriptionId",this.session.subscriptionId);
 		}
