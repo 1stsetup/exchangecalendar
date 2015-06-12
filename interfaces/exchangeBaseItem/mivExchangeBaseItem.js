@@ -3368,13 +3368,12 @@ dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 
 	checkAlarmChange: function _checkAlarmChange(updates)
 	{
-		//dump("checkAlarmChange:"+this.title+".\n");
 		var reminderIsSetChanged = undefined;
 		var newReminderMinutesBeforeStart = undefined;
 		this.reminderMinutesBeforeStart; // To have is initialized.
 		// Alarm
 		if (this._newAlarm !== undefined) {
-			//dump("checkAlarmChange: Alarm was changed.\n");
+			dump("checkAlarmChange:"+this.title+ ",  Alarm was changed: " + this._newAlarm+ ".\n");
 			// Alarm was changed.
 			if (this._newAlarm === null) {
 				// Alarm was removed.
@@ -3531,10 +3530,11 @@ dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 
 		var newSnoozeTime = null;
 		// Alarm snooze or dismiss
-		if (typeof this._newXMozSnoozeTime != "undefined") {
+		if (typeof this._newXMozSnoozeTime !==  undefined ) {
 //dump("checkAlarmChange: this._newXMozSnoozeTime was set to:"+this._newXMozSnoozeTime+", newReminderMinutesBeforeStart="+newReminderMinutesBeforeStart+"\n");
-			if ((this._newXMozSnoozeTime === null) && (newReminderMinutesBeforeStart !== true)) {
-				// We have a dismiss
+			dump("\ncheckAlarmChange: snoozetime " + this.__newXMozSnoozeTime ); 
+			if ((this._newXMozSnoozeTime === null ) && (newReminderMinutesBeforeStart !== true)) {
+				dump("\ncheckAlarmChange: dismissed " + newReminderMinutesBeforeStart+ ".\n"); 
 //dump("checkAlarmChange: We have a change\n");
 				if (this.calendarItemType == "RecurringMaster") {
 					// Find out which occurrence or exception was dismissed
