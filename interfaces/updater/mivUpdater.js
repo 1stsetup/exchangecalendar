@@ -289,14 +289,16 @@ mivUpdater.prototype = {
 		}
 
 		var actualJson=JSON.parse(xmlReq.responseText);
-		var latest= 0;
+		var latest = 0;
 		var updateDetails = [];
-		updateDetails[3]='https://github.com/Ericsson/exchangecalendar/wiki';
-		updateDetails[0]=actualJson[latest].prerelease; 
-        updateDetails[1]=actualJson[latest].tag_name;
-        updateDetails[2]=actualJson[latest].assets[0].browser_download_url;
-        updateDetails[4]=actualJson[latest].body;
-        
+ 		updateDetails[3]='https://github.com/Ericsson/exchangecalendar/wiki'; 
+		if( actualJson.length > 0 ){
+			updateDetails[0]=actualJson[latest].prerelease; 
+			updateDetails[1]=actualJson[latest].tag_name;
+			updateDetails[2]=actualJson[latest].assets[0].browser_download_url;
+			updateDetails[4]=actualJson[latest].body;
+		}
+		
 		if (this._callBack) {
 			if ( updateDetails[1] ) {
 				var versionChecker = Cc["@mozilla.org/xpcom/version-comparator;1"].getService(Ci.nsIVersionComparator);
