@@ -5890,6 +5890,15 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 			return;
 		}
 
+		if( doNotCheckCache === undefined ){
+			if( this.useOfflineCache ){
+				doNotCheckCache = false;
+			}
+			else{
+				doNotCheckCache = true;
+			}
+		}
+		
 		// Removed Single/Master items in the lists which we already have in memory
 		var newIdList = new Array();
 //dump("     findCalendarItemsOK: aIds.length:"+aIds.length+"\n");
