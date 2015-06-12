@@ -6052,7 +6052,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 	},
 	
-	findTaskItemsOK: function _findTaskItemsOK(erFindTaskItemsRequest, aIds)
+	findTaskItemsOK: function _findTaskItemsOK(erFindTaskItemsRequest, aIds, doNotCheckCache)
 	{
  		if (this.debug) this.logInfo("findTaskItemsOK: aIds.length:"+aIds.length);
 		this.saveCredentials(erFindTaskItemsRequest.argument);
@@ -6061,14 +6061,41 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 		if (aIds.length == 0) {
 			return;
 		}
-       		var self = this;
-
+		
+		if( doNotCheckCache === undefined ){
+			if( this.useOfflineCache ){
+				doNotCheckCache = false;
+			}
+			else{
+				doNotCheckCache = true;
+			}
+		}
+		
+		// Removed Single/Master items in the lists which we already have in memory
+		var newIdList = new Array();
+//dump("     findCalendarItemsOK: aIds.length:"+aIds.length+"\n");
+		for each(var item in aIds) {
+			if (!doNotCheckCache) {
+				var inItemCache = ((this.itemCacheById[item.Id]) && (this.itemCacheById[item.Id].changeKey == item.ChangeKey));
+				if ((!inItemCache) && (this.useOfflineCache)) {
+					inItemCache = (this.itemIsInOfflineCache(item.Id) == item.ChangeKey);
+				}
+ 			}
+			else {
+				var inItemCache = false;
+ 			}
+ 			if ((!inItemCache)) {
+				newIdList.push(item);
+			}
+		}
+ 
+   		var self = this; 
 		this.addToQueue( erGetItemsRequest, 
 			{user: this.user, 
 			 mailbox: this.mailbox,
 			 folderBase: this.folderBase,
 			 serverUrl: this.serverUrl,
-			 ids: aIds,
+			 ids: newIdList,
 			 folderID: this.folderID,
 			 changeKey: this.changeKey,
 			 folderClass: this.folderClass,
