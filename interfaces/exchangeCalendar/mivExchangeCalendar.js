@@ -87,7 +87,7 @@ var globalStart = new Date().getTime();
 var tmpActivityManager = Cc["@mozilla.org/activity-manager;1"];
 
 if (tmpActivityManager) {
-	Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).LOG("-- ActivityManger available. Enabeling it.");
+	Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).LOG("-- ActivityManger available. Enabling it.");
 	const nsIAP = Ci.nsIActivityProcess;  
 	const nsIAE = Ci.nsIActivityEvent;  
 	const nsIAM = Ci.nsIActivityManager;
