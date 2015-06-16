@@ -75,4 +75,6 @@ lightningTimzone.prototype = {
 }
 
 var tmpLightningTimezone = new lightningTimzone(document, window);
-window.addEventListener("load",function(){tmpLightningTimezone.onload();},false);
+
+//temporarily disable this feature in b3.4beta2 because it caused stuck queue jobs 
+//window.addEventListener("load",function(){tmpLightningTimezone.onload();},false);

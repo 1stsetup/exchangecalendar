@@ -16,7 +16,7 @@
                         onchange="return autoTimezone(this.value);" />
         </preferences> 
         <groupbox> 
-            <checkbox   id="checkbox-calendar-timezone-local-auto"
+            <checkbox  disabled="true" id="checkbox-calendar-timezone-local-auto"
                         preference="calendar-timezone-local-auto"
                         label="&calendar.timezone.local.auto.label;"   /> 
         </groupbox> 

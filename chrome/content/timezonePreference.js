@@ -39,4 +39,5 @@ function checkUserTimezoneMenu(){
 	}  
 }
 
-window.addEventListener("load",function(){ checkUserTimezoneMenu(); },false);
+//temporarily disable this feature in b3.4beta2 because it caused stuck queue jobs
+//window.addEventListener("load",function(){ checkUserTimezoneMenu(); },false);
