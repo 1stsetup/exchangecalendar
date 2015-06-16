@@ -77,6 +77,7 @@
 			<tab label="&ecsettings.tab.calendarfolderproperties;" />
 			<tab label="&ecsettings.tab.offlineCachingproperties;" />
 			<tab label="&ecsettings.tab.autoprocessingproperties;" />
+            <tab label="&ecsettings.tab.mailitemsProperties;" hidden="true" id="mailItemsPropertiesTab" /> 
 		</tabs>
 		<tabpanels flex="1">
 			<tabpanel id="exchWebService-adsettings">
@@ -403,6 +404,23 @@
                                               
                 </vbox> 
             </tabpanel> 
+            
+              <tabpanel id="exchWebService-mail-properties">
+                 <vbox flex="1">
+                    <groupbox id="exchWebService-mail-properties-groupbox">
+                         <caption label="Preferences:" />
+                         <vbox>
+                             <hbox> 
+                                <label value="&label.syncmailitems.interval;" />
+                                <separator /> 
+                                <textbox id="exchWebService-syncMailItems-Interval"
+                                       increment="1" min="15" type="number" value="15" />
+                                <separator /> 
+                            </hbox>  
+                        </vbox>  
+                    </groupbox>                
+                </vbox> 
+            </tabpanel>  
 		</tabpanels>
 	</tabbox>
 

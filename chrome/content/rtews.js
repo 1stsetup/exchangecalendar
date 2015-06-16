@@ -197,10 +197,15 @@ function rtews(identity){
 
 	   this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 		             				.getService(Ci.mivFunctions);   
-	   this.prefs	 =	 Cc["@mozilla.org/preferences-service;1"]
-	                   				.getService(Ci.nsIPrefBranch); 
-	   this.pollOffset  = 6000;//time for getevents 
-
+	   this.prefs = identity.prefs ;
+	   
+	   if( this.prefs ){
+		   this.pollOffset = this.globalFunctions.safeGetIntPref(this.prefs, "syncMailItems.Interval" ,15000);//time for getevents  
+	   }
+	   else{
+		   this.prefs = null;
+ 		   this.pollOffset = 15000;//time for getevents 
+	   }
 }
 
 rtews.prototype = {  
@@ -286,6 +291,9 @@ rtews.prototype = {
 	poll: function _poll() {
 	    var self = this;
 	    this.Running = false; 
+	    
+		this.globalFunctions.LOG("rtews: Syncing Tags with this.pollOffset " + this.pollOffset );
+		
 	    this.pollInterval = setInterval(function() { 
 			if (self.session == null) {
 		        return;
@@ -920,7 +928,7 @@ function rtewsObj(identity){
 } 
 
 function removeDuplicateAccount(identities){ 
-	dump("\nrtews:removeDuplicateAccount: " + identities.length + 	identities[0].email  );
+	dump("\nrtews:removeDuplicateAccount: " + identities.length );
  
 	if( identities.length > 0 ){
 		var newidentities = [];
@@ -985,7 +993,7 @@ function getAllAccounts(){
 	         				if(calAccount){
 	         					enabled = true;
 	         				} 
-	         				dump("\mrtews:Fullname " + identity.fullName);
+	         				dump("\mrtews: Fullname " + identity.fullName);
 
 	         				var details = null;
 		     				if(calAccount){
@@ -1012,7 +1020,9 @@ function getAllAccounts(){
 		                	  	"ewsUrl":null,};
 		     				} 
 	         				 
-	         				_accounts.push(details);  
+		     				if( details.enabled == true){
+		     					_accounts.push(details);  
+		     				}
 	          			} 
 	          }
 	    	  
@@ -1032,7 +1042,8 @@ function getAllAccounts(){
 	     			let identities = account.identities;
 	     			for (let index=0; index < identities.length; index++) {
 	     				let identity = identities.queryElementAt(index, Ci.nsIMsgIdentity);
- 	     				var calAccount = getCalendarPref(identity.email); 
+ 	     				let calAccount = getCalendarPref(identity.email); 
+ 	     				 	     					     				
 	     				let enabled = false;
 	     				let details = null;
 	     				if(calAccount){
@@ -1045,7 +1056,8 @@ function getAllAccounts(){
 		                	  	"name":identity.fullName,
 		                	  	"domain":calAccount.getCharPref("ecDomain"),
 		                 	  	"enabled":enabled,
-		                	  	"ewsUrl":calAccount.getCharPref("ecServer"),};
+		                	  	"ewsUrl":calAccount.getCharPref("ecServer"),
+		                	  	"prefs" : calAccount ,};
 	     				} 
 	     				else{  
  	     				  details = {
@@ -1056,9 +1068,13 @@ function getAllAccounts(){
 	                	  	"name":identity.fullName,
 	                	  	"domain":null,
 	                 	  	"enabled":enabled,
-	                	  	"ewsUrl":null,};
+	                	  	"ewsUrl":null,
+	                	  	"prefs" : null ,};
 	     				} 
-	     				_accounts.push(details); 
+	     				
+	     				if( details.enabled == true ){
+	     					_accounts.push(details);  
+	     				} 
  	      			}  
 		 		} 
  		 		 
@@ -1131,13 +1147,18 @@ function getCalendarPref(aEmail){
 		
 			if( cal.mailbox == aEmail ){  
 				try{
-					return Cc["@mozilla.org/preferences-service;1"]
+					var calPref =  Cc["@mozilla.org/preferences-service;1"]
 					            .getService(Ci.nsIPrefService)
 					            .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+  cal.id +".");
-				}catch(e){
-					dump("e"+e);
-					}
-				break;
+					
+					if( calPref.getCharPref("ecFolderbase") == "calendar" ){ 
+						return calPref;
+					} 
+					
+				}
+				catch(e){
+					dump("\nrtews: e2 "+e);
+				}
 			}
 		}
 	} 
