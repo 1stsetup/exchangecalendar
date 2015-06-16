@@ -1,6 +1,6 @@
-<!ENTITY label.acceptbutton "Save">
+<!ENTITY label.acceptbutton "Save and Reset">
 <!ENTITY label.cancelbutton "Cancel">
-
+<!ENTITY ecsettings.title "EWS Calendar and Mail settings">
 <!ENTITY ecsettings.tab.adsettings "Exchange/Windows AD">
 <!ENTITY ecsettings.tab.meetingrequestsettings "Meeting requests">
 <!ENTITY ecsettings.tab.calendarfolderproperties "Folder properties">
