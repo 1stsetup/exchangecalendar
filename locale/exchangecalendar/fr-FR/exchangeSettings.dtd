@@ -46,7 +46,7 @@
 <!ENTITY ecsettings.tab.autoprocessingproperties "Traitement automatique">
 <!ENTITY ecsettings.tab.mailitemsProperties "Réglages EWS (Email)">
 
-<!ENTITY label.syncmailitems.interval "Delai de synchrnisation des éléments Email (Tags, etc.)">
+<!ENTITY label.syncmailitems.interval "Delai de synchronisation des éléments Email (Tags, etc.)">
 <!ENTITY label.autoprocessingproperties.deletecancelleditems "Suppression automatique des évènements annulés">
 <!ENTITY label.autoprocessingproperties.markeventtentative "Marquer automatiquement les invitations comme possible et copier l'organisateur">
 
