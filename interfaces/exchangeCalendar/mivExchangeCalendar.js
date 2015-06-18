@@ -87,16 +87,17 @@ var globalStart = new Date().getTime();
 var tmpActivityManager = Cc["@mozilla.org/activity-manager;1"];
 
 if (tmpActivityManager) {
-	Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).LOG("-- ActivityManager available. Enabling it.");
-	const nsIAP = Ci.nsIActivityProcess;  
-	const nsIAE = Ci.nsIActivityEvent;  
-	const nsIAM = Ci.nsIActivityManager;
-
-	var gActivityManager = Cc["@mozilla.org/activity-manager;1"].getService(nsIAM);  
+	Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).LOG("-- ActivityManager available. Enabling it."); 
 }
 else {
 	Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).LOG("-- ActivityManager not available.");
 }
+
+const nsIAP =  Ci.nsIActivityProcess;  
+const nsIAE =  Ci.nsIActivityEvent;  
+const nsIAM = Ci.nsIActivityManager;
+
+var gActivityManager = Cc["@mozilla.org/activity-manager;1"].getService(nsIAM);  
 
 const fieldPathMap = {
 	'ActualWork'			: 'task',
