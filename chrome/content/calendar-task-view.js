@@ -91,8 +91,8 @@ function taskHtmlDetailsView(event){
 	                    }
 	                }
 	            }; 
-	        	
-	        	if(var messageId = item.messageId){
+	        	var messageId = item.messageId.replace('<', '').replace('>', '');  
+	        	if( messageId ){
 	        				var query = Gloda.newQuery(Gloda.NOUN_MESSAGE);
 	        				query.headerMessageID(messageId);
             				var collection = query.getCollection(queryListener);
