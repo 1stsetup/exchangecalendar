@@ -3178,7 +3178,10 @@ calExchangeCalendar.prototype = {
 
 		if (this.firstrun) {
 			this.firstrun = false; 
-
+			
+			//Add Prvider for busy free information for  invite attendees etc.
+			getFreeBusyService().addProvider(this);
+			
 			// The first thing we want to do is check the folderbase and folderpath for their id & changekey.
 			// It might have changed between restarts.
 			this.checkFolderPath();
