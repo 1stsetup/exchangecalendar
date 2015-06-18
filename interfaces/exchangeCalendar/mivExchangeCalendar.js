@@ -9422,7 +9422,7 @@ else {
 				handleResult: function _handleResult(aResultSet) {
 					if (self.debug) self.logInfo("Found item in offline Cache.");
 					var row;
-					while ( ( row = aResultSet.getNextRow())  !== null) {
+					while ( row = aResultSet.getNextRow() ) {
 
 						if (row) {
 							if (row.getResultByName('itemcount') > 0) {
