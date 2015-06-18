@@ -163,6 +163,7 @@ const fieldPathMap = {
 	'IsTeamTask'			: 'task',
 	'IsUnmodified'			: 'item',
 	'ItemClass'			: 'item',
+	'messageId'			: 'item', 
 	'ItemId'			: 'item',
 	'LastModifiedName'		: 'item',
 	'LastModifiedTime'		: 'item',

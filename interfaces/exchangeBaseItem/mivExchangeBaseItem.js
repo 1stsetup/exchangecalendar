@@ -2641,13 +2641,13 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
         if (messageIdElm.length > 0) {
         	this._messageId =  xml2json.getTagValue(messageIdElm[0], "t:Value", null);
 		}  
-       
-        this._messageId = this._messageId.replace('<', '').replace('>', ''); 
-        messageIdElm = null;
+        else{
+        	this._messageId = null;
+        }
+        messageIdElm = null; 
         
-		this.preLoad();
-
 		// Do the initializaton of this one.
+		this.preLoad(); 
 
 		this._alarm = null;
 		this._calEvent.clearAlarms();
