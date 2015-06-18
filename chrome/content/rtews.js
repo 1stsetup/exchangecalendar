@@ -230,9 +230,9 @@ rtews.prototype = {
 								null);  
 	},
 	
-	findFoldersOK:  function _findFoldersOK(erFindInboxFolderRequest, folders){
+	findFoldersOK:  function _findFoldersOK(erFindInboxFolderRequest, afolders){
 		//this.globalFunctions.LOG("findFoldersOK: " + JSON.stringify(folders));
- 		this.processFolders(folders); 
+ 		this.processFolders(afolders); 
 		var folders = this.getFoldersByIdentity(this.identity);  
  		if (folders.length > 0) {
 			   this.subscribe(folders); 
@@ -314,17 +314,18 @@ rtews.prototype = {
 	getItemsOK: function _getItemsOK(erGetItemsRequest, aItems, aItemErrors){ 
 		this.globalFunctions.LOG("getItemsOK: Received items for update: " + aItems.length); 
 	 	if( aItems.length > 0 ){
-		function getItem(aItem){ 
-		   	let id = xml2json.getAttributeByTag(aItem,'t:ItemId','Id'); 
-		   	let changeKey = xml2json.getAttributeByTag(aItem,'t:ItemId','ChangeKey');  
-	        return { "Id" : id , "ChangeKey": changeKey, };
-		}  
-		
-		function getParentItem(aItem){ 
-		   	let id = xml2json.getAttributeByTag(aItem,'t:ParentFolderId','Id'); 
-		   	let changeKey = xml2json.getAttributeByTag(aItem,'t:ParentFolderId','ChangeKey');  
-	        return { "Id" : id , "ChangeKey": changeKey, };
-		}  
+		 
+	 		getItem=function(aItem){ 
+			   	let id = xml2json.getAttributeByTag(aItem,'t:ItemId','Id'); 
+			   	let changeKey = xml2json.getAttributeByTag(aItem,'t:ItemId','ChangeKey');  
+		        return { "Id" : id , "ChangeKey": changeKey, };
+			}  
+			
+	 		getParentItem=function(aItem){ 
+			   	let id = xml2json.getAttributeByTag(aItem,'t:ParentFolderId','Id'); 
+			   	let changeKey = xml2json.getAttributeByTag(aItem,'t:ParentFolderId','ChangeKey');  
+		        return { "Id" : id , "ChangeKey": changeKey, };
+			}  
 		
 		for(var item = 0 ; item < aItems.length ; item++ ){ 
 	 		var itemId = getItem(aItems[item]);  
@@ -481,7 +482,7 @@ rtews.prototype = {
 	  				newItemIds = itemIds.splice(0);
 	  		    }
 				
-				function getItem(aItem){ 
+				getItem = function(aItem){ 
 				   	let id = aItem.getAttribute('Id'); 
 					let changeKey = aItem.getAttribute('ChangeKey');  
 					return { "Id" : id , "ChangeKey": changeKey, };
@@ -634,8 +635,8 @@ rtews.prototype = {
 	
 	        if (!folder) {
 	            continue;
-	        }
-	     
+	        } 
+	        
 	        var tmpObject = new erFindItemsRequest(
 					{user: this.user, 
 					mailbox: this.mailbox,
@@ -643,23 +644,20 @@ rtews.prototype = {
 					actionStart: Date.now(),
 					folderID : folder.id ,
 					messageId: messageId, }, 
-					function(erFindItemsRequest, aIds) { findItemsOK(erFindItemsRequest, aIds);}, 
-					function(erFindItemsRequest, aCode, aMsg) {  findItemsError(erFindItemsRequest, aCode, aMsg);},
-					null);  
-	        
-	        function findItemsOK(erFindItemsRequest, aIds){
-	        	that.globalFunctions.LOG("findItemsOK: Fount items: " + aIds.length ); 
-	        	if( aIds.length > 0 ){  
-	    			   that.getAndUpdateItems(aIds); 
-	         	}
-	        	else{
-	        		that.globalFunctions.LOG("findItemsOK: no item found for the message id"); 
-	        	}
-	        } 
-	        
-	        function findItemsError(erFindItemsRequest, aCode, aMsg){
-	            that.globalFunctions.LOG("findItemsError:  aCode:" + aCode + " aMsg: " +  aMsg ); 
-	        }  
+					function(erFindItemsRequest, aIds) {
+								//findItemOk Callback 
+					        	that.globalFunctions.LOG("findItemsOK: Fount items: " + aIds.length ); 
+					        	if( aIds.length > 0 ){  
+					    			   that.getAndUpdateItems(aIds); 
+					         	}
+					        	else{
+					        		that.globalFunctions.LOG("findItemsOK: no item found for the message id"); 
+					        	} 
+					}, 
+					function(erFindItemsRequest, aCode, aMsg) { 
+								that.globalFunctions.LOG("findItemsError:  aCode:" + aCode + " aMsg: " +  aMsg );  
+			        },
+					null);   
 	    } 
 	},   
 	/*
@@ -677,17 +675,6 @@ rtews.prototype = {
 	        return;
 	    }
 	    
-	    var tmpObject = new erFindItemsRequest(
-				{user: this.user, 
-				mailbox: this.mailbox,
-				serverUrl: this.serverUrl, 
-				actionStart: Date.now(),
-				folderID : folder.id ,
-				messageId: messageId, }, 
-				function(erFindItemsRequest, aIds) {  findItemsOK(erFindItemsRequest, aIds);}, 
-				function(erFindItemsRequest, aCode, aMsg) {  findItemsError(erFindItemsRequest, aCode, aMsg);},
-				null);  
-	    
 	    function findItemsOK(erFindItemsRequest, aIds){
 	    	that.globalFunctions.LOG("findItemsOK: Fount items: " + aIds.length ); 
 	    	if( aIds.length > 0 ){  
@@ -701,6 +688,18 @@ rtews.prototype = {
 	    function findItemsError(erFindItemsRequest, aCode, aMsg){
 	        that.globalFunctions.LOG("findItemsError:  aCode:" + aCode + " aMsg: " +  aMsg ); 
 	    }  
+	    
+	    var tmpObject = new erFindItemsRequest(
+				{user: this.user, 
+				mailbox: this.mailbox,
+				serverUrl: this.serverUrl, 
+				actionStart: Date.now(),
+				folderID : folder.id ,
+				messageId: messageId, }, 
+				function(erFindItemsRequest, aIds) {  findItemsOK(erFindItemsRequest, aIds);}, 
+				function(erFindItemsRequest, aCode, aMsg) {  findItemsError(erFindItemsRequest, aCode, aMsg);},
+				null);  
+	     
 	},
 	/*
 	 * Update Mail item with category
@@ -799,7 +798,7 @@ rtews.removeAllMessageTagsPostEwsUpdate = function(msgHdr) {
     // keeping other keywords like (non)junk intact.
 
     for (var i = 0; i < selectedMessages.length; ++i) {
-        var msgHdr = selectedMessages[i];
+        msgHdr = selectedMessages[i];
         msgHdr.label = 0;
         // remove legacy label
         if (prevHdrFolder != msgHdr.folder) {
@@ -835,7 +834,7 @@ rtews.toggleMessageTagPostEwsUpdate = function(key, addKey,msgHdr) {
     // better, but nsIMsgDBView doesn't handle commands with arguments,
     // and (un)tag takes a key argument.
     for (var i = 0; i < selectedMessages.length; ++i) {
-        var msgHdr = selectedMessages[i];
+          msgHdr = selectedMessages[i];
 
         if (msgHdr.label) {
             // Since we touch all these messages anyway, migrate the label now.
@@ -933,7 +932,7 @@ function removeDuplicateAccount(identities){
 	if( identities.length > 0 ){
 		var newidentities = [];
 	    
-		function find(arr, key, val) { //Find array element which has a key value of val 
+		find = function(arr, key, val) { //Find array element which has a key value of val 
 		  for (var ai, i = arr.length; i--;){
 		    if ((ai = arr[i]) && ai[key] == val){
 		      return true;}

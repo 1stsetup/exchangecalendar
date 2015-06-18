@@ -588,12 +588,12 @@ catch(err){
 				.get("ProfD", Components.interfaces.nsIFile);
 		file.append("exchange-data");
 		if ( !file.exists() || !file.isDirectory() ) {
-			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);  
+			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, parseInt("0777", 8));  
 		}
 
 		file.append("responses");
 		if ( !file.exists() || !file.isDirectory() ) {
-			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);  
+			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, parseInt("0777", 8));  
 		}
 
 		if (!this.fileCount) {
@@ -623,7 +623,7 @@ catch(err){
 
 		var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].  
 				 createInstance(Components.interfaces.nsIFileOutputStream);  
-		foStream.init(file, 0x02 | 0x08 | 0x20, 0777, 0);  
+		foStream.init(file, 0x02 | 0x08 | 0x20, parseInt("0777", 8), 0);  
 
 		var converter = Components.classes["@mozilla.org/intl/converter-output-stream;1"].
 				createInstance(Components.interfaces.nsIConverterOutputStream);
@@ -1109,7 +1109,7 @@ try {
 			}
 		}
 		else {
-			var rm = aResp.XPath("/s:Envelope/s:Body/*/m:ResponseMessages/*[@ResponseClass='Error']");
+			var rm = xml2json.XPath(aResp,"/s:Envelope/s:Body/*/m:ResponseMessages/*[@ResponseClass='Error']");
 			var result;
 			if (rm.length > 0) {
 				result = rm[0].getTagValue("m:MessageText").value+"("+rm[0].getTagValue("m:ResponseCode")+")";

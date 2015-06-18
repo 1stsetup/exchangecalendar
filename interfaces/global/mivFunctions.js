@@ -460,11 +460,11 @@ mivFunctions.prototype = {
 			try {
 				// On startup create a new file otherwise append.  
 				if (!this.debugFileInitialized) {
-					foStream.init(localFile, 0x02 | 0x08 | 0x20, 0666, 0);
+					foStream.init(localFile, 0x02 | 0x08 | 0x20,  parseInt("0666", 8), 0);
 					this.debugFileInitialized = true;   
 				}
 				else {
-					foStream.init(localFile, 0x02 | 0x08 | 0x10, 0666, 0);   
+					foStream.init(localFile, 0x02 | 0x08 | 0x10,  parseInt("0666", 8), 0);   
 				}
 			}
 			catch(er) {

@@ -63,8 +63,7 @@ function erGetFolderRequest(aArgument, aCbOk, aCbError, aListener)
 		function(aExchangeRequest, aCode, aMsg) { self.onSendError(aExchangeRequest, aCode, aMsg);},
 		aListener);
 
-	this.parent.debug = false;
-	this.argument = aArgument;
+ 	this.argument = aArgument;
 	
 	this.serverUrl = aArgument.serverUrl;
 	this.folderID = aArgument.folderID;

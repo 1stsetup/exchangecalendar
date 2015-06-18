@@ -3066,7 +3066,7 @@ calExchangeCalendar.prototype = {
 			return true;
 		}
 
-		return null;false;
+		return false;
 	},
 
 	getExceptions: function _getExceptions(aRecurrenceItems)
@@ -8835,7 +8835,7 @@ else {
 					.get("ProfD", Components.interfaces.nsIFile);
 			this.dbFile.append("exchange-data");
 			if ( !this.dbFile.exists() || !this.dbFile.isDirectory() ) {
-				this.dbFile.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);  
+				this.dbFile.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, parseInt("0777", 8));  
 			}
 			
 			this.dbFile.append(this.id+".offlineCache.sqlite");
@@ -9422,7 +9422,7 @@ else {
 				handleResult: function _handleResult(aResultSet) {
 					if (self.debug) self.logInfo("Found item in offline Cache.");
 					var row;
-					while (row = aResultSet.getNextRow()) {
+					while ( ( row = aResultSet.getNextRow())  !== null) {
 
 						if (row) {
 							if (row.getResultByName('itemcount') > 0) {
@@ -10464,7 +10464,7 @@ dump("getOccurrencesFromOfflineCache: found:"+result.length+"\n");
 				.get("ProfD", Components.interfaces.nsIFile);
 		file.append("exchange-data");
 		if ( !file.exists() || !file.isDirectory() ) {
-			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);  
+			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, parseInt("0777", 8));  
 		}
 
 		file.append(this.id+"."+aFilename);
@@ -10477,7 +10477,7 @@ dump("getOccurrencesFromOfflineCache: found:"+result.length+"\n");
 
 		var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].  
 				 createInstance(Components.interfaces.nsIFileOutputStream);  
-		foStream.init(file, 0x02 | 0x08 | 0x20, 0777, 0);  
+		foStream.init(file, 0x02 | 0x08 | 0x20, parseInt("0777", 8), 0);  
 
 		var converter = Components.classes["@mozilla.org/intl/converter-output-stream;1"].
 				createInstance(Components.interfaces.nsIConverterOutputStream);
