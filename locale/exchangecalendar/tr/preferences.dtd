@@ -35,6 +35,7 @@
 <!ENTITY exchangeWebService.preference.updateFunction.label “Eklenti güncelleme işlevi:">
 <!ENTITY exchangeWebService.preference.checkForUpdates.label “Thunderbird başlarken yen bir eklenti sürümü olup olmadığını otomatik olarak denetle.">
 <!ENTITY exchangeWebService.preference.warnForUpdates.label “Sürümleri kolayca yükleyebilmeniz için, yeni bir sürüm olduğunda bir uyarı göster.">
+<!ENTITY exchangeWebService.preference.warnForPrereleaseUpdates.label "Beta, rc, vs. gibi yeni bir ön sürüm mevcut olduğunda bir uyarı göster."> 
 
 <!ENTITY exchangeWebService.preference.loadbalancer.debug.caption “YükDengeleyici:”>
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.label "YükDengeleyici:">
