@@ -35,7 +35,7 @@
 <!ENTITY exchangeWebService.preference.updateFunction.label "Addon update function:">
 <!ENTITY exchangeWebService.preference.checkForUpdates.label "Automatically check for a new addon version online when starting Thunderbird.">
 <!ENTITY exchangeWebService.preference.warnForUpdates.label "Show warning when a new version is available. So you can easily install it.">
-<!ENTITY exchangeWebService.preference.warnForPrereleaseUpdates.label "Show warning when a pre-release (beta, rc, etc.) new version is available."> 
+<!ENTITY exchangeWebService.preference.warnForPrereleaseUpdates.label "Show warning when a new pre-release (beta, RC, etc.) is available.">
 
 <!ENTITY exchangeWebService.preference.loadbalancer.debug.caption "Loadbalancer:">
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.label "Loadbalancer:">
