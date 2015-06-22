@@ -35,6 +35,7 @@
 <!ENTITY exchangeWebService.preference.updateFunction.label "Updatefunktion:">
 <!ENTITY exchangeWebService.preference.checkForUpdates.label "Automatisch nach neuer Version suchen, wenn Thunderbird startet.">
 <!ENTITY exchangeWebService.preference.warnForUpdates.label "Warnung anzeigen, wenn eine neue Version verfügbar ist, so dass Sie diese einfach installieren können.">
+<!ENTITY exchangeWebService.preference.warnForPrereleaseUpdates.label "Warnung anzeigen, wenn eine neue Entwicklerversion (Beta, RC, etc.) verfügbar ist.">
 
 <!ENTITY exchangeWebService.preference.loadbalancer.debug.caption "Loadbalancer:">
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.label "Loadbalancer:">
