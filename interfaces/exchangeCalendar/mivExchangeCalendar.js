@@ -84,20 +84,20 @@ Cu.import("resource://interfaces/exchangeEvent/mivExchangeEvent.js");
 
 var globalStart = new Date().getTime();
 
-var tmpActivityManager = Cc["@mozilla.org/activity-manager;1"];
+const nsIAP =  Ci.nsIActivityProcess;  
+const nsIAE =  Ci.nsIActivityEvent;  
+const nsIAM = Ci.nsIActivityManager;
 
-if (tmpActivityManager) {
-	Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).LOG("-- ActivityManager available. Enabling it."); 
+var gActivityManager;
+
+if( Cc["@mozilla.org/activity-manager;1"]){
+    gActivityManager = Cc["@mozilla.org/activity-manager;1"].getService(nsIAM);   
+    Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).LOG("-- ActivityManager available. Enabling it."); 
 }
 else {
 	Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).LOG("-- ActivityManager not available.");
 }
 
-const nsIAP =  Ci.nsIActivityProcess;  
-const nsIAE =  Ci.nsIActivityEvent;  
-const nsIAM = Ci.nsIActivityManager;
-
-var gActivityManager = Cc["@mozilla.org/activity-manager;1"].getService(nsIAM);  
 
 const fieldPathMap = {
 	'ActualWork'			: 'task',
