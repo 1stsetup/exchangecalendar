@@ -546,18 +546,17 @@ rtews.prototype = {
 		   
 	    function getEventsError(erGetEventsRequest, aCode, aMsg){
 	    	exchangeGlobalFunction("getEventsError aCode:" + aCode + " aMsg: " +  aMsg );  
-			this.Running = false ;  
+			that.Running = false ;  
 			
 			//if error reset tags syncing 
-			if(this.retry) this.reset();		
-			this.retry=false;
+			if(that.retry) that.reset();		
+			that.retry = false;
 		};  
 	},
 	
 	reset: function _reset(){
 		this.pollInterval = 0; 
-		this.getIdentities();
-		this.unsubscribe();
+ 		this.unsubscribe();
 		this.processIdentity();		
 	},
 	
