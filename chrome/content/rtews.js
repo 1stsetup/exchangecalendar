@@ -453,8 +453,8 @@ rtews.prototype = {
 	 
 	getEvents: function _getEvents(){ 
 		//exchangeGlobalFunction("calling getEvents for user, ", this.user );
+		this.Running = true;  
 		var that = this;
-		that.Running = true; 
 		      
 		var tmpObject = new erGetEventsRequest(
 						{user: this.user, 
@@ -542,21 +542,25 @@ rtews.prototype = {
 				exchangeGlobalFunction("Get events returned with resonse error. going to sleep.. ", that.user);
 				that.Running = false;
 			}
-		};  
+		}
 		   
 	    function getEventsError(erGetEventsRequest, aCode, aMsg){
 	    	exchangeGlobalFunction("getEventsError aCode:" + aCode + " aMsg: " +  aMsg );  
-			that.Running = false ;  
+			that.Running = false ;   
 			
-			//if error reset tags syncing 
-			if(that.retry) that.reset();		
+			//If error reset tags syncing 
+			if( that.retry ) that.reset();		
 			that.retry = false;
-		};  
+		} 
 	},
 	
 	reset: function _reset(){
+    	exchangeGlobalFunction("Received error while gettign error", this.user);    
 		this.pollInterval = 0; 
+    	exchangeGlobalFunction("Stop syncing  now.. "+ this.pollInterval , this.user);   
  		this.unsubscribe();
+    	exchangeGlobalFunction("Going to unsubscribe current subsciption. "+ this.session.subscriptionId , this.user);   
+    	exchangeGlobalFunction("Resume syncing tags for user", this.user);   
 		this.processIdentity();		
 	},
 	
