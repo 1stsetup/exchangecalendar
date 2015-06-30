@@ -34,8 +34,8 @@
 
 <!ENTITY exchangeWebService.preference.updateFunction.label "Mise à jour de l'Addon:">
 <!ENTITY exchangeWebService.preference.checkForUpdates.label "Vérifier automatiquement la disponibilité d'une nouvelle version de l'addon au démarrage de Thunderbird ou SeaMonkey.">
-<!ENTITY exchangeWebService.preference.warnForUpdates.label "Message d'avertissement de l'existence d'une nouvelle version, pour choisir de l'installer.">
-<!ENTITY exchangeWebService.preference.warnForPrereleaseUpdates.label "Message d'avertissement de l'existence d'une nouvelle pre-version disponible (beta, rc, etc...).">
+<!ENTITY exchangeWebService.preference.warnForUpdates.label "Message d'avertissement de l'existence d'une nouvelle version disponible, pour installation éventuelle.">
+<!ENTITY exchangeWebService.preference.warnForPrereleaseUpdates.label "Message d'avertissement de l'existence d'une nouvelle pre-version disponible (beta, rc, etc...), pour installation éventuelle.">
 
 <!ENTITY exchangeWebService.preference.loadbalancer.debug.caption "Equilibrage de charge:">
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.label "Equilibrage de charge:">
