@@ -77,13 +77,14 @@ rtews.UpdateMessage.prototype = {
         var messageId = this.updates[0].msgId;
         var tags = this.updates[0].tags;
         var folderPath = this.updates[0].path;
+    	exchangeGlobalFunction("Going to update server messages, total - " + this.updates.length  );  
 
         that.searchGloda(messageId, folderPath, function(msgHdrs) {
-        	exchangeGlobalFunction("Going to update local messages, total - " + msgHdrs.length );  
+        	exchangeGlobalFunction("Going to update local messages, total - " + msgHdrs.length  );  
         	exchangeGlobalFunction("Searching Gloda for messageId - " + messageId  + " in  folderPath - "+ folderPath  );
             if (msgHdrs.length == 0) {
-                that.pendingUpdates.push(that.updates[0]);
-            } else {
+            	exchangeGlobalFunction("Gloda did not find message for messageId - " + messageId  + " in  folderPath - "+ folderPath  ); 
+             } else {
             	exchangeGlobalFunction("update messages with tags  " + String(tags) ); 
                 for (var x = 0; x < msgHdrs.length; x++) {
                 	exchangeGlobalFunction("Remove messages tags  " + String(tags) );  
@@ -95,20 +96,10 @@ rtews.UpdateMessage.prototype = {
                 }
             }
 
-            that.updates.shift();
-
+            that.updates.shift(); 
             if (that.updates.length > 0) {
                 that.update();
-            } else {
-                if (that.pendingUpdates.length > 0 && that.pendingAttempts < 60) {
-                    setTimeout(function() {
-                        that.updates = that.pendingUpdates;
-                        that.pendingUpdates = [];
-                        that.update();
-                        that.pendingAttempts++;
-                    }, 2000);
-                }
-            }
+            }    
         }); 
     },
 
@@ -151,7 +142,7 @@ rtews.UpdateMessage.prototype = {
                 },
                 /* called when our database query completes */
                 onQueryCompleted : function queryListener_onQueryCompleted(aCollection) {
-                    var msgHdrs = [];
+                	 msgHdrs = [];
        //             exchangeGlobalFunction("rtews:UpdateMessage.update , Found messages "+aCollection.items.length);
                     try {
                         for (var j = 0; j < aCollection.items.length; j++) {
@@ -347,37 +338,37 @@ rtews.prototype = {
 	},
 	 
 	getItemsOK: function _getItemsOK(erGetItemsRequest, aItems, aItemErrors){ 
-	//	exchangeGlobalFunction("getItemsOK: Received items for update: " + aItems.length); 
+		exchangeGlobalFunction("getItemsOK, Received server items to update: " + aItems.length,this.user); 
 	 	if( aItems.length > 0 ){
 		 
-	 		var getItem=function(aItem){ 
+	 		 var getItem=function(aItem){ 
 			   	let id = xml2json.getAttributeByTag(aItem,'t:ItemId','Id'); 
 			   	let changeKey = xml2json.getAttributeByTag(aItem,'t:ItemId','ChangeKey');  
 		        return { "Id" : id , "ChangeKey": changeKey, };
 			}  
 			
-	 		var getParentItem=function(aItem){ 
+	 		var  getParentItem=function(aItem){ 
 			   	let id = xml2json.getAttributeByTag(aItem,'t:ParentFolderId','Id'); 
 			   	let changeKey = xml2json.getAttributeByTag(aItem,'t:ParentFolderId','ChangeKey');  
 		        return { "Id" : id , "ChangeKey": changeKey, };
 			}  
-		
+	 		
+		var updates = []; 
+
 		for(var item = 0 ; item < aItems.length ; item++ ){ 
 	 		var itemId = getItem(aItems[item]);  
 	        var parentItemId = getParentItem(aItems[item]);  
 	        
 	        var messageIdElm = xml2json.XPath(aItems[item],"/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyTag = '0x1035']");
-	        var messageId;
+	        var messageId = null ;
 	        if (messageIdElm.length > 0) {
 				 messageId =  xml2json.getTagValue(messageIdElm[0], "t:Value", null);
-			} 
-	        
-	        messageId = messageId.replace('<', '').replace('>', '');
-	
-	        if (!messageId) {
+			}   
+	        messageId = messageId.replace('<', '').replace('>', '');   
+	        if ( messageId == undefined || messageId == null || messageId == ""  ) {
+	        	exchangeGlobalFunction("(warn?) messageId "+messageId+ " is invalid.",this.user);
 	            continue;
-	        }
-	        
+	        } 
 	        var categories = [];
 	        var tags = []; 
 	       
@@ -416,19 +407,19 @@ rtews.prototype = {
 	                Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService).alert(null, stringBundle.getString("rtews.title"), stringBundle.getString("rtews.tagAddError") + " " + errCategory.join(", "));
 	            } 
 	        } 
-	 	}
-		var updates = []; 
-	   	var folderEwsId = this.gerFolderByEwsId(parentItemId.Id);
-	//	exchangeGlobalFunction("getItemsOK: Going to tag update: " + messageId+  ":" +  folderEwsId.path  +  ":" +  tags, this.user);
-	
-		if ( folderEwsId != null) {
-		        updates.push({
-		            msgId : messageId,
-		            tags : tags,
-		            path : folderEwsId.path
-		        }); 
-		}
-		
+	      	
+	        var folderEwsId = this.gerFolderByEwsId(parentItemId.Id); 
+		   	
+			if ( folderEwsId != null) {
+			        updates.push({
+			            msgId : messageId,
+			            tags : tags,
+			            path : folderEwsId.path
+			        }); 
+			}
+		}//Close received items update
+	 
+	   	exchangeGlobalFunction("Server getItemsOK, received items:  " +updates.length , this.user); 
 		if (updates.length) {
 		    setTimeout(function() {
 		        var updateMsg = new rtews.UpdateMessage(updates);
@@ -439,6 +430,7 @@ rtews.prototype = {
 	},
 	
 	getAndUpdateItems: function _getAndUpdateItems(aIds) { 
+		exchangeGlobalFunction("Received request to update messages,  total items to be requested - " + aIds.length, this.user);  
 		var that = this;   
 		var tmpObject = new erGetItemsRequest(
 				{user: this.user, 
@@ -1239,10 +1231,9 @@ function ToggleMessageTag(key, addKey) {
  * Overrides default remove all method.
  *
  */
-function RemoveAllMessageTag() {
+function RemoveAllMessageTags() {
     var identity = rtews.getIdentity(gFolderDisplay.displayedFolder.server.prettyName);
-
-    //if we don't have the id configured run the default toggle functionality
+     //if we don't have the id configured run the default toggle functionality
     if (identity == null) {
         rtews.removeAllMessageTagsPostEwsUpdate();
         return;
@@ -1252,7 +1243,7 @@ function RemoveAllMessageTag() {
 
     for (var i = 0; i < selectedMessages.length; ++i) {
         var msgHdr = selectedMessages[i];        
-        rtewsobj(identity).toggleTags(msgHdr, identity, "removeAll", []);
+        rtewsObj(identity).toggleTags(msgHdr, identity, "removeAll", []);
     }
 } 
 /*
