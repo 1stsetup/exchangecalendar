@@ -41,3 +41,4 @@
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.maxJobs.label "Maximum number of simultanious request to exchange server:">
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.sleepBetweenJobs.label "Minimum time, to wait, between request to exchange server:">
 <!ENTITY exchangeWebService.preference.userAgent.label "HTTP user agent:">
+<!ENTITY exchangeWebService.preference.warnForPrereleaseUpdates.label "Show warning when a new pre-release (beta, RC, etc.) is available.">

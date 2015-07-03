@@ -44,3 +44,6 @@
 
 <!ENTITY label.autoprocessingproperties.deletecancelleditems "Abgesagte Besprechungen automatisch entfernen">
 <!ENTITY label.autoprocessingproperties.markeventtentative "Besprechungen automatisch als vorläufig markieren und dem Organisator eine Antwort senden">
+<!ENTITY ecsettings.title "EWS Calendar and Mail settings">
+<!ENTITY ecsettings.tab.mailitemsProperties "EWS Settings (Mail)">
+<!ENTITY label.syncmailitems.interval "Delay syncing mail items (Tags,etc.)">
