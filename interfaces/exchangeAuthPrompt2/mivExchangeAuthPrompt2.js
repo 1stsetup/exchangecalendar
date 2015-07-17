@@ -170,9 +170,9 @@ mivExchangeAuthPrompt2.prototype = {
 			}
 		}
  
-		if ((password) && (aChannel) && (aChannel.URI.password) && (aChannel.URI.password != "")) {
+		if ((password) && (aChannel) && (aChannel.URI.password) && (decodeURIComponent(aChannel.URI.password) != "")) {
 			this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. Going to see if they are the same.");
-			if ((password == aChannel.URI.password) && (!useCached)) {
+			if ((password == decodeURIComponent(aChannel.URI.password)) && (!useCached)) {
 				this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are the same. Going to ask user to provide a new password.");
 				if ((this.details[aURL]) && (this.details[aURL].ntlmCount == 1)) {
 					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are the same. But it is a first pass on an NTLM authentication. Using stored password and going to see if it can be used.");
@@ -190,7 +190,7 @@ mivExchangeAuthPrompt2.prototype = {
 					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And useCached specified.");
 				}
 				if (this.showPassword) {
-					this.logInfo("getPassword: cached/store='"+password+"', on channel='"+aChannel.URI.password+"'.");
+					this.logInfo("getPassword: cached/store='"+password+"', on channel='"+decodeURIComponent(aChannel.URI.password)+"'.");
 				}
 				else {
 					this.logInfo("getPassword: cached/store='********', on channel='********'.");
@@ -461,7 +461,7 @@ mivExchangeAuthPrompt2.prototype = {
 
 		var URL = decodeURIComponent(aChannel.URI.scheme+"://"+aChannel.URI.hostPort+aChannel.URI.path);
 		if (this.showPassword) {
-			this.logInfo("asyncPromptAuth: aChannel.URL="+URL+", username="+decodeURIComponent(aChannel.URI.username)+", password="+aChannel.URI.password);
+			this.logInfo("asyncPromptAuth: aChannel.URL="+URL+", username="+decodeURIComponent(aChannel.URI.username)+", password="+decodeURIComponent(aChannel.URI.password));
 		}
 		else {
 			this.logInfo("asyncPromptAuth: aChannel.URL="+URL+", username="+decodeURIComponent(aChannel.URI.username)+", password=********");
