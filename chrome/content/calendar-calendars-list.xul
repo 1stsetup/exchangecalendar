@@ -38,7 +38,7 @@
  * ***** BEGIN LICENSE BLOCK *****/
 -->
 
-<?xml-stylesheet href="chrome://exchangecalendar/skin/calendar-calendars-list.css" type="text/css"?>
+<?xml-stylesheet type="text/css" href="chrome://exchangecalendar/skin/calendar-calendars-list.css"?>
 
 <!DOCTYPE overlay SYSTEM "chrome://exchangecalendar/locale/calendar-calendars-list.dtd">
 

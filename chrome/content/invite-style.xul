@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
  
-<?xml-stylesheet href="chrome://exchangecalendar/content/invite-style.css" type="text/css"?>
+<?xml-stylesheet type="text/css" href="chrome://exchangecalendar/skin/invite-style.css"?>
 
 <!DOCTYPE overlay SYSTEM "chrome://exchangecalendar/locale/inviteStyle.dtd">
 

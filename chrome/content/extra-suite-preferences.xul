@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?> 
 <!DOCTYPE prefwindow SYSTEM "chrome://exchangecalendar/locale/extra-priority.dtd">  
 
-<?xml-stylesheet href="chrome://exchangecalendar/content/extras-preferences.css"?> 
+<?xml-stylesheet type="text/css" href="chrome://exchangecalendar/skin/extras-preferences.css"?> 
 
 <overlay  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 	

@@ -36,7 +36,7 @@
  * ***** BEGIN LICENSE BLOCK *****/
 -->
 
-<?xml-stylesheet href="chrome://exchangecalendar/content/calendar-event-dialog-attendees.css" type="text/css"?>
+<?xml-stylesheet type="text/css" href="chrome://exchangecalendar/skin/calendar-event-dialog-attendees.css"?>
 
 <overlay id="forwardOnRightClick"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
