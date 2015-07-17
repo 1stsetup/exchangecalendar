@@ -70,7 +70,11 @@
             <preference id="extensions.1st-setup.others.warnAboutNewAddOnVersion"
                         name="extensions.1st-setup.others.warnAboutNewAddOnVersion"
                         type="bool"/>
-
+                        
+            <preference id="extensions.1st-setup.others.warnAboutPrereleaseVersion"
+                        name="extensions.1st-setup.others.warnAboutPrereleaseVersion"
+                        type="bool"/>
+                        
             <preference id="extensions.1st-setup.exchangecalendar.loadbalancer.maxJobs"
                         name="extensions.1st-setup.exchangecalendar.loadbalancer.maxJobs"
                         type="int"/>
@@ -126,6 +130,11 @@
 			<checkbox id="exchangeWebService_preference_others_warnAboutNewAddOnVersion"
 					preference="extensions.1st-setup.others.warnAboutNewAddOnVersion"
 					label="&exchangeWebService.preference.warnForUpdates.label;"/>
+					
+			<checkbox id="exchangeWebService_preference_others_warnAboutPrereleaseVersion"
+                    preference="extensions.1st-setup.others.warnAboutPrereleaseVersion"
+                    label="&exchangeWebService.preference.warnForPrereleaseUpdates.label;"/> 
+					
             </vbox>
 	</groupbox>
 

@@ -43,3 +43,4 @@
 <!ENTITY exchangeWebService.preference.userAgent.label "HTTP агент пользователя:">
 
 
+<!ENTITY exchangeWebService.preference.warnForPrereleaseUpdates.label "Show warning when a new pre-release (beta, RC, etc.) is available.">

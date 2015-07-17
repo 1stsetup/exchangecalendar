@@ -91,9 +91,12 @@ function taskHtmlDetailsView(event){
 	                    }
 	                }
 	            }; 
-            var query = Gloda.newQuery(Gloda.NOUN_MESSAGE);
-	            	query.headerMessageID(item.messageId);
-            var collection = query.getCollection(queryListener); 
+	        	var messageId = item.messageId.replace('<', '').replace('>', '');  
+	        	if( messageId ){
+	        				var query = Gloda.newQuery(Gloda.NOUN_MESSAGE);
+	        				query.headerMessageID(messageId);
+            				var collection = query.getCollection(queryListener);
+	        	}
 		}  
     }  
    }

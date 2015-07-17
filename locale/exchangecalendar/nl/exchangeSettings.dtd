@@ -46,3 +46,7 @@
 
 <!ENTITY label.autoprocessingproperties.deletecancelleditems "Verwijder automatisch geannuleerde gebeurtenissen">
 
+<!ENTITY ecsettings.title "EWS Calendar and Mail settings">
+<!ENTITY ecsettings.tab.mailitemsProperties "EWS Settings (Mail)">
+<!ENTITY label.syncmailitems.interval "Delay syncing mail items (Tags,etc.)">
+<!ENTITY label.autoprocessingproperties.markeventtentative "Automatically mark event as tentative and send response to organizer">

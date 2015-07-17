@@ -84,19 +84,20 @@ Cu.import("resource://interfaces/exchangeEvent/mivExchangeEvent.js");
 
 var globalStart = new Date().getTime();
 
-var tmpActivityManager = Cc["@mozilla.org/activity-manager;1"];
+const nsIAP =  Ci.nsIActivityProcess;  
+const nsIAE =  Ci.nsIActivityEvent;  
+const nsIAM = Ci.nsIActivityManager;
 
-if (tmpActivityManager) {
-	Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).LOG("-- ActivityManager available. Enabling it.");
-	const nsIAP = Ci.nsIActivityProcess;  
-	const nsIAE = Ci.nsIActivityEvent;  
-	const nsIAM = Ci.nsIActivityManager;
+var gActivityManager;
 
-	var gActivityManager = Cc["@mozilla.org/activity-manager;1"].getService(nsIAM);  
+if( Cc["@mozilla.org/activity-manager;1"]){
+    gActivityManager = Cc["@mozilla.org/activity-manager;1"].getService(nsIAM);   
+    Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).LOG("-- ActivityManager available. Enabling it."); 
 }
 else {
 	Cc["@1st-setup.nl/global/functions;1"].getService(Ci.mivFunctions).LOG("-- ActivityManager not available.");
 }
+
 
 const fieldPathMap = {
 	'ActualWork'			: 'task',
@@ -163,6 +164,7 @@ const fieldPathMap = {
 	'IsTeamTask'			: 'task',
 	'IsUnmodified'			: 'item',
 	'ItemClass'			: 'item',
+	'messageId'			: 'item', 
 	'ItemId'			: 'item',
 	'LastModifiedName'		: 'item',
 	'LastModifiedTime'		: 'item',
@@ -3065,7 +3067,7 @@ calExchangeCalendar.prototype = {
 			return true;
 		}
 
-		return null;false;
+		return false;
 	},
 
 	getExceptions: function _getExceptions(aRecurrenceItems)
@@ -3177,7 +3179,10 @@ calExchangeCalendar.prototype = {
 
 		if (this.firstrun) {
 			this.firstrun = false; 
-
+			
+			//Add Prvider for busy free information for  invite attendees etc.
+			getFreeBusyService().addProvider(this);
+			
 			// The first thing we want to do is check the folderbase and folderpath for their id & changekey.
 			// It might have changed between restarts.
 			this.checkFolderPath();
@@ -8831,7 +8836,7 @@ else {
 					.get("ProfD", Components.interfaces.nsIFile);
 			this.dbFile.append("exchange-data");
 			if ( !this.dbFile.exists() || !this.dbFile.isDirectory() ) {
-				this.dbFile.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);  
+				this.dbFile.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, parseInt("0777", 8));  
 			}
 			
 			this.dbFile.append(this.id+".offlineCache.sqlite");
@@ -9418,7 +9423,7 @@ else {
 				handleResult: function _handleResult(aResultSet) {
 					if (self.debug) self.logInfo("Found item in offline Cache.");
 					var row;
-					while (row = aResultSet.getNextRow()) {
+					while ( row = aResultSet.getNextRow() ) {
 
 						if (row) {
 							if (row.getResultByName('itemcount') > 0) {
@@ -10460,7 +10465,7 @@ dump("getOccurrencesFromOfflineCache: found:"+result.length+"\n");
 				.get("ProfD", Components.interfaces.nsIFile);
 		file.append("exchange-data");
 		if ( !file.exists() || !file.isDirectory() ) {
-			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);  
+			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, parseInt("0777", 8));  
 		}
 
 		file.append(this.id+"."+aFilename);
@@ -10473,7 +10478,7 @@ dump("getOccurrencesFromOfflineCache: found:"+result.length+"\n");
 
 		var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].  
 				 createInstance(Components.interfaces.nsIFileOutputStream);  
-		foStream.init(file, 0x02 | 0x08 | 0x20, 0777, 0);  
+		foStream.init(file, 0x02 | 0x08 | 0x20, parseInt("0777", 8), 0);  
 
 		var converter = Components.classes["@mozilla.org/intl/converter-output-stream;1"].
 				createInstance(Components.interfaces.nsIConverterOutputStream);

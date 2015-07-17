@@ -2,3 +2,4 @@
 <!ENTITY calendar.context.exchange.properties.label "Inställningar för Exchange (EWS)">
 <!ENTITY calendar.context.exchange.oof.settings.label "Frånvaroinställningar">
 <!ENTITY calendar.context.exchange.clone.settings.label "Klona inställningar till ny kalender">
+<!ENTITY calendar.context.exchange.delegate.calendar.settings.label "Delegate Calendar">

@@ -2641,13 +2641,13 @@ dump(" ++ Exception:"+xml2json.toString(aItem.exchangeData)+"\n");
         if (messageIdElm.length > 0) {
         	this._messageId =  xml2json.getTagValue(messageIdElm[0], "t:Value", null);
 		}  
-       
-        this._messageId = this._messageId.replace('<', '').replace('>', ''); 
-        messageIdElm = null;
+        else{
+        	this._messageId = null;
+        }
+        messageIdElm = null; 
         
-		this.preLoad();
-
 		// Do the initializaton of this one.
+		this.preLoad(); 
 
 		this._alarm = null;
 		this._calEvent.clearAlarms();
@@ -3550,6 +3550,12 @@ dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 							this.calendar.modifyItem(newException, dismissedItem, null);
 						}
 						else {
+							
+//							Recurring Events reminder fix for occurence  ** Wed Jun 24 10:04:44 IST 2015
+							var aNewItem = dismissedItem.clone(); 
+							aNewItem._reminderIsSet=false;
+							aNewItem._newAlarm=null;		
+							this.calendar.modifyItem(aNewItem, dismissedItem, null); 
 							//dump("Dismissed an occurrence with startDate:"+dismissedItem.startDate+"\n");
 						}
 
@@ -3643,7 +3649,7 @@ dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 			}
 
 		}
-
+ 
 		if (newSnoozeTime) {
 			newSnoozeTime = newSnoozeTime.getInTimezone(cal.UTC());
 			const MAPI_PidLidReminderSignalTime = "34144";
@@ -3652,11 +3658,6 @@ dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 					{ DistinguishedPropertySetId: "Common",
 					  PropertyId: MAPI_PidLidReminderSignalTime,
 					  PropertyType: "SystemTime"} );
-		}
-
-		if ( this.isCancelled && (this.className == "mivExchangeEvent") )
-		{
-			reminderIsSetChanged="false";
 		}
  
 		if (reminderIsSetChanged !== undefined) {
