@@ -201,7 +201,15 @@ rtews.Tags = {
 
 function rtews(identity){  
 		this.identity = identity; 
- 	    this.user = identity.domain +"\\"+identity.username ;
+  	   // fixing bug #270 
+ 	    
+		if( identity.domain){
+ 	    	this.user = identity.domain +"\\"+identity.username ;
+ 	    }
+ 	    else {
+ 	    	this.user = identity.username ;
+ 	    }
+ 	    
 	    this.mailbox = identity.email ; 
 	    this.serverUrl = identity.ewsUrl ; 
 	    
