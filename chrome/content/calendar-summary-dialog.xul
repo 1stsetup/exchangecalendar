@@ -32,7 +32,7 @@
  * ***** BEGIN LICENSE BLOCK *****/
 -->
 
-<?xml-stylesheet href="chrome://exchangecalendar/content/calendar-summary-dialog.css" type="text/css"?>
+<?xml-stylesheet type="text/css" href="chrome://exchangecalendar/skin/calendar-summary-dialog.css"?>
 
 <!DOCTYPE dialog [
     <!ENTITY % eventDialogDTD SYSTEM "chrome://calendar/locale/calendar-event-dialog.dtd">
