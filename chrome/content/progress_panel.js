@@ -53,10 +53,10 @@ exchProgressPanel.prototype = {
 	busy: false,
 	isLoaded: false,
 	imageCounter: 1,
-	imageList: {    image1: "chrome://exchangecalendar/skin/arrow-circle.png",
-			image2: "chrome://exchangecalendar/skin/arrow-circle-315.png",
-			image3: "chrome://exchangecalendar/skin/arrow-circle-225.png",
-			image4: "chrome://exchangecalendar/skin/arrow-circle-135.png"
+	imageList: {    image1: "chrome://exchangecalendar-common/skin/images/arrow-circle.png",
+			image2: "chrome://exchangecalendar-common/skin/images/arrow-circle-315.png",
+			image3: "chrome://exchangecalendar-common/skin/images/arrow-circle-225.png",
+			image4: "chrome://exchangecalendar-common/skin/images/arrow-circle-135.png"
 			},
 	loadBalancer : Cc["@1st-setup.nl/exchange/loadbalancer;1"]  
 	                          .getService(Ci.mivExchangeLoadBalancer),  

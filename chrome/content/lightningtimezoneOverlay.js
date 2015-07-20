@@ -64,7 +64,7 @@ lightningTimzone.prototype = {
  		},
 		
 		infoPopup:function _infoPopup(title, msg) {
-			 var image = "chrome://exchangecalendar/skin/notify-icon.png";
+			 var image = "chrome://exchangecalendar-common/skin/images/notify-icon.png";
 			  var win = Components.classes['@mozilla.org/embedcomp/window-watcher;1'].
 			                      getService(Components.interfaces.nsIWindowWatcher).
 			                      openWindow(null, 'chrome://global/content/alerts/alert.xul',
