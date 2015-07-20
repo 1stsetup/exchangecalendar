@@ -36,7 +36,7 @@
     <!ENTITY % eventDialogDTD SYSTEM "chrome://calendar/locale/calendar-event-dialog.dtd">
     %eventDialogDTD;
 ]>
-<?xml-stylesheet type="text/css" href="chrome://exchangecalendar/content/calendar-task-view.css"?>
+<?xml-stylesheet type="text/css" href="chrome://exchangecalendar/skin/calendar-task-view.css"?>
 
 <?xul-overlay href="chrome://exchangecalendar/content/attachments-view.xul"?>
 

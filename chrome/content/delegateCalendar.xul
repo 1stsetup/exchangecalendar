@@ -5,10 +5,10 @@
  * All Rights Reserved.
  * ***** BEGIN LICENSE BLOCK *****/
 --> 
- <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
- <?xml-stylesheet href="chrome://global/skin/xul.css" type="text/css"?>
- <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css" ?>
- <?xml-stylesheet href="chrome://exchangecalendar/content/delegateCalendar.css" type="text/css" ?>
+ <?xml-stylesheet type="text/css" href="chrome://global/skin/"?>
+ <?xml-stylesheet type="text/css" href="chrome://global/skin/xul.css"?>
+ <?xml-stylesheet type="text/css" href="chrome://global/skin/global.css" ?>
+ <?xml-stylesheet type="text/css" href="chrome://exchangecalendar/skin/delegateCalendar.css" ?>
  <!DOCTYPE dialog [ 
     <!ENTITY % delegateDialogDTD SYSTEM "chrome://exchangecalendar/locale/delegate-calendar-dialog.dtd" > 
       %delegateDialogDTD;

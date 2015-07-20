@@ -46,7 +46,7 @@
     %dtd1;
 ]>
 
-<?xml-stylesheet href="chrome://exchangecalendar/content/preferences.css"?>
+<?xml-stylesheet type="text/css" href="chrome://exchangecalendar/skin/preferences.css"?>
 
 <overlay id="exchangeWebService_cache_preferences_overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">

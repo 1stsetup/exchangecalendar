@@ -44,7 +44,7 @@ Some of the icons and images used are from the Fugue Icons Collection made by Yu
     <em:translator>Hiroshi Miura (ja-JP)</em:translator>
     <em:translator>Alexey Sinitsyn (ru)</em:translator>
     <em:homepageURL>http://www.1st-setup.nl/wordpress/?page_id=133</em:homepageURL>
-    <em:iconURL>chrome://exchangecalendar/content/lightningexchangecalendar.png</em:iconURL>
+    <em:iconURL>chrome://exchangecalendar-common/skin/images/lightningexchangecalendar.png</em:iconURL>
     <em:type>2</em:type> <!-- type: extension -->
     <em:unpack>true</em:unpack>
 

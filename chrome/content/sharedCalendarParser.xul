@@ -42,7 +42,7 @@
     <!ENTITY % dtd1 SYSTEM "chrome://exchangecalendar/locale/sharedCalendarParser.dtd" > %dtd1;
 ]>
 
-<?xml-stylesheet href="chrome://exchangecalendar/content/sharedCalendarParser.css" type="text/css"?>
+<?xml-stylesheet type="text/css" href="chrome://exchangecalendar/skin/sharedCalendarParser.css"?>
 
 <overlay id="exchWebServiceMessengerOverlay"
     xmlns:html="http://www.w3.org/1999/xhtml"

@@ -160,9 +160,9 @@ exchAttachments.prototype = {
 			this.globalFunctions.LOG(" == extension:"+extension);
 
 			if (ext2file[extension]) {
-				item.setAttribute("image", "chrome://exchangecalendar/skin/" + ext2file[extension]);
+				item.setAttribute("image", "chrome://exchangecalendar-common/skin/images/" + ext2file[extension]);
 			} else {
-				item.setAttribute("image", "chrome://exchangecalendar/skin/document--exclamation.png");
+				item.setAttribute("image", "chrome://exchangecalendar-common/skin/images/document--exclamation.png");
 			}
 
 			// full attachment object is stored here

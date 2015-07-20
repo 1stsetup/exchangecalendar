@@ -32,7 +32,7 @@
 -->
 
 
-<?xml-stylesheet href="chrome://exchangecalendar/content/progress_panel.css" type="text/css"?>
+<?xml-stylesheet type="text/css" href="chrome://exchangecalendar/skin/progress_panel.css"?>
 
 <overlay id="exchWebService-calendar-list-overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
