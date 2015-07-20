@@ -86,36 +86,36 @@ showIconsAsInviteColumn.prototype.execute = function(){
 									 res = Subject.match(/Declined:/);  
 								 }
 								 else{   
-									 return "chrome://exchangeCalendar/skin/accepted.png"; 
+									 return "chrome://exchangecalendar-common/skin/images/accepted.png"; 
 								 }
 								  
 								 if(!res){
 									 res = Subject.match(/Tentative:/);  
 								 }
 								 else{ 	
-									 return "chrome://exchangeCalendar/skin/declined.png"; 
+									 return "chrome://exchangecalendar-common/skin/images/declined.png"; 
 								 } 
 								 if(!res){
 									 res = Subject.match(/Canceled:/);  
 								 }
 								 else{   
-									 return "chrome://exchangeCalendar/skin/tentative.png"; 
+									 return "chrome://exchangecalendar-common/skin/images/tentative.png"; 
 								 }  
 								 
 								 if(!res){
 									 res = Subject.match(/Updated:/);  
 								 }
 								 else{   
-									 return "chrome://exchangeCalendar/skin/updated.png"; 
+									 return "chrome://exchangecalendar-common/skin/images/updated.png"; 
 								 }  
 								 
 								 if(!res){
 									 res = Subject.match(/Event Invitation:/);  
 								 }
 								 else{  
-									 return "chrome://exchangeCalendar/skin/updated.png"; 
+									 return "chrome://exchangecalendar-common/skin/images/updated.png"; 
 								 }   
-							 	 return "chrome://exchangeCalendar/skin/invited.png";   
+							 	 return "chrome://exchangecalendar-common/skin/images/invited.png";   
 		    				  }
 		    			    }, 
 		    			    getSortLongForRow: function(hdr) {},
