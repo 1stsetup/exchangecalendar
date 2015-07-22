@@ -1109,7 +1109,6 @@ try {
 			}
 		}
 		else {
-			var rm = xml2json.XPath(aResp,"/s:Envelope/s:Body/*/m:ResponseMessages/*[@ResponseClass='Error']");
 			var rm = aResp.XPath("/s:Envelope/s:Body/*/m:ResponseMessages/*[@ResponseClass='Error']");
 			var result;
 			if (rm.length > 0) {
