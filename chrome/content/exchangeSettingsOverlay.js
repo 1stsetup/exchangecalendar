@@ -235,7 +235,7 @@ exchSettingsOverlay.prototype = {
 	exchWebServicesDoUserChanged: function _exchWebServicesDoUserChanged(aTextBox)
 	{
 		this.exchWebServicesgUser = aTextBox.value;
-		if (this.exchWebServicesgUser.indexOf("@") > -1) {
+		if ((this.exchWebServicesgUser.indexOf("@") > -1) || (this.exchWebServicesgUser.indexOf("\\") > -1) ){
 			this._document.getElementById("exchWebService_windowsdomain").disabled = true;
 			this._document.getElementById("exchWebService_windowsdomain").value = "";
 			//this._document.getElementById("exchWebService_windowsdomain").setAttribute("required", false);
