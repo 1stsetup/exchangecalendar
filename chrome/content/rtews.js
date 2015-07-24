@@ -18,6 +18,7 @@ Cu.import("resource://exchangecalendar/erSubscribe.js");
 Cu.import("resource://exchangecalendar/erGetEvents.js");
 Cu.import("resource://exchangecalendar/erFindItems.js");
 Cu.import("resource://exchangecalendar/erUpdateItem.js");
+Cu.import("resource://exchangecalendar/erUnsubscribe.js");
 
 const eventTypes = ["NewMailEvent","ModifiedEvent","MovedEvent","CopiedEvent","CreatedEvent"]; 
 
@@ -296,9 +297,9 @@ rtews.prototype = {
 	},
 	
 	unsubscribe: function _unsubscribe(){ 
-		var that = this;
-		that.Running = true; 
-		      
+		exchangeGlobalFunction("Error occured Unsubscribing user.",this.user); 
+		this.Running = false; 
+		var that = this; 
 		var tmpObject = new erUnsubscribeRequest(
 						{user: this.user, 
 						mailbox: this.mailbox,
@@ -312,13 +313,11 @@ rtews.prototype = {
 	},
 	
 	unsubscribeOK: function _unsubscribeOK(erUnsubscribeRequest, aResp){
-		this.Running =false;
 		exchangeGlobalFunction("Unsubscribed user.",this.user);
 	},
 	
 	unsubscribeError: function _unsubscribeError(erUnsubscribeRequest, aCode, aMsg){
-		this.Running =false;
-		exchangeGlobalFunction("unsubscribeError: "+ aMsg);
+ 		exchangeGlobalFunction("unsubscribeError: "+ aMsg);
 	},
 	
 	poll: function _poll() {
