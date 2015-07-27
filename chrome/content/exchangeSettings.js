@@ -266,6 +266,8 @@ exchExchangeSettings.prototype = {
 		this._document.getElementById("exchWebService-autoprocessingproperties-markeventtentative").checked = this.globalFunctions.safeGetBoolPref(exchWebServicesCalPrefs, "ecautoprocessingmarkeventtentative", false);
 		
 		this._document.getElementById("exchWebService-syncMailItems-Interval").value = this.globalFunctions.safeGetIntPref(exchWebServicesCalPrefs, "syncMailItems.Interval", 15);
+		this._document.getElementById("exchWebService-syncMailItems-active").checked = this.globalFunctions.safeGetBoolPref(exchWebServicesCalPrefs, "mailsync.active",true);
+
 		
 		if ( this.globalFunctions.safeGetCharPref(exchWebServicesCalPrefs, "ecFolderbase", "") == "calendar" ){ 
 			this._document.getElementById("mailItemsPropertiesTab").hidden = false;
@@ -333,6 +335,7 @@ exchExchangeSettings.prototype = {
 		
 		if ( this.globalFunctions.safeGetCharPref(exchWebServicesCalPrefs, "ecFolderbase", "") == "calendar" ){ 
 			exchWebServicesCalPrefs.setIntPref("syncMailItems.Interval", this._document.getElementById("exchWebService-syncMailItems-Interval").value);
+			exchWebServicesCalPrefs.setBoolPref("mailsync.active", this._document.getElementById("exchWebService-syncMailItems-active").checked); 
 		}
 
 		//exchWebServicesCalPrefs.setBoolPref("ecPollInbox", this._document.getElementById("exchWebService-poll-inbox").checked); 

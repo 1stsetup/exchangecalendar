@@ -47,3 +47,5 @@
 <!ENTITY ecsettings.title "EWS Calendar and Mail settings">
 <!ENTITY ecsettings.tab.mailitemsProperties "EWS Settings (Mail)">
 <!ENTITY label.syncmailitems.interval "Delay syncing mail items (Tags,etc.)">
+<!ENTITY label.syncmailitems.active "Keep enabled syncing mail items (Tags,etc.)">
+

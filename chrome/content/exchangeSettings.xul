@@ -417,6 +417,10 @@
                                        increment="1" min="15" type="number" value="15" />
                                 <separator /> 
                             </hbox>  
+                           <hbox> 
+                          <checkbox label="&label.syncmailitems.active;" id="exchWebService-syncMailItems-active"
+                                      disabled="false"/> 
+                          </hbox>  
                         </vbox>  
                     </groupbox>                
                 </vbox> 
