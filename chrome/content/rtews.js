@@ -248,7 +248,7 @@ rtews.prototype = {
 	 */ 
 	addToQueue: function _addToQueue(aRequest, aArgument, aCbOk, aCbError, aListener)
 	{
-		if (this.globalFunctions.safeGetBoolPref(this.prefs, "mailsync.active", true)) {
+		if (! this.globalFunctions.safeGetBoolPref(this.prefs, "mailsync.active", true) ) {
  			exchangeGlobalFunction("Not adding to queue because we are disabled,  " + this.serverUrl ,this.user);  
 			return;
 		}
