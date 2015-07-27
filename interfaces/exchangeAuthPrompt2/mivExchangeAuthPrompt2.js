@@ -145,14 +145,15 @@ mivExchangeAuthPrompt2.prototype = {
 		else {
 			this.logInfo("getPassword: password(1)=********");
 		}
-		var passwordSaved;
-		if (!password) {
+		
+		var oldSavedPassword;
+ 		if (!password) {
 			this.logInfo("getPassword: There is no password in the cache. Going to see if there is one in the passwordManager.");
 			var savedPassword = this.passwordManagerGet(username, aURL, realm);
 			if (savedPassword.result) {
 				this.logInfo("getPassword: There is a password stored in the passwordManager.");
 				password = savedPassword.password;
-				passwordSaved = savedPassword.password;
+				oldSavedPassword = savedPassword.password;
 			}
 			else {
 				this.logInfo("getPassword: There is no password stored in the passwordManager.");
@@ -228,6 +229,10 @@ mivExchangeAuthPrompt2.prototype = {
 				if (answer.save) {
 					this.logInfo("getPassword: User requested to store password in passwordmanager.");
 					this.passwordManagerSave(username, password, aURL, realm);
+				}
+				else{
+					this.logInfo("getPassword: User requested not to store password in passwordmanager."); 
+					this.passwordManagerRemove(username, oldSavedPassword, aURL, realm); 
 				}
 				this.passwordCache[username+"|"+aURL+"|"+realm] = password;
 				this.details[aURL].showing = false;
@@ -633,7 +638,43 @@ mivExchangeAuthPrompt2.prototype = {
 		}
 		return { result: false };
 	},
+	
+	passwordManagerRemove: function _passwordManagerRemove(aUsername, aPassword, aURL, aRealm) 
+	{
 
+		if ((!aUsername) || (!aURL) || (!aRealm)) {
+			this.logInfo("passwordManagerRemove: username or hostname or realm is empty. Not allowed!!!");
+			return;
+		}
+
+		try {
+			var loginManager = Cc["@mozilla.org/login-manager;1"].getService(Ci.nsILoginManager);
+			var logins = loginManager.findLogins({}, aURL, null, aRealm);
+
+			var newLoginInfo = Cc["@mozilla.org/login-manager/loginInfo;1"].createInstance(Ci.nsILoginInfo);
+			newLoginInfo.init(aURL, null, aRealm, aUsername, aPassword, "", "");
+
+			if (logins.length > 0) {
+				var modified = false;
+				for each (let loginInfo in logins) {
+					if (loginInfo.username == aUsername) {
+						this.logInfo("Login credentials updated:username="+aUsername+", aURL="+aURL+", aRealm="+aRealm);
+						loginManager.removeLogin(loginInfo);
+						modified = true;
+				    		break;
+					}
+				}
+				if (!modified) {
+					this.logInfo("Login credentials saved:username="+aUsername+", aURL="+aURL+", aRealm="+aRealm);
+ 				}
+			} else {
+				this.logInfo("Login credentials saved:username="+aUsername+", aURL="+aURL+", aRealm="+aRealm);
+ 			}
+		} catch (exc) {
+			this.logInfo(exc);
+		}
+	},
+	
 	/**
 	* Helper to insert/update an entry to the password manager.
 	*
