@@ -230,17 +230,37 @@ function rtews(identity){
 	   this.prefs = identity.prefs ;
 	   
 	   if( this.prefs ){
-		   this.pollOffset = this.globalFunctions.safeGetIntPref(this.prefs, "syncMailItems.Interval" ,15) * 1000 ;//time for getevents  
+		   this.pollOffset = this.globalFunctions.safeGetIntPref(this.prefs, "syncMailItems.Interval" ,15) * 1000 ;//time for getevents   
+			this.loadBalancer = Cc["@1st-setup.nl/exchange/loadbalancer;1"]  
+			                          .getService(Ci.mivExchangeLoadBalancer); 
 	   }
 	   else{
 		   this.prefs = null;
- 		   this.pollOffset = 15000;//time for getevents 
+ 		   this.pollOffset = 30000;//time for getevents 
 	   }  
 	   
 	   this.subscriptionTimeout = "1440"; 
  }
 
 rtews.prototype = {  
+	/*
+	 *use Calendar queue for xml request
+	 */ 
+	addToQueue: function _addToQueue(aRequest, aArgument, aCbOk, aCbError, aListener)
+	{
+		if (this.globalFunctions.safeGetBoolPref(this.prefs, "mailsyncactive", false)) {
+ 			exchangeGlobalFunction("Not adding to queue because we are disabled,  " + this.serverUrl ,this.user);  
+			return;
+		}
+ 		//if (!aArgument["ServerVersion"]) aArgument["ServerVersion"] = this.exchangeStatistics.getServerVersion(this.serverUrl);
+	
+		this.loadBalancer.addToQueue({ calendar: this.prefs,
+				 ecRequest:aRequest,
+				 arguments: aArgument,
+				 cbOk: aCbOk,
+				 cbError: aCbError,
+				 listener: aListener});
+	},
 	/*
 	 * Gets the ItemId element from response of the FindItem SOAP request
 	 *
@@ -249,7 +269,7 @@ rtews.prototype = {
 		exchangeGlobalFunction("Find all the folderd in msgfolderroot,  " + this.serverUrl ,this.user); 
 	    //Call API
  		var self = this;
-		var tmpObject = new  erFindInboxFolderRequest(
+ 		this.addToQueue(  erFindInboxFolderRequest,
 								{user:this.user, 
 								mailbox: this.mailbox,
 								serverUrl:this.serverUrl,
@@ -273,7 +293,7 @@ rtews.prototype = {
 	subscribe: function _subscribe(folders){
 		exchangeGlobalFunction("Trying to subscribe  " ,this.user); 
 	  	var self = this;
-	  	var tmpObject = new erSubscribeRequest(
+	  	this.addToQueue( erSubscribeRequest,
 				   		{user: this.user, 
 				   		mailbox: this.mailbox,
 				   		serverUrl: this.serverUrl,
@@ -300,7 +320,7 @@ rtews.prototype = {
 		exchangeGlobalFunction("Error occured Unsubscribing user.",this.user); 
 		this.Running = false; 
 		var that = this; 
-		var tmpObject = new erUnsubscribeRequest(
+		this.addToQueue( erUnsubscribeRequest,
 						{user: this.user, 
 						mailbox: this.mailbox,
 						serverUrl: this.serverUrl, 
@@ -439,7 +459,7 @@ rtews.prototype = {
 	getAndUpdateItems: function _getAndUpdateItems(aIds) { 
 		exchangeGlobalFunction("Received request to update messages,  total items to be requested - " + aIds.length, this.user);  
 		var that = this;   
-		var tmpObject = new erGetItemsRequest(
+		this.addToQueue( erGetItemsRequest,
 				{user: this.user, 
 				 mailbox:  this.mailbox,
 	 			 serverUrl:  this.serverUrl,
@@ -455,7 +475,7 @@ rtews.prototype = {
 		this.Running = true;  
 		var that = this;
 		      
-		var tmpObject = new erGetEventsRequest(
+		this.addToQueue(  erGetEventsRequest,
 						{user: this.user, 
 						mailbox: this.mailbox,
 						serverUrl: this.serverUrl, 
@@ -679,7 +699,7 @@ rtews.prototype = {
 	            continue;
 	        } 
 	        
-	        var tmpObject = new erFindItemsRequest(
+	        this.addToQueue(  erFindItemsRequest,
 					{user: this.user, 
 					mailbox: this.mailbox,
 					serverUrl: this.serverUrl, 
@@ -731,7 +751,7 @@ rtews.prototype = {
 	    	exchangeGlobalFunction("findItemsError:  aCode:" + aCode + " aMsg: " +  aMsg ); 
 	    }  
 	    
-	    var tmpObject = new erFindItemsRequest(
+	    this.addToQueue( erFindItemsRequest,
 				{user: this.user, 
 				mailbox: this.mailbox,
 				serverUrl: this.serverUrl, 
@@ -773,7 +793,8 @@ rtews.prototype = {
 	  
 		exchangeGlobalFunction("UpdateItem with changes " + changes, this.user);
 	
-	    var tmpObject = new erUpdateItemRequest({user: this.user, 
+		this.addToQueue( erUpdateItemRequest,
+				{user: this.user, 
 				 mailbox: this.mailbox,
 				 folderBase: this.folderBase,
 				 serverUrl: this.serverUrl,
