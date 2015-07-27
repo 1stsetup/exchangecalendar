@@ -203,14 +203,19 @@ rtews.Tags = {
 function rtews(identity){  
 		this.identity = identity; 
   	   // fixing bug #270 
- 	    
-		if( identity.domain){
- 	    	this.user = identity.domain +"\\"+identity.username ;
- 	    }
- 	    else {
- 	    	this.user = identity.username ;
- 	    }
- 	    
+  
+		if (identity.username.indexOf("@") > -1) {
+				this.user = identity.username ;
+		}
+		else {
+			if (identity.domain == "") {
+					this.user = identity.username ;
+			}
+			else {
+					this.user = identity.domain +"\\"+identity.username ;
+			}
+		}
+		
 	    this.mailbox = identity.email ; 
 	    this.serverUrl = identity.ewsUrl ; 
 	    
@@ -248,12 +253,13 @@ rtews.prototype = {
 	 */ 
 	addToQueue: function _addToQueue(aRequest, aArgument, aCbOk, aCbError, aListener)
 	{
-		if (! this.globalFunctions.safeGetBoolPref(this.prefs, "mailsync.active", true) ) {
+		if ( mivFunctions.safeGetBoolPref(this.prefs, "mailsync.active", false) ==  false ){
  			exchangeGlobalFunction("Not adding to queue because we are disabled,  " + this.serverUrl ,this.user);  
+ 			this.Running = false;  
 			return;
 		}
  		//if (!aArgument["ServerVersion"]) aArgument["ServerVersion"] = this.exchangeStatistics.getServerVersion(this.serverUrl);
-	
+
 		this.loadBalancer.addToQueue({ calendar: this.prefs,
 				 ecRequest:aRequest,
 				 arguments: aArgument,
@@ -1054,36 +1060,25 @@ function getAllAccounts(){
 	         				var identity = identities.queryElementAt(index, Ci.nsIMsgIdentity);
 	         				var calAccount = getCalendarPref(identity.email);  
 	         				var enabled = false; 
-	         				exchangeGlobalFunction("Account exists  for email address -  " + identity.email);  
+	         				exchangeGlobalFunction("Account exists  for email address -  " + identity.email);   
 	         				
 	         				var details = null;
-		     				if(calAccount){
-		     					enabled = true;
-	 		     				  details = {
-	 				 						"server":account.incomingServer.prettyName,
-	 										"serverURI":account.incomingServer.serverURI,
-	 				                	  	"email":calAccount.getCharPref("ecMailbox"),
-	 				                	  	"username":calAccount.getCharPref("ecUser"),
-	 				                	  	"name":identity.fullName,
-	 				                	  	"domain":calAccount.getCharPref("ecDomain"),
-	 				                 	  	"enabled":enabled,
-	 				                	  	"ewsUrl":calAccount.getCharPref("ecServer"),
-	 				                	  	"prefs" : calAccount ,};
-		     				} 
-		     				else{  
-	 	     				  details = {
-	 	 	 						"server":account.incomingServer.prettyName,
-	 								"serverURI":account.incomingServer.serverURI,
-	 		                	  	"email":null,
-	 		                	  	"username":null,
-	 		                	  	"name":identity.fullName,
-	 		                	  	"domain":null,
-	 		                 	  	"enabled":enabled,
-	 		                	  	"ewsUrl":null,
-	 		                	  	"prefs" : null ,};
-		     				} 
-	         				 
-		     				if( details.enabled == true){
+	         				
+	         				if(calAccount && mivFunctions ){
+	         							enabled =  mivFunctions.safeGetBoolPref(calAccount, "mailsync.active", false) ; 
+				     					details = {
+		 				 						"server":account.incomingServer.prettyName,
+		 										"serverURI":account.incomingServer.serverURI,
+		 				                	  	"email":mivFunctions.safeGetCharPref(calAccount,"ecMailbox"),
+		 				                	  	"username":mivFunctions.safeGetCharPref(calAccount,"ecUser"),
+		 				                	  	"name":identity.fullName,
+		 				                	  	"domain":mivFunctions.safeGetCharPref(calAccount,"ecDomain"),
+		 				                 	  	"enabled":enabled,
+		 				                	  	"ewsUrl":mivFunctions.safeGetCharPref(calAccount,"ecServer"),
+		 				                	  	"prefs" : calAccount ,
+		 				                }; 
+	         				}
+ 		     				if( details.enabled == true){
 		     					_accounts.push(details);  
 		     				}
 	          			} 
@@ -1106,33 +1101,22 @@ function getAllAccounts(){
          				exchangeGlobalFunction("Account exists  for email address -  " + identity.email);   
          				
 	     				let details = null;
-	     				if(calAccount){
-	     					enabled = true;
- 		     				  details = {
-		 						"server":account.incomingServer.prettyName,
-								"serverURI":account.incomingServer.serverURI,
-		                	  	"email":calAccount.getCharPref("ecMailbox"),
-		                	  	"username":calAccount.getCharPref("ecUser"),
-		                	  	"name":identity.fullName,
-		                	  	"domain":calAccount.getCharPref("ecDomain"),
-		                 	  	"enabled":enabled,
-		                	  	"ewsUrl":calAccount.getCharPref("ecServer"),
-		                	  	"prefs" : calAccount ,};
-	     				} 
-	     				else{  
- 	     				  details = {
-	 						"server":account.incomingServer.prettyName,
-							"serverURI":account.incomingServer.serverURI,
-	                	  	"email":null,
-	                	  	"username":null,
-	                	  	"name":identity.fullName,
-	                	  	"domain":null,
-	                 	  	"enabled":enabled,
-	                	  	"ewsUrl":null,
-	                	  	"prefs" : null ,};
-	     				} 
 	     				
-	     				if( details.enabled == true ){
+	    				if(calAccount && mivFunctions ){
+	    					enabled =  mivFunctions.safeGetBoolPref(calAccount, "mailsync.active", false) ;
+	     					details = {
+				 						"server":account.incomingServer.prettyName,
+										"serverURI":account.incomingServer.serverURI,
+				                	  	"email":mivFunctions.safeGetCharPref(calAccount,"ecMailbox"),
+				                	  	"username":mivFunctions.safeGetCharPref(calAccount,"ecUser"),
+				                	  	"name":identity.fullName,
+				                	  	"domain":mivFunctions.safeGetCharPref(calAccount,"ecDomain"),
+				                 	  	"enabled":enabled,
+				                	  	"ewsUrl":mivFunctions.safeGetCharPref(calAccount,"ecServer"),
+				                	  	"prefs" : calAccount ,
+				                }; 
+	    				}
+ 	     				if( details.enabled == true ){
 	     					_accounts.push(details);  
 	     				} 
  	      			}  
