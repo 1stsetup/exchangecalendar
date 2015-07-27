@@ -145,13 +145,14 @@ mivExchangeAuthPrompt2.prototype = {
 		else {
 			this.logInfo("getPassword: password(1)=********");
 		}
-
+		var passwordSaved;
 		if (!password) {
 			this.logInfo("getPassword: There is no password in the cache. Going to see if there is one in the passwordManager.");
 			var savedPassword = this.passwordManagerGet(username, aURL, realm);
 			if (savedPassword.result) {
 				this.logInfo("getPassword: There is a password stored in the passwordManager.");
 				password = savedPassword.password;
+				passwordSaved = savedPassword.password;
 			}
 			else {
 				this.logInfo("getPassword: There is no password stored in the passwordManager.");
@@ -171,9 +172,13 @@ mivExchangeAuthPrompt2.prototype = {
 				if ((this.details[aURL]) && (this.details[aURL].ntlmCount == 1)) {
 					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are the same. But it is a first pass on an NTLM authentication. Using stored password and going to see if it can be used.");
 				}
-				else {
+				else { 
 					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are the same. Going to ask user to provide a new password.");
-					password = null;
+					var channel = aChannel.QueryInterface(Ci.nsIHttpChannel); 
+					 if( channel.responseStatus == 401 ){
+						 password=null;
+						 this.logInfo("getPassword: Login Failed, Going to ask user to provide a new password.");
+					 } 
 				}
 			}
 			else {
@@ -184,7 +189,7 @@ mivExchangeAuthPrompt2.prototype = {
 					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And useCached specified.");
 				}
 				if (this.showPassword) {
-					this.logInfo("getPassword: cached/store='"+password+"', on channel='"+decodeURIComponent(aChannel.URI.password)+"'.");
+					this.logInfo("getPassword: cached/store='"+password+"', on channel='"+decodeURIComponent(aChannel.URI.password)+"', useCached='"+useCached+"'.");
 				}
 				else {
 					this.logInfo("getPassword: cached/store='********', on channel='********'.");
