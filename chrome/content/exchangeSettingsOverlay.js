@@ -240,6 +240,12 @@ exchSettingsOverlay.prototype = {
 			this._document.getElementById("exchWebService_windowsdomain").value = "";
 			//this._document.getElementById("exchWebService_windowsdomain").setAttribute("required", false);
 			this.exchWebServicesgDomain = "";
+			
+			if(this.exchWebServicesgUser.indexOf("\\") > -1){
+				var newArray = this.exchWebServicesgUser.split("\\"); 
+				this.exchWebServicesgUser = newArray[1];
+				this.exchWebServicesgDomain  = newArray[0];
+			}
 		}
 		else {
 			this._document.getElementById("exchWebService_windowsdomain").disabled = false;
@@ -308,7 +314,7 @@ exchSettingsOverlay.prototype = {
 
 	exchWebServicesGetUsername: function _exchWebServicesGetUsername()
 	{
-		if (this.exchWebServicesgUser.indexOf("@") > -1) {
+ 		if (this.exchWebServicesgUser.indexOf("@") > -1) {
 			return this.exchWebServicesgUser;
 		}
 		else {
