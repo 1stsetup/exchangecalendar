@@ -964,12 +964,14 @@ rtews.addSyncMenu = function (menuPopup) {
  */
 rtews.getIdentity = function(server) {
     var ids = identities;
-    for (var x = 0, len = ids.length; x < len; x++) {
-        if (ids[x] && ids[x].enabled == true && ids[x].server == server) {
-            return ids[x];
-        }
+    if( ids ){
+	    for (var x = 0, len = ids.length; x < len; x++) {
+	        if (ids[x] && ids[x].enabled == true && ids[x].server == server) {
+	            return ids[x];
+	        }
+	    }
     }
-    return null;
+    return null;    
 };  
 
 //Get all the identities 
