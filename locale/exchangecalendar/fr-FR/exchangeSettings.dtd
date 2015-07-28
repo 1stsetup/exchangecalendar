@@ -50,4 +50,4 @@
 <!ENTITY label.autoprocessingproperties.deletecancelleditems "Suppression automatique des évènements annulés">
 <!ENTITY label.autoprocessingproperties.markeventtentative "Marquer automatiquement les invitations comme possible et copier l'organisateur">
 
-<!ENTITY label.syncmailitems.active "Keep enabled syncing mail items (Tags,etc.)">
+<!ENTITY label.syncmailitems.active "Garder active la synchronisation des attributs d'Email (Tags,etc.)">
