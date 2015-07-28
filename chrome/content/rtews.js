@@ -720,7 +720,7 @@ rtews.prototype = {
 					         	}
 					        	else{
 						    		exchangeGlobalFunction("Syncing tags not finding any items in server for Ids. " + JSON.stringify(messageId), that.user);
-					        	} 
+ 					        	} 
 					}, 
 					function(erFindItemsRequest, aCode, aMsg) { 
 							exchangeGlobalFunction("findItemsError:  aCode:" + aCode + " aMsg: " +  aMsg );  
@@ -750,12 +750,15 @@ rtews.prototype = {
 	     	}
 	    	else{
 	    		exchangeGlobalFunction("Toggle tags not finding any items in server for Ids. " + JSON.stringify(messageId), that.user);
+	    		//when no mail item is find toggle tags locally
+	    		exchangeGlobalFunction("Update tags locally",that.user); 
+	    		rtews.fallBackTagUpdate(msgHdr, identity, toggleType, categories, key, addKey); 
 	    	}
 	    } 
 	    
 	    function findItemsError(erFindItemsRequest, aCode, aMsg){
 	    	exchangeGlobalFunction("findItemsError:  aCode:" + aCode + " aMsg: " +  aMsg ); 
-	    }  
+ 	    }  
 	    
 	    this.addToQueue( erFindItemsRequest,
 				{user: this.user, 
@@ -831,6 +834,18 @@ rtews.prototype = {
     		this.processIdentity();    
 	 },
  };
+
+
+/*
+ * On remote fails
+ */
+rtews.fallBackTagUpdate = function(msgHdr, identity, toggleType, categories, key, addKey){  
+  		if (toggleType == "removeAll") {  
+	        	rtews.removeAllMessageTagsPostEwsUpdate(msgHdr);
+	    } else { 
+		    	rtews.toggleMessageTagPostEwsUpdate(key, addKey, msgHdr);
+	    }  
+};
 
 /*
  * Custom method for remove all tags menuitem 
