@@ -41,7 +41,7 @@
 <!ENTITY ecmailbox.label "Postfachname:">
 <!ENTITY ecmailbox.tooltip "Wenn Sie kein Postfach angeben, können Sie nur auf die öffentlichen Ordner zugreifen.">
 <!ENTITY ecwindowsuser.label "Benutzername:">
-<!ENTITY ecwindowsdomain.label "Domainname:">
+<!ENTITY ecwindowsdomain.label "Domäne:">
 <!ENTITY ecwindowspassword.label "Passwort:">
 
 <!ENTITY button.label.folderpathcheck "Prüfen">

@@ -1,15 +1,15 @@
- <!ENTITY rtews.selectaccountdesc "Select mail account for which to configure. The account has to be a Microsoft Exchange based account">
- <!ENTITY rtews.accconfigured "Account already configured">
- <!ENTITY rtews.dicoverdesc "You may select to autodiscover the Microsoft Exchange Server (EWS) URL or configure it manually">
- <!ENTITY rtews.dicoverdesc2 "To configure it manually enter the URL in the field below.">
- <!ENTITY rtews.autodiscover "Autodiscover">
- <!ENTITY rtews.doautodicover "Do autodiscover">
- <!ENTITY rtews.manual "Manual">
- <!ENTITY rtews.test "Click here to verify EWS URL">
- <!ENTITY rtews.msexchewsurl "Verified Microsoft Exchange EWS URL. Click Finish to complete the configuration">
- <!ENTITY rtews.selectaccount "Select account">
- <!ENTITY rtews.configure.label "Configure...">
- <!ENTITY rtews.rtforexch "Remote Tagger for Microsoft Exchange">
- <!ENTITY rtews.confirmAccDetail "Confirm following account details">
- <!ENTITY rtews.username "Username">
- <!ENTITY rtews.domain "Domain">
+ <!ENTITY rtews.selectaccountdesc "Zu konfigurierendes Mailkonto auswählen. Das Konto muss auf Microsoft Exchange basieren">
+ <!ENTITY rtews.accconfigured "Konto wurde bereits konfiguriert">
+ <!ENTITY rtews.dicoverdesc "Sie können die Exchange-Server-(EWS-)URL automatisch herausfinden lassen oder manuell konfigurieren">
+ <!ENTITY rtews.dicoverdesc2 "Um die URL manuell zu konfigurieren, geben Sie diese in das Eingabefeld ein.">
+ <!ENTITY rtews.autodiscover "Automatisch finden">
+ <!ENTITY rtews.doautodicover "URL automatisch suchen">
+ <!ENTITY rtews.manual "Manuell">
+ <!ENTITY rtews.test "Hier klicken, um die EWS-URL zu verifizieren">
+ <!ENTITY rtews.msexchewsurl "Die EWS-URL wurde verifiziert. Klicken Sie auf Fertigstellen, um die Konfiguration zu beenden">
+ <!ENTITY rtews.selectaccount "Konto auswählen">
+ <!ENTITY rtews.configure.label "Konfigurieren...">
+ <!ENTITY rtews.rtforexch "Serverseitige Markierung für Microsoft Exchange">
+ <!ENTITY rtews.confirmAccDetail "Kontodetails bestätigen">
+ <!ENTITY rtews.username "Benutzername">
+ <!ENTITY rtews.domain "Domäne">
