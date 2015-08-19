@@ -373,7 +373,7 @@ mivExchangeAuthPrompt2.prototype = {
 						}
 						else if (username.indexOf("@") > -1) {
 								authInfo.username = username;
-								authInfo.domain = undefined;
+								authInfo.domain = "";
 								this.logInfo("asyncPromptAuthNotifyCallback: We have a domainname part in the username. Going to use it. domain="+authInfo.domain);
 						}
 						else {
