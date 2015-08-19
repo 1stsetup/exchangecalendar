@@ -239,12 +239,12 @@ exchSettingsOverlay.prototype = {
 			this._document.getElementById("exchWebService_windowsdomain").disabled = true;
 			this._document.getElementById("exchWebService_windowsdomain").value = "";
 			//this._document.getElementById("exchWebService_windowsdomain").setAttribute("required", false);
-			this.exchWebServicesgDomain = "";
+			this.exchWebServicesgDomain = ""; 
 			
-			if(this.exchWebServicesgUser.indexOf("\\") > -1){
-				var newArray = this.exchWebServicesgUser.split("\\"); 
-				this.exchWebServicesgUser = newArray[1];
-				this.exchWebServicesgDomain  = newArray[0];
+			if(this.exchWebServicesgUser.indexOf("\\") > -1){ 
+				var username = this.exchWebServicesgUser;
+				this.exchWebServicesgUser =username.substr(0,username.indexOf("\\"));
+				this.exchWebServicesgDomain = username.substr(username.indexOf("\\") +1); 
 			}
 		}
 		else {
