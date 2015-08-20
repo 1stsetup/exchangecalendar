@@ -51,3 +51,4 @@
 <!ENTITY label.syncmailitems.interval "Delay syncing mail items (Tags,etc.)">
 <!ENTITY label.autoprocessingproperties.markeventtentative "Automatically mark event as tentative and send response to organizer">
 <!ENTITY label.syncmailitems.active "Keep enabled syncing mail items (Tags,etc.)">
+<!ENTITY label.syncfollowup.deactivtate "Disable Followup Task">

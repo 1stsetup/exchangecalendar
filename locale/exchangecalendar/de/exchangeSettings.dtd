@@ -49,3 +49,4 @@
 <!ENTITY label.syncmailitems.interval "Synchronisierung von Mail-Elementen (Markierungen usw.) verzögern">
 <!ENTITY label.syncmailitems.active "Mail-Elemente (Markierungen usw.) synchronisieren">
 
+<!ENTITY label.syncfollowup.deactivtate "Disable Followup Task">
