@@ -2617,9 +2617,9 @@ calExchangeCalendar.prototype = {
 					function(erFindTaskItemsRequest, aIds) { self.findTaskItemsOK(erFindTaskItemsRequest, aIds);}, 
 					function(erFindTaskItemsRequest, aCode, aMsg) { self.findTaskItemsError(erFindTaskItemsRequest, aCode, aMsg);},
 					null);
-			 
-			if (this.debug) this.logInfo("Requesting followup tasks from exchange server.");
-  	    		var self = this;
+    	    		
+  	    	if	(!this.deactivateTaskFollowup) {
+  				if (this.debug) this.logInfo("Requesting followup tasks from exchange server."); 
   	    		this.addToQueue( erFindFollowupItemsRequest, 
 					{user: this.user, 
 					 mailbox: this.mailbox,
@@ -2632,6 +2632,7 @@ calExchangeCalendar.prototype = {
 					function(erFindFollowupItemsRequest, aIds) { self.findFollowupTaskItemsOK(erFindFollowupItemsRequest, aIds);}, 
 					function(erFindFollowupItemsRequest, aCode, aMsg) { self.findFollowupTaskItemsError(erFindFollowupItemsRequest, aCode, aMsg);},
 					null); 
+  	    	}
 		} 
     },
 
@@ -2691,10 +2692,19 @@ calExchangeCalendar.prototype = {
 		else {
 			if (wantTodos) {
 				for (var index in this.itemCacheById) {
-					if (isToDo(this.itemCacheById[index])) {
-						if ( ((this.itemCacheById[index].isCompleted) && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_YES)) ||
-						     ((!this.itemCacheById[index].isCompleted) && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_NO)) ) {
-							tasks.push(this.itemCacheById[index]);
+					if (isToDo(this.itemCacheById[index])) {  
+						if ((this.deactivateTaskFollowup) && (this.itemCacheById[index].itemClass == "IPM.Note")){  
+							//Do not change order or removing from local or it will throw db error
+							//remove from offlinecache 
+							this.removeFromOfflineCache(this.itemCacheById[index]);
+ 							//remove from lighting GUI  
+							this.removeItemFromCache(this.itemCacheById[index]); 
+						}
+						else	{						
+							if ( ((this.itemCacheById[index].isCompleted) && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_YES)) ||
+							     ((!this.itemCacheById[index].isCompleted) && (aItemFilter & Ci.calICalendar.ITEM_FILTER_COMPLETED_NO)) ) {
+								tasks.push(this.itemCacheById[index]);
+							}
 						}
 					}
 				}
@@ -3395,6 +3405,10 @@ calExchangeCalendar.prototype = {
 	
 	get deleteCancelledInvitation() {
 		return this.globalFunctions.safeGetBoolPref(this.prefs, "ecautoprocessingdeletecancelleditems", true);
+	},
+	
+	get deactivateTaskFollowup() {
+		return this.globalFunctions.safeGetBoolPref(this.prefs, "followup.task.deactivate", false);
 	},
 	
 	get markEventasTentative() {
@@ -7902,22 +7916,23 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			if (this.debug) this.logInfo("getSyncState: Creating erSyncFolderItemsRequest");
 			var self = this;
 			this.weAreSyncing = true;
-			switch(this.folderBase){
+			switch (this.folderBase) {
 			case "tasks":
-			    this.logInfo("getSyncState: this.syncStateInbox - " +  this.syncStateInbox ); 
-
-				this.addToQueue(erSyncFolderItemsRequest,
-						{user: this.user, 
-					 mailbox: this.mailbox,
-					 serverUrl: this.serverUrl,
-					 folderBase: "inbox",
-					 folderID: null,
-					 changeKey: null,
-					 syncState: this.syncStateInbox,
-					 actionStart: Date.now() },
-					function(erSyncFolderItemsRequest, creations, updates, deletions, syncState) { self.syncFolderItemsOK(erSyncFolderItemsRequest, creations, updates, deletions, syncState);}, 
-					function(erSyncFolderItemsRequest, aCode, aMsg) { self.syncFolderItemsError(erSyncFolderItemsRequest, aCode, aMsg);},
-					null);  
+			    if(!this.deactivateTaskFollowup){
+				    this.logInfo("getSyncState: this.syncStateInbox - " +  this.syncStateInbox );  
+					this.addToQueue(erSyncFolderItemsRequest,
+							{user: this.user, 
+						 mailbox: this.mailbox,
+						 serverUrl: this.serverUrl,
+						 folderBase: "inbox",
+						 folderID: null,
+						 changeKey: null,
+						 syncState: this.syncStateInbox,
+						 actionStart: Date.now() },
+						function(erSyncFolderItemsRequest, creations, updates, deletions, syncState) { self.syncFolderItemsOK(erSyncFolderItemsRequest, creations, updates, deletions, syncState);}, 
+						function(erSyncFolderItemsRequest, aCode, aMsg) { self.syncFolderItemsError(erSyncFolderItemsRequest, aCode, aMsg);},
+						null);  
+			    }
 				//Donot  break because we neet to call below section by default..
 				default:
 				    this.logInfo("getSyncState: this.syncState - "  + this.syncState); 

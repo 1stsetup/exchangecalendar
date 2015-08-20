@@ -77,7 +77,7 @@
 			<tab label="&ecsettings.tab.calendarfolderproperties;" />
 			<tab label="&ecsettings.tab.offlineCachingproperties;" />
 			<tab label="&ecsettings.tab.autoprocessingproperties;" />
-            <tab label="&ecsettings.tab.mailitemsProperties;" hidden="true" id="mailItemsPropertiesTab" /> 
+            <tab label="&ecsettings.tab.mailitemsProperties;" /> 
 		</tabs>
 		<tabpanels flex="1">
 			<tabpanel id="exchWebService-adsettings">
@@ -407,7 +407,8 @@
             
               <tabpanel id="exchWebService-mail-properties">
                  <vbox flex="1">
-                    <groupbox id="exchWebService-mail-properties-groupbox">
+                   <!-- Add Preferece for calendar related  mail sync --> 
+                    <groupbox id="exchWebService-mail-properties-calendar">
                          <caption label="Preferences:" />
                          <vbox>
                              <hbox> 
@@ -419,6 +420,16 @@
                             </hbox>  
                            <hbox> 
                           <checkbox label="&label.syncmailitems.active;" id="exchWebService-syncMailItems-active"
+                                      disabled="false"/> 
+                          </hbox>  
+                        </vbox>  
+                    </groupbox>                
+                     <!-- Add Preferece for task related  mail sync -->
+                    <groupbox id="exchWebService-mail-properties-task">
+                         <caption label="Preferences:" />
+                         <vbox> 
+                           <hbox> 
+                          <checkbox label="&label.syncfollowup.deactivtate;" id="exchWebService-followup-deactivtate"
                                       disabled="false"/> 
                           </hbox>  
                         </vbox>  
