@@ -51,4 +51,4 @@
 <!ENTITY label.autoprocessingproperties.markeventtentative "Marquer automatiquement les invitations comme possible et copier l'organisateur">
 
 <!ENTITY label.syncmailitems.active "Garder active la synchronisation des attributs d'Email (Tags,etc.)">
-<!ENTITY label.syncfollowup.deactivtate "Disable Followup Task">
+<!ENTITY label.syncfollowup.deactivtate "Désactiver le suivi de tâche">
