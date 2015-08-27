@@ -417,7 +417,7 @@ erGetItemsRequest.prototype = {
 
 		this.parent.xml2json = true;
 		
-		exchWebService.commonFunctions.LOG("erGetItemsRequest.execute: "+   xml2json.toString(req) +"\n");
+	//	exchWebService.commonFunctions.LOG("erGetItemsRequest.execute: "+   xml2json.toString(req) +"\n");
 
 		this.parent.sendRequest(this.parent.makeSoapMessage2(req), this.serverUrl);
 		req = null;
@@ -428,7 +428,7 @@ erGetItemsRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erGetItemsRequest.onSendOk: "+ String(aResp)+"\n");
+	//	exchWebService.commonFunctions.LOG("erGetItemsRequest.onSendOk: "+ String(aResp)+"\n");
 		var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']/m:Items/*");
 
 		var rmErrorSearch = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage");

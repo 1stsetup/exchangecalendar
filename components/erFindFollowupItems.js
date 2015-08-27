@@ -107,14 +107,14 @@ erFindFollowupItemsRequest.prototype = {
 
 	this.parent.xml2jxon = true;
 
-	 exchWebService.commonFunctions.LOG("erFindFollowupItemsRequest.execute:"+String(req));
+	// exchWebService.commonFunctions.LOG("erFindFollowupItemsRequest.execute:"+String(req));
      this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 	req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		 exchWebService.commonFunctions.LOG("erFindFollowupItemsRequest.onSendOk:"+String(aResp)+"\n");
+		// exchWebService.commonFunctions.LOG("erFindFollowupItemsRequest.onSendOk:"+String(aResp)+"\n");
 
 		var ids = [];
 

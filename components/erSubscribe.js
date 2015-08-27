@@ -81,9 +81,9 @@ erSubscribeRequest.prototype = {
 			pr.addChildTag("Timeout", "nsTypes","1440");
 		}
 		
-	    exchWebService.commonFunctions.LOG(" ++ xml2jxon ++:"+this.parent.makeSoapMessage(req));
+	 //   exchWebService.commonFunctions.LOG(" ++ xml2jxon ++:"+this.parent.makeSoapMessage(req));
 
-		exchWebService.commonFunctions.LOG("erSubscribeRequest.execute:"+String(this.parent.makeSoapMessage(req)));
+	//	exchWebService.commonFunctions.LOG("erSubscribeRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 		this.parent.xml2jxon = true;
 		this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 		req = null;
@@ -92,7 +92,7 @@ erSubscribeRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erSubscribeRequest.onSendOk:"+String(aResp));
+	//	exchWebService.commonFunctions.LOG("erSubscribeRequest.onSendOk:"+String(aResp));
  		// Get FolderID and ChangeKey
 		var aError = false;
 		var aCode = 0;
