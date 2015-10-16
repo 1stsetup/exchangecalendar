@@ -1095,9 +1095,12 @@ function getAllAccounts(){
 		 				                	  	"prefs" : calAccount ,
 		 				                }; 
 	         				}
- 		     				if( details.enabled == true){
-		     					_accounts.push(details);  
-		     				}
+ 		     				
+	         				if ( details != null ){
+		         				if( details.enabled == true){
+			     					_accounts.push(details);  
+			     				}
+	         				}
 	          			} 
 	          } 
 			     var _newaccounts = removeDuplicateAccount(_accounts);
@@ -1133,9 +1136,11 @@ function getAllAccounts(){
 				                	  	"prefs" : calAccount ,
 				                }; 
 	    				}
- 	     				if( details.enabled == true ){
-	     					_accounts.push(details);  
-	     				} 
+	    				if (details != null ){
+	 	     				if( details.enabled == true ){
+		     					_accounts.push(details);  
+		     				}
+	    				}
  	      			}  
 		 		} 
  		 		 

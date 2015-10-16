@@ -528,7 +528,7 @@ catch(err){
 						var mailbox = ae.addChildTag("Mailbox", "t", null);
 						mailbox.addChildTag("Name", "t", attendee.commonName);
 
-						var tmpEmailAddress = attendee.id.replace(/^mailto:/, '');
+						var tmpEmailAddress = attendee.id.replace(/^mailto:/i, '');
 						if (tmpEmailAddress.indexOf("@") > 0) {
 							mailbox.addChildTag("EmailAddress", "t", tmpEmailAddress);
 						}

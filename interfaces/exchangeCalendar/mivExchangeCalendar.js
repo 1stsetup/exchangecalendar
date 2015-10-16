@@ -967,7 +967,7 @@ calExchangeCalendar.prototype = {
 			var attendees = newItem.getAttendees({});
 			newItem.removeAllAttendees(); // Need to have this. When we add attendees when we create a new calendaritem we become organizer.
 			for each (var attendee in attendees) {
-				if ((attendee.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) ||
+				if ((attendee.id.replace(/^mailto:/i, '').toLowerCase() == this.mailbox.toLowerCase()) ||
 					(attendee.id.replace(/^exchangecalendar:/, '').toLowerCase() == this.mailbox.toLowerCase()) ) {
 					if (this.debug) this.logInfo("addItem: FOUND myself as an attendee and we are going to remove myself:"+newItem.title);
 					newItem.removeAttendee(attendee);
@@ -1628,7 +1628,7 @@ calExchangeCalendar.prototype = {
 				var weHaveChanges = (changes || (attachmentsUpdates.create.length > 0) || (attachmentsUpdates.delete.length > 0));
 //				var weHaveChanges = (this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, aOldItem.isInvitation) || (attachmentsUpdates.create.length > 0) || (attachmentsUpdates.delete.length > 0));
 
-				var iAmOrganizer = ((aNewItem.organizer) && (aNewItem.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()));
+				var iAmOrganizer = ((aNewItem.organizer) && (aNewItem.organizer.id.replace(/^mailto:/i, '').toLowerCase() == this.mailbox.toLowerCase()));
 				if (iAmOrganizer) {
 
 					if (((changes) && ((changesObj) && (!changesObj.onlySnoozeChanged))) || (attachmentsUpdates.create.length > 0) || (attachmentsUpdates.delete.length > 0)) {
@@ -1900,7 +1900,7 @@ calExchangeCalendar.prototype = {
 		if (isEvent(aItem)) {
 			if (this.debug) this.logInfo("deleteItem is calIEvent");
 
-			var iAmOrganizer = ((aItem.organizer) && (aItem.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()));
+			var iAmOrganizer = ((aItem.organizer) && (aItem.organizer.id.replace(/^mailto:/i, '').toLowerCase() == this.mailbox.toLowerCase()));
 			var isCancelled = aItem.isCancelled;
 			var isInvitation = this.isInvitation(aItem, true);
 
@@ -2950,7 +2950,7 @@ calExchangeCalendar.prototype = {
 		var attendees = aItem.getAttendees({});
 		for each (var attendee in attendees) {
 			if (this.debug) this.logInfo("getInvitedAttendee 2:"+attendee.id);
-			if ((attendee.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) ||
+			if ((attendee.id.replace(/^mailto:/i, '').toLowerCase() == this.mailbox.toLowerCase()) ||
 				(attendee.id.replace(/^exchangecalendar:/, '').toLowerCase() == this.mailbox.toLowerCase()) ) {
 				if (this.debug) this.logInfo("getInvitedAttendee FOUND myself:"+aItem.title+", attendee.participationStatus:"+attendee.participationStatus+", aItem.myResponseType:"+aItem.myResponseType);
 //				attendee.participationStatus = participationMap[aItem.myResponseType];
@@ -3009,7 +3009,7 @@ calExchangeCalendar.prototype = {
 			 mailbox: this.mailbox,
 			 folderBase: this.folderBase,
 			 serverUrl: this.serverUrl,
-			 email: aCalId.replace(/^MAILTO:/, ""),
+			 email: aCalId.replace(/^mailto:/i, ""),
 			 attendeeType: 'Required',
 			 start: cal.toRFC3339(tmpStartDate.getInTimezone(this.globalFunctions.ecUTC())),
 			 end: cal.toRFC3339(tmpEndDate.getInTimezone(this.globalFunctions.ecUTC())),
@@ -3899,7 +3899,7 @@ calExchangeCalendar.prototype = {
 
 				if (inCalendar) {
 					// Check if we are the organiser of this item.
-					var iAmOrganizer = ((inCalendar.organizer) && (inCalendar.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()));
+					var iAmOrganizer = ((inCalendar.organizer) && (inCalendar.organizer.id.replace(/^mailto:/i, '').toLowerCase() == this.mailbox.toLowerCase()));
 					if (!iAmOrganizer) {
 						// Remove the response in the inbox. Do not update calendar.
 						this.removeResponseItem(response);
@@ -4894,7 +4894,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 					var mailbox = ae.addChildTag("Mailbox", "nsTypes", null);
 					mailbox.addChildTag("Name", "nsTypes", attendee.commonName);
 
-					var tmpEmailAddress = attendee.id.replace(/^mailto:/, '');
+					var tmpEmailAddress = attendee.id.replace(/^mailto:/i, '');
 					if (tmpEmailAddress.indexOf("@") > 0) {
 						mailbox.addChildTag("EmailAddress", "nsTypes", tmpEmailAddress);
 					}
@@ -4937,11 +4937,11 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 
 				// Set if the item is from the user itself or not.
 				if (aItem.organizer) {
-					if (aItem.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) {
+					if (aItem.organizer.id.replace(/^mailto:/i, '').toLowerCase() == this.mailbox.toLowerCase()) {
 						if (this.debug) this.logInfo(" ## I am the organizer of this meeting.");
 					}
 					else {
-						if (this.debug) this.logInfo(" ## I am NOT the organizer of this meeting.'"+aItem.organizer.id.replace(/^mailto:/, '')+"' is the organizer.");
+						if (this.debug) this.logInfo(" ## I am NOT the organizer of this meeting.'"+aItem.organizer.id.replace(/^mailto:/i, '')+"' is the organizer.");
 					}
 				}
 				else {
@@ -5377,7 +5377,7 @@ if (this.debug) this.logInfo(" ;;;; rrule:"+rrule.icalProperty.icalString);
 	{
 		// Check if I'm the organiser. Do not send to myself.
 		if (aItem.organizer) {
-			if (aItem.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) {
+			if (aItem.organizer.id.replace(/^mailto:/i, '').toLowerCase() == this.mailbox.toLowerCase()) {
 				return true;
 			}
 		}
@@ -7664,7 +7664,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 				var weHaveChanges = (changes || (attachmentsUpdates.create.length > 0) || (attachmentsUpdates.delete.length > 0));
 //				var weHaveChanges = (this.makeUpdateOneItem(aNewItem, aOldItem, null, null, null, aOldItem.isInvitation) || (attachmentsUpdates.create.length > 0) || (attachmentsUpdates.delete.length > 0));
 
-				var iAmOrganizer = ((aNewItem.organizer) && (aNewItem.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()));
+				var iAmOrganizer = ((aNewItem.organizer) && (aNewItem.organizer.id.replace(/^mailto:/i, '').toLowerCase() == this.mailbox.toLowerCase()));
 				//if (iAmOrganizer) {}
 
 				if (this.debug) this.logInfo("modifyEventImmediate:  it is a event. aOldItem.CalendarItemType=:"+aOldItem.calendarItemType);
@@ -7781,7 +7781,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 		// Check if I'm the organiser. Do not send to myself.
 		if (aItem.organizer) {
-			if (aItem.organizer.id.replace(/^mailto:/, '').toLowerCase() == this.mailbox.toLowerCase()) {
+			if (aItem.organizer.id.replace(/^mailto:/i, '').toLowerCase() == this.mailbox.toLowerCase()) {
 				return true;
 			}
 		}
@@ -8458,7 +8458,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 			{user: this.user, 
 			 folderBase: "calendar",
 			 serverUrl: this.serverUrl,
-			 email: this.mailbox.replace(/^MAILTO:/, ""),
+			 email: this.mailbox.replace(/^mailto:/i, ""),
 			 attendeeType: 'Required',
 			 start: cal.toRFC3339(tmpStartDate.getInTimezone(this.globalFunctions.ecUTC())),
 			 end: cal.toRFC3339(tmpEndDate.getInTimezone(this.globalFunctions.ecUTC())),
@@ -9437,8 +9437,8 @@ else {
 
 				handleResult: function _handleResult(aResultSet) {
 					if (self.debug) self.logInfo("Found item in offline Cache.");
-					var row;
-					while ( row = aResultSet.getNextRow() ) {
+					var row = aResultSet.getNextRow();
+					while (row) {
 
 						if (row) {
 							if (row.getResultByName('itemcount') > 0) {
@@ -9459,6 +9459,7 @@ else {
 								this.toBeInserted.push(this.list[row.getResultByName('realid')]);
 							}
 						}
+						row = aResultSet.getNextRow();
 					}
 				}
 			});
