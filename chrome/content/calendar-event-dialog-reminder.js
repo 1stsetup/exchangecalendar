@@ -78,7 +78,7 @@ dump(" WHAT is this:"+this._argument.calendar.type+"\n");
 			let listbox = this._document.getElementById("reminder-listbox");
 
 			let reminder = cal.createAlarm();
-			let alarmlen = Preferences.get("calendar.alarms." + itemType + "alarmlen", 15);
+			let alarmlen = getPrefSafe("calendar.alarms." + itemType + "alarmlen", 15);
 
 			// Default is an absolute DISPLAY alarm, |alarmlen| minutes before the event.
 			// If DISPLAY is not supported by the provider, then pick the provider's
@@ -110,7 +110,7 @@ dump(" WHAT is this:"+this._argument.calendar.type+"\n");
 		}
 		else {
 			if ((this._document.getElementById("reminder-listbox").itemCount == 0) || (this._argument.calendar.type != "exchangecalendar")) {
-				this.onNewReminder();
+					onNewReminder();
 			}
 		}
 
