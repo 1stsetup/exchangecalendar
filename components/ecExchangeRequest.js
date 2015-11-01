@@ -1217,7 +1217,7 @@ ecnsIAuthPrompt2.prototype = {
 			return Cr.NS_NOINTERFACE;  // We do not support this.
 		}
 
-		this.globalFunctions.LOG("  >>>>>>>>>>> FOR MAILING THIS LINE https://github.com/Ericsson/exchangecalendar/issues: ecnsIAuthPrompt2.getInterface("+iid+")");
+		this.globalFunctions.LOG("  >>>>>>>>>>> SUBMIT THIS LINE TO https://github.com/Ericsson/exchangecalendar/issues: ecnsIAuthPrompt2.getInterface("+iid+")");
 		throw Cr.NS_NOINTERFACE;
 	},
 
