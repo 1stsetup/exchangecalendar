@@ -8578,7 +8578,7 @@ else {
 
 			while (!doStop) {
 
-				if ((startYear == endYear) && (startYearDay == endYearDay)) {
+				if ((startYear >= endYear) && (startYearDay >= endYearDay)) {
 					doStop= true;
 				}
 
