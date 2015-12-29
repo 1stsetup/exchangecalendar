@@ -12,12 +12,12 @@ do
     case ${OPTION} in
         u) echo "update"  
 	cat defaults/preferences/update_enable.txt > defaults/preferences/update.js
- 	zip -r exchangecalendar-$version.xpi * -x \*.git \*.xpi \*.sh  update\*.txt
+ 	zip -r exchangecalendar-v$version.xpi * -x \*.git \*.xpi \*.sh  update\*.txt
 	exit
 	;;
         d) echo "no update" 
 	cat defaults/preferences/update_disable.txt > defaults/preferences/update.js
- 	zip -r exchangecalendar-$version.xpi * -x \*.git \*.xpi \*.sh  update\*.txt
+ 	zip -r exchangecalendar-v$version.xpi * -x \*.git \*.xpi \*.sh  update\*.txt
 	exit
 	;;
 	*) usage ;; 
