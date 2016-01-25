@@ -37,6 +37,8 @@
 <!DOCTYPE dialog [
     <!ENTITY % eventDialogDTD SYSTEM "chrome://calendar/locale/calendar-event-dialog.dtd">
     %eventDialogDTD;
+	<!ENTITY % summaryDialogDTD SYSTEM "chrome://exchangecalendar/locale/calendar-summary-dialog.dtd">
+    %summaryDialogDTD;
 ]>
 
 <?xul-overlay href="chrome://exchangecalendar/content/attachments-view.xul"?>
@@ -45,7 +47,7 @@
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
 <dialog id="calendar-summary-dialog" windowtype="Calendar:EventSummaryDialog"
-		buttons="accept,cancel" buttonlabelextra1="Forward invite"
+		buttons="accept,cancel" buttonlabelextra1="&forward.invite.label;"
 		ondialogextra1="tmpEventSummaryDialog.onForward();" persist="screenX screenY width height"
 		xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 		
@@ -87,7 +89,7 @@
 		<box id="item-attendees" hidden="true" orient="vertical">
 
 			<spacer id="required-attendee-spacer" class="default-spacer" hidden="true"/>
-			<calendar-caption id="required-attendee-caption" label="Required Attendee"
+			<calendar-caption id="required-attendee-caption" label="&required.attendee.label;"
 			control="item-required-attendee-listbox" hidden="true"/>
 			<box orient="horizontal" id="item-required-attendee" hidden="true">
 				<spacer class="default-spacer"/>
@@ -104,7 +106,7 @@
 			</box>
 
 			<spacer id="optional-attendee-spacer" class="default-spacer" hidden="true"/>
-			<calendar-caption id="optional-attendee-caption" label="Optional Attendee"
+			<calendar-caption id="optional-attendee-caption" label="&optional.attendee.label;"
 			control="item-optional-attendee-listbox" hidden="true"/>
 			<box orient="horizontal" id="item-optional-attendee" hidden="true">
 				<spacer class="default-spacer"/>
