@@ -86,7 +86,9 @@
             <preference id="extensions.1st-setup.others.userAgent"
                         name="extensions.1st-setup.others.userAgent"
                         type="unichar"/>
-
+			<preference id="extensions.1st-setup.others.ntlmv1"
+                        name="network.auth.force-generic-ntlm-v1"
+                        type="bool"/>
         </preferences>
 
         <groupbox id="exchangeWebService_others_prefs_groupbox">
@@ -160,6 +162,16 @@
 			</hbox>
 		</vbox>
 	</groupbox>
-
+	<groupbox id="exchangeWebService_others_prefs_groupbox4">
+            <caption label="&exchangeWebService.preference.ntlmv1.label;"/>
+			<vbox>
+				<radiogroup id="exchangeWebService_preference_others_ntlmv1"
+						preference="extensions.1st-setup.others.ntlmv1"
+						label="&exchangeWebService.preference.ntlmv1.label;"> 
+					  <radio id="ntlm-true" value="true" label="&exchangeWebService.preference.ntlmv1.true.label;"/>
+					  <radio id="ntlm-false"  value="false" label="&exchangeWebService.preference.ntlmv1.false.label;" />
+ 				</radiogroup>			
+            </vbox>
+	</groupbox>
     </vbox>
 </overlay>

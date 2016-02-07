@@ -16,4 +16,3 @@ pref("extensions.extras.ShadeLow", false);
 pref("calendar.timezone.local.auto", true ); 
 pref("extensions.1st-setup.others.warnAboutPrereleaseVersion", true); 
 user_pref("mailnews.database.global.indexer.enabled", true); 
-user_pref("network.auth.force-generic-ntlm-v1", true);
