@@ -42,6 +42,6 @@
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.maxJobs.label "Nombre Max de connexions simultanées vers le serveur Exchange:">
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.sleepBetweenJobs.label "Temps minimum entre les requètes vers le serveur Exchange:">
 <!ENTITY exchangeWebService.preference.userAgent.label "HTTP user agent:">
-<!ENTITY exchangeWebService.preference.ntlmv1.label "Ntlm-v1 Preferences:">
-<!ENTITY exchangeWebService.preference.ntlmv1.true.label "Enable">
-<!ENTITY exchangeWebService.preference.ntlmv1.false.label "Disable">
+<!ENTITY exchangeWebService.preference.ntlmv1.label "Préférence Ntlm-v1:">
+<!ENTITY exchangeWebService.preference.ntlmv1.true.label "En service">
+<!ENTITY exchangeWebService.preference.ntlmv1.false.label "Hors service">
