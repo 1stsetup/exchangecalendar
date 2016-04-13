@@ -36,7 +36,7 @@ lightningTimzone.prototype = {
  			this.onTimezoneChange(); 
 		},
 		
-		onTimezoneChange:function _onTimezoneChange(self){
+		onTimezoneChange:function _onTimezoneChange(){
 			
  			var oldOffset; 
  			var currentOffset;

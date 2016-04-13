@@ -112,6 +112,8 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.timeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
 				.getService(Ci.mivExchangeTimeZones);
+				
+	this.xml2json = false;
 
 }
 
@@ -170,7 +172,7 @@ ExchangeRequest.prototype = {
 
 	logInfo: function _logInfo(aMsg, aLevel)
 	{
-		if (!aLevel) var aLevel = 1;
+		if (!aLevel)  aLevel = 1;
 
 		if ((this.debug) && (aLevel <= this.debuglevel)) {
 			this.globalFunctions.LOG(this.uuid+": "+aMsg);
@@ -1310,15 +1312,16 @@ ecnsIAuthPrompt2.prototype = {
 		this.logInfo("getPrePassword for user:"+aUsername+", server url:"+aURL);
 		this.username = aUsername;
 		this.URL = aURL;
-
+ 		
 		var password;
 		var myAuthPrompt2 = Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
-		if (myAuthPrompt2.getUserCanceled(this.currentUrl)) {
+		if (myAuthPrompt2.getUserCanceled(aURL)) {
 			return null;
 		}
+		var openUser = aUsername;
 
 		try {
-			password = myAuthPrompt2.getPassword(null, this.mArgument.user, this.currentUrl);
+			password = myAuthPrompt2.getPassword(null,openUser, aURL);
 		}
 		catch(err) {
 		}

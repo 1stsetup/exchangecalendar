@@ -332,7 +332,13 @@ exchAttachments.prototype = {
 
 		var taskTree = this._document.getElementById("calendar-task-tree");
 		var item = taskTree.currentTask;
-
+		var displayElement=function(id,flag) {
+            setBooleanAttribute(id, "hidden", !flag);
+            return flag;
+        }
+		if (displayElement("calendar-task-details-container", item != null) &&
+            displayElement("calendar-task-view-splitter", item != null)) { 
+			
 		if ((item.calendar) && (item.calendar.type == "exchangecalendar")) {
 			// calendar-task-view (hide existing attachment view)
 			//this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 1.");
@@ -369,6 +375,7 @@ exchAttachments.prototype = {
 			}
 			catch (ex) {this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje Y:");}
 			this.attachmentListboxVisible = false;
+		}
 		}
 	},
 

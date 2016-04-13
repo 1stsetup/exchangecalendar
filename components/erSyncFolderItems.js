@@ -56,15 +56,6 @@ var EXPORTED_SYMBOLS = ["erSyncFolderItemsRequest"];
 
 function erSyncFolderItemsRequest(aArgument, aCbOk, aCbError, aListener)
 {
-	this.mCbOk = aCbOk;
-	this.mCbError = aCbError;
-
-	var self = this;
-
-	this.parent = new ExchangeRequest(aArgument, 
-		function(aExchangeRequest, aResp) { self.onSendOk(aExchangeRequest, aResp);},
-		function(aExchangeRequest, aCode, aMsg) { self.onSendError(aExchangeRequest, aCode, aMsg);},
-		aListener);
 
 	this.argument = aArgument;
 	this.mailbox = aArgument.mailbox;
@@ -74,7 +65,8 @@ function erSyncFolderItemsRequest(aArgument, aCbOk, aCbError, aListener)
 	this.changeKey = aArgument.changeKey;
 	this.listener = aListener;
 	this.syncState = aArgument.syncState;
-
+	this.mCbOk = aCbOk;
+	this.mCbError = aCbError; 
 	if (!aArgument.syncState) {
 		this.getSyncState = true;
 	}
@@ -88,8 +80,15 @@ function erSyncFolderItemsRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.attempts = 0;
 	this.runs = 0;
-
 	this.isRunning = true;
+
+	var self = this; 
+	this.parent = new ExchangeRequest(aArgument, 
+		function(aExchangeRequest, aResp) { self.onSendOk(aExchangeRequest, aResp);},
+		function(aExchangeRequest, aCode, aMsg) { self.onSendError(aExchangeRequest, aCode, aMsg);},
+		aListener);
+
+
 	this.execute(aArgument.syncState);
 }
 
@@ -135,7 +134,7 @@ erSyncFolderItemsRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		 //dump("erSyncFolderItemsRequest.onSendOk:"+xml2json.toString(aResp));
+		 dump("\nerSyncFolderItemsRequest.onSendOk:"+xml2json.toString(aResp));
 try{
 		var rm = xml2json.XPath(aResp,"/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
@@ -254,7 +253,7 @@ try{
 		this.parent = null;
 }
 catch(tmpErr) {
-	dump("erSyncFolderItemsRequest.onSendOk: try error '"+tmpErr+"'.\n");
+	dump("\nerSyncFolderItemsRequest.onSendOk: try error '"+tmpErr+"'.\n");
 }
 	},
 

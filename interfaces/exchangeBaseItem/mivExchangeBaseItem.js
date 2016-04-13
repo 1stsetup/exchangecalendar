@@ -220,7 +220,7 @@ const monthMap = {
 
 var EXPORTED_SYMBOLS = ["mivExchangeBaseItem"];
 
-exchGlobalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+var exchGlobalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 					.getService(Ci.mivFunctions);
 
 function mivExchangeBaseItem() {
@@ -258,7 +258,8 @@ mivExchangeBaseItem.prototype = {
 		this._newLegacyFreeBusyStatus = undefined;
 		this._newMyResponseType = undefined; 
 		this._newIsInvitation = undefined;
-
+		this._reminderSignalTime = undefined;
+		this._newXMozSnoozeTime = undefined;
 		this._nonPersonalDataChanged = false;
 
 		this._occurrences = {};
@@ -3532,7 +3533,7 @@ dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 		// Alarm snooze or dismiss
 		if (typeof this._newXMozSnoozeTime !==  undefined ) {
 //dump("checkAlarmChange: this._newXMozSnoozeTime was set to:"+this._newXMozSnoozeTime+", newReminderMinutesBeforeStart="+newReminderMinutesBeforeStart+"\n");
-			dump("\ncheckAlarmChange: snoozetime " + this.__newXMozSnoozeTime ); 
+			dump("\ncheckAlarmChange: snoozetime " + this._newXMozSnoozeTime ); 
 			if ((this._newXMozSnoozeTime === null ) && (newReminderMinutesBeforeStart !== true)) {
 				dump("\ncheckAlarmChange: dismissed " + newReminderMinutesBeforeStart+ ".\n"); 
 //dump("checkAlarmChange: We have a change\n");

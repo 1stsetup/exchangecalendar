@@ -35,10 +35,10 @@ Cu.import("resource://interfaces/exchangeBaseItem/mivExchangeBaseItem.js");
 
 Cu.import("resource://interfaces/xml2json/xml2json.js");
 
-exchGlobalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+var exchGlobalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 					.getService(Ci.mivFunctions);
 
-exchTimeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
+var exchTimeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
 			.getService(Ci.mivExchangeTimeZones);
 
 var EXPORTED_SYMBOLS = ["mivExchangeTodo"];

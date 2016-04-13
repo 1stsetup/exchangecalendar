@@ -7925,9 +7925,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 						 mailbox: this.mailbox,
 						 serverUrl: this.serverUrl,
 						 folderBase: "inbox",
-						 folderID: null,
-						 changeKey: null,
-						 syncState: this.syncStateInbox,
+  						 syncState: this.syncStateInbox,
 						 actionStart: Date.now() },
 						function(erSyncFolderItemsRequest, creations, updates, deletions, syncState) { self.syncFolderItemsOK(erSyncFolderItemsRequest, creations, updates, deletions, syncState);}, 
 						function(erSyncFolderItemsRequest, aCode, aMsg) { self.syncFolderItemsError(erSyncFolderItemsRequest, aCode, aMsg);},
@@ -7965,7 +7963,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 
 		if ((creations.length > 0) || (updates.length > 0) || (deletions.length > 0)) {
 			this.addActivity(calGetString("calExchangeCalendar", "syncFolderEventMessage", [creations.length, updates.length, deletions.length, this.name], "exchangecalendar"), "", erSyncFolderItemsRequest.argument.actionStart, Date.now());
-		}
+		} 
 
 		if (syncState) {
 			
@@ -7996,7 +7994,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 		for each(var update in updates) { changes.push(update); }
 		if (changes.length > 0) {
   			switch(erSyncFolderItemsRequest.folderBase){
-			case "task": 
+			case "tasks": 
 				this.findTaskItemsOK(erSyncFolderItemsRequest,changes);
 				break;
 			case "calendar":
@@ -8006,7 +8004,7 @@ dump("\n== removed ==:"+aCalendarEvent.toString()+"\n");
 				this.findFollowupTaskItemsOK(erSyncFolderItemsRequest,changes);
 				break;
 			default: 
-				this.logError("Changes could not be made."); 
+				this.logError("Changes could not be made." + erSyncFolderItemsRequest.folderBase); 
 			}
 			
 /*			this.addToQueue( erGetItemsRequest, 

@@ -257,6 +257,6 @@ mailTools.prototype.onLoad = function(){
 var tmpShowIconsAsInviteColumn = new showIconsAsInviteColumn();
 var tmpMailTools = new mailTools(window,document);  
 
-window.addEventListener("load",tmpShowIconsAsInviteColumn.execute(),false);
 window.addEventListener("load",tmpMailTools.onLoad(),false);
+window.addEventListener("load",tmpShowIconsAsInviteColumn.execute(),false);
 
