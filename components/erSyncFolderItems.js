@@ -134,7 +134,7 @@ erSyncFolderItemsRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		 dump("\nerSyncFolderItemsRequest.onSendOk:"+xml2json.toString(aResp));
+		 //dump("\nerSyncFolderItemsRequest.onSendOk:"+xml2json.toString(aResp));
 try{
 		var rm = xml2json.XPath(aResp,"/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
