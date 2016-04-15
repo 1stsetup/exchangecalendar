@@ -44,6 +44,6 @@
 <!ENTITY exchangeWebService.preference.userAgent.label "HTTP kullanıcı aracısı:”>
 
 
-<!ENTITY exchangeWebService.preference.ntlmv1.label "Ntlm-v1 Preferences:">
-<!ENTITY exchangeWebService.preference.ntlmv1.true.label "Enable">
-<!ENTITY exchangeWebService.preference.ntlmv1.false.label "Disable">
+<!ENTITY exchangeWebService.preference.ntlmv1.label "Ntlm-v1 Tercihleri:">
+<!ENTITY exchangeWebService.preference.ntlmv1.true.label "Etkinleştir">
+<!ENTITY exchangeWebService.preference.ntlmv1.false.label "Etkisizleştir">
