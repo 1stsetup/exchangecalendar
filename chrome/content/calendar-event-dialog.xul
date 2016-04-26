@@ -142,33 +142,7 @@
 					flex="1" 
 					insertafter="item-description" 
 					disable-on-readonly="true"/>
-            </tabpanel>
-            <tabpanel id="event-grid-tabpanel-attendees">
-                <vbox flex="1">
-                    <hbox pack="start" id="event-grid-attendee-row-3"  insertbefore = "notify-options">
-                        <label value="Required Attendees (I):"
-							  accesskey="&event.attendees.accesskey;"
-							  control="attendee-list"
-							  disable-on-readonly="true"/>
-                        <label id="req-attendee-list-3"
-							  class="text-link"
-							  crop="right"
-							  tooltiptext=""
-							  onclick="showAttendeePopup(event)"/>
-                    </hbox>
-                    <hbox pack="start" id="event-grid-attendee-row-4"   insertbefore = "notify-options">
-                        <label value="Optional Attendees (I):"
-							  accesskey="&event.attendees.accesskey;"
-							  control="attendee-list"
-							  disable-on-readonly="true"/>
-                        <label id="opt-attendee-list-4"
-							  class="text-link"
-							  crop="right"
-							  tooltiptext=""
-							  onclick="showAttendeePopup(event)"/>
-                    </hbox>
-                </vbox>
-            </tabpanel>
+            </tabpanel> 
         </tabpanels>
     </tabbox>
 </overlay>

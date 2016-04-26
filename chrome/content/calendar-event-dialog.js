@@ -279,112 +279,8 @@ exchWebService.eventDialog = {
     onLoad: function _onLoad() {
         if (this._initialized) return;
 
-        exchWebService.eventDialog.updateAttendees();
-	},
-
-
-    updateAttendees: function _updateAttendees() {
-      //  let attendeeRow = document.getElementById("event-grid-attendee-row");
-       // attendeeRow.setAttribute('collapsed', 'true');
-      //  let attendeeRow2 = document.getElementById("event-grid-attendee-row-2");
-        let optAttendeeRow = document.getElementById("event-grid-attendee-row-4");
-        let reqAttendeeRow = document.getElementById("event-grid-attendee-row-3");
-        if (window.attendees && window.attendees.length > 0) {
-            if (isEvent(window.calendarItem)) { // sending email invitations currently only supported for events
-            //    attendeeRow2.removeAttribute('collapsed');
-            } else {
-             //   attendeeRow2.setAttribute('collapsed', 'true');
-            }
-
-            let attendeeNames = [];
-            let attendeeEmails = [];
-            let reqAttendeeNames = [];
-            let reqAttendeeEmails = [];
-            let optAttendeeNames = [];
-            let optAttendeeEmails = [];
-            let numAttendees = window.attendees.length;
-            let emailRE = new RegExp("^mailto:(.*)", "i");
-            for (let i = 0; i < numAttendees; i++) {
-                let attendee = window.attendees[i];
-                let name = attendee.commonName;
-                if (attendee.role == "OPT-PARTICIPANT") {
-                    if (name && name.length) {
-                        optAttendeeNames.push(name);
-                        let email = attendee.id;
-                        if (email && email.length) {
-                            if (emailRE.test(email)) {
-                                name += ' <' + RegExp.$1 + '>';
-                            } else {
-                                name += ' <' + email + '>';
-                            }
-                            optAttendeeEmails.push(name);
-                        }
-                    } else if (attendee.id && attendee.id.length) {
-                        let email = attendee.id;
-                        if (emailRE.test(email)) {
-                            optAttendeeNames.push(RegExp.$1);
-                        } else {
-                            optAttendeeNames.push(email);
-                        }
-                    } else {
-                        continue;
-                    }
-
-                } else {
-
-                    if (name && name.length) {
-                        reqAttendeeNames.push(name);
-                        let email = attendee.id;
-                        if (email && email.length) {
-                            if (emailRE.test(email)) {
-                                name += ' <' + RegExp.$1 + '>';
-                            } else {
-                                name += ' <' + email + '>';
-                            }
-                            reqAttendeeEmails.push(name);
-                        }
-                    } else if (attendee.id && attendee.id.length) {
-                        let email = attendee.id;
-                        if (emailRE.test(email)) {
-                            reqAttendeeNames.push(RegExp.$1);
-                        } else {
-                            reqAttendeeNames.push(email);
-                        }
-                    } else {
-                        continue;
-                    }
-
-                }
-            }
-            if (reqAttendeeNames.length > 0) {
-                reqAttendeeRow.removeAttribute('collapsed');
-            } else {
-                reqAttendeeRow.setAttribute('collapsed', 'true');
-            }
-            if (optAttendeeNames.length > 0) {
-                optAttendeeRow.removeAttribute('collapsed');
-            } else {
-                optAttendeeRow.setAttribute('collapsed', 'true');
-            }
-
-            let attendeeList = document.getElementById("attendee-list");
-            let reqAttendeeList = document.getElementById("req-attendee-list-3");
-            let optAttendeeList = document.getElementById("opt-attendee-list-4");
-
-            let callback = function func() {
-                reqAttendeeList.setAttribute('value', reqAttendeeNames.join(', '));
-                reqAttendeeList.setAttribute('tooltiptext', reqAttendeeEmails.join(', '));
-                optAttendeeList.setAttribute('value', optAttendeeNames.join(', '));
-                optAttendeeList.setAttribute('tooltiptext', optAttendeeEmails.join(', '));
-            };
-            setTimeout(callback, 1);
-        } else {
-
-           // attendeeRow2.setAttribute('collapsed', 'true');
-            optAttendeeRow.setAttribute('collapsed', 'true');
-            reqAttendeeRow.setAttribute('collapsed', 'true');
-        }
-    },
+      //  exchWebService.eventDialog.updateAttendees();
+	}, 
 
     editAttendees: function _editAttendees() {
         let savedWindow = window;
@@ -426,7 +322,7 @@ exchWebService.eventDialog = {
             gStartTime = startTime.getInTimezone(kDefaultTimezone);
             gEndTime = endTime.getInTimezone(kDefaultTimezone);
             gItemDuration = duration;
-            exchWebService.eventDialog.updateAttendees();
+          //  exchWebService.eventDialog.updateAttendees();
             updateDateTime();
             updateAllDay();
             if (isAllDay != gStartTime.isDate) {
