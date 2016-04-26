@@ -284,16 +284,16 @@ exchWebService.eventDialog = {
 
 
     updateAttendees: function _updateAttendees() {
-        let attendeeRow = document.getElementById("event-grid-attendee-row");
-        attendeeRow.setAttribute('collapsed', 'true');
-        let attendeeRow2 = document.getElementById("event-grid-attendee-row-2");
+      //  let attendeeRow = document.getElementById("event-grid-attendee-row");
+       // attendeeRow.setAttribute('collapsed', 'true');
+      //  let attendeeRow2 = document.getElementById("event-grid-attendee-row-2");
         let optAttendeeRow = document.getElementById("event-grid-attendee-row-4");
         let reqAttendeeRow = document.getElementById("event-grid-attendee-row-3");
         if (window.attendees && window.attendees.length > 0) {
             if (isEvent(window.calendarItem)) { // sending email invitations currently only supported for events
-                attendeeRow2.removeAttribute('collapsed');
+            //    attendeeRow2.removeAttribute('collapsed');
             } else {
-                attendeeRow2.setAttribute('collapsed', 'true');
+             //   attendeeRow2.setAttribute('collapsed', 'true');
             }
 
             let attendeeNames = [];
@@ -380,7 +380,7 @@ exchWebService.eventDialog = {
             setTimeout(callback, 1);
         } else {
 
-            attendeeRow2.setAttribute('collapsed', 'true');
+           // attendeeRow2.setAttribute('collapsed', 'true');
             optAttendeeRow.setAttribute('collapsed', 'true');
             reqAttendeeRow.setAttribute('collapsed', 'true');
         }

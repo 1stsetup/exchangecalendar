@@ -98,7 +98,7 @@ exchAttachments.prototype = {
 
 		this.globalFunctions.LOG("exchWebService.attachments.addAttachment");
 		if (aAttachment.uri) {
-			let documentLink = this._document.getElementById("exchWebService-attachment-link");
+			let documentLink = this._document.getElementById("attachment-link");
 			let item = documentLink.appendChild(createXULElement("listitem"));
 			item.setAttribute("crop", "end");
 			item.setAttribute("class", "listitem-iconic");
@@ -187,7 +187,7 @@ exchAttachments.prototype = {
 
 	deleteAttachment: function deleteAttachment()
 	{
-		var documentLink = this._document.getElementById("exchWebService-attachment-link");
+		var documentLink = this._document.getElementById("attachment-link");
 		if ((documentLink.selectedItem) && (documentLink.selectedItem.attachment)) {
 			delete gAttachMap[documentLink.selectedItem.attachment.hashId];
 			documentLink.removeItemAt(documentLink.selectedIndex);
@@ -220,7 +220,7 @@ exchAttachments.prototype = {
 
 	removeItemsFromListbox: function _removeItemsFromListbox()
 	{
-		var documentLink = this._document.getElementById("exchWebService-attachment-link");
+		var documentLink = this._document.getElementById("attachment-link");
 		while (documentLink.itemCount > 0) {
 			this.globalFunctions.LOG(" == Removing item from listbox");
 			documentLink.removeItemAt(0);
@@ -383,7 +383,7 @@ exchAttachments.prototype = {
 	{
 		this.globalFunctions.LOG("exchWebService.attachments.onSelect");
 
-		let documentLink = this._document.getElementById("exchWebService-attachment-link");
+		let documentLink = this._document.getElementById("attachment-link");
 
 		var isReadOnly = "true";
 		if ((this._document.getElementById("calendar-event-dialog")) || (this._document.getElementById("calendar-task-dialog"))) {
@@ -428,7 +428,7 @@ exchAttachments.prototype = {
 	openAttachment: function _openAttachment()
 	{
 		this.globalFunctions.LOG("exchWebService.attachments.openAttachment");
-		let documentLink = this._document.getElementById("exchWebService-attachment-link");
+		let documentLink = this._document.getElementById("attachment-link");
 
 		if (documentLink.selectedItem.attachment) {
 			var attURI = documentLink.selectedItem.attachment.uri;
@@ -449,7 +449,7 @@ exchAttachments.prototype = {
 	saveAttachment: function _saveAttachment()
 	{
 		this.globalFunctions.LOG("exchWebService.attachments.saveAttachment");
-		let documentLink = this._document.getElementById("exchWebService-attachment-link");
+		let documentLink = this._document.getElementById("attachment-link");
 		this.downloadAttachment(documentLink.selectedItem.attachment, true);
 	},
 
