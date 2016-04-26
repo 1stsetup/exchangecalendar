@@ -92,13 +92,7 @@
 	</toolbarpalette>
      <toolbar id="event-toolbar" defaultset="button-save,button-attendees,button-privacy,button-url,exchWebService-add-attachment-button,button-delete"> 
      </toolbar> 
-
-	<listbox id="exchWebService-attachment-link"
-		context="exchWebService-attachment-popup"
-		rows="2"
-		onkeypress="tmpAttachment.onKeyPress(event);"
-		ondblclick="tmpAttachment.onDblClick(event);"
-		onselect="tmpAttachment.onSelect(event);"/>
+ 
 
 </overlay>
 

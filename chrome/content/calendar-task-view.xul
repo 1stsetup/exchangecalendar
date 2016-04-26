@@ -58,7 +58,7 @@
  
     <vbox id="calendar-task-box" onselect="taskHtmlDetailsView(event);"/>
      <vbox id="calendar-task-details-container">
-        <browser id="calendar-task-details-description2"
+        <browser id="exchService-task-details-description"
              name="messagepane02"
              height="0"
              flex="1"
@@ -92,16 +92,6 @@
                       command="exchWebService_deleteAttachment"/>
       </menupopup>
     </popupset>
-
-	<hbox id="calendar-task-details-attachment-row">
-		<vbox id="exchWebService-attachments-row"
-			flex="1"
-			collapsed="true" insertbefore="calendar-task-details-attachment-rows">
-
-			<listbox id="exchWebService-attachment-link" rows="3" flex="1"/>
-
-		</vbox>
-	</hbox>
 
 </overlay>
 
