@@ -1,8 +1,6 @@
 /*
  * Owner:Ericsson
- */
-
-
+ */ 
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils;
@@ -54,7 +52,7 @@ function taskHtmlDetailsView(event){
 			if( item.calendar.type == "exchangecalendar" ){ 
 			   //Html manipulations
 			   var ele =  document.getElementById("calendar-task-details-description"); 
-			   var ele2 = document.getElementById("calendar-task-details-description2"); 
+			   var ele2 = document.getElementById("exchService-task-details-description"); 
 
 				//remove existing task view 
 				//ele.parentNode.removeChild(ele);
@@ -101,6 +99,10 @@ function taskHtmlDetailsView(event){
 								var collection = query.getCollection(queryListener);
 					}
 				}  
+		}
+		else {
+			document.getElementById("exchService-task-details-description").hidden = true;
+			document.getElementById("calendar-task-details-description").hidden = false;
 		} 
 	  }
    }
