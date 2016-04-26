@@ -23,7 +23,8 @@ newOpenEventDialog(calendarItem, calendar, mode, callback, job, initialDate);
 }
 
 function newOpenEventDialog(calendarItem, calendar, mode, callback, job, initialDate) {
-    let dlg = cal.findItemWindow(calendarItem);
+   calendarItem = calendarItem.clone();
+   let dlg = cal.findItemWindow(calendarItem);
     if (dlg) {
         dlg.focus();
         disposeJob(job);
@@ -125,8 +126,8 @@ function newOpenEventDialog(calendarItem, calendar, mode, callback, job, initial
     } else {
         url = "chrome://calendar/content/calendar-summary-dialog.xul";
     }
-    calendarItem = calendarItem.clone();
-    if( calendarItem.itemClass == "IPM.Note" )   url = "chrome://exchangecalendar/content/calendar-event-dialog2.xul";
+ 
+    if( calendarItem.itemClass == "IPM.Note" )   url = "chrome://exchangecalendar/content/exchService-followup-event-dialog.xul";
     
     // reminder: event dialog should not be modal (cf bug 122671)
     var features;
