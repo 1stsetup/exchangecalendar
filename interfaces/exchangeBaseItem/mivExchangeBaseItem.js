@@ -3821,7 +3821,7 @@ dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 		attendee.convertFromExchange(this, aElement, aType);
 		//dump("  -- CreateAttendee:"+attendee+", attendee.id:"+attendee.id+", title:"+this.title+"\n");
 		return attendee;
-
+/* 
 		let mbox = aElement.getTag("t:Mailbox");
 		var attendee = cal.createAttendee();
 
@@ -3870,7 +3870,7 @@ dump("Error2:"+err+" | "+exchGlobalFunctions.STACK()+"\n");
 
 		mbox = null;
 		aElement = null;
-		return attendee;
+		return attendee; */
 	},
 
 	tryToSetDateValueUTC: function _tryToSetDateValueUTC(ewsvalue, aDefault)
