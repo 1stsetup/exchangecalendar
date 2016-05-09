@@ -23,7 +23,6 @@ newOpenEventDialog(calendarItem, calendar, mode, callback, job, initialDate);
 }
 
 function newOpenEventDialog(calendarItem, calendar, mode, callback, job, initialDate) {
-   calendarItem = calendarItem.clone();
    let dlg = cal.findItemWindow(calendarItem);
     if (dlg) {
         dlg.focus();
