@@ -121,6 +121,7 @@ try{
 				this._companies.push(company);
 			}
 		}
+		this._status = null;
 		if (aItem._status) this._status = aItem._status;
 }
 catch(err){
@@ -1079,6 +1080,10 @@ catch(err){
 						noteStatus = "NotStarted"; 
 					}
 				} 
+				else
+				{
+					noteStatus = "NotStarted"; 
+				}
 			
 				if( noteStatus != "Completed" ){
 					var tmpObject_2 = this.XPath("/t:ExtendedProperty[t:ExtendedFieldURI/@PropertyId = '33052']");
@@ -1099,7 +1104,6 @@ catch(err){
  		this._calEvent.status = statusMap[this._status];
  		
 		this._calEvent.setProperty("STATUS", statusMap[this._status]); 
-
 	    this._isCompleted = ( this._status  == "Completed" ); 
  
 		this._calEvent.isCompleted = this._isCompleted; 

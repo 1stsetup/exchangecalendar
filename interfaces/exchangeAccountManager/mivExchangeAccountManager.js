@@ -193,7 +193,7 @@ mivExchangeAccountManager.prototype = {
 	logInfo: function _logInfo(aMsg, aDebugLevel) 
 	{
 		return;
-		if (!aDebugLevel) aDebugLevel = 1;
+		/* if (!aDebugLevel) aDebugLevel = 1;
 
 		var prefB = Cc["@mozilla.org/preferences-service;1"]
 			.getService(Ci.nsIPrefBranch);
@@ -201,7 +201,7 @@ mivExchangeAccountManager.prototype = {
 		this.debugLevel = this.globalFunctions.safeGetBoolPref(prefB, "extensions.1st-setup.accounts.debuglevel", 0, true);
 		if (aDebugLevel <= this.debugLevel) {
 			this.globalFunctions.LOG("mivExchangeAccountManager: "+aMsg);
-		}
+		} */
 	},
 
 }

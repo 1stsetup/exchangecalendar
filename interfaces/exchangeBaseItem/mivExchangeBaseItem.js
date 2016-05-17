@@ -1414,7 +1414,7 @@ try {
 				this._newMyResponseType = null;
 			}
 			else {
-				this.status = null;
+				this._status = null;
 			}
 			break;
 		case "X-MOZ-SEND-INVITATIONS": 
