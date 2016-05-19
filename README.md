@@ -70,7 +70,4 @@ we'd like to ask you to do:
 License
 -------
 This software is licensed under the [GNU GPL] Version 3 
-[GNU GPL]: http://www.gnu.org/licenses/gpl.html 
-
-Readme template file courtesy: [mozwebqa-test-templates][mozwebqa-test-templates]
-[mozwebqa-test-templates]: https://github.com/mozilla/mozwebqa-test-templates
+[GNU GPL]: http://www.gnu.org/licenses/gpl.html
