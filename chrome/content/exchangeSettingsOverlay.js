@@ -93,7 +93,7 @@ exchSettingsOverlay.prototype = {
 	},
 
 	exchWebServicesCheckRequired: function _exchWebServicesCheckRequired() {
-
+	
 		if (!this.gexchWebServicesDetailsChecked) {
 			this._document.getElementById("exchWebService_folderbaserow").hidden = true;
 			this._document.getElementById("exchWebService_folderpathrow").hidden = true;
@@ -107,7 +107,21 @@ exchSettingsOverlay.prototype = {
 		else {
 			this._document.getElementById("exchWebService_detailschecked").setAttribute("required", false);
 		}
-
+		
+		if (this._document.getElementById("exchWebService_ectype").selectedIndex == 1 ){
+			this._document.getElementById("exchWebService_server").value = "https://outlook.office365.com/EWS/Exchange.asmx";
+			this._document.getElementById("exchWebService_autodiscover").checked = false;
+			this._document.getElementById("exchWebService_autodiscover").disabled = true;
+			
+			this.exchWebServicesgServer = this._document.getElementById("exchWebService_server").value; 
+			this.exchWebServicesgUser = this._document.getElementById("exchWebService_mailbox").value;
+			this._document.getElementById("exchWebService_windowsuser").value = this.exchWebServicesgUser;
+		}
+		else {
+			this._document.getElementById("exchWebService_server").value = "";
+			this._document.getElementById("exchWebService_autodiscover").disabled = false;  
+		} 
+	 
 		if (this._document.getElementById("exchWebService_autodiscover").checked) {
 
 			this.exchWebServicesChangeFolderbaseMenuItemAvailability(false);

@@ -48,3 +48,7 @@
 <!ENTITY button.label.folderbrowse "Bläddra">
 
 <!ENTITY exchWebServices.UserAvailability.label "Användarens tillgänglighetsstatus för E-postlådans kalender visas.">
+<!ENTITY exchWebServices.exchtype.label "Exchange Type">
+<!ENTITY exchWebServices.hostexch.label "Hosted Exchange">
+<!ENTITY exchWebServices.365exch.label "Microsoft Office365">
+<!ENTITY exchWebServices.detail.label "Details">
