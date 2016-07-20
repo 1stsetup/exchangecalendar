@@ -49,7 +49,7 @@
 	<vbox id="exchWebService-exchange-settings"> 
 	<groupbox>
 			<caption label="&exchWebServices.exchtype.label;"/>
-			<radiogroup id="exchWebService_ectype" oncommand="tmpSettingsOverlay.exchWebServicesAutodiscoverCheckbox(this);" >
+			<radiogroup id="exchWebService_ectype" oncommand="tmpSettingsOverlay.exchWebServicesServerType(this);" >
 				<radio label="&exchWebServices.hostexch.label;" value="exchange"  checked="true"/>
 				<radio label="&exchWebServices.365exch.label;" value="office365"/> 
 			</radiogroup> 
