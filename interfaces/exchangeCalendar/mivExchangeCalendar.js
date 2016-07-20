@@ -331,6 +331,8 @@ try{
 	this.mPrefs = null;
 
 	this.itemCacheById = {};
+	this.itemCancelQueue = {};
+
 	this.itemCacheByStartDate = {};
 	this.itemCacheByEndDate = {};
 	this.recurringMasterCache = {};
@@ -1841,7 +1843,113 @@ calExchangeCalendar.prototype = {
 
 		return null;
 	},
+	
+	deleteItemCancelled: function _deleteItemCancelled(aItem,aListener) {
+		if (this.debug) this.logInfo("deleteItemCancelled: "+aItem.title);
+		if ((aItem.className) && (!aItem.canDelete)) {
+			if (this.debug) this.logInfo("User is not allowed to delete this item.");
+	        	this.notifyOperationComplete(aListener,
+        	                             Ci.calIErrors.OPERATION_CANCELLED,
+                        	             Ci.calIOperationListener.DELETE,
+                        	             aItem.id,
+                        	             aItem);
+			return null;
+		}
 
+		if (aItem.id == null) {
+			if (aListener) {
+				this.notifyOperationComplete(aListener,
+		                                 Ci.calIErrors.MODIFICATION_FAILED,
+		                                 Ci.calIOperationListener.DELETE,
+		                                 null,
+		                                 "ID is null for deleteItem");
+			}
+			return;
+		}
+
+		// Check if this item is still in cache
+		if ((aItem.id == aItem.parentItem.id) && (!this.itemCacheById[aItem.id]) && (!this.recurringMasterCache[aItem.uid]))	 {
+			if (this.debug) this.logInfo("Item is not in itemCache anymore. Probably not removed from view by Lightning..");
+			if (aListener) {
+				this.notifyOperationComplete(aListener,
+		                                 Cr.NS_OK,
+		                                 Ci.calIOperationListener.DELETE,
+		                                 aItem.id,
+		                                 aItem);
+			}
+			return;
+		}
+		
+		switch (aItem.calendarItemType) {
+				case "Single" :
+					if (this.debug) this.logInfo("-- Single CalendarItemType");
+					this.removeItemFromCache(aItem);
+
+					var self = this;
+					this.addToQueue( erDeleteItemRequest, 
+						{user: this.user, 
+						 mailbox: this.mailbox,
+						 folderBase: this.folderBase,
+						 serverUrl: this.serverUrl,
+						 item: aItem,
+						 folderID: this.folderID,
+						 changeKey: this.changeKey,
+						 actionStart: Date.now(),
+						 itemType: "single"}, 
+						function(erDeleteItemRequest) { self.deleteItemOk(erDeleteItemRequest);}, 
+						function(erDeleteItemRequest, aCode, aMsg) { self.deleteItemError(erDeleteItemRequest, aCode, aMsg);},
+						aListener);
+
+					break;
+				case "Occurrence" :
+				case "Exception" :
+					if (this.debug) this.logInfo("-- "+aItem.calendarItemType+" CalendarItemType");
+					this.removeItemFromCache(aItem);
+
+					var self = this;
+					this.addToQueue( erGetOccurrenceIndexRequest,
+						{user: this.user, 
+						 mailbox: this.mailbox,
+						 folderBase: this.folderBase,
+						 serverUrl: this.serverUrl,
+						 masterItem: aItem,
+						 item: aItem,
+						 folderID: this.folderID,
+						 changeKey: this.changeKey,
+						 action: "deleteItem",
+						 itemType: "occurrence",
+						 whichOccurrence: "occurrence" },//dialogArg.answer}, 
+						function(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey) { self.getOccurrenceIndexOk(erGetOccurrenceIndexRequest, aIndex, aMasterId, aMasterChangeKey);}, 
+						function(erGetOccurrenceIndexRequest, aCode, aMsg) { self.getOccurrenceIndexError(erGetOccurrenceIndexRequest, aCode, aMsg);},
+						aListener);
+
+					break;
+				case "RecurringMaster" :
+					if (this.debug) this.logInfo("-- RecurringMaster CalendarItemType");
+					this.removeItemFromCache(aItem); 
+					
+					var self = this;
+					this.addToQueue( erDeleteItemRequest,
+						{user: this.user, 
+						 mailbox: this.mailbox,
+						 folderBase: this.folderBase,
+						 serverUrl: this.serverUrl,
+						 item: aItem,
+						 folderID: this.folderID,
+						 changeKey: this.changeKey,
+						 itemType: "master",
+						 actionStart: Date.now(),
+						 whichOccurrence: "all_occurrences"}, 
+						function(erDeleteItemRequest) { self.deleteItemOk(erDeleteItemRequest);}, 
+						function(erDeleteItemRequest, aCode, aMsg) { self.deleteItemError(erDeleteItemRequest, aCode, aMsg);},
+						aListener);
+					break;
+				default :
+					// TODO: This will happen when the sync to/from EWS has not yet happened.
+					if (this.debug) this.logInfo("WARNING: unknown CalendarItemType="+aItem.calendarItemType);
+			}
+			
+	},
 	//  calIOperation deleteItem(in calIItemBase aItem,
         //                   in calIOperationListener aListener);
 	deleteItem: function _deleteItem(aItem, aListener) {
@@ -2054,8 +2162,6 @@ calExchangeCalendar.prototype = {
 				function(erDeleteItemRequest, aCode, aMsg) { self.deleteItemError(erDeleteItemRequest, aCode, aMsg);},
 				aListener);
 		}
-
-
 	},
 
 	//  calIOperation getItem(in string aId, in calIOperationListener aListener);
@@ -2676,14 +2782,15 @@ calExchangeCalendar.prototype = {
 					startYearday = 1;
 				}
 			}
+	 
 			for (var itemid in ids) {
 				if (this.itemCacheById[itemid]) {
-					if (isEvent(this.itemCacheById[itemid])) {
-						//dump("\nxxxxx "+this.itemCacheById[itemid].title+":"+  this.deleteCancelledInvitation + ":"+this.itemCacheById[itemid].isCancelled);
+					if (isEvent(this.itemCacheById[itemid])) {			 
 						if ( this.deleteCancelledInvitation && this.itemCacheById[itemid].isCancelled )  
-						{
-							if (this.debug) this.logInfo("getItemsFromMemoryCache 2: " +  "Found Cancelled Item " + this.itemCacheById[itemid].title + " - going to delete from cache" );
-						    this.deleteItem(this.itemCacheById[itemid]);
+						{ 	 
+							events.push(this.itemCacheById[itemid]);  
+							this.deleteItemCancelled(this.itemCacheById[itemid]);
+					 
 						}
 						else
 						{						
