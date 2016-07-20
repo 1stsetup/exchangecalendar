@@ -75,6 +75,9 @@ exchForewardEvent.prototype = {
 		args.calendar =calendar;
 		args.onOk = this.callOnRightClick;
 		args.opener="exchWebService-onForEve";
+		
+		dump("\nxxxxxxx args"+JSON.stringify(args));
+		
 		this._window.openDialog("chrome://calendar/content/calendar-event-dialog-attendees.xul","_blank", "chrome,titlebar,modal,resizable",args);
 
 	},
