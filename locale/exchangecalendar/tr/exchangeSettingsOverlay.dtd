@@ -47,9 +47,9 @@
 <!ENTITY button.label.folderpathcheck “Denetle”>
 <!ENTITY button.label.folderbrowse “Gözat”>
 
-<!ENTITY exchWebServices.UserAvailability.label “Yalnızca, posta kutusuna ait takvimin kullanıcı müsaitliği durumu görünür olacak.">
+<!ENTITY exchWebServices.UserAvailability.label “Yalnızca posta kutusuna ait takvimin kullanıcı müsaitliği durumu görünür olacak.">
 
-<!ENTITY exchWebServices.exchtype.label "Exchange Type">
-<!ENTITY exchWebServices.hostexch.label "Hosted Exchange">
+<!ENTITY exchWebServices.exchtype.label "Exchange Çeşiti">
+<!ENTITY exchWebServices.hostexch.label "Sunucuda Ağırlanan Exchange">
 <!ENTITY exchWebServices.365exch.label "Microsoft Office365">
-<!ENTITY exchWebServices.detail.label "Details">
+<!ENTITY exchWebServices.detail.label "Detaylar">
