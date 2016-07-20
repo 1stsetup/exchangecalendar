@@ -2679,7 +2679,8 @@ calExchangeCalendar.prototype = {
 			for (var itemid in ids) {
 				if (this.itemCacheById[itemid]) {
 					if (isEvent(this.itemCacheById[itemid])) {
-						if ( this.deleteCancelledInvitation && this.itemCacheById[itemid].isCancelled &&  this.itemCacheById[itemid].isInvitation   )  
+						//dump("\nxxxxx "+this.itemCacheById[itemid].title+":"+  this.deleteCancelledInvitation + ":"+this.itemCacheById[itemid].isCancelled);
+						if ( this.deleteCancelledInvitation && this.itemCacheById[itemid].isCancelled )  
 						{
 							if (this.debug) this.logInfo("getItemsFromMemoryCache 2: " +  "Found Cancelled Item " + this.itemCacheById[itemid].title + " - going to delete from cache" );
 						    this.deleteItem(this.itemCacheById[itemid]);
