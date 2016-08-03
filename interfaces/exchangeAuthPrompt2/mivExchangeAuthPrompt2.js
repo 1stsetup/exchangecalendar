@@ -145,13 +145,15 @@ mivExchangeAuthPrompt2.prototype = {
 		else {
 			this.logInfo("getPassword: password(1)=********");
 		}
-
-		if (!password) {
+		
+		var oldSavedPassword;
+ 		if (!password) {
 			this.logInfo("getPassword: There is no password in the cache. Going to see if there is one in the passwordManager.");
 			var savedPassword = this.passwordManagerGet(username, aURL, realm);
 			if (savedPassword.result) {
 				this.logInfo("getPassword: There is a password stored in the passwordManager.");
 				password = savedPassword.password;
+				oldSavedPassword = savedPassword.password;
 			}
 			else {
 				this.logInfo("getPassword: There is no password stored in the passwordManager.");
@@ -171,9 +173,13 @@ mivExchangeAuthPrompt2.prototype = {
 				if ((this.details[aURL]) && (this.details[aURL].ntlmCount == 1)) {
 					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are the same. But it is a first pass on an NTLM authentication. Using stored password and going to see if it can be used.");
 				}
-				else {
+				else { 
 					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And they are the same. Going to ask user to provide a new password.");
-					password = null;
+					var channel = aChannel.QueryInterface(Ci.nsIHttpChannel); 
+					 if( channel.responseStatus == 401 ){
+						 password=null;
+						 this.logInfo("getPassword: Login Failed, Going to ask user to provide a new password.");
+					 } 
 				}
 			}
 			else {
@@ -184,7 +190,7 @@ mivExchangeAuthPrompt2.prototype = {
 					this.logInfo("getPassword: There was a password in cache or passwordManager and one on the channel. And useCached specified.");
 				}
 				if (this.showPassword) {
-					this.logInfo("getPassword: cached/store='"+password+"', on channel='"+decodeURIComponent(aChannel.URI.password)+"'.");
+					this.logInfo("getPassword: cached/store='"+password+"', on channel='"+decodeURIComponent(aChannel.URI.password)+"', useCached='"+useCached+"'.");
 				}
 				else {
 					this.logInfo("getPassword: cached/store='********', on channel='********'.");
@@ -223,6 +229,10 @@ mivExchangeAuthPrompt2.prototype = {
 				if (answer.save) {
 					this.logInfo("getPassword: User requested to store password in passwordmanager.");
 					this.passwordManagerSave(username, password, aURL, realm);
+				}
+				else{
+					this.logInfo("getPassword: User requested not to store password in passwordmanager."); 
+					this.passwordManagerRemove(username, oldSavedPassword, aURL, realm); 
 				}
 				this.passwordCache[username+"|"+aURL+"|"+realm] = password;
 				this.details[aURL].showing = false;
@@ -361,17 +371,15 @@ mivExchangeAuthPrompt2.prototype = {
 							authInfo.username = username.substr(username.indexOf("\\")+1);
 							this.logInfo("asyncPromptAuthNotifyCallback: We have a domainname part in the username. Going to use it. domain="+authInfo.domain);
 						}
-						else {
-							if (username.indexOf("@") > -1) {
-								authInfo.username = username.substr(0,username.indexOf("@"));
-								authInfo.domain = username.substr(username.indexOf("@")+1);
+						else if (username.indexOf("@") > -1) {
+								authInfo.username = username;
+								authInfo.domain = "";
 								this.logInfo("asyncPromptAuthNotifyCallback: We have a domainname part in the username. Going to use it. domain="+authInfo.domain);
-							}
-							else {
+						}
+						else {
 								this.logInfo("asyncPromptAuthNotifyCallback: We do not have a domainname part in the username. Specifying empty one.");
 								authInfo.username = username;
-							}
-						}
+						}						
 					}
 					else {
 						authInfo.username = username;
@@ -628,7 +636,43 @@ mivExchangeAuthPrompt2.prototype = {
 		}
 		return { result: false };
 	},
+	
+	passwordManagerRemove: function _passwordManagerRemove(aUsername, aPassword, aURL, aRealm) 
+	{
 
+		if ((!aUsername) || (!aURL) || (!aRealm)) {
+			this.logInfo("passwordManagerRemove: username or hostname or realm is empty. Not allowed!!!");
+			return;
+		}
+
+		try {
+			var loginManager = Cc["@mozilla.org/login-manager;1"].getService(Ci.nsILoginManager);
+			var logins = loginManager.findLogins({}, aURL, null, aRealm);
+
+			var newLoginInfo = Cc["@mozilla.org/login-manager/loginInfo;1"].createInstance(Ci.nsILoginInfo);
+			newLoginInfo.init(aURL, null, aRealm, aUsername, aPassword, "", "");
+
+			if (logins.length > 0) {
+				var modified = false;
+				for each (let loginInfo in logins) {
+					if (loginInfo.username == aUsername) {
+						this.logInfo("Login credentials updated:username="+aUsername+", aURL="+aURL+", aRealm="+aRealm);
+						loginManager.removeLogin(loginInfo);
+						modified = true;
+				    		break;
+					}
+				}
+				if (!modified) {
+					this.logInfo("Login credentials saved:username="+aUsername+", aURL="+aURL+", aRealm="+aRealm);
+ 				}
+			} else {
+				this.logInfo("Login credentials saved:username="+aUsername+", aURL="+aURL+", aRealm="+aRealm);
+ 			}
+		} catch (exc) {
+			this.logInfo(exc);
+		}
+	},
+	
 	/**
 	* Helper to insert/update an entry to the password manager.
 	*

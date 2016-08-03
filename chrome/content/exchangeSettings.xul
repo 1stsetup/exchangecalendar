@@ -46,7 +46,7 @@
 <?xul-overlay href="chrome://exchangecalendar/content/exchangeSettingsOverlay.xul"?>
 
 <dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	id="exchWebService_ExchangeSettings_dialog" title="Select" buttons="accept,cancel"
+	id="exchWebService_ExchangeSettings_dialog" title="&ecsettings.title; " buttons="accept,cancel"
 	buttonlabelaccept="&label.acceptbutton;" buttonlabelcancel="&label.cancelbutton;"
 	ondialogaccept="tmpOfflineCacheSettings.onSave();return tmpExchangeSettings.onSave();"
 	onload="tmpExchangeSettings.onLoad();">
@@ -76,6 +76,8 @@
 <!--			<tab label="&ecsettings.tab.meetingrequestsettings;" hidden="true"/>  -->
 			<tab label="&ecsettings.tab.calendarfolderproperties;" />
 			<tab label="&ecsettings.tab.offlineCachingproperties;" />
+			<tab label="&ecsettings.tab.autoprocessingproperties;" />
+            <tab label="&ecsettings.tab.mailitemsProperties;" /> 
 		</tabs>
 		<tabpanels flex="1">
 			<tabpanel id="exchWebService-adsettings">
@@ -382,6 +384,58 @@
 
 			</tabpanel>
 
+	            <tabpanel id="exchWebService-autoprocessing-properties">
+                 <vbox flex="1">
+                    <groupbox id="exchWebService-autoprocessingproperties-detaisgroupbox">
+                         <caption label="Preferences:" />
+                         <vbox>
+                             <hbox>
+                                 <checkbox label="&label.autoprocessingproperties.deletecancelleditems;" id="exchWebService-autoprocessingproperties-deletecancelleditems"
+                                      disabled="false"/> 
+                            </hbox>
+                        </vbox>  
+                         <vbox>
+                             <hbox>
+                                 <checkbox label="&label.autoprocessingproperties.markeventtentative;" id="exchWebService-autoprocessingproperties-markeventtentative"
+                                      disabled="false"/> 
+                            </hbox> 
+                        </vbox>  
+                    </groupbox>   
+                                              
+                </vbox> 
+            </tabpanel> 
+            
+              <tabpanel id="exchWebService-mail-properties">
+                 <vbox flex="1">
+                   <!-- Add Preferece for calendar related  mail sync --> 
+                    <groupbox id="exchWebService-mail-properties-calendar">
+                         <caption label="Preferences:" />
+                         <vbox>
+                             <hbox> 
+                                <label value="&label.syncmailitems.interval;" />
+                                <separator /> 
+                                <textbox id="exchWebService-syncMailItems-Interval"
+                                       increment="1" min="15" type="number" value="15" />
+                                <separator /> 
+                            </hbox>  
+                           <hbox> 
+                          <checkbox label="&label.syncmailitems.active;" id="exchWebService-syncMailItems-active"
+                                      disabled="false"/> 
+                          </hbox>  
+                        </vbox>  
+                    </groupbox>                
+                     <!-- Add Preferece for task related  mail sync -->
+                    <groupbox id="exchWebService-mail-properties-task">
+                         <caption label="Preferences:" />
+                         <vbox> 
+                           <hbox> 
+                          <checkbox label="&label.syncfollowup.deactivtate;" id="exchWebService-followup-deactivtate"
+                                      disabled="false"/> 
+                          </hbox>  
+                        </vbox>  
+                    </groupbox>                
+                </vbox> 
+            </tabpanel>  
 		</tabpanels>
 	</tabbox>
 

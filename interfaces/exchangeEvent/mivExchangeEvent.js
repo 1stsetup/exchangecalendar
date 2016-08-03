@@ -37,10 +37,10 @@ Cu.import("resource://interfaces/xml2json/xml2json.js");
 
 var EXPORTED_SYMBOLS = ["mivExchangeEvent"];
 
-exchGlobalFunctions = Cc["@1st-setup.nl/global/functions;1"]
+var exchGlobalFunctions = Cc["@1st-setup.nl/global/functions;1"]
 					.getService(Ci.mivFunctions);
 
-exchTimeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
+var exchTimeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
 			.getService(Ci.mivExchangeTimeZones);
 
 
@@ -528,7 +528,7 @@ catch(err){
 						var mailbox = ae.addChildTag("Mailbox", "t", null);
 						mailbox.addChildTag("Name", "t", attendee.commonName);
 
-						var tmpEmailAddress = attendee.id.replace(/^mailto:/, '');
+						var tmpEmailAddress = attendee.id.replace(/^mailto:/i, '');
 						if (tmpEmailAddress.indexOf("@") > 0) {
 							mailbox.addChildTag("EmailAddress", "t", tmpEmailAddress);
 						}

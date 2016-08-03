@@ -43,3 +43,7 @@
 <!ENTITY exchangeWebService.preference.userAgent.label "HTTP агент пользователя:">
 
 
+<!ENTITY exchangeWebService.preference.warnForPrereleaseUpdates.label "Show warning when a new pre-release (beta, RC, etc.) is available.">
+<!ENTITY exchangeWebService.preference.ntlmv1.label "Ntlm-v1 Preferences:">
+<!ENTITY exchangeWebService.preference.ntlmv1.true.label "Enable">
+<!ENTITY exchangeWebService.preference.ntlmv1.false.label "Disable">

@@ -41,10 +41,10 @@
   <!ENTITY % eventDialogDTD SYSTEM "chrome://calendar/locale/calendar-event-dialog.dtd"> %eventDialogDTD;
   <!ENTITY % menuOverlayDTD SYSTEM "chrome://calendar/locale/menuOverlay.dtd" > %menuOverlayDTD;
 ]>
-<overlay id="forwardOnRightClick"
-	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 	<script type="application/javascript" src="chrome://exchangecalendar/content/calendar-common-sets.js" />
-
+    <script type="application/javascript" src="chrome://exchangecalendar/content/exchService-common-sets.js" />
+    
 	<commandset id="calendar_commands" commandupdater="true"
 		events="calendar_commands" oncommandupdate="calendarController.updateCommands()">
 		<command id="calendar_forward_event_command" oncommand="tmpForewardEvent.onForEve()" />
@@ -60,5 +60,6 @@
 	<!--<keyset>
  		 <key id="forward-key" modifiers="control" key="f" oncommand="tmpForewardEvent.onForEve();"/>
 	</keyset>-->	
-
+  
+                
 </overlay>

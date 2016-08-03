@@ -93,7 +93,7 @@ exchSettingsOverlay.prototype = {
 	},
 
 	exchWebServicesCheckRequired: function _exchWebServicesCheckRequired() {
-
+	
 		if (!this.gexchWebServicesDetailsChecked) {
 			this._document.getElementById("exchWebService_folderbaserow").hidden = true;
 			this._document.getElementById("exchWebService_folderpathrow").hidden = true;
@@ -106,8 +106,8 @@ exchSettingsOverlay.prototype = {
 		}
 		else {
 			this._document.getElementById("exchWebService_detailschecked").setAttribute("required", false);
-		}
-
+		}		
+		
 		if (this._document.getElementById("exchWebService_autodiscover").checked) {
 
 			this.exchWebServicesChangeFolderbaseMenuItemAvailability(false);
@@ -216,6 +216,29 @@ exchSettingsOverlay.prototype = {
 		this.exchWebServicesCheckRequired();
 	},
 
+	exchWebServicesServerType: function _exchWebServicesServerType(radioGroup)
+	{
+		if ( radioGroup.selectedIndex == 1 ){
+			this._document.getElementById("exchWebService_server").value = "https://outlook.office365.com/EWS/Exchange.asmx";
+			this._document.getElementById("exchWebService_autodiscover").checked = false;
+			this._document.getElementById("exchWebService_autodiscover").disabled = true;
+			
+			this.exchWebServicesgServer = this._document.getElementById("exchWebService_server").value; 
+			this.exchWebServicesgUser   = this._document.getElementById("exchWebService_mailbox").value;
+			this._document.getElementById("exchWebService_windowsuser").value = this.exchWebServicesgUser;
+		}
+		else {
+			this._document.getElementById("exchWebService_server").value = "";
+			this.exchWebServicesgServer = "";
+			this._document.getElementById("exchWebService_windowsuser").value = "";
+			this.exchWebServicesgUser   = ""; 
+			this._document.getElementById("exchWebService_autodiscover").checked = false; 
+			this._document.getElementById("exchWebService_autodiscover").disabled = false;  
+		} 
+	 
+		this.exchWebServicesCheckRequired();
+	},
+	
 	exchWebServicesInitMailbox: function _exchWebServicesInitMailbox(aNewValue)
 	{
 		this.exchWebServicesgMailbox = aNewValue;
@@ -235,11 +258,17 @@ exchSettingsOverlay.prototype = {
 	exchWebServicesDoUserChanged: function _exchWebServicesDoUserChanged(aTextBox)
 	{
 		this.exchWebServicesgUser = aTextBox.value;
-		if (this.exchWebServicesgUser.indexOf("@") > -1) {
+		if ((this.exchWebServicesgUser.indexOf("@") > -1) || (this.exchWebServicesgUser.indexOf("\\") > -1) ){
 			this._document.getElementById("exchWebService_windowsdomain").disabled = true;
 			this._document.getElementById("exchWebService_windowsdomain").value = "";
 			//this._document.getElementById("exchWebService_windowsdomain").setAttribute("required", false);
-			this.exchWebServicesgDomain = "";
+			this.exchWebServicesgDomain = ""; 
+			
+			if(this.exchWebServicesgUser.indexOf("\\") > -1){ 
+				var username = this.exchWebServicesgUser;
+				this.exchWebServicesgUser =username.substr(0,username.indexOf("\\"));
+				this.exchWebServicesgDomain = username.substr(username.indexOf("\\") +1); 
+			}
 		}
 		else {
 			this._document.getElementById("exchWebService_windowsdomain").disabled = false;
@@ -308,7 +337,7 @@ exchSettingsOverlay.prototype = {
 
 	exchWebServicesGetUsername: function _exchWebServicesGetUsername()
 	{
-		if (this.exchWebServicesgUser.indexOf("@") > -1) {
+ 		if (this.exchWebServicesgUser.indexOf("@") > -1) {
 			return this.exchWebServicesgUser;
 		}
 		else {

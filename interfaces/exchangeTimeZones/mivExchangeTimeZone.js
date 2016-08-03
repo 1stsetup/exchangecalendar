@@ -339,6 +339,7 @@ mivExchangeTimeZone.prototype = {
 
 		if ((this.hasDaylight) && (this.daylightRRule != aTimeZone.daylightRRule)) {
 			//dump("  -- Daylight RRUle values do not match. "+this.daylightRRule+" != "+aTimeZone.daylightRRule+"\n");
+			if	(aTimeZone.id == "Asia/Jerusalem"  &&  this.id == "Israel Standard Time") return true; //temporary fix for israel timezone wil be removed 
 			return false;
 		}
 

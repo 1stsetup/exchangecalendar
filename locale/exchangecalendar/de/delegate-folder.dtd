@@ -1,0 +1,45 @@
+ 
+<!ENTITY  label.delegatefolder.cancelbutton "Abbrechen">
+<!ENTITY  label.delegatefolder.userEmail "Email">
+ 
+<!ENTITY  label.delegatefolder.permissionLevel "Berechtigungsstufe">
+<!ENTITY  label.delegatefolder.userboxcolumn1 "Nutzer"> 
+<!ENTITY  label.delegatefolder.userboxcolumn2 "Berechtigungen"> 
+
+<!ENTITY  menuitem.delegatefolder.permission.author "Autor">
+<!ENTITY  menuitem.delegatefolder.permission.editor "Bearbeiter">
+<!ENTITY  menuitem.delegatefolder.permission.reviewer "Prüfer">
+<!ENTITY  menuitem.delegatefolder.permission.none "Keine">
+<!ENTITY  menuitem.delegatefolder.permission.owner "Besitzer" > 
+<!ENTITY  menuitem.delegatefolder.permission.publishingEditor "Veröffentlichender Bearbeiter" >
+<!ENTITY  menuitem.delegatefolder.permission.publishingAuthor "Veröffentlichender Autor" >
+<!ENTITY  menuitem.delegatefolder.permission.noneditingAuthor "Nicht bearbeitender Autor" >
+<!ENTITY  menuitem.delegatefolder.permission.contributor "Mitwirkender" >
+<!ENTITY  menuitem.delegatefolder.permission.custom "Benutzerdefiniert" >
+                            
+<!ENTITY  delegatefolder.permission.description.author "Elemente im Ordner lesen und anlegen" >
+<!ENTITY  delegatefolder.permission.description.editor "Elemente im Ordner lesen, anlegen und bearbeiten" >
+<!ENTITY  delegatefolder.permission.description.reviewer "Element im Ordner lesen" >
+<!ENTITY  delegatefolder.permission.description.none "Kein Zugriff auf den Ordner" >
+
+ <!ENTITY  delegatefolder.permission.details.caption "Berechtigung "> 
+
+<!ENTITY  delegatefolder.tab.msg.label  "Kein Kalender oder Aufgabenordner in diesem Konto vorhanden.">
+<!ENTITY  delegatefolder.tab.name  "Exchange-Ordnerfreigabe">
+
+<!ENTITY  delegatefolder.permissions.none  "Keine">
+<!ENTITY  delegatefolder.permissions.own  "Eigene Elemente">
+<!ENTITY  delegatefolder.permissions.all  "Alle Elemente">
+<!ENTITY  delegatefolder.permissions.full  "Alle Details">
+
+<!ENTITY  delegatefolder.permissions.cancreateitems  "Elemente anlegen">
+<!ENTITY  delegatefolder.permissions.cancreatesubfolders  "Unterordner anlegen">
+<!ENTITY  delegatefolder.permissions.isfolderowner  "Ordner-Besitzer">
+<!ENTITY  delegatefolder.permissions.isfoldervisible  "Ordner sichtbar">
+<!ENTITY  delegatefolder.permissions.isfoldercontact  "Ordner-Kontakt">
+<!ENTITY  delegatefolder.permissions.edititems  "Elemente bearbeiten">
+<!ENTITY  delegatefolder.permissions.deleteitems  "Elemente löschen">
+<!ENTITY  delegatefolder.permissions.readitems  "Elemente lesen">  
+ 
+<!ENTITY  delegatefolder.permissions.true  "Ja">
+<!ENTITY  delegatefolder.permissions.false  "Nein">

@@ -38,7 +38,7 @@ function erFindContactsRequest(aArgument, aCbOk, aCbError, aListener)
 
 	var self = this;
 
-	this.parent = new ExchangeRequest(aArgument, 
+	this.parent = new ExchangeRequest(aArgument,
 		function(aExchangeRequest, aResp) { self.onSendOk(aExchangeRequest, aResp);},
 		function(aExchangeRequest, aCode, aMsg) { self.onSendError(aExchangeRequest, aCode, aMsg);},
 		aListener);
@@ -51,21 +51,35 @@ function erFindContactsRequest(aArgument, aCbOk, aCbError, aListener)
 	this.changeKey = aArgument.changeKey;
 	this.listener = aListener;
 
+	// Arrays containing results of the possible multiple requests
+	this.contacts = [];
+	this.distlists = [];
+
 	this.isRunning = true;
-	this.execute();
+
+	// First request is done with an offset of 0 (actually we don't know the number of contacts)
+	this.execute(0);
 }
 
 erFindContactsRequest.prototype = {
 
-	execute: function _execute()
+	execute: function _execute(offset)
 	{
-//		exchWebService.commonFunctions.LOG("erFindContactsRequest.execute\n");
+		//exchWebService.commonAbFunctions.logInfo("erFindContactsRequest.execute\n");
 
 		var req = exchWebService.commonFunctions.xmlToJxon('<nsMessages:FindItem xmlns:nsMessages="'+nsMessagesStr+'" xmlns:nsTypes="'+nsTypesStr+'"/>');
 		req.setAttribute("Traversal", "Shallow");
 
-		var itemShape = req.addChildTag("ItemShape", "nsMessages", null); 
+		var itemShape = req.addChildTag("ItemShape", "nsMessages", null);
 		itemShape.addChildTag("BaseShape", "nsTypes", "IdOnly");
+
+		// The IndexedPageItemView allows to request a certain range of contacts in the address book
+		var view = exchWebService.commonFunctions.xmlToJxon('<nsMessages:IndexedPageItemView />');
+		view.setAttribute("MaxEntriesReturned","300"); // Maximum number of entries to receive
+		view.setAttribute("Offset", offset); // Offset from the BasePoint (Beginning or End)
+		view.setAttribute("BasePoint", "Beginning");
+		req.addChildTagObject(view);
+		view = null;
 
 		var additionalProperties = itemShape.addChildTag("AdditionalProperties", "nsTypes", null);
 		additionalProperties.addChildTag("FieldURI", "nsTypes", null).setAttribute("FieldURI", "item:Subject");
@@ -90,15 +104,15 @@ erFindContactsRequest.prototype = {
 
 		this.parent.xml2jxon = true;
 
-		//exchWebService.commonFunctions.LOG("erFindContactsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
+		//exchWebService.commonAbFunctions.logInfo("erFindContactsRequest.execute:"+String(this.parent.makeSoapMessage(req)));
 
-                this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
+		this.parent.sendRequest(this.parent.makeSoapMessage(req), this.serverUrl);
 		req = null;
 	},
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		exchWebService.commonFunctions.LOG("erFindContactsRequest.onSendOk:"+String(aResp));
+		exchWebService.commonAbFunctions.logInfo("erFindContactsRequest.onSendOk:"+String(aResp));
 
 		var rm = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:ResponseCode");
 
@@ -111,38 +125,46 @@ erFindContactsRequest.prototype = {
 
 		if (responseCode == "NoError") {
 
-			var contacts = [];
-			var distlists = [];
-
 			var rootFolder = aResp.XPath("/s:Envelope/s:Body/m:FindItemResponse/m:ResponseMessages/m:FindItemResponseMessage/m:RootFolder");
 			if (rootFolder.length == 0) {
 				this.onSendError(aExchangeRequest, this.parent.ER_ERROR_RESPONS_NOT_VALID, "Did not find a rootfolder element.");
 				return;
 			}
 
-			// For now we do not do anything with the following two values.
-			var totalItemsInView = rootFolder[0].getAttribute("TotalItemsInView", 0);
-			var includesLastItemInRange = rootFolder[0].getAttribute("IncludesLastItemInRange", "true");
-
 			for each (var contact in rootFolder[0].XPath("/t:Items/t:Contact")) {
-				exchWebService.commonFunctions.LOG("erFindContactsRequest.contacts: id:"+contact.getAttributeByTag("t:ItemId", "Id")+", changekey:"+contact.getAttributeByTag("t:ItemId", "ChangeKey"));
-				contacts.push({Id: contact.getAttributeByTag("t:ItemId", "Id"),
+				exchWebService.commonAbFunctions.logInfo("erFindContactsRequest.contacts: id:"+contact.getAttributeByTag("t:ItemId", "Id")+", changekey:"+contact.getAttributeByTag("t:ItemId", "ChangeKey"));
+				this.contacts.push({Id: contact.getAttributeByTag("t:ItemId", "Id"),
 					  ChangeKey: contact.getAttributeByTag("t:ItemId", "ChangeKey"),
 					  name: contact.getTagValue("t:Subject"),
 					  displayName: contact.getTagValue("t:DisplayName")});
 			}
-		
+
 			for each (var distlist in rootFolder[0].XPath("/t:Items/t:DistributionList")) {
-				distlists.push({Id: distlist.getAttributeByTag("t:ItemId", "Id"),
+				this.distlists.push({Id: distlist.getAttributeByTag("t:ItemId", "Id"),
 					  ChangeKey: distlist.getAttributeByTag("t:ItemId", "ChangeKey"),
 					  name: distlist.getTagValue("t:Subject"),
 					  displayName: distlist.getTagValue("t:DisplayName")});
 			}
-		
-			if (this.mCbOk) {
-				this.mCbOk(this, contacts, distlists);
+
+			// RootFolder attributes received after a FindItem request:
+			// https://msdn.microsoft.com/EN-US/library/office/aa493859%28v=exchg.150%29.aspx
+			var totalItemsInView = rootFolder[0].getAttribute("TotalItemsInView", 0);
+			var includesLastItemInRange = rootFolder[0].getAttribute("IncludesLastItemInRange", "true");
+			var offset = rootFolder[0].getAttribute("IndexedPagingOffset", 0);
+
+			exchWebService.commonAbFunctions.logInfo("erFindContactsRequest.onSendOk Retrieved: "+(this.distlists.length + this.contacts.length)+" contacts and distlists on a total of "+totalItemsInView+" items available in the view.");
+
+			if (includesLastItemInRange == "true") {
+				if (this.mCbOk) {
+					this.mCbOk(this, this.contacts.slice(), this.distlists.slice());
+				}
+				this.isRunning = false;
+				this.contacts = [];
+				this.distlists = [];
 			}
-			this.isRunning = false;
+			else {
+				this.execute(offset);
+			}
 		}
 		else {
 			this.onSendError(aExchangeRequest, this.parent.ER_ERROR_SOAP_ERROR, responseCode);

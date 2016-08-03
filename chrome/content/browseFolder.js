@@ -186,38 +186,38 @@ exchWebService_browseTreeView.prototype = {
 		if (column.id == "exchWebService_foldername") {
 			switch (this.folders[idx].folderClass) {
 				case "IPF.Appointment":
-					return "chrome://exchangecalendar/skin/calendar-month.png"; 
+					return "chrome://exchangecalendar-common/skin/images/calendar-month.png"; 
 					break;
 				case "IPF.Note":
-					return "chrome://exchangecalendar/skin/mail.png"; 
+					return "chrome://exchangecalendar-common/skin/images/mail.png"; 
 					break;
 				case "IPF.Contact":
-					return "chrome://exchangecalendar/skin/address-book.png"; 
+					return "chrome://exchangecalendar-common/skin/images/address-book.png"; 
 					break;
 				case "IPF.Configuration":
-					return "chrome://exchangecalendar/skin/wrench-screwdriver.png"; 
+					return "chrome://exchangecalendar-common/skin/images/wrench-screwdriver.png"; 
 					break;
 				case "IPF.Note.OutlookHomepage":
 				case "IPF.Note.SocialConnector.FeedItems":
-					return "chrome://exchangecalendar/skin/feed.png"; 
+					return "chrome://exchangecalendar-common/skin/images/feed.png"; 
 					break;
 				case "IPF.Task":
-					return "chrome://exchangecalendar/skin/task.png"; 
+					return "chrome://exchangecalendar-common/skin/images/task.png"; 
 					break;
 				case "IPF.StickyNote":
-					return "chrome://exchangecalendar/skin/sticky-notes.png"; 
+					return "chrome://exchangecalendar-common/skin/images/sticky-notes.png"; 
 					break;
 				case "IPF.Journal":
-					return "chrome://exchangecalendar/skin/blog.png"; 
+					return "chrome://exchangecalendar-common/skin/images/blog.png"; 
 					break;
 
 			}
 
 			if (this.folders[idx].isContainerOpen) {
-				return "chrome://exchangecalendar/skin/folder-open.png"; 
+				return "chrome://exchangecalendar-common/skin/images/folder-open.png"; 
 			}
 
-			return "chrome://exchangecalendar/skin/folder.png"; 
+			return "chrome://exchangecalendar-common/skin/images/folder.png"; 
 		}
 	},
   

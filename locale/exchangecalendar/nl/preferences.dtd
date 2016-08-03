@@ -41,3 +41,7 @@
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.maxJobs.label "Maximaal aantal gelijktijdige verzoeken aan één exchange server:">
 <!ENTITY exchangeWebService.preference.loadbalancer.prefs.sleepBetweenJobs.label "Minimale tijd tussen verzoeken aan één exchange server:">
 <!ENTITY exchangeWebService.preference.userAgent.label "HTTP user agent:">
+<!ENTITY exchangeWebService.preference.warnForPrereleaseUpdates.label "Show warning when a new pre-release (beta, RC, etc.) is available.">
+<!ENTITY exchangeWebService.preference.ntlmv1.label "Ntlm-v1 Preferences:">
+<!ENTITY exchangeWebService.preference.ntlmv1.true.label "Enable">
+<!ENTITY exchangeWebService.preference.ntlmv1.false.label "Disable">

@@ -46,8 +46,17 @@
 
     <script type="application/javascript" src="chrome://exchangecalendar/content/exchangeSettingsOverlay.js"/> 
 
-	<vbox id="exchWebService-exchange-settings">
-		<checkbox label="&ecautodiscover;" id="exchWebService_autodiscover" oncommand="tmpSettingsOverlay.exchWebServicesAutodiscoverCheckbox(this);"/>
+	<vbox id="exchWebService-exchange-settings"> 
+	<groupbox>
+			<caption label="&exchWebServices.exchtype.label;"/>
+			<radiogroup id="exchWebService_ectype" oncommand="tmpSettingsOverlay.exchWebServicesServerType(this);" >
+				<radio label="&exchWebServices.hostexch.label;" value="exchange"  checked="true"/>
+				<radio label="&exchWebServices.365exch.label;" value="office365"/> 
+			</radiogroup> 
+		</groupbox>
+		<groupbox>
+			<caption label="&exchWebServices.detail.label;"/>
+			<checkbox label="&ecautodiscover;" id="exchWebService_autodiscover" oncommand="tmpSettingsOverlay.exchWebServicesAutodiscoverCheckbox(this);"/>
         	<grid flex="1">
         	    <columns>
         	        <column/>
@@ -156,6 +165,7 @@
 			</row>
 		    </rows>
 		</grid>
+		</groupbox>
 	</vbox>
 
 </overlay>

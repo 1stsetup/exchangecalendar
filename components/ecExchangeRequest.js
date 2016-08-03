@@ -112,6 +112,8 @@ function ExchangeRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.timeZones = Cc["@1st-setup.nl/exchange/timezones;1"]
 				.getService(Ci.mivExchangeTimeZones);
+				
+	this.xml2json = false;
 
 }
 
@@ -170,7 +172,7 @@ ExchangeRequest.prototype = {
 
 	logInfo: function _logInfo(aMsg, aLevel)
 	{
-		if (!aLevel) var aLevel = 1;
+		if (!aLevel)  aLevel = 1;
 
 		if ((this.debug) && (aLevel <= this.debuglevel)) {
 			this.globalFunctions.LOG(this.uuid+": "+aMsg);
@@ -588,12 +590,12 @@ catch(err){
 				.get("ProfD", Components.interfaces.nsIFile);
 		file.append("exchange-data");
 		if ( !file.exists() || !file.isDirectory() ) {
-			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);  
+			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, parseInt("0777", 8));  
 		}
 
 		file.append("responses");
 		if ( !file.exists() || !file.isDirectory() ) {
-			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);  
+			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, parseInt("0777", 8));  
 		}
 
 		if (!this.fileCount) {
@@ -623,7 +625,7 @@ catch(err){
 
 		var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].  
 				 createInstance(Components.interfaces.nsIFileOutputStream);  
-		foStream.init(file, 0x02 | 0x08 | 0x20, 0777, 0);  
+		foStream.init(file, 0x02 | 0x08 | 0x20, parseInt("0777", 8), 0);  
 
 		var converter = Components.classes["@mozilla.org/intl/converter-output-stream;1"].
 				createInstance(Components.interfaces.nsIConverterOutputStream);
@@ -1217,7 +1219,7 @@ ecnsIAuthPrompt2.prototype = {
 			return Cr.NS_NOINTERFACE;  // We do not support this.
 		}
 
-		this.globalFunctions.LOG("  >>>>>>>>>>> MAIL THIS LINE TO exchangecalendar@extensions.1st-setup.nl: ecnsIAuthPrompt2.getInterface("+iid+")");
+		this.globalFunctions.LOG("  >>>>>>>>>>> SUBMIT THIS LINE TO https://github.com/Ericsson/exchangecalendar/issues: ecnsIAuthPrompt2.getInterface("+iid+")");
 		throw Cr.NS_NOINTERFACE;
 	},
 
@@ -1310,15 +1312,16 @@ ecnsIAuthPrompt2.prototype = {
 		this.logInfo("getPrePassword for user:"+aUsername+", server url:"+aURL);
 		this.username = aUsername;
 		this.URL = aURL;
-
+ 		
 		var password;
 		var myAuthPrompt2 = Cc["@1st-setup.nl/exchange/authprompt2;1"].getService(Ci.mivExchangeAuthPrompt2);
-		if (myAuthPrompt2.getUserCanceled(this.currentUrl)) {
+		if (myAuthPrompt2.getUserCanceled(aURL)) {
 			return null;
 		}
+		var openUser = aUsername;
 
 		try {
-			password = myAuthPrompt2.getPassword(null, this.mArgument.user, this.currentUrl);
+			password = myAuthPrompt2.getPassword(null,openUser, aURL);
 		}
 		catch(err) {
 		}

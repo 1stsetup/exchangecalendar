@@ -29,12 +29,7 @@
 
 <!ENTITY treecol.label.userid "UserId">
 <!ENTITY treecol.label.email "Email">
-<!--
-written by deepak
-
-start
--->
-<!ENTITY ecsettings.tab.offlineCachingproperties "Offline Caching">
+<!ENTITY ecsettings.tab.offlineCachingproperties "Offline-Caching">
 
 <!ENTITY label.offlineCacheproperties.cachingStartDate "Startdatum im Offline-Cache:">
 <!ENTITY label.offlineCacheproperties.cachingEndDate "Enddatum im Offline-Cache:">
@@ -45,3 +40,13 @@ start
 <!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Wieviele Monate nach dem aktuellen Datum soll der Cache aktiv sein:">
 
 <!ENTITY button.offlineCacheproperties.clearCache "Offline-Cache löschen">
+<!ENTITY ecsettings.tab.autoprocessingproperties "Automatische Bearbeitung">
+
+<!ENTITY label.autoprocessingproperties.deletecancelleditems "Abgesagte Besprechungen automatisch entfernen">
+<!ENTITY label.autoprocessingproperties.markeventtentative "Besprechungen automatisch als vorläufig markieren und dem Organisator eine Antwort senden">
+<!ENTITY ecsettings.title "EWS-Kalender- und -Mail-Einstellungen">
+<!ENTITY ecsettings.tab.mailitemsProperties "EWS-Einstellungen (Mail)">
+<!ENTITY label.syncmailitems.interval "Synchronisierung von Mail-Elementen (Markierungen usw.) verzögern">
+<!ENTITY label.syncmailitems.active "Mail-Elemente (Markierungen usw.) synchronisieren">
+
+<!ENTITY label.syncfollowup.deactivtate "Disable Followup Task">

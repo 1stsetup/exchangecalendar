@@ -1,6 +1,7 @@
-<!ENTITY label.acceptbutton "Sauvegarder">
+<!ENTITY label.acceptbutton "Sauvegarder et Reset">
 <!ENTITY label.cancelbutton "Annuler">
 
+<!ENTITY ecsettings.title "Réglage Calendrier EWS et Email">
 <!ENTITY ecsettings.tab.adsettings "Annuaire Windows/Exchange">
 <!ENTITY ecsettings.tab.meetingrequestsettings "Demandes de rendez-vous">
 <!ENTITY ecsettings.tab.calendarfolderproperties "Propriété du dossier">
@@ -8,18 +9,18 @@
 <!ENTITY label.ecExchangeSettings.title "Paramètres du calendrier:">
 
 <!ENTITY label.poll.inbox "Interrogation de la boite pour invitations, modifications et annulations.">
-<!ENTITY label.poll.inbox.interval "Frequence d'interrogation de la boite en secondes:">
-<!ENTITY label.poll.calendar.interval "Frequence d'interrogation du calendrier en secondes:">
+<!ENTITY label.poll.inbox.interval "Frequence d'interrogation de la boite, en secondes:">
+<!ENTITY label.poll.calendar.interval "Frequence d'interrogation du calendrier, en secondes:">
 
 <!ENTITY label.nomeetingrequestsettings "Vous ne pouvez envoyer d'invitation car vous n'avez pas selectionné la bonne boite aux lettres">
 
 <!ENTITY label.autorespond.meetingrequest "Répondre automatiquement à une nouvelle invitation avec ">
 
-<!ENTITY menuitem.label.ec-autorespond-answer.tentative "Je pourrais participer">
+<!ENTITY menuitem.label.ec-autorespond-answer.tentative "Je participerai peut-être">
 <!ENTITY menuitem.label.ec-autorespond-answer.accepted "j'accepte">
 <!ENTITY menuitem.label.ec-autorespond-answer.declined "Je n'accepte pas">
 
-<!ENTITY label.autoremove.invitation_cancellation1 "Supprimer automatiquement l'invitation et le message d'annulation sans réponse de votre part à l'invitation.">
+<!ENTITY label.autoremove.invitation_cancellation1 "Supprimer automatiquement l'invitation et le message d'annulation sans réponse de votre part.">
 <!ENTITY label.autoremove.invitation_cancellation2 "Supprimer automatiquement une invitation confirmée à la réception d'un message d'annulation.">
 
 <!ENTITY label.autoremove.invitation_response1 "Supprimer automatiquement la réponse de tous si vous n'êtes pas l'organisateur de l'invitation.">
@@ -30,11 +31,7 @@
 <!ENTITY treecol.label.userid "Utilisateur">
 <!ENTITY treecol.label.email "Email">
 
-<!--
-written by deepak
 
-start
--->
 <!ENTITY ecsettings.tab.offlineCachingproperties "Cache hors connection">
 
 <!ENTITY label.offlineCacheproperties.cachingStartDate "Date de début du cache:">
@@ -42,8 +39,16 @@ start
 <!ENTITY label.offlineCacheproperties.totalEvents "Nombre total d'évènements dans le cache:">
 <!ENTITY label.offlineCacheproperties.totalTasks "Nombre total de tâches dans le cache:">
 
-<!ENTITY label.offlineCacheproperties.monthsBeforeStartDate "Taille du cache en nombre de mois avant aujourd'hui:">
-<!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Taille du cache en nombre de mois après aujourd'hui:">
+<!ENTITY label.offlineCacheproperties.monthsBeforeStartDate "Nombre de mois en cache avant aujourd'hui:">
+<!ENTITY label.offlineCacheproperties.monthsBeforeEndDate "Nombre de mois en cache après aujourd'hui:">
 
-<!ENTITY button.offlineCacheproperties.clearCache "Supprimer les données hors connection cachées">
+<!ENTITY button.offlineCacheproperties.clearCache "Supprimer les données hors connection (cache)">
+<!ENTITY ecsettings.tab.autoprocessingproperties "Traitement automatique">
+<!ENTITY ecsettings.tab.mailitemsProperties "Réglages EWS (Email)">
 
+<!ENTITY label.syncmailitems.interval "Delai de synchronisation des éléments Email (Tags, etc.)">
+<!ENTITY label.autoprocessingproperties.deletecancelleditems "Suppression automatique des évènements annulés">
+<!ENTITY label.autoprocessingproperties.markeventtentative "Marquer automatiquement les invitations comme possible et copier l'organisateur">
+
+<!ENTITY label.syncmailitems.active "Garder active la synchronisation des attributs d'Email (Tags,etc.)">
+<!ENTITY label.syncfollowup.deactivtate "Désactiver le suivi de tâche">

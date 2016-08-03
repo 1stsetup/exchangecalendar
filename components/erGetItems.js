@@ -61,6 +61,20 @@ const MAPI_PidLidReminderSignalTime = "34144";
 const MAPI_PidLidReminderSet = "34051";
 const MAPI_PidLidReminderDelta = "34049";
 
+const MAPI_PidLidTaskStartDate = "33028";
+const MAPI_PidLidTaskDueDate = "33029";
+const MAPI_PidLidTaskStatus = "33025"; 
+const MAPI_PidLidPercentComplete = "33026";
+const MAPI_PidLidTaskComplete = "33052";  
+const MAPI_PidLidTaskDateCompleted = "33039";
+
+const MAPI_PidTagFlagStatus = "0x1090";
+const MAPI_PidTagFollowupIcon  = "0x1095";
+const MAPI_PidTagToDoItemFlags = "0x0E2B";
+
+const MAPI_PidLidCommonEnd = "34071";
+const MAPI_PidLidCommonStart = "34070";
+const MAPI_MessageId = "0x1035";
 
 function erGetItemsRequest(aArgument, aCbOk, aCbError, aListener)
 {
@@ -155,6 +169,10 @@ erGetItemsRequest.prototype = {
 		xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidReminderDelta);
 		xml2json.setAttribute(extFieldURI, "PropertyType", "Integer");
 
+		extFieldURI= xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+		xml2json.setAttribute(extFieldURI,"PropertyTag", MAPI_MessageId);
+		xml2json.setAttribute(extFieldURI,"PropertyType","String");
+		
 			// Calendar fields
 		switch (this.folderClass) {
 		case "IPF.Appointment":
@@ -258,6 +276,115 @@ erGetItemsRequest.prototype = {
 			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
 			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskOwnership);
 			xml2json.setAttribute(extFieldURI, "PropertyType", "Integer");
+			
+		case "IPF.Note":	
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:ActualWork'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:AssignedTime'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:BillingInformation'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:ChangeCount'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:Companies'/>");
+ 			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:Contacts'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:DelegationState'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:Delegator'/>");
+ 			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:IsAssignmentEditable'/>");
+ 			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:IsTeamTask'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:Mileage'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:Owner'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:PercentComplete'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:Recurrence'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:StatusDescription'/>");
+			xml2json.parseXML(additionalProperties,"<nsTypes:FieldURI FieldURI='task:TotalWork'/>");
+
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskAccepted);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "Boolean");
+
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskLastUpdate);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "SystemTime");
+
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskAcceptanceState);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "Integer");
+
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskMode);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "Integer");
+
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskGlobalId);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "Binary");
+
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskHistory);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "Integer");
+
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskOwnership);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "Integer"); 
+			
+			/* Task Followup MAPI Properties */
+			
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskStartDate);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "SystemTime");
+			
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskDueDate);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "SystemTime");
+	 
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskStatus);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "Integer");
+			
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidPercentComplete);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "Double");
+						
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskComplete);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "Boolean");
+			 
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Common");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidCommonEnd);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "SystemTime");
+			
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Common");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidCommonStart);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "SystemTime");
+			
+			extFieldURI = xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI, "DistinguishedPropertySetId", "Task");
+			xml2json.setAttribute(extFieldURI, "PropertyId", MAPI_PidLidTaskDateCompleted);
+			xml2json.setAttribute(extFieldURI, "PropertyType", "SystemTime");
+			
+			extFieldURI= xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI,"PropertyTag", MAPI_PidTagFlagStatus);
+			xml2json.setAttribute(extFieldURI,"PropertyType","Integer");
+			
+			extFieldURI= xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI,"PropertyTag", MAPI_PidTagFollowupIcon);
+			xml2json.setAttribute(extFieldURI,"PropertyType","Integer"); 
+
+			extFieldURI= xml2json.addTag(additionalProperties, "ExtendedFieldURI", "nsTypes", null);
+			xml2json.setAttribute(extFieldURI,"PropertyTag", MAPI_PidTagToDoItemFlags);
+			xml2json.setAttribute(extFieldURI,"PropertyType","Integer");
+		
+			
 		}
 /*
 			//meeting fields
@@ -290,7 +417,7 @@ erGetItemsRequest.prototype = {
 
 		this.parent.xml2json = true;
 		
-		//dump("erGetItemsRequest.execute:"+String(this.parent.makeSoapMessage2(req))+"\n");
+	//	exchWebService.commonFunctions.LOG("erGetItemsRequest.execute: "+   xml2json.toString(req) +"\n");
 
 		this.parent.sendRequest(this.parent.makeSoapMessage2(req), this.serverUrl);
 		req = null;
@@ -301,7 +428,7 @@ erGetItemsRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//dump("erGetItemsRequest.onSendOk: "+xml2json.toString(aResp)+"\n");
+	//	exchWebService.commonFunctions.LOG("erGetItemsRequest.onSendOk: "+ String(aResp)+"\n");
 		var rm = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']/m:Items/*");
 
 		var rmErrorSearch = xml2json.XPath(aResp, "/s:Envelope/s:Body/m:GetItemResponse/m:ResponseMessages/m:GetItemResponseMessage");

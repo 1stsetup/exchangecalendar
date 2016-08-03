@@ -1,0 +1,25 @@
+ 
+<!ENTITY  label.delegateCalendar.cancelbutton "Abbrechen">
+<!ENTITY  label.delegateCalendar.userEmail "Email">
+<!ENTITY  label.delegateCalendar.deliveryMeetingRerquestControl "Besprechungsanfragen auslieferen">
+
+<!ENTITY  menuitem.delegateCalendar.deliverMeetingRequestslist.delegateOnly "Nur Delegierte">
+<!ENTITY  menuitem.delegateCalendar.deliverMeetingRequestslist.delegateAndMe "Delegiert und ich">
+<!ENTITY  menuitem.delegateCalendar.deliverMeetingRequestslist.delegateAndInfo "Delegierte und mich benachrichtigen">
+
+<!ENTITY  label.delegateCalendar.permission "Berechtigungen">
+<!ENTITY  menuitem.delegateCalendar.permission.author "Autor">
+<!ENTITY  menuitem.delegateCalendar.permission.editor "Bearbeiter">
+<!ENTITY  menuitem.delegateCalendar.permission.reviewer "Prüfer">
+<!ENTITY  menuitem.delegateCalendar.permission.none "Keine">
+
+<!ENTITY  label.delegateCalendar.permission.receiveInvitationCopy "Kopien von Besprechungsanfragen erhalten" >
+<!ENTITY  label.delegateCalendar.permission.viewPrivateItems "Private Ereignisse ansehen" >
+
+
+<!ENTITY  delegateCalendar.permission.description.author "Ereignisse im Kalenderordner lesen und anlegen." >
+<!ENTITY  delegateCalendar.permission.description.editor "Ereignisse im Kalenderordner lesen, anlegen und ändern." >
+<!ENTITY  delegateCalendar.permission.description.reviewer "Ereignisse im Kalenderordner lesen." >
+<!ENTITY  delegateCalendar.permission.description.none "Keine Zugriffsrechte auf den Kalenderordner." >
+
+<!ENTITY delegateCalendar.permission.details.label "Detaillierte Zugriffsrechte: " >

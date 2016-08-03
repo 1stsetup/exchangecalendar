@@ -228,8 +228,7 @@ exchOOFSettings.prototype = {
 	setOofSettingsOK: function _setOofSettingsOK(aGetUserOofSettingsRequest)
 	{
 		this._document.getElementById("exchWebService-load-error-message").value = this.globalFunctions.getString("calExchangeCalendar", "ecSavedOofSettings", [], "exchangecalendar");
-		alert("Settings saved.");
-
+		this.infoPopup( this._document.title ,"Settings saved.");
 		this.getOofSettings();
 
 	},
@@ -243,6 +242,15 @@ exchOOFSettings.prototype = {
 
 	},
 
+	infoPopup:function _infoPopup(title, msg) {
+		 var image = "chrome://exchangecalendar-common/skin/images/notify-icon.png";
+		  var win = Components.classes['@mozilla.org/embedcomp/window-watcher;1'].
+		                      getService(Components.interfaces.nsIWindowWatcher).
+		                      openWindow(null, 'chrome://global/content/alerts/alert.xul',
+		                                  '_blank', 'chrome,titlebar=no,popup=yes', null);
+		  win.arguments = [image,  title, msg, true, ''];
+	},
+	
 }
 
 var tmpOOFSettings = new exchOOFSettings(document, window);

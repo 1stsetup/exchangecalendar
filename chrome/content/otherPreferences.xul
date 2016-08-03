@@ -49,7 +49,7 @@
     %dtd1;
 ]>
 
-<?xml-stylesheet href="chrome://exchangecalendar/content/preferences.css"?>
+<?xml-stylesheet type="text/css" href="chrome://exchangecalendar/skin/preferences.css"?>
 
 <overlay id="exchangeWebService_cache_preferences_overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
@@ -70,7 +70,11 @@
             <preference id="extensions.1st-setup.others.warnAboutNewAddOnVersion"
                         name="extensions.1st-setup.others.warnAboutNewAddOnVersion"
                         type="bool"/>
-
+                        
+            <preference id="extensions.1st-setup.others.warnAboutPrereleaseVersion"
+                        name="extensions.1st-setup.others.warnAboutPrereleaseVersion"
+                        type="bool"/>
+                        
             <preference id="extensions.1st-setup.exchangecalendar.loadbalancer.maxJobs"
                         name="extensions.1st-setup.exchangecalendar.loadbalancer.maxJobs"
                         type="int"/>
@@ -82,7 +86,9 @@
             <preference id="extensions.1st-setup.others.userAgent"
                         name="extensions.1st-setup.others.userAgent"
                         type="unichar"/>
-
+			<preference id="extensions.1st-setup.others.ntlmv1"
+                        name="network.auth.force-generic-ntlm-v1"
+                        type="bool"/>
         </preferences>
 
         <groupbox id="exchangeWebService_others_prefs_groupbox">
@@ -126,6 +132,11 @@
 			<checkbox id="exchangeWebService_preference_others_warnAboutNewAddOnVersion"
 					preference="extensions.1st-setup.others.warnAboutNewAddOnVersion"
 					label="&exchangeWebService.preference.warnForUpdates.label;"/>
+					
+			<checkbox id="exchangeWebService_preference_others_warnAboutPrereleaseVersion"
+                    preference="extensions.1st-setup.others.warnAboutPrereleaseVersion"
+                    label="&exchangeWebService.preference.warnForPrereleaseUpdates.label;"/> 
+					
             </vbox>
 	</groupbox>
 
@@ -151,6 +162,16 @@
 			</hbox>
 		</vbox>
 	</groupbox>
-
+	<groupbox id="exchangeWebService_others_prefs_groupbox4">
+            <caption label="&exchangeWebService.preference.ntlmv1.label;"/>
+			<vbox>
+				<radiogroup id="exchangeWebService_preference_others_ntlmv1"
+						preference="extensions.1st-setup.others.ntlmv1"
+						label="&exchangeWebService.preference.ntlmv1.label;"> 
+					  <radio id="ntlm-true" value="true" label="&exchangeWebService.preference.ntlmv1.true.label;"/>
+					  <radio id="ntlm-false"  value="false" label="&exchangeWebService.preference.ntlmv1.false.label;" />
+ 				</radiogroup>			
+            </vbox>
+	</groupbox>
     </vbox>
 </overlay>

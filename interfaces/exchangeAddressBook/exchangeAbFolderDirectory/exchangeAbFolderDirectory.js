@@ -519,7 +519,7 @@ exchangeAbFolderDirectory.prototype = {
 					 serverUrl: this.serverUrl,
 					 folderID: this.folderID,
 					 changeKey: this.changeKey,
-					 ids: { name: wordToSearch },
+					 ids: { name: decodeURI(wordToSearch) },
 					 searchScope: "ActiveDirectory",
  					 GALQuery: true,
 			 		 actionStart: Date.now()},
@@ -596,7 +596,7 @@ try {
 					// Make a card from the contact details.
 					var newCard = Cc["@1st-setup.nl/exchange/abcard;1"]
 						.createInstance(Ci.mivExchangeAbCard);
-					newCard.convertExchangeDistListToCard(this, contact[0], dirName);
+					newCard.convertExchangeDistListToCard(this, mailbox[0], dirName);
 					this.updateList(newCard);
 
 					break; 
@@ -1126,7 +1126,18 @@ try {
 	},
 
 	get user() {
-		return this.domain+"\\"+exchWebService.commonFunctions.safeGetCharPref(this.prefs, "user", "");
+		var username = exchWebService.commonFunctions.safeGetCharPref(this.prefs, "user", "");
+		if (username.indexOf("@") > -1) {
+			return username;
+		}
+		else {
+			if (this.domain == "") {
+				return exchWebService.commonFunctions.safeGetCharPref(this.prefs, "user", "");
+			}
+			else {
+				return this.domain+"\\"+exchWebService.commonFunctions.safeGetCharPref(this.prefs, "user", "");
+			}
+		}
 	},
 
 	set user(value) {

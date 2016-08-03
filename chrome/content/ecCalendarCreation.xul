@@ -47,15 +47,15 @@
 
 <overlay id="calendarCreation"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-
+	
     <script type="application/javascript" src="chrome://exchangecalendar/content/ecCalendarCreation.js"/>
+    <script type="application/javascript" src="chrome://gdata-provider/content/gdata-calendar-creation.js"/>  
 
-
-    <radiogroup id="calendar-format" onselect="tmpCalendarCreation.doRadioExchangeCalendar(this);">
+    <radiogroup id="calendar-format" onselect="tmpCalendarCreation.doRadioExchangeCalendar(this.value);">
 	<vbox>
 	        <radio value="exchangecalendar" label="Microsoft Exchange 2007/2010/2013" id="exchWebService-radioexchangecalendar" />
 		<hbox id="exchange-cache-row" hidden="true">
-			<checkbox id="exchange-cache" label="&exchange.cache.label;"/>
+			<checkbox hidden="true" checked="true" id="exchange-cache" control="calendar-uri" label="&exchange.cache.label;"/>
 		</hbox>
 	</vbox>
     </radiogroup>
@@ -66,11 +66,10 @@
                next="finishPage"
                label="&wizard.label;"
                description="&exchange1.description;"
-               onpageshow="tmpCalendarCreation.initExchange1();"
+               onpageshow="checkRequired();tmpCalendarCreation.initExchange1();"
                onpageadvanced="tmpCalendarCreation.saveSettings();">
 
-	<vbox id="exchWebService-exchange-settings">
-	</vbox>
+	<vbox id="exchWebService-exchange-settings"/>
    </wizardpage>
 </wizard>
 

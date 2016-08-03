@@ -98,7 +98,7 @@ exchAttachments.prototype = {
 
 		this.globalFunctions.LOG("exchWebService.attachments.addAttachment");
 		if (aAttachment.uri) {
-			let documentLink = this._document.getElementById("exchWebService-attachment-link");
+			let documentLink = this._document.getElementById("attachment-link");
 			let item = documentLink.appendChild(createXULElement("listitem"));
 			item.setAttribute("crop", "end");
 			item.setAttribute("class", "listitem-iconic");
@@ -160,9 +160,9 @@ exchAttachments.prototype = {
 			this.globalFunctions.LOG(" == extension:"+extension);
 
 			if (ext2file[extension]) {
-				item.setAttribute("image", "chrome://exchangecalendar/skin/" + ext2file[extension]);
+				item.setAttribute("image", "chrome://exchangecalendar-common/skin/images/" + ext2file[extension]);
 			} else {
-				item.setAttribute("image", "chrome://exchangecalendar/skin/document--exclamation.png");
+				item.setAttribute("image", "chrome://exchangecalendar-common/skin/images/document--exclamation.png");
 			}
 
 			// full attachment object is stored here
@@ -187,7 +187,7 @@ exchAttachments.prototype = {
 
 	deleteAttachment: function deleteAttachment()
 	{
-		var documentLink = this._document.getElementById("exchWebService-attachment-link");
+		var documentLink = this._document.getElementById("attachment-link");
 		if ((documentLink.selectedItem) && (documentLink.selectedItem.attachment)) {
 			delete gAttachMap[documentLink.selectedItem.attachment.hashId];
 			documentLink.removeItemAt(documentLink.selectedIndex);
@@ -220,7 +220,7 @@ exchAttachments.prototype = {
 
 	removeItemsFromListbox: function _removeItemsFromListbox()
 	{
-		var documentLink = this._document.getElementById("exchWebService-attachment-link");
+		var documentLink = this._document.getElementById("attachment-link");
 		while (documentLink.itemCount > 0) {
 			this.globalFunctions.LOG(" == Removing item from listbox");
 			documentLink.removeItemAt(0);
@@ -251,8 +251,10 @@ exchAttachments.prototype = {
 				this._document.getElementById("button-url").hidden = true;
 				this._document.getElementById("event-toolbar").setAttribute("currentset", "button-save,button-attendees,button-privacy,button-url,exchWebService-add-attachment-button,button-delete");
 				this._document.getElementById("exchWebService-add-attachment-button").hidden = false;
+				if(this._document.getElementById("options-attachments-menuitem")){
 				this._document.getElementById("options-attachments-menuitem").setAttribute("label", this._document.getElementById("exchWebService-add-attachment-button").getAttribute("label"));
 				this._document.getElementById("options-attachments-menuitem").setAttribute("command", "exchWebService_addAttachmentDialog");
+				}
 			}
 			catch (ex) {this.globalFunctions.LOG("  -- Could not add exchange attachment buttons:"+ex.toString());}
 
@@ -330,7 +332,13 @@ exchAttachments.prototype = {
 
 		var taskTree = this._document.getElementById("calendar-task-tree");
 		var item = taskTree.currentTask;
-
+		var displayElement=function(id,flag) {
+            setBooleanAttribute(id, "hidden", !flag);
+            return flag;
+        }
+		if (displayElement("calendar-task-details-container", item != null) &&
+            displayElement("calendar-task-view-splitter", item != null)) { 
+			
 		if ((item.calendar) && (item.calendar.type == "exchangecalendar")) {
 			// calendar-task-view (hide existing attachment view)
 			//this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: it is an Exchange task 1.");
@@ -368,13 +376,14 @@ exchAttachments.prototype = {
 			catch (ex) {this.globalFunctions.LOG("exchWebService.attachments.onSelectTask: Foutje Y:");}
 			this.attachmentListboxVisible = false;
 		}
+		}
 	},
 
 	onSelect: function _onSelect(aEvent)
 	{
 		this.globalFunctions.LOG("exchWebService.attachments.onSelect");
 
-		let documentLink = this._document.getElementById("exchWebService-attachment-link");
+		let documentLink = this._document.getElementById("attachment-link");
 
 		var isReadOnly = "true";
 		if ((this._document.getElementById("calendar-event-dialog")) || (this._document.getElementById("calendar-task-dialog"))) {
@@ -419,7 +428,7 @@ exchAttachments.prototype = {
 	openAttachment: function _openAttachment()
 	{
 		this.globalFunctions.LOG("exchWebService.attachments.openAttachment");
-		let documentLink = this._document.getElementById("exchWebService-attachment-link");
+		let documentLink = this._document.getElementById("attachment-link");
 
 		if (documentLink.selectedItem.attachment) {
 			var attURI = documentLink.selectedItem.attachment.uri;
@@ -440,7 +449,7 @@ exchAttachments.prototype = {
 	saveAttachment: function _saveAttachment()
 	{
 		this.globalFunctions.LOG("exchWebService.attachments.saveAttachment");
-		let documentLink = this._document.getElementById("exchWebService-attachment-link");
+		let documentLink = this._document.getElementById("attachment-link");
 		this.downloadAttachment(documentLink.selectedItem.attachment, true);
 	},
 

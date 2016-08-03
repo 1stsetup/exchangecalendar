@@ -70,7 +70,7 @@ exchWebService.preInvitationResponse = {
 		document.getElementById("exchWebService_itemResponse").value = window.arguments[0].response;
 
 		if (item.organizer) {
-			document.getElementById("exchWebService_meetingOrganiser").value = item.organizer.commonName+" ("+item.organizer.id.replace(/^mailto:/, '')+")";
+			document.getElementById("exchWebService_meetingOrganiser").value = item.organizer.commonName+" ("+item.organizer.id.replace(/^mailto:/i, '')+")";
 		}
 		else {
 			// Should never happen.

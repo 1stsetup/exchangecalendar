@@ -110,7 +110,7 @@ dump(" WHAT is this:"+this._argument.calendar.type+"\n");
 		}
 		else {
 			if ((this._document.getElementById("reminder-listbox").itemCount == 0) || (this._argument.calendar.type != "exchangecalendar")) {
-				onNewReminder();
+					onNewReminder();
 			}
 		}
 

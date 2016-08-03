@@ -49,3 +49,7 @@
 
 <!ENTITY exchWebServices.UserAvailability.label "Только состояние доступности пользователя для календаря почтового ящика будет видно, когда у вас есть права доступа.">
 
+<!ENTITY exchWebServices.exchtype.label "Exchange Type">
+<!ENTITY exchWebServices.hostexch.label "Hosted Exchange">
+<!ENTITY exchWebServices.365exch.label "Microsoft Office365">
+<!ENTITY exchWebServices.detail.label "Details">

@@ -228,11 +228,11 @@ mivFunctions.prototype = {
 			if (!realBranche.branch) {
 				return aDefaultValue;
 			}
-			var aBranch = realBranche.branch;
-			var aName = realBranche.name;
+			aBranch = realBranche.branch;
+			aName = realBranche.name;
 		}
 	
-		if (!aCreateWhenNotAvailable) { var aCreateWhenNotAvailable = false; }
+		if (!aCreateWhenNotAvailable) { aCreateWhenNotAvailable = false; }
 
 		try {
 			return aBranch.getCharPref(aName);
@@ -259,11 +259,11 @@ mivFunctions.prototype = {
 			if (!realBranche.branch) {
 				return aDefaultValue;
 			}
-			var aBranch = realBranche.branch;
-			var aName = realBranche.name;
+			aBranch = realBranche.branch;
+			aName = realBranche.name;
 		}
 	
-		if (!aCreateWhenNotAvailable) { var aCreateWhenNotAvailable = false; }
+		if (!aCreateWhenNotAvailable) { aCreateWhenNotAvailable = false; }
 
 		try {
 			return aBranch.getBoolPref(aName);
@@ -290,11 +290,11 @@ mivFunctions.prototype = {
 			if (!realBranche.branch) {
 				return aDefaultValue;
 			}
-			var aBranch = realBranche.branch;
-			var aName = realBranche.name;
+			aBranch = realBranche.branch;
+			aName = realBranche.name;
 		}
 	
-		if (!aCreateWhenNotAvailable) { var aCreateWhenNotAvailable = false; }
+		if (!aCreateWhenNotAvailable) {  aCreateWhenNotAvailable = false; }
 
 		try {
 			return aBranch.getIntPref(aName);
@@ -411,7 +411,7 @@ mivFunctions.prototype = {
 			this.ASSERT(aArg, "Bad log argument.", true);
 		}
 		catch(exc) {
-			var aArg = exc;
+			aArg = exc;
 		}
 
 	    var string;
@@ -460,11 +460,11 @@ mivFunctions.prototype = {
 			try {
 				// On startup create a new file otherwise append.  
 				if (!this.debugFileInitialized) {
-					foStream.init(localFile, 0x02 | 0x08 | 0x20, 0666, 0);
+					foStream.init(localFile, 0x02 | 0x08 | 0x20,  parseInt("0666", 8), 0);
 					this.debugFileInitialized = true;   
 				}
 				else {
-					foStream.init(localFile, 0x02 | 0x08 | 0x10, 0666, 0);   
+					foStream.init(localFile, 0x02 | 0x08 | 0x10,  parseInt("0666", 8), 0);   
 				}
 			}
 			catch(er) {

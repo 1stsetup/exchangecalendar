@@ -1,3 +1,103 @@
+Version 3.7.0:
+- d1b2860 (origin/master, origin/HEAD, master) revert calendar-event-dialog
+- df713f4 Merge pull request #458 from enozkan/patch-5
+- 180e91a Update preferences.dtd for Turkish locale
+
+Version 3.6.0:
+- a2a50be strict mode error fix
+- 5db3c8d task sync and strict mode error fix
+- 16d56bf translation for preference password fix
+- 22850a8 preference password fix
+- 1fcaf4c Merge pull request #423 from Dominique-2202/patch-2
+- 6b16cad French translation calendar-summary-dialog.dtd
+- ae091d5 Merge pull request #422 from Mechtilde/Translation
+- d716986 German translation for calendar-summary-dialog.dtd
+- 65c222a Merge pull request #415 from enozkan/patch-4
+- 1fd65b1 Merge pull request #416 from Trim/erFindContactsOffset
+- 23ca0b3 Merge pull request #417 from Trim/erFindCalendarItems
+- e537089 Update calendar-summary-dialog.dtd for tr
+- 7b4b9fb erFindContacts: give a copy of arrays to callback
+- 2235634 erFindContacts: Use server offset instead of own computation
+- b7dd3aa erFindContacts: remove trailing blanks and use contact logs instead of main logs
+- 9a5b78d erFindContacts: Requests all contacts of address books
+- 4681316 erFindCalendarItems: use slice method to clone javascript arrays
+- 91ac17f erFindCalendarItems: don't cal too many times possibly big array
+- b45a6f4 erFindCalendarItems: use LOG instead of dump
+- 3f9de40 string not translatable #409
+- 9a82408 its good to have xpi filename with 'v' preceeding the version
+
+Version 3.5.0:
+- Fix Thunderbird hangs on startup
+- Fix Be more defensive about terminating the loop: under some circumstances startYearDay (and I presume startYear) can be greater than endYear[Day] on entry to the loop.
+- Fix Reword log, Bug #373 "Incorrect exhortationto MAIL THIS LINE TO ..."
+- Fix Bug #371 "Cannot add custom reminder (alarm) to an event ..."
+- Fix Lightning 4.0.2.1
+
+Version 3.4.0:
+- New Support Extended to Lightning 4.0.0.1
+- New Support Extended to Thunderbird 38.*
+- New EWS Tagger - Feature
+- New Task Email Follow Up - Feature
+- New Language Support For exchange address Book
+- New Mail folder Delegation - Feature
+- New Automatically set lightning time zone
+- New Plug in Builder for deb package
+
+- Fix Reminder Problem 
+- Fix #190 - Can not add manually add exchange address book
+- Fix Calendar not refreshing during suspend/resume
+- Fix Busy/Free information wasn’t available
+- Fix Ignore domain request for email user names.
+- Fix freezing on start up
+- Fix Restoring cache
+- Fix rtews.dtd typo fixed
+- Fix Cant not add Google calendar
+- Fix Avoid JS exception in auto completion.
+- Fix Also fill out primary email address if local ID is present
+- Fix Treat public DLs the same way as private ones in auto completion
+- Fix Exchange Icon Update in preference
+- Fix Missing Translation English language
+- Fix Israel Timezone fix for Daylight savings time
+- Fix Password Looping fix
+- New Updated French,German Translation
+- New Preference for mail properties syncing
+- New Preference for Email Follow up
+
+- Change Update suggestions only for stable release
+- Change Minimum Refresh time is set to 60
+- Change Enabled Cache by default or No disable option for cache
+- Change Removed all calendar Refresh time
+- Change Optimized syncing method
+- Change Enable NTLM by default in Thunderbird
+- Change Remove  old saved password if user doesn’t choose
+- Change Block adding domain entry in autodiscovery window when email used
+- Change Platform based CSS thanks to git-hub user  "@mariolorenz"
+- Change Clear Logging.
+
+Version 3.3.2:
+- Bug fix release
+
+Version 3.3.1:
+- New     New Column for invite mail in message list pane
+- New     Support for Thunderbird Nightly Aurora 38.0+
+- New     Locale improved
+- New     Delegating Calendar feature
+- New     Auto-update from Git-hub releases
+- New     High priority mails with auto tagging - important
+
+- Changed Meetings that are canceled are  removed
+- Changed New Event usability issue in lightning
+- Changed Priority column with updated icons,startup preference
+- Changed Cache Clear on Add on Update
+
+- Fixed  Dismissing  reminder
+- Fixed  Accept/Tentative/Reject button appearance
+- Fixed  Fix Address Book freeze when attempting to view "Properties"
+- Fixed  Tentative status does not get saved
+- Fixed  Unable to forward event  in Thunderbird
+- Fixed  Breaking other add on columns in message list pane
+- Fixed  UX error when saving Out of Office 
+
 Version 3.2.0:
 - changed add-on name to "Exchange EWS Provider" as it is shorter than including all the exchange versions it can connect to.
 - Fixes bug where sometimes the date/time is shifted on Free/busy info in calendar of someone else.
@@ -114,7 +214,7 @@ Version 3.1.2:
 - Added extra info to progress indicator. It now also uses the new loadbalancer for the statistics.
 
 Version 3.1.1:
-- Fixed bug 205 Extension overwrites URI for non-echange calendars
+- Fixed bug 205 Extension overwrites URI for non-exchange calendars
 
 Version 3.1.0:
 - Fixed part of bug51. When emailaddress of attendee is empty do not throw an error.

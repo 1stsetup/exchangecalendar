@@ -38,17 +38,21 @@
 <!ENTITY button.label.serverandmailboxcheck "Controleer server en mailbox">
 <!ENTITY button.label.servercheck "Controleer server en account">
 
-<!ENTITY ecmailbox.label "Primaire email adres:">
-<!ENTITY ecmailbox.tooltip "Als je geen mailbox specificeerd kun je alleen toegang krijgen tot openbare mappen.">
-<!ENTITY ecwindowsuser.label "Gerbuikersnaam:">
+<!ENTITY ecmailbox.label "Primair e-mailadres:">
+<!ENTITY ecmailbox.tooltip "Als u geen mailbox opgeeft kunt u alleen toegang krijgen tot openbare mappen.">
+<!ENTITY ecwindowsuser.label "Gebuikersnaam:">
 <!ENTITY ecwindowsdomain.label "Domeinnaam:">
 <!ENTITY ecwindowspassword.label "Wachtwoord:">
 
-<!ENTITY button.label.folderpathcheck "Controleer">
+<!ENTITY button.label.folderpathcheck "Controleren">
 <!ENTITY button.label.folderbrowse "Bladeren">
 
-<!ENTITY exchWebServices.UserAvailability.label "Alleen gebruikersaanwezigheidsstatus van de mailbox agenda zal zichtbaar zijn.">
+<!ENTITY exchWebServices.UserAvailability.label "Alleen gebruikersaanwezigheidsstatus van de mailboxagenda zal zichtbaar zijn.">
 
 
 
 
+<!ENTITY exchWebServices.exchtype.label "Exchange Type">
+<!ENTITY exchWebServices.hostexch.label "Hosted Exchange">
+<!ENTITY exchWebServices.365exch.label "Microsoft Office365">
+<!ENTITY exchWebServices.detail.label "Details">

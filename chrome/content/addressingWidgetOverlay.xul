@@ -21,7 +21,7 @@
 
 <!DOCTYPE overlay >
 
-<?xml-stylesheet href="chrome://exchangecalendar/content/addressingWidgetOverlay.css" type="text/css"?>
+<?xml-stylesheet type="text/css" href="chrome://exchangecalendar/skin/addressingWidgetOverlay.css"?>
 
 <overlay id="exchangeAddressingWidgetOverlay"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">

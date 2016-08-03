@@ -260,9 +260,25 @@ exchExchangeSettings.prototype = {
 		// Load meeting request settings.
 		var exchWebServicesCalPrefs = Cc["@mozilla.org/preferences-service;1"]
 		            .getService(Ci.nsIPrefService)
-			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+calId+".");
-
+			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+calId+".");		
 		this._document.getElementById("exchWebService-poll-calendar-interval").value = this.globalFunctions.safeGetIntPref(exchWebServicesCalPrefs, "ecCalendarPollInterval", 60);
+		this._document.getElementById("exchWebService-autoprocessingproperties-deletecancelleditems").checked = this.globalFunctions.safeGetBoolPref(exchWebServicesCalPrefs, "ecautoprocessingdeletecancelleditems", true);
+		this._document.getElementById("exchWebService-autoprocessingproperties-markeventtentative").checked = this.globalFunctions.safeGetBoolPref(exchWebServicesCalPrefs, "ecautoprocessingmarkeventtentative", false);
+		
+		this._document.getElementById("exchWebService-syncMailItems-Interval").value = this.globalFunctions.safeGetIntPref(exchWebServicesCalPrefs, "syncMailItems.Interval", 15);
+		this._document.getElementById("exchWebService-syncMailItems-active").checked = this.globalFunctions.safeGetBoolPref(exchWebServicesCalPrefs, "mailsync.active",false);
+		this._document.getElementById("exchWebService-followup-deactivtate").checked = this.globalFunctions.safeGetBoolPref(exchWebServicesCalPrefs, "followup.task.deactivate",false);
+
+		
+		if ( this.globalFunctions.safeGetCharPref(exchWebServicesCalPrefs, "ecFolderbase", "") == "calendar" ){ 
+			this._document.getElementById("exchWebService-mail-properties-calendar").hidden = false;
+			this._document.getElementById("exchWebService-mail-properties-task").hidden = true; 
+		} 
+		else{
+			this._document.getElementById("exchWebService-mail-properties-calendar").hidden = true;
+			this._document.getElementById("exchWebService-mail-properties-task").hidden = false; 
+		}
+		
 /*
 		this._document.getElementById("exchWebService-poll-inbox").checked = this.globalFunctions.safeGetBoolPref(exchWebServicesCalPrefs, "ecPollInbox", true);
 		this._document.getElementById("exchWebService-poll-inbox-interval").value = this.globalFunctions.safeGetIntPref(exchWebServicesCalPrefs, "ecPollInboxInterval", 180);
@@ -313,10 +329,28 @@ exchExchangeSettings.prototype = {
 			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+calId+".");
 
 		this.checkFolderSettings();
-
+		
+		if ( this._document.getElementById("exchWebService-autoprocessingproperties-deletecancelleditems").checked != this.globalFunctions.safeGetBoolPref(exchWebServicesCalPrefs, "ecautoprocessingdeletecancelleditems",null) ){  
+			exchWebServicesCalPrefs.setBoolPref("ecautoprocessingdeletecancelleditems", this._document.getElementById("exchWebService-autoprocessingproperties-deletecancelleditems").checked);
+		}
+		if ( this._document.getElementById("exchWebService-autoprocessingproperties-markeventtentative").checked != this.globalFunctions.safeGetBoolPref(exchWebServicesCalPrefs, "ecautoprocessingmarkeventtentative",null) ) {  
+			exchWebServicesCalPrefs.setBoolPref("ecautoprocessingmarkeventtentative", this._document.getElementById("exchWebService-autoprocessingproperties-markeventtentative").checked);
+		} 
+		 
+		this.doAutoProcessing();
+		
+		if ( this.globalFunctions.safeGetCharPref(exchWebServicesCalPrefs, "ecFolderbase", "") == "calendar" ){ 
+			exchWebServicesCalPrefs.setIntPref("syncMailItems.Interval", this._document.getElementById("exchWebService-syncMailItems-Interval").value);
+			exchWebServicesCalPrefs.setBoolPref("mailsync.active", this._document.getElementById("exchWebService-syncMailItems-active").checked); 
+		}
+		else{
+			//Add items  releted to Task here these will be taken only when task calendar changes
+			exchWebServicesCalPrefs.setBoolPref("followup.task.deactivate", this._document.getElementById("exchWebService-followup-deactivtate").checked); 
+ 		}
+		
 		//exchWebServicesCalPrefs.setBoolPref("ecPollInbox", this._document.getElementById("exchWebService-poll-inbox").checked); 
 
-		exchWebServicesCalPrefs.setIntPref("ecCalendarPollInterval", this._document.getElementById("exchWebService-poll-calendar-interval").value); 
+		exchWebServicesCalPrefs.setIntPref("ecCalendarPollInterval", this._document.getElementById("exchWebService-poll-calendar-interval").value);
 		//exchWebServicesCalPrefs.setIntPref("ecPollInboxInterval", this._document.getElementById("exchWebService-poll-inbox-interval").value); 
 		//exchWebServicesCalPrefs.setBoolPref("ecAutoRespondMeetingRequest", this._document.getElementById("exchWebService-autorespond-meetingrequest").checked); 
 		//exchWebServicesCalPrefs.setCharPref("ecAutoRespondAnswer", this._document.getElementById("exchWebService-autorespond-answer").value); 
@@ -362,6 +396,11 @@ exchExchangeSettings.prototype = {
 		this._document.getElementById("exchWebService-doautorespond-meetingrequest-message").disabled = (!this._document.getElementById("exchWebService-autorespond-meetingrequest").checked);
 		this._document.getElementById("exchWebService-autorespond-meetingrequest-message").disabled = (!this._document.getElementById("exchWebService-autorespond-meetingrequest").checked);
 */
+		this._window.sizeToContent() ;
+	},
+
+	doAutoProcessing: function _doAutoProcessing()
+	{   
 		this._window.sizeToContent() ;
 	},
 

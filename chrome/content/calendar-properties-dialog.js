@@ -50,8 +50,11 @@ exchChangeCalendarProperties.prototype = {
 					this._document.getElementById("exchange-cache").checked=aCalendar.getProperty("exchWebService.useOfflineCache");
 				
 			}
+			this._document.getElementById("calendar-refreshInterval-row").hidden = true;
 		}
 		else{
+			this._document.getElementById("calendar-refreshInterval-row").hidden = false;
+
 			this._document.getElementById("exchange-cache-row").setAttribute("collapsed",true);
 		}
 	},

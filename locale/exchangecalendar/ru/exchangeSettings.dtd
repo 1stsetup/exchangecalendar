@@ -43,3 +43,11 @@
 
 <!ENTITY button.offlineCacheproperties.clearCache "Очистить автономные данные в кэше">
 
+<!ENTITY ecsettings.title "EWS Calendar and Mail settings">
+<!ENTITY ecsettings.tab.autoprocessingproperties "Automatic Processing">
+<!ENTITY ecsettings.tab.mailitemsProperties "EWS Settings (Mail)">
+<!ENTITY label.syncmailitems.interval "Delay syncing mail items (Tags,etc.)">
+<!ENTITY label.autoprocessingproperties.deletecancelleditems "Automatically remove cancelled events">
+<!ENTITY label.autoprocessingproperties.markeventtentative "Automatically mark event as tentative and send response to organizer">
+<!ENTITY label.syncmailitems.active "Keep enabled syncing mail items (Tags,etc.)">
+<!ENTITY label.syncfollowup.deactivtate "Disable Followup Task">

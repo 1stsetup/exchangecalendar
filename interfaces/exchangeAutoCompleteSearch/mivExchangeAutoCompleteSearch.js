@@ -29,6 +29,8 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 Cu.import("resource:///modules/mailServices.js");
 
+Cu.import("resource://exchangecalendar/exchangeAbFunctions.js");
+
 function mivExchangeAutoCompleteSearch() {
 
 	this.globalFunctions = Cc["@1st-setup.nl/global/functions;1"]
@@ -132,6 +134,7 @@ mivExchangeAutoCompleteSearch.prototype = {
 		dump("  previousResult:"+previousResult+"\n");
 		dump("        listener:"+listener+"\n\n");
 */
+		searchString=encodeURI(searchString);
 		var uuid = this.globalFunctions.getUUID();
 		var query = "(or(PrimaryEmail,c,"+searchString+")(DisplayName,c,"+searchString+")(FirstName,c,"+searchString+")(LastName,c,"+searchString+"))";
 

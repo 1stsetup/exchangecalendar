@@ -32,11 +32,13 @@
  * ***** BEGIN LICENSE BLOCK *****/
 -->
 
-<?xml-stylesheet href="chrome://exchangecalendar/content/calendar-summary-dialog.css" type="text/css"?>
+<?xml-stylesheet type="text/css" href="chrome://exchangecalendar/skin/calendar-summary-dialog.css"?>
 
 <!DOCTYPE dialog [
     <!ENTITY % eventDialogDTD SYSTEM "chrome://calendar/locale/calendar-event-dialog.dtd">
     %eventDialogDTD;
+	<!ENTITY % summaryDialogDTD SYSTEM "chrome://exchangecalendar/locale/calendar-summary-dialog.dtd">
+    %summaryDialogDTD;
 ]>
 
 <?xul-overlay href="chrome://exchangecalendar/content/attachments-view.xul"?>
@@ -45,11 +47,21 @@
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
 <dialog id="calendar-summary-dialog" windowtype="Calendar:EventSummaryDialog"
-		buttons="accept,cancel" buttonlabelextra1="Forward invite"
+		buttons="accept,cancel" buttonlabelextra1="&forward.invite.label;"
 		ondialogextra1="tmpEventSummaryDialog.onForward();" persist="screenX screenY width height"
 		xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 		
 		<script type="application/javascript" src="chrome://exchangecalendar/content/calendar-summary-dialog.js" />
+		
+		<box id="item-general-box" orient="vertical">
+		 <box orient="horizontal">
+	     <grid flex="1"> 
+		 <rows>
+		  <row id="reminder-row" hidden="false"/>
+		  </rows>
+		  </grid>
+		  </box>
+		</box>
 		<box id="item-description-box" flex="1">
 
 		<browser id="exchWebService-body-editor" 
@@ -73,7 +85,43 @@
 				<listbox id="exchWebService-attachment-link" rows="3" flex="1"/>
 			</box>
 		</box>
+
+		<box id="item-attendees" hidden="true" orient="vertical">
+
+			<spacer id="required-attendee-spacer" class="default-spacer" hidden="true"/>
+			<calendar-caption id="required-attendee-caption" label="&required.attendee.label;"
+			control="item-required-attendee-listbox" hidden="true"/>
+			<box orient="horizontal" id="item-required-attendee" hidden="true">
+				<spacer class="default-spacer"/>
+				<listbox id="item-required-attendee-listbox" rows="4" flex="1" disabled="true">
+					<listcols>
+						<listcol id="item-attendee-left-col" flex="1"/>
+						<listcol id="item-attendee-right-col" flex="1"/>
+					</listcols>
+					<listitem>
+						<listcell class="listcell-iconic status-icon" crop="end" hidden="true"/>
+						<listcell class="listcell-iconic status-icon" crop="end" hidden="true"/>
+					</listitem>
+				</listbox>
+			</box>
+
+			<spacer id="optional-attendee-spacer" class="default-spacer" hidden="true"/>
+			<calendar-caption id="optional-attendee-caption" label="&optional.attendee.label;"
+			control="item-optional-attendee-listbox" hidden="true"/>
+			<box orient="horizontal" id="item-optional-attendee" hidden="true">
+				<spacer class="default-spacer"/>
+				<listbox id="item-optional-attendee-listbox" rows="4" flex="1" disabled="true">
+					<listcols>
+						<listcol id="item-attendee-left-col" flex="1"/>
+						<listcol id="item-attendee-right-col" flex="1"/>
+					</listcols>
+					<listitem>
+						<listcell class="listcell-iconic status-icon" crop="end" hidden="true"/>
+						<listcell class="listcell-iconic status-icon" crop="end" hidden="true"/>
+					</listitem>
+				</listbox>
+			</box>
+
+		</box>
 	</dialog>
 </overlay>
-
-

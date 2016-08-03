@@ -1,5 +1,9 @@
 content exchangecalendar chrome/content/
-skin exchangecalendar fugue chrome/skins/fugue/
+skin exchangecalendar fugue chrome/skins/unix/
+skin exchangecalendar fugue chrome/skins/win/ os=WINNT
+skin exchangecalendar fugue chrome/skins/winaero/ os=WINNT osversion>=6
+skin exchangecalendar fugue chrome/skins/mac/ os=Darwin
+skin exchangecalendar-common fugue chrome/skins/common/
 resource exchangecalendar components/
 resource interfaces interfaces/
 
@@ -21,10 +25,19 @@ overlay chrome://messenger/content/preferences/preferences.xul  chrome://exchang
 overlay chrome://messenger/content/preferences/preferences.xul  chrome://exchangecalendar/content/otherPreferences.xul
 overlay chrome://calendar/content/calendar-task-view.xul  chrome://exchangecalendar/content/calendar-task-view.xul
 overlay chrome://communicator/content/pref/preferences.xul chrome://exchangecalendar/content/suite-overlay-preferences.xul application={92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}
+overlay chrome://communicator/content/pref/preferences.xul chrome://exchangecalendar/content/extra-suite-preferences.xul application={92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}
+
 overlay chrome://calendar/content/calendar-common-sets.xul chrome://exchangecalendar/content/calendar-common-sets.xul
 overlay chrome://calendar/content/calendar-event-dialog-attendees.xul chrome://exchangecalendar/content/calendar-event-dialog-attendees.xul
 overlay chrome://messenger/content/messenger.xul chrome://exchangecalendar/content/OutOfOfficeMenu.xul
 overlay chrome://messenger/content/messengercompose/messengercompose.xul chrome://exchangecalendar/content/addressingWidgetOverlay.xul
+overlay chrome://messenger/content/preferences/preferences.xul  chrome://exchangecalendar/content/timezonePreference.xul
+overlay chrome://messenger/content/messenger.xul  chrome://exchangecalendar/content/lightningtimezoneOverlay.xul
+overlay	chrome://messenger/content/preferences/preferences.xul	chrome://exchangecalendar/content/extra-messenger-preferences.xul
+overlay chrome://messenger/content/messenger.xul  chrome://exchangecalendar/content/priority-display.xul 
+overlay chrome://messenger/content/messenger.xul  chrome://exchangecalendar/content/invite-style.xul
+overlay chrome://messenger/content/folderProps.xul  chrome://exchangecalendar/content/folderPropsOverlay.xul
+overlay chrome://messenger/content/messenger.xul chrome://exchangecalendar/content/rtews-overlay.xul
 
 locale exchangecalendar nl locale/exchangecalendar/nl/
 locale exchangecalendar en-US locale/exchangecalendar/en-US/

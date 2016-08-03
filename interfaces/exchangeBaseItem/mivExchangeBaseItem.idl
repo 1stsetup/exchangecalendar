@@ -47,6 +47,8 @@ interface mivExchangeBaseItem : calIItemBase
 	readonly attribute AUTF8String uid;
 	readonly attribute AUTF8String calendarItemType;
 	readonly attribute AUTF8String itemClass;
+  	readonly attribute AUTF8String messageId;
+	
 	readonly attribute boolean isCancelled;
 	readonly attribute boolean isMeeting;
 	readonly attribute boolean hasAttachments;

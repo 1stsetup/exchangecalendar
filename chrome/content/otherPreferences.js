@@ -72,7 +72,23 @@ exchOtherPreferences.prototype = {
 		this._document.getElementById("extensions.1st-setup.others.userAgent").value = "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 7.1; Trident/5.0)";
 	},
 	
+	onLoad: function _onLoad()
+	{ 
+		this.restoreUpdateSettings();
+	},
+	
+	restoreUpdateSettings: function _restoreUpdateSettings(){ 
+ 	    let othersPreference = Cc["@mozilla.org/preferences-service;1"].
+	    getService(Ci.nsIPrefBranch); 
+ 	    let toUpdate = this.globalFunctions.safeGetBoolPref( othersPreference, "extensions.1st-setup.others.updateRequired"); 
+ 		    if( toUpdate ===  false  ){
+		    	this._document.getElementById("exchangeWebService_others_prefs_groupbox2").hidden=true;  
+		    } 
+ 		toUpdate=null;
+	    othersPreference=null;
+	},
 }
+ 
 
 var tmpOtherPreferences = new exchOtherPreferences(document, window);
-//window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpOtherPreferences.onLoad(); }, true);
+window.addEventListener("load", function () { window.removeEventListener("load",arguments.callee,false); tmpOtherPreferences.onLoad(); }, true);

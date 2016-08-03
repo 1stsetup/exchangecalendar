@@ -1,7 +1,8 @@
-<!ENTITY calendar.context.exchange.convert.label "Converteer naar Exchange 2007/2010 Calendar and Tasks add-on">
-<!ENTITY calendar.context.exchange.properties.label "Exchange (EWS) Eigenschappen">
-<!ENTITY calendar.context.exchange.oof.settings.label "Out of Office instellingen">
-<!ENTITY calendar.context.exchange.clone.settings.label "Clone instellingen naar nieuwe Agenda">
+<!ENTITY calendar.context.exchange.convert.label "Omzetten naar Exchange 2007/2010 Calendar and Tasks add-on">
+<!ENTITY calendar.context.exchange.properties.label "Eigenschappen voor Exchange (EWS)">
+<!ENTITY calendar.context.exchange.oof.settings.label "Out of Office-instellingen">
+<!ENTITY calendar.context.exchange.clone.settings.label "Instellingen kopiëren naar nieuwe agenda">
 
 
 
+<!ENTITY calendar.context.exchange.delegate.calendar.settings.label "Delegate Calendar">

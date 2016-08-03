@@ -56,15 +56,6 @@ var EXPORTED_SYMBOLS = ["erSyncFolderItemsRequest"];
 
 function erSyncFolderItemsRequest(aArgument, aCbOk, aCbError, aListener)
 {
-	this.mCbOk = aCbOk;
-	this.mCbError = aCbError;
-
-	var self = this;
-
-	this.parent = new ExchangeRequest(aArgument, 
-		function(aExchangeRequest, aResp) { self.onSendOk(aExchangeRequest, aResp);},
-		function(aExchangeRequest, aCode, aMsg) { self.onSendError(aExchangeRequest, aCode, aMsg);},
-		aListener);
 
 	this.argument = aArgument;
 	this.mailbox = aArgument.mailbox;
@@ -74,7 +65,8 @@ function erSyncFolderItemsRequest(aArgument, aCbOk, aCbError, aListener)
 	this.changeKey = aArgument.changeKey;
 	this.listener = aListener;
 	this.syncState = aArgument.syncState;
-
+	this.mCbOk = aCbOk;
+	this.mCbError = aCbError; 
 	if (!aArgument.syncState) {
 		this.getSyncState = true;
 	}
@@ -88,8 +80,15 @@ function erSyncFolderItemsRequest(aArgument, aCbOk, aCbError, aListener)
 
 	this.attempts = 0;
 	this.runs = 0;
-
 	this.isRunning = true;
+
+	var self = this; 
+	this.parent = new ExchangeRequest(aArgument, 
+		function(aExchangeRequest, aResp) { self.onSendOk(aExchangeRequest, aResp);},
+		function(aExchangeRequest, aCode, aMsg) { self.onSendError(aExchangeRequest, aCode, aMsg);},
+		aListener);
+
+
 	this.execute(aArgument.syncState);
 }
 
@@ -125,9 +124,7 @@ erSyncFolderItemsRequest.prototype = {
 		
 		this.parent.xml2json = true;
 		
-		//dump("erSyncFolderItemsRequest.execute:"+String(this.parent.makeSoapMessage2(req))+"\n");
-		
-		//exchWebService.commonFunctions.LOG(String(this.parent.makeSoapMessage(req)));
+		//exchWebService.commonFunctions.LOG(String(this.parent.makeSoapMessage(req)));		
 		this.attempts++;
 
 		var soapStr = this.parent.makeSoapMessage2(req);
@@ -137,7 +134,7 @@ erSyncFolderItemsRequest.prototype = {
 
 	onSendOk: function _onSendOk(aExchangeRequest, aResp)
 	{
-		//dump("erSyncFolderItemsRequest.onSendOk:"+xml2json.toString(aResp));
+		 //dump("\nerSyncFolderItemsRequest.onSendOk:"+xml2json.toString(aResp));
 try{
 		var rm = xml2json.XPath(aResp,"/s:Envelope/s:Body/m:SyncFolderItemsResponse/m:ResponseMessages/m:SyncFolderItemsResponseMessage[@ResponseClass='Success' and m:ResponseCode='NoError']");
 
@@ -155,7 +152,18 @@ try{
 							  ChangeKey: xml2json.getAttribute(calendarItem, "ChangeKey").toString()});
 					}
 					calendarItems = null;
-					var tasks = xml2json.XPath(creation, "/t:Task/t:ItemId");
+					
+					var tasks; 
+					switch(this.folderBase){
+					case "tasks":
+						tasks = xml2json.XPath(creation, "/t:Task/t:ItemId");
+						break;
+					case "inbox":
+						tasks = xml2json.XPath(creation, "/t:Message/t:ItemId");
+						break;
+					default:
+					}
+					
 					for each (var task in tasks) {
 						this.creations.push({Id: xml2json.getAttribute(task, "Id").toString(),
 							  ChangeKey: xml2json.getAttribute(task, "ChangeKey").toString()});
@@ -172,7 +180,17 @@ try{
 					  ChangeKey: xml2json.getAttribute(calendarItem, "ChangeKey").toString()});
 					}
 					calendarItems = null;
-					var tasks = xml2json.XPath(update, "/t:Task/t:ItemId");
+					
+					var tasks; 
+					switch(this.folderBase){
+					case "tasks":
+						tasks = xml2json.XPath(update, "/t:Task/t:ItemId");
+						break;
+					case "inbox":
+						tasks = xml2json.XPath(update, "/t:Message/t:ItemId");
+						break;
+					default:
+					} 					
 					for each (var task in tasks) {
 						this.updates.push({Id: xml2json.getAttribute(task, "Id").toString(),
 					  ChangeKey: xml2json.getAttribute(task, "ChangeKey").toString()});
@@ -235,7 +253,7 @@ try{
 		this.parent = null;
 }
 catch(tmpErr) {
-	dump("erSyncFolderItemsRequest.onSendOk: try error '"+tmpErr+"'.\n");
+	dump("\nerSyncFolderItemsRequest.onSendOk: try error '"+tmpErr+"'.\n");
 }
 	},
 

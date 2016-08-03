@@ -1,8 +1,8 @@
-<!ENTITY ecautodiscover "Exchange's Autodiscovery Funktion nutzen.">
+<!ENTITY ecautodiscover "Exchanges Autodiscovery-Funktion nutzen.">
 <!ENTITY ecfolderbase.label "Hauptordner:">
 <!ENTITY ecfolderpath.label "Pfad unterhalb des Hauptordners:">
-<!ENTITY ecfolderidofshare.label "Freigabeordner Id:">
-<!ENTITY exchWebServices.SharedFolderID.label "Freigabeordner Name:">
+<!ENTITY ecfolderidofshare.label "Freigabeordner-ID:">
+<!ENTITY exchWebServices.SharedFolderID.label "Freigabeordner-Name:">
 
 <!ENTITY menuitem.label.ecfolderbase.calendar "Kalenderordner">
 <!ENTITY menuitem.label.ecfolderbase.publicfoldersroot "Öffentliche Ordner">
@@ -10,29 +10,29 @@
 <!ENTITY menuitem.label.ecfolderbase.voicemail "Sprachnachrichtenordner">
 <!ENTITY menuitem.label.ecfolderbase.msgfolderroot "Hauptnachrichtenordner">
 <!ENTITY menuitem.label.ecfolderbase.root "Hauptordner des Postfachs">
-<!ENTITY menuitem.label.ecfolderbase.tasks "Aufgaben Ordner">
+<!ENTITY menuitem.label.ecfolderbase.tasks "Aufgabenordner">
 
 <!ENTITY menuitem.label.ecfolderbase.contacts "Kontaktordner">
-<!ENTITY menuitem.label.ecfolderbase.deleteditems "Gelöschte Elemente Ordner">
-<!ENTITY menuitem.label.ecfolderbase.drafts "Entwürfe Ordner">
-<!ENTITY menuitem.label.ecfolderbase.journal "Journal Ordner">
-<!ENTITY menuitem.label.ecfolderbase.notes "Notizen Ordner">
-<!ENTITY menuitem.label.ecfolderbase.outbox "Postausgang Ordner">
-<!ENTITY menuitem.label.ecfolderbase.sentitems "Gesendete Elemente Ordner">
-<!ENTITY menuitem.label.ecfolderbase.junkemail "Junk E-Mail Ordner">
-<!ENTITY menuitem.label.ecfolderbase.searchfolders "Suchordner Ordner">
-<!ENTITY menuitem.label.ecfolderbase.version2010 "-- Nachfolgende Ordner sind nur für Exchange2010 --">
-<!ENTITY menuitem.label.ecfolderbase.recoverableitemsroot "Papierkorb Hauptordner">
-<!ENTITY menuitem.label.ecfolderbase.recoverableitemsdeletions "Papierkorb Gelöschte Elemente Ordner">
-<!ENTITY menuitem.label.ecfolderbase.recoverableitemsversion "Papierkorb Versionen Ordner">
-<!ENTITY menuitem.label.ecfolderbase.recoverableitemspurges "Papierkorb Reinigungen Ordner">
-<!ENTITY menuitem.label.ecfolderbase.archiveroot "Hauptarchiv Ordner">
-<!ENTITY menuitem.label.ecfolderbase.archivemsgfolderroot "Hauptarchiv Nachrichtenordner">
-<!ENTITY menuitem.label.ecfolderbase.archivedeleteditems "Archiv Gelöschte Elemente Ordner">
-<!ENTITY menuitem.label.ecfolderbase.archiverecoverableitemsroot "Archiv wiederherstellbare Elemente Hauptordner">
-<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsdeletions "Archiv wiederherstellbare Elemente Löschordner">
-<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsversions "Archiv wiederherstellbare Elemente Versionen Ordner">
-<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemspurges "Archiv wiederherstellbare Elemente Reinigungen Ordner">
+<!ENTITY menuitem.label.ecfolderbase.deleteditems "Ordner 'Gelöschte Elemente'">
+<!ENTITY menuitem.label.ecfolderbase.drafts "Entwürfe-Ordner">
+<!ENTITY menuitem.label.ecfolderbase.journal "Journalordner">
+<!ENTITY menuitem.label.ecfolderbase.notes "Notizenordner">
+<!ENTITY menuitem.label.ecfolderbase.outbox "Postausgangsordner">
+<!ENTITY menuitem.label.ecfolderbase.sentitems "Ordner 'Gesendete Elemente'">
+<!ENTITY menuitem.label.ecfolderbase.junkemail "Ordner 'Junk-E-Mail'">
+<!ENTITY menuitem.label.ecfolderbase.searchfolders "Suchordner">
+<!ENTITY menuitem.label.ecfolderbase.version2010 "-- Nachfolgende Ordner betreffen nur Exchange 2010 --">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsroot "Hauptordner der wiederherstellbaren Elemente">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsdeletions "Löschordner in wiederherstellbaren Elementen">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemsversion "Versionsordner in wiederherstellbaren Elementen">
+<!ENTITY menuitem.label.ecfolderbase.recoverableitemspurges "Säuberungsordner in wiederherstellbaren Elementen">
+<!ENTITY menuitem.label.ecfolderbase.archiveroot "Hauptarchiv-Ordner">
+<!ENTITY menuitem.label.ecfolderbase.archivemsgfolderroot "Hauptarchiv-Nachrichtenordner">
+<!ENTITY menuitem.label.ecfolderbase.archivedeleteditems "Archivordner 'Gelöschte Elemente'">
+<!ENTITY menuitem.label.ecfolderbase.archiverecoverableitemsroot "Archiv-Hauptordner der wiederherstellbaren Elemente">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsdeletions "Archiv-Löschordner in wiederherstellbaren Elementen">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemsversions "Archiv-Versionsordner in wiederherstellbaren Elementen">
+<!ENTITY menuitem.label.ecfolderbase.Archiverecoverableitemspurges "Archiv-Säuberungsordner in wiederherstellbaren Elementen">
 
 <!ENTITY button.label.autodiscovercheck "Autodiscovery ausführen">
 <!ENTITY button.label.serverandmailboxcheck "Server und Postfach prüfen">
@@ -41,7 +41,7 @@
 <!ENTITY ecmailbox.label "Postfachname:">
 <!ENTITY ecmailbox.tooltip "Wenn Sie kein Postfach angeben, können Sie nur auf die öffentlichen Ordner zugreifen.">
 <!ENTITY ecwindowsuser.label "Benutzername:">
-<!ENTITY ecwindowsdomain.label "Domainname:">
+<!ENTITY ecwindowsdomain.label "Domäne:">
 <!ENTITY ecwindowspassword.label "Passwort:">
 
 <!ENTITY button.label.folderpathcheck "Prüfen">
@@ -49,3 +49,7 @@
 
 <!ENTITY exchWebServices.UserAvailability.label "Die Benutzerverfügbarkeitstatus des Postfachkalenders ist nur sichtbar.">
 
+<!ENTITY exchWebServices.exchtype.label "Exchange Type">
+<!ENTITY exchWebServices.hostexch.label "Hosted Exchange">
+<!ENTITY exchWebServices.365exch.label "Microsoft Office365">
+<!ENTITY exchWebServices.detail.label "Details">

@@ -20,6 +20,9 @@
  * ***** BEGIN LICENSE BLOCK *****/
 
 #include "nsISupports.idl"
+#include "calIDateTime.idl"
+#include "calIEvent.idl"
+#include "mivIxml2jxon.idl"
 
 [scriptable, uuid(b722909d-f83d-4f01-9b98-369201f8ae38)]
 interface mivExchangeItemsManager : nsISupports

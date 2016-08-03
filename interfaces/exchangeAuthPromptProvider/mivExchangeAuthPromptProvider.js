@@ -64,7 +64,7 @@ mivExchangeAuthPromptProvider.prototype = {
 		} 
 
 		this.logInfo("  --- mivExchangeAuthPromptProvider.getAuthPrompt:aPromptReason:"+aPromptReason+", iid:"+iid);
-		this.globalFunctions.LOG("  >>>>>>>>>>> MAIL THIS LINE TO exchangecalendar@extensions.1st-setup.nl: ecnsIAuthPrompt2.getAuthPrompt("+iid+")");
+		this.globalFunctions.LOG("  >>>>>>>>>>> SUBMIT THIS LINE TO https://github.com/Ericsson/exchangecalendar/issues: ecnsIAuthPrompt2.getAuthPrompt("+iid+")");
   
 		return Cr.NS_ERROR_NOT_AVAILABLE;
 	},

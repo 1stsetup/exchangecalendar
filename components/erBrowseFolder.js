@@ -134,7 +134,7 @@ erBrowseFolderRequest.prototype = {
 				}
 				else {
 					// We do not know how to handle this yet. Do not know if it ever happens. We did not restrict MaxEntriesReturned.
-					exchWebService.commonFunctions.LOG("PLEASE MAIL THIS LINE TO exchangecalendar@extensions.1st-setup.nl: IncludesLastItemInRange == false in FindFolderResponse.");
+					exchWebService.commonFunctions.LOG("SUBMIT THIS LINE TO https://github.com/Ericsson/exchangecalendar/issues: IncludesLastItemInRange == false in FindFolderResponse.");
 				}
 			}
 			else {

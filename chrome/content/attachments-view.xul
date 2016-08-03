@@ -39,7 +39,7 @@
     %dtd1;
 ]>
 
-<?xml-stylesheet href="chrome://exchangecalendar/content/attachments-view.css" type="text/css"?>
+<?xml-stylesheet type="text/css" href="chrome://exchangecalendar/skin/attachments-view.css"?>
 <?xml-stylesheet type="text/css" href="chrome://calendar/skin/calendar-event-dialog.css"?>
 <?xml-stylesheet type="text/css" href="chrome://calendar/content/calendar-event-dialog.css"?>
 
@@ -92,13 +92,7 @@
 	</toolbarpalette>
      <toolbar id="event-toolbar" defaultset="button-save,button-attendees,button-privacy,button-url,exchWebService-add-attachment-button,button-delete"> 
      </toolbar> 
-
-	<listbox id="exchWebService-attachment-link"
-		context="exchWebService-attachment-popup"
-		rows="2"
-		onkeypress="tmpAttachment.onKeyPress(event);"
-		ondblclick="tmpAttachment.onDblClick(event);"
-		onselect="tmpAttachment.onSelect(event);"/>
+ 
 
 </overlay>
 

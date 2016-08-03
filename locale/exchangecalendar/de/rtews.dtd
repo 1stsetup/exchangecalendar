@@ -1,0 +1,15 @@
+ <!ENTITY rtews.selectaccountdesc "Zu konfigurierendes Mailkonto auswählen. Das Konto muss auf Microsoft Exchange basieren">
+ <!ENTITY rtews.accconfigured "Konto wurde bereits konfiguriert">
+ <!ENTITY rtews.dicoverdesc "Sie können die Exchange-Server-(EWS-)URL automatisch herausfinden lassen oder manuell konfigurieren">
+ <!ENTITY rtews.dicoverdesc2 "Um die URL manuell zu konfigurieren, geben Sie diese in das Eingabefeld ein.">
+ <!ENTITY rtews.autodiscover "Automatisch finden">
+ <!ENTITY rtews.doautodicover "URL automatisch suchen">
+ <!ENTITY rtews.manual "Manuell">
+ <!ENTITY rtews.test "Hier klicken, um die EWS-URL zu verifizieren">
+ <!ENTITY rtews.msexchewsurl "Die EWS-URL wurde verifiziert. Klicken Sie auf Fertigstellen, um die Konfiguration zu beenden">
+ <!ENTITY rtews.selectaccount "Konto auswählen">
+ <!ENTITY rtews.configure.label "Konfigurieren...">
+ <!ENTITY rtews.rtforexch "Serverseitige Markierung für Microsoft Exchange">
+ <!ENTITY rtews.confirmAccDetail "Kontodetails bestätigen">
+ <!ENTITY rtews.username "Benutzername">
+ <!ENTITY rtews.domain "Domäne">

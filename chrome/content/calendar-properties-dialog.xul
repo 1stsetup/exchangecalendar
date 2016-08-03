@@ -49,7 +49,7 @@
 				align="center">
 				<spacer/>
 				<checkbox id="exchange-cache"
-					disable-with-calendar="true"
+					hidden="true"
 					label="exchange-cache" 
 					oncommand="return tmpChangeCalendarProperties.changeCachePref();"/>
 			</row>

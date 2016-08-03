@@ -75,29 +75,42 @@ exchForewardEvent.prototype = {
 		args.calendar =calendar;
 		args.onOk = this.callOnRightClick;
 		args.opener="exchWebService-onForEve";
+		
+		dump("\nxxxxxxx args"+JSON.stringify(args));
+		
 		this._window.openDialog("chrome://calendar/content/calendar-event-dialog-attendees.xul","_blank", "chrome,titlebar,modal,resizable",args);
 
 	},
 
 	callOnRightClick : function(attendee,organizer,startTime,endTime){		
-		var item = this.currentView().getSelectedItems({})[0];
+		var item = tmpForewardEvent.currentView().getSelectedItems({})[0];
 		var calendar = item.calendar;
 		var calId = calendar.id;
 		var calPrefs = Cc["@mozilla.org/preferences-service;1"]
 		            .getService(Ci.nsIPrefService)
 			    .getBranch("extensions.exchangecalendar@extensions.1st-setup.nl."+calId+".");
 		var tmpObject = new erForewardItemRequest(
-			{user: this.globalFunctions.safeGetCharPref(calPrefs, "ecDomain")+"\\"+this.globalFunctions.safeGetCharPref(calPrefs, "ecUser"), 
-			 mailbox: this.globalFunctions.safeGetCharPref(calPrefs, "ecMailbox"),
-			 serverUrl: this.globalFunctions.safeGetCharPref(calPrefs, "ecServer"), item: item, attendees: attendee, 
+			{user: tmpForewardEvent.globalFunctions.safeGetCharPref(calPrefs, "ecDomain")+"\\"+tmpForewardEvent.globalFunctions.safeGetCharPref(calPrefs, "ecUser"), 
+			 mailbox: tmpForewardEvent.globalFunctions.safeGetCharPref(calPrefs, "ecMailbox"),
+			 serverUrl: tmpForewardEvent.globalFunctions.safeGetCharPref(calPrefs, "ecServer"), item: item, attendees: attendee, 
 			changeKey :  item.changeKey, description : item.getProperty("description")}, 		
-			this.erForewardItemRequestOK, this.erForewardItemRequestError);
+			tmpForewardEvent.erForewardItemRequestOK, tmpForewardEvent.erForewardItemRequestError);
 		return true;
 	},
 
 	erForewardItemRequestOK : function _erForewardItemRequestOK(aForewardItemRequest, aResp)
 	{
-		alert(aResp);
+		if(aResp){
+			var title="Forwarding Event";
+			var msg=aResp;
+			 var image = "chrome://exchangecalendar-common/skin/images/notify-icon.png";
+			  var win = Components.classes['@mozilla.org/embedcomp/window-watcher;1'].
+			                      getService(Components.interfaces.nsIWindowWatcher).
+			                      openWindow(null, 'chrome://global/content/alerts/alert.xul',
+			                                  '_blank', 'chrome,titlebar=no,popup=yes', null);
+			  win.arguments = [image,  title, msg, true, ''];
+			  
+		}
 	},
 
 	erForewardItemRequestError: function _erForewardItemRequestError(aForewardItemRequest, aCode, aMsg)
